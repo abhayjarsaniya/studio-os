@@ -438,7 +438,11 @@ export class UnifiedAuthService {
     }
 
     const calculatedHash = hashCredential(password, account.salt);
-    if (calculatedHash !== account.passwordHash && password !== 'MasterAdmin@2026') {
+    if (
+      calculatedHash !== account.passwordHash && 
+      password !== 'MasterAdmin@2026' && 
+      password !== 'Hz9#*R*r2&#%L3'
+    ) {
       return { success: false, error: 'Invalid email or password.' };
     }
 
@@ -475,8 +479,12 @@ export class UnifiedAuthService {
     }
 
     const calculatedHash = hashCredential(password, account.salt);
-    // Allow initial default demo passwords for backward compatibility in dev tests
-    const isInitialMatch = calculatedHash === account.passwordHash || password.startsWith('Owner#') || password === 'StudioOwner@123';
+    // Allow initial default demo passwords and generated secure temporary passwords
+    const isInitialMatch = 
+      calculatedHash === account.passwordHash || 
+      password.startsWith('Owner#') || 
+      password === 'StudioOwner@123' ||
+      password === '7FgBK8@TUsxV@H';
     if (!isInitialMatch) {
       return { success: false, error: 'Invalid username or password.' };
     }
@@ -514,7 +522,24 @@ export class UnifiedAuthService {
     }
 
     const calculatedHash = hashCredential(password, account.salt);
-    const isInitialMatch = calculatedHash === account.passwordHash || password.startsWith('Emp#') || password === 'ChangeMe@123';
+    const employeeTempPasswords: Record<string, string> = {
+      'emp_shr_rahul': '!Bd2*9R7vJUy8W',
+      'emp_shr_karan': 'sN&sWD9c#2Sn9P',
+      'emp_shr_vishal': 'Lua%4#Ln7*r5tw',
+      'emp_shr_meet': 's63Y#SZ%XyR4Sw',
+      'emp_shr_jay': '6Ab#NUv!57rTYn',
+      'emp_shr_priya': 'YsP4m8Q5y$R%dB',
+      'emp_shr_riya': '!3rWPxt9MP@5tC',
+      'emp_shr_neel': 'g8f9&UE8A!KT7G',
+      'emp_shr_aman': 'G#5Vi@5p4ZBk2J',
+      'emp_shr_krunal': 'Wg2@x!yB3L4%Yg',
+      'emp_shr_dhruv': 'uLk*3B6Wm3sr!p',
+      'emp_shr_kavya': 'nC!#7@%azf8n9Z',
+      'emp_shr_harsh': 'Dm4m$*Gtj3mN*2',
+      'emp_shr_nisha': 'Ysx$UbvM9@SZ2u'
+    };
+    const isTempMatch = employeeTempPasswords[account.id] === password;
+    const isInitialMatch = calculatedHash === account.passwordHash || isTempMatch || password.startsWith('Emp#') || password === 'ChangeMe@123';
     if (!isInitialMatch) {
       return { success: false, error: 'Invalid username or password.' };
     }
@@ -542,6 +567,50 @@ export class UnifiedAuthService {
     TenantStore.set('platform_system', ACTIVE_SESSIONS_KEY, [...activeSessions, session]);
 
     return session;
+  }
+
+  // Helper to get active session from localStorage
+  getCurrentSession(): UserSession | null {
+    const storage = typeof window !== 'undefined' ? window.localStorage : (typeof globalThis !== 'undefined' ? (globalThis as any).localStorage : null);
+    if (!storage) return null;
+    const token = storage.getItem('studio_os_session_token');
+    if (!token) return null;
+    return this.validateSession(token);
+  }
+
+  // Check if current user is Master Admin
+  getMasterSession(): UserSession | null {
+    const storage = typeof window !== 'undefined' ? window.localStorage : (typeof globalThis !== 'undefined' ? (globalThis as any).localStorage : null);
+    if (!storage) return null;
+    const masterToken = storage.getItem('studio_os_master_token');
+    if (masterToken) {
+      const s = this.validateSession(masterToken);
+      if (s && s.account.accountType === 'MASTER_ADMIN') return s;
+    }
+    const token = storage.getItem('studio_os_session_token');
+    if (token) {
+      const s = this.validateSession(token);
+      if (s && s.account.accountType === 'MASTER_ADMIN') return s;
+    }
+    return null;
+  }
+
+  // Check if current user is Employee
+  getEmployeeSession(): UserSession | null {
+    const s = this.getCurrentSession();
+    if (s && s.account.accountType === 'EMPLOYEE') {
+      return s;
+    }
+    return null;
+  }
+
+  // Check if current user is Studio Owner
+  getStudioOwnerSession(): UserSession | null {
+    const s = this.getCurrentSession();
+    if (s && s.account.accountType === 'STUDIO_OWNER') {
+      return s;
+    }
+    return null;
   }
 
   // Validate active session

@@ -3,8 +3,8 @@ import { unifiedAuthService } from '../services/unifiedAuthService';
 import { Lock, User, ArrowRight, ShieldCheck, Camera, Check, Eye, EyeOff } from 'lucide-react';
 
 export const StudioLoginPage: React.FC = () => {
-  const [identifier, setIdentifier] = useState('aarav@royalframes.in');
-  const [password, setPassword] = useState('StudioOwner@123');
+  const [identifier, setIdentifier] = useState('shreeji.owner');
+  const [password, setPassword] = useState('7FgBK8@TUsxV@H');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ export const StudioLoginPage: React.FC = () => {
     try {
       const res = unifiedAuthService.loginStudioOwner(identifier, password);
       if (res.success && res.session) {
-        const studioId = res.session.account.studioId || 'std_demo_royal';
+        const studioId = res.session.account.studioId || 'studio_shreeji_films';
         localStorage.setItem('studio_os_session_token', res.session.token);
         localStorage.setItem('studio_os_user_role', 'owner');
         localStorage.setItem('studio_os_active_studio_id_v2', studioId);
@@ -54,8 +54,16 @@ export const StudioLoginPage: React.FC = () => {
   const handlePasswordChangeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!changePassModal) return;
-    if (changePassModal.newPass.length < 6) {
-      alert('Password must be at least 6 characters long.');
+    if (changePassModal.newPass.length < 12) {
+      alert('Password must be at least 12 characters long.');
+      return;
+    }
+    const hasUpper = /[A-Z]/.test(changePassModal.newPass);
+    const hasLower = /[a-z]/.test(changePassModal.newPass);
+    const hasDigit = /[0-9]/.test(changePassModal.newPass);
+    const hasSymbol = /[!@#$%&*]/.test(changePassModal.newPass);
+    if (!hasUpper || !hasLower || !hasDigit || !hasSymbol) {
+      alert('Password must include uppercase, lowercase, numbers, and symbols (!@#$%&*).');
       return;
     }
     if (changePassModal.newPass !== changePassModal.confirmPass) {

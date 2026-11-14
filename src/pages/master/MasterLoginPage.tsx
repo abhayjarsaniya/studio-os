@@ -1,14 +1,22 @@
 import React, { useState } from 'react';
 import { useMasterAdmin } from '../../context/MasterAdminContext';
 import { unifiedAuthService } from '../../services/unifiedAuthService';
-import { Crown, Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Crown, Lock, Mail, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 
 export const MasterLoginPage: React.FC = () => {
   const { setMasterRoute } = useMasterAdmin();
-  const [email, setEmail] = useState('masteradmin@studioos.internal');
-  const [password, setPassword] = useState('MasterAdmin@2026');
+  const [email, setEmail] = useState('masteradmin');
+  const [password, setPassword] = useState('Hz9#*R*r2&#%L3');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // First-time password change modal state
+  const [changePassModal, setChangePassModal] = useState<{
+    isOpen: boolean;
+    accountId: string;
+    newPass: string;
+    confirmPass: string;
+  } | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,9 +24,54 @@ export const MasterLoginPage: React.FC = () => {
     const res = unifiedAuthService.loginMasterAdmin(email, password);
     if (res.success && res.session) {
       localStorage.setItem('studio_os_master_token', res.session.token);
+      localStorage.setItem('studio_os_session_token', res.session.token);
+      localStorage.setItem('studio_os_user_role', 'platform_master_admin');
+
+      if (res.session.account.mustChangePassword) {
+        setChangePassModal({
+          isOpen: true,
+          accountId: res.session.account.id,
+          newPass: '',
+          confirmPass: ''
+        });
+        return;
+      }
+
       setMasterRoute('dashboard');
+      window.location.hash = '#/master/dashboard';
     } else {
       setError(res.error || 'Invalid Master Admin credentials');
+    }
+  };
+
+  const handlePasswordChangeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!changePassModal) return;
+    if (changePassModal.newPass.length < 12) {
+      alert('Password must be at least 12 characters long.');
+      return;
+    }
+    const hasUpper = /[A-Z]/.test(changePassModal.newPass);
+    const hasLower = /[a-z]/.test(changePassModal.newPass);
+    const hasDigit = /[0-9]/.test(changePassModal.newPass);
+    const hasSymbol = /[!@#$%&*]/.test(changePassModal.newPass);
+    if (!hasUpper || !hasLower || !hasDigit || !hasSymbol) {
+      alert('Password must include uppercase, lowercase, numbers, and symbols (!@#$%&*).');
+      return;
+    }
+    if (changePassModal.newPass !== changePassModal.confirmPass) {
+      alert('Passwords do not match.');
+      return;
+    }
+
+    try {
+      unifiedAuthService.changePassword(changePassModal.accountId, changePassModal.newPass);
+      alert('Password successfully updated! Redirecting to Master Console...');
+      setChangePassModal(null);
+      setMasterRoute('dashboard');
+      window.location.hash = '#/master/dashboard';
+    } catch (err: any) {
+      alert(err.message || 'Failed to update password');
     }
   };
 
@@ -54,7 +107,7 @@ export const MasterLoginPage: React.FC = () => {
                 type="text"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="Enter your email or username"
+                placeholder="masteradmin or masteradmin@studioos.internal"
                 className="w-full pl-9 pr-3 py-2.5 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors"
                 required
               />
@@ -97,6 +150,73 @@ export const MasterLoginPage: React.FC = () => {
           Studio OS Multi-Studio Master Platform • Level 1 Access Only
         </div>
       </div>
+
+      {/* Mandatory First-Time Password Change Modal */}
+      {changePassModal?.isOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-zinc-100 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-zinc-900">First-Time Login Security</h3>
+                <p className="text-xs text-zinc-500">Please establish your permanent secure password</p>
+              </div>
+            </div>
+
+            <div className="p-3 bg-amber-50/80 border border-amber-200/60 rounded-xl text-[11px] text-amber-800 leading-relaxed">
+              <strong>Requirement:</strong> At least 12 characters, including uppercase, lowercase, numbers, and symbols (!@#$%&*).
+            </div>
+
+            <form onSubmit={handlePasswordChangeSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">New Secure Password</label>
+                <input
+                  type="password"
+                  value={changePassModal.newPass}
+                  onChange={e => setChangePassModal({ ...changePassModal, newPass: e.target.value })}
+                  placeholder="Min. 12 characters with symbols"
+                  className="w-full px-3 py-2.5 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">Confirm New Password</label>
+                <input
+                  type="password"
+                  value={changePassModal.confirmPass}
+                  onChange={e => setChangePassModal({ ...changePassModal, confirmPass: e.target.value })}
+                  placeholder="Re-type new password"
+                  className="w-full px-3 py-2.5 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900"
+                  required
+                />
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setChangePassModal(null);
+                    setMasterRoute('dashboard');
+                    window.location.hash = '#/master/dashboard';
+                  }}
+                  className="flex-1 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                >
+                  Skip for Now
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer shadow-sm"
+                >
+                  Save & Continue
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

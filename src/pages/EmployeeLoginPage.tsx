@@ -3,8 +3,8 @@ import { unifiedAuthService } from '../services/unifiedAuthService';
 import { Briefcase, Lock, User, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 
 export const EmployeeLoginPage: React.FC = () => {
-  const [identifier, setIdentifier] = useState('kabir_pho');
-  const [password, setPassword] = useState('ChangeMe@123');
+  const [identifier, setIdentifier] = useState('rahul.sharma');
+  const [password, setPassword] = useState('!Bd2*9R7vJUy8W');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ export const EmployeeLoginPage: React.FC = () => {
     try {
       const res = unifiedAuthService.loginEmployee(identifier, password);
       if (res.success && res.session) {
-        const studioId = res.session.account.studioId || 'std_demo_royal';
+        const studioId = res.session.account.studioId || 'studio_shreeji_films';
         localStorage.setItem('studio_os_session_token', res.session.token);
         localStorage.setItem('studio_os_employee_id', res.session.account.id.replace('usr_', ''));
         localStorage.setItem('studio_os_user_role', res.session.account.roleId || 'photographer');
@@ -55,8 +55,16 @@ export const EmployeeLoginPage: React.FC = () => {
   const handlePasswordChangeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!changePassModal) return;
-    if (changePassModal.newPass.length < 6) {
-      alert('Password must be at least 6 characters long.');
+    if (changePassModal.newPass.length < 12) {
+      alert('Password must be at least 12 characters long.');
+      return;
+    }
+    const hasUpper = /[A-Z]/.test(changePassModal.newPass);
+    const hasLower = /[a-z]/.test(changePassModal.newPass);
+    const hasDigit = /[0-9]/.test(changePassModal.newPass);
+    const hasSymbol = /[!@#$%&*]/.test(changePassModal.newPass);
+    if (!hasUpper || !hasLower || !hasDigit || !hasSymbol) {
+      alert('Password must include uppercase, lowercase, numbers, and symbols (!@#$%&*).');
       return;
     }
     if (changePassModal.newPass !== changePassModal.confirmPass) {
