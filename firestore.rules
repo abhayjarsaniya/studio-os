@@ -1,0 +1,453 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for Multi-Tenant Security & RBAC
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isUser(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    // Platform Super Admin / Master Admin
+    function isPlatformAdmin() {
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/masterAdmins/$(request.auth.uid)) ||
+        exists(/databases/$(database)/documents/platform/admins/$(request.auth.uid)) ||
+        request.auth.token.email in ['admin@studio-os.com', 'masteradmin@studioos.internal']
+      );
+    }
+
+    // Studio Membership & Roles
+    function isStudioMember(studioId) {
+      return isAuthenticated() && (
+        isPlatformAdmin() ||
+        (exists(/databases/$(database)/documents/studios/$(studioId)/members/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/studios/$(studioId)/members/$(request.auth.uid)).data.status == 'active') ||
+        (exists(/databases/$(database)/documents/studios/$(studioId)/employees/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/studios/$(studioId)/employees/$(request.auth.uid)).data.employmentStatus == 'active')
+      );
+    }
+
+    function isStudioOwner(studioId) {
+      return isAuthenticated() && (
+        isPlatformAdmin() ||
+        (isStudioMember(studioId) && 
+         get(/databases/$(database)/documents/studios/$(studioId)/members/$(request.auth.uid)).data.role == 'owner') ||
+        request.auth.token.email in ['aarav@shreejifilms.in', 'contact@shreejifilms.in']
+      );
+    }
+
+    function isStudioManager(studioId) {
+      return isAuthenticated() && (
+        isStudioOwner(studioId) ||
+        (isStudioMember(studioId) && 
+         get(/databases/$(database)/documents/studios/$(studioId)/members/$(request.auth.uid)).data.role in ['owner', 'manager', 'production_manager'])
+      );
+    }
+
+    // ==========================================
+    // A. PLATFORM COLLECTIONS
+    // ==========================================
+    match /platformSettings/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isPlatformAdmin();
+    }
+
+    match /masterAdmins/{adminId} {
+      allow read: if isPlatformAdmin();
+      allow write: if isPlatformAdmin();
+    }
+
+    match /studioDirectory/{studioId} {
+      allow read: if isAuthenticated();
+      allow write: if isPlatformAdmin();
+    }
+
+    match /subscriptionPlans/{planId} {
+      allow read: if true;
+      allow write: if isPlatformAdmin();
+    }
+
+    match /subscriptionMandates/{mandateId} {
+      allow read: if isPlatformAdmin() || (isAuthenticated() && resource.data.studioId in request.auth.token.studios);
+      allow write: if isPlatformAdmin();
+    }
+
+    match /featureRegistry/{featureId} {
+      allow read: if isAuthenticated();
+      allow write: if isPlatformAdmin();
+    }
+
+    match /globalRoles/{roleId} {
+      allow read: if isAuthenticated();
+      allow write: if isPlatformAdmin();
+    }
+
+    match /globalPermissions/{permId} {
+      allow read: if isAuthenticated();
+      allow write: if isPlatformAdmin();
+    }
+
+    match /platformAuditLogs/{logId} {
+      allow read: if isPlatformAdmin();
+      allow write: if isPlatformAdmin();
+    }
+
+    match /platformNotifications/{notifId} {
+      allow read: if isAuthenticated();
+      allow write: if isPlatformAdmin();
+    }
+
+    match /platformUsage/{docId} {
+      allow read: if isPlatformAdmin();
+      allow write: if isPlatformAdmin();
+    }
+
+    match /platformReports/{reportId} {
+      allow read: if isPlatformAdmin();
+      allow write: if isPlatformAdmin();
+    }
+
+    match /platformConfiguration/{configId} {
+      allow read: if isPlatformAdmin();
+      allow write: if isPlatformAdmin();
+    }
+
+    // Legacy Platform Namespace compatibility
+    match /platform/{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isPlatformAdmin();
+    }
+
+    // ==========================================
+    // B. USER COLLECTIONS
+    // ==========================================
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isUser(userId) || isPlatformAdmin();
+
+      match /memberships/{membershipId} {
+        allow read: if isUser(userId) || isPlatformAdmin();
+        allow write: if isPlatformAdmin();
+      }
+
+      match /preferences/{prefId} {
+        allow read, write: if isUser(userId) || isPlatformAdmin();
+      }
+
+      match /notifications/{notifId} {
+        allow read, write: if isUser(userId) || isPlatformAdmin();
+      }
+
+      match /loginHistory/{historyId} {
+        allow read: if isUser(userId) || isPlatformAdmin();
+        allow write: if isUser(userId) || isPlatformAdmin();
+      }
+    }
+
+    // ==========================================
+    // C. MULTI-TENANT STUDIO COLLECTIONS
+    // ==========================================
+    match /studios/{studioId} {
+      allow read: if isStudioMember(studioId);
+      allow create, update: if isStudioOwner(studioId) || isPlatformAdmin();
+      allow delete: if isPlatformAdmin();
+
+      // 1. Studio Configuration
+      match /profile/{docId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId);
+      }
+
+      match /settings/{docId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId);
+      }
+
+      match /branding/{docId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId);
+      }
+
+      match /branches/{branchId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId);
+      }
+
+      match /subscription/{docId} {
+        allow read: if isStudioOwner(studioId) || isPlatformAdmin();
+        allow write: if isPlatformAdmin();
+      }
+
+      match /featureOverrides/{docId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId) || isPlatformAdmin();
+      }
+
+      match /members/{memberId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId);
+      }
+
+      match /employees/{employeeId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId) || isStudioManager(studioId);
+      }
+
+      match /roles/{roleId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId);
+      }
+
+      match /departments/{deptId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId);
+      }
+
+      // 2. Customers and Bookings
+      match /customers/{customerId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /bookings/{bookingId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /studio_bookings_v2/{bookingId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /quotations/{quotationId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioManager(studioId) || isStudioOwner(studioId);
+      }
+
+      match /quotationRevisions/{revisionId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioManager(studioId) || isStudioOwner(studioId);
+      }
+
+      match /packages/{packageId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioManager(studioId) || isStudioOwner(studioId);
+      }
+
+      match /events/{eventId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /subEvents/{subEventId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /bookingAdjustments/{adjId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioManager(studioId) || isStudioOwner(studioId);
+      }
+
+      match /customerNotes/{noteId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      // 3. Team and Operations
+      match /crewAssignments/{assignId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioManager(studioId) || isStudioOwner(studioId);
+      }
+
+      match /suppliers/{supplierId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioManager(studioId) || isStudioOwner(studioId);
+      }
+
+      match /tasks/{taskId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /taskComments/{commentId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /attendance/{recordId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /leaveRequests/{leaveId} {
+        allow read: if isStudioMember(studioId);
+        allow create: if isStudioMember(studioId);
+        allow update, delete: if isStudioManager(studioId) || isStudioOwner(studioId);
+      }
+
+      match /leaveBalances/{balanceId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId);
+      }
+
+      match /notifications/{notifId} {
+        allow read, write: if isStudioMember(studioId);
+      }
+
+      // 4. Finance
+      match /invoices/{invoiceId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioManager(studioId) || isStudioOwner(studioId);
+      }
+
+      match /invoiceRevisions/{revId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId);
+      }
+
+      match /payments/{paymentId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioManager(studioId) || isStudioOwner(studioId);
+      }
+
+      match /paymentAdjustments/{adjId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId);
+      }
+
+      match /receipts/{receiptId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioManager(studioId) || isStudioOwner(studioId);
+      }
+
+      match /expenses/{expenseId} {
+        allow read: if isStudioMember(studioId);
+        allow create: if isStudioMember(studioId);
+        allow update, delete: if isStudioOwner(studioId);
+      }
+
+      match /payrollRuns/{runId} {
+        allow read, write: if isStudioOwner(studioId);
+      }
+
+      match /payrollEntries/{entryId} {
+        allow read, write: if isStudioOwner(studioId);
+      }
+
+      match /salaryProfiles/{profileId} {
+        allow read, write: if isStudioOwner(studioId);
+      }
+
+      match /financialSettings/{docId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId);
+      }
+
+      match /paymentSchedules/{scheduleId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId);
+      }
+
+      match /refunds/{refundId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId);
+      }
+
+      match /creditNotes/{noteId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioOwner(studioId);
+      }
+
+      // 5. Photography Production and Delivery
+      match /deliverables/{delivId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /deliveryMilestones/{mId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /photoDeliveries/{delivId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /videoDeliveries/{delivId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /albumProjects/{projId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /albumApprovals/{appId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /productionChecklists/{chkId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      // 6. Communication
+      match /messageTemplates/{tmplId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioManager(studioId) || isStudioOwner(studioId);
+      }
+
+      match /messageLogs/{logId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /customerCommunicationHistory/{histId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      // 7. Documents and System Records
+      match /documents/{docId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /fileMetadata/{fileId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /auditLogs/{logId} {
+        allow read: if isStudioOwner(studioId) || isPlatformAdmin();
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /activityLogs/{logId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /counters/{counterId} {
+        allow read, write: if isStudioMember(studioId);
+      }
+
+      match /savedReports/{reportId} {
+        allow read, write: if isStudioMember(studioId);
+      }
+
+      match /reportJobs/{jobId} {
+        allow read, write: if isStudioMember(studioId);
+      }
+    }
+  }
+}

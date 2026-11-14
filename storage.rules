@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Multi-tenant Studio Storage Rules
+    // Files are partitioned strictly by /studios/{studioId}/...
+    match /studios/{studioId}/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null 
+        && request.resource.size < 50 * 1024 * 1024; // 50MB ceiling for PDFs & smaller assets
+    }
+
+    // Public brand assets (e.g. logos)
+    match /public/studios/{studioId}/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}

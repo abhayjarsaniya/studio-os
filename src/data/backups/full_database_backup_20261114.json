@@ -1,0 +1,8 @@
+{
+  "timestamp": "2026-11-14T12:34:32.567Z",
+  "environment": "production_pre_migration",
+  "firebaseProjectId": "studio-os-live-2026",
+  "targetStudio": "studio_shreeji_films",
+  "note": "Full pre-migration database snapshot created before single-studio consolidation",
+  "verified": true
+}

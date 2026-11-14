@@ -1,0 +1,1930 @@
+import React, { useState, useMemo, useEffect } from 'react';
+import { useApp } from '../../context/AppContext';
+import { useStudio } from '../../context/StudioContext';
+import { bookingProductionService } from '../../services/bookingProductionService';
+import { 
+  BookingRecord, 
+  BookingStatus, 
+  BOOKING_STATUS_LABELS,
+  DeliverableSpecification, 
+  FunctionPlan,
+  DeliveryStage 
+} from '../../types/bookingProduction';
+import { 
+  ArrowLeft,
+  Calendar, 
+  Clock, 
+  MapPin, 
+  Phone, 
+  Mail, 
+  User, 
+  Users, 
+  CheckCircle2, 
+  AlertCircle, 
+  Clock3,
+  MessageCircle, 
+  Send, 
+  FileText, 
+  Printer, 
+  Plus, 
+  Edit3, 
+  Trash2, 
+  IndianRupee, 
+  PackageCheck, 
+  Sparkles,
+  ChevronDown,
+  X,
+  Share2,
+  Copy,
+  ExternalLink,
+  ShieldCheck,
+  CheckSquare,
+  History
+} from 'lucide-react';
+import { CompleteBookingHistoryTab } from './CompleteBookingHistoryTab';
+import { bookingHistoryService } from '../../services/bookingHistoryService';
+import { generateDeliverablesForCategory } from '../../services/deliverablesPresetService';
+import { crewConflictService, CrewConflictInfo } from '../../services/crewConflictService';
+import { StudioEvent } from '../../types';
+
+interface SingleBookingWorkspaceProps {
+  bookingId: string;
+  onBack?: () => void;
+}
+
+export type BookingSectionTab = 'details' | 'money' | 'delivery' | 'messages' | 'history';
+
+const STANDARD_DELIVERABLES = [
+  { id: 'photo_culling', name: 'Photo Culling', category: 'photography', days: 2 },
+  { id: 'photo_editing', name: 'Photo Editing', category: 'photography', days: 10 },
+  { id: 'video_teaser', name: 'Video Teaser', category: 'videography', days: 7 },
+  { id: 'full_video_edit', name: 'Full Video Edit', category: 'videography', days: 25 },
+  { id: 'album_design', name: 'Album Design', category: 'album', days: 20 },
+  { id: 'album_printing', name: 'Album Printing', category: 'album', days: 35 },
+  { id: 'final_handover', name: 'Final Handover', category: 'custom', days: 40 }
+];
+
+export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
+  bookingId,
+  onBack
+}) => {
+  const { currentStudio } = useStudio();
+  const { employees, openPdfViewer, setActiveTab, setEditingEvent, setIsEventFormOpen } = useApp();
+  const studioId = currentStudio?.id || 'studio_shreeji_films';
+
+  const [activeSection, setActiveSection] = useState<BookingSectionTab>('details');
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Status dropdown toggle
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [isPdfDropdownOpen, setIsPdfDropdownOpen] = useState(false);
+
+  // Modals
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState<number>(25000);
+  const [paymentMode, setPaymentMode] = useState<'UPI' | 'Cash' | 'Bank Transfer' | 'Card'>('UPI');
+  const [paymentRef, setPaymentRef] = useState(`REF-${Date.now().toString().slice(-6)}`);
+  const [paymentNote, setPaymentNote] = useState('');
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    customerName: '',
+    customerPhone: '',
+    customerEmail: '',
+    eventName: '',
+    eventDate: '',
+    venue: '',
+    finalAgreedAmount: 0,
+    originalQuotation: 0,
+    negotiatedDiscount: 0
+  });
+
+  const [isCrewModalOpen, setIsCrewModalOpen] = useState(false);
+  const [selectedCrewEmployeeId, setSelectedCrewEmployeeId] = useState('');
+  const [selectedCrewRole, setSelectedCrewRole] = useState('Lead Photographer');
+  const [crewConflictWarn, setCrewConflictWarn] = useState<CrewConflictInfo | null>(null);
+  const [allowCrewConflictOverride, setAllowCrewConflictOverride] = useState(false);
+
+  // Deliverables customization
+  const [showAddCustomDel, setShowAddCustomDel] = useState(false);
+  const [customDelName, setCustomDelName] = useState('');
+  const [customDelCat, setCustomDelCat] = useState<'photography' | 'video' | 'physical' | 'digital'>('photography');
+  const [customDelDueDate, setCustomDelDueDate] = useState('');
+
+  // WhatsApp templates state
+  const [activeWhatsAppTemplate, setActiveWhatsAppTemplate] = useState<
+    'booking_confirmation' | 'payment_receipt' | 'event_reminder' | 'delivery_ready'
+  >('booking_confirmation');
+
+  // Internal Notes State
+  const [newInternalNote, setNewInternalNote] = useState('');
+
+  // Toast notification
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // Load current booking
+  const booking = useMemo(() => {
+    const list = bookingProductionService.listBookings(studioId);
+    return list.find(b => b.id === bookingId || (b as any).bookingNumber === bookingId) || null;
+  }, [studioId, bookingId, refreshKey]);
+
+  // Sync edit form on load
+  useEffect(() => {
+    if (booking) {
+      setEditFormData({
+        customerName: booking.customerName || '',
+        customerPhone: booking.customerPhone || '',
+        customerEmail: booking.customerEmail || '',
+        eventName: booking.eventName || '',
+        eventDate: booking.mainEventDate || booking.startDate || '',
+        venue: booking.venue || '',
+        finalAgreedAmount: booking.financials?.finalAgreedAmount || 0,
+        originalQuotation: booking.financials?.originalQuotation || 0,
+        negotiatedDiscount: booking.financials?.negotiatedDiscount || 0
+      });
+    }
+  }, [booking]);
+
+  if (!booking) {
+    return (
+      <div className="p-8 text-center bg-white rounded-3xl border border-zinc-200 max-w-xl mx-auto space-y-4">
+        <AlertCircle className="w-10 h-10 text-amber-500 mx-auto" />
+        <h3 className="text-base font-bold text-zinc-900">Booking Not Found</h3>
+        <p className="text-xs text-zinc-500">
+          The requested booking ID <code className="bg-zinc-100 px-2 py-0.5 rounded">{bookingId}</code> does not exist or has been archived.
+        </p>
+        <button
+          onClick={() => {
+            if (onBack) onBack();
+            else {
+              setActiveTab('bookings');
+              window.location.hash = '#/app/bookings';
+            }
+          }}
+          className="px-4 py-2 bg-zinc-900 text-white text-xs font-bold rounded-xl"
+        >
+          Return to All Bookings
+        </button>
+      </div>
+    );
+  }
+
+  const { financials } = booking;
+  const originalQuotation = financials?.originalQuotation || 0;
+  const negotiatedDiscount = financials?.negotiatedDiscount || 0;
+  const finalAgreedAmount = financials?.finalAgreedAmount || 0;
+  const verifiedPaymentsReceived = financials?.verifiedPaymentsReceived || 0;
+  const remainingBalance = Math.max(0, finalAgreedAmount - verifiedPaymentsReceived);
+  const isFullyPaid = remainingBalance <= 0;
+
+  // Real-time payment history items from complete customer booking ledger
+  const paymentHistoryItems = useMemo(() => {
+    return bookingHistoryService
+      .getBookingHistory(studioId, booking.id, 'desc')
+      .filter(h => h.activityType === 'payment_received');
+  }, [studioId, booking.id, refreshKey]);
+
+  // Event-specific Deliverables Checklist (independent per booking, saves to Firestore)
+  const checklistItems = useMemo(() => {
+    let rawDeliverables = booking.deliverables;
+    if (!Array.isArray(rawDeliverables) || rawDeliverables.length === 0) {
+      rawDeliverables = generateDeliverablesForCategory(
+        booking.category || 'Wedding',
+        booking.id,
+        booking.mainEventDate || booking.startDate || new Date().toISOString().split('T')[0]
+      );
+      booking.deliverables = rawDeliverables;
+      bookingProductionService.saveBooking(studioId, booking);
+    }
+
+    return rawDeliverables.map(del => {
+      const isDone = del.isDelivered || del.stage === 'delivered' || del.stage === 'customer_confirmation';
+      const isInProgress = del.stage === 'editing' || del.stage === 'selection_culling' || del.stage === 'video_editing' || del.stage === 'quality_check' || del.stage === 'ready_for_delivery';
+      return {
+        id: del.id,
+        name: del.name,
+        category: del.category,
+        status: isDone ? 'done' as const : isInProgress ? 'in_progress' as const : 'pending' as const,
+        deadline: del.calculatedDeadline || booking.mainEventDate || '',
+        rawDeliverable: del
+      };
+    });
+  }, [booking, studioId, refreshKey]);
+
+  const completedCount = checklistItems.filter(i => i.status === 'done').length;
+  const completionPercentage = checklistItems.length > 0 ? Math.round((completedCount / checklistItems.length) * 100) : 0;
+
+  // Handle Deliverable Status Toggle
+  const handleToggleDeliverableStatus = (delId: string) => {
+    const item = checklistItems.find(i => i.id === delId);
+    if (!item) return;
+
+    let nextStage: DeliveryStage = 'not_started';
+    let isDelivered = false;
+
+    if (item.status === 'pending') {
+      nextStage = 'editing';
+    } else if (item.status === 'in_progress') {
+      nextStage = 'delivered';
+      isDelivered = true;
+    } else {
+      nextStage = 'not_started';
+      isDelivered = false;
+    }
+
+    bookingProductionService.updateDeliverableStage(studioId, booking.id, delId, {
+      stage: nextStage,
+      completedQty: isDelivered ? (item.rawDeliverable?.requiredQty || 1) : 0,
+      verifiedBy: 'Studio Owner'
+    });
+
+    setRefreshKey(k => k + 1);
+    showToast(`Updated "${item.name}" to ${isDelivered ? 'Done' : nextStage === 'editing' ? 'In Progress' : 'Pending'}`);
+  };
+
+  const handleAddCustomDeliverable = () => {
+    if (!customDelName.trim()) return;
+    const newDel: DeliverableSpecification = {
+      id: `del_${booking.id}_custom_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
+      bookingId: booking.id,
+      name: customDelName.trim(),
+      category: customDelCat,
+      requiredQty: 1,
+      completedQty: 0,
+      unit: 'item',
+      deliveryMethod: 'Google Drive',
+      deadlineType: 'specific_date',
+      calculatedDeadline: customDelDueDate || booking.mainEventDate || new Date().toISOString().split('T')[0],
+      priority: 'normal',
+      stage: 'not_started',
+      isDelivered: false,
+      isPartiallyDelivered: false
+    };
+
+    if (!Array.isArray(booking.deliverables)) booking.deliverables = [];
+    booking.deliverables.push(newDel);
+    bookingProductionService.saveBooking(studioId, booking);
+    setCustomDelName('');
+    setCustomDelDueDate('');
+    setShowAddCustomDel(false);
+    setRefreshKey(k => k + 1);
+    showToast(`Added custom deliverable: ${newDel.name}`);
+  };
+
+  const handleRemoveDeliverable = (delId: string) => {
+    if (!Array.isArray(booking.deliverables)) return;
+    booking.deliverables = booking.deliverables.filter(d => d.id !== delId);
+    bookingProductionService.saveBooking(studioId, booking);
+    setRefreshKey(k => k + 1);
+    showToast('Deliverable removed');
+  };
+
+  // Handle Status Change
+  const handleUpdateStatus = (newStatus: BookingStatus) => {
+    booking.status = newStatus;
+    bookingProductionService.saveBooking(studioId, booking);
+    setIsStatusDropdownOpen(false);
+    setRefreshKey(k => k + 1);
+    showToast(`Booking status updated to ${BOOKING_STATUS_LABELS[newStatus] || newStatus}`);
+  };
+
+  // Handle Add Payment
+  const handleRecordPayment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (paymentAmount <= 0) {
+      alert('Please enter a valid payment amount.');
+      return;
+    }
+
+    const updated = bookingProductionService.recordBookingPayment(studioId, booking.id, {
+      amount: paymentAmount,
+      paymentMethod: paymentMode,
+      reference: paymentRef || `REC-${Date.now().toString().slice(-6)}`,
+      receivedBy: 'Studio Owner',
+      isAdvance: verifiedPaymentsReceived === 0
+    });
+
+    setIsPaymentModalOpen(false);
+    setRefreshKey(k => k + 1);
+    showToast(`Payment of ₹${paymentAmount.toLocaleString('en-IN')} recorded successfully!`);
+  };
+
+  // Handle Edit Booking Details
+  const handleSaveEditBooking = (e: React.FormEvent) => {
+    e.preventDefault();
+    const oldAgreed = booking.financials?.finalAgreedAmount || 0;
+    const oldQuote = booking.financials?.originalQuotation || 0;
+    const oldDiscount = booking.financials?.negotiatedDiscount || 0;
+
+    booking.customerName = editFormData.customerName;
+    booking.customerPhone = editFormData.customerPhone;
+    booking.customerEmail = editFormData.customerEmail;
+    booking.eventName = editFormData.eventName;
+    booking.mainEventDate = editFormData.eventDate;
+    booking.startDate = editFormData.eventDate;
+    booking.venue = editFormData.venue;
+
+    if (booking.financials) {
+      booking.financials.originalQuotation = editFormData.originalQuotation;
+      booking.financials.negotiatedDiscount = editFormData.negotiatedDiscount;
+      booking.financials.finalAgreedAmount = editFormData.finalAgreedAmount;
+      booking.financials.remainingBalance = Math.max(0, editFormData.finalAgreedAmount - booking.financials.verifiedPaymentsReceived);
+
+      // Record price revision into history if changed
+      if (
+        oldAgreed !== editFormData.finalAgreedAmount || 
+        oldQuote !== editFormData.originalQuotation || 
+        oldDiscount !== editFormData.negotiatedDiscount
+      ) {
+        bookingHistoryService.recordPriceUpdateHistory(studioId, booking.id, {
+          customerId: booking.customerId,
+          previousQuotation: oldQuote,
+          newQuotation: editFormData.originalQuotation,
+          previousDiscount: oldDiscount,
+          newDiscount: editFormData.negotiatedDiscount,
+          previousAgreedAmount: oldAgreed,
+          newAgreedAmount: editFormData.finalAgreedAmount,
+          reason: 'Client negotiation / quotation update',
+          updatedBy: 'Studio Owner'
+        });
+      }
+    }
+
+    bookingProductionService.saveBooking(studioId, booking);
+    setIsEditModalOpen(false);
+    setRefreshKey(k => k + 1);
+    showToast('Booking details saved successfully!');
+  };
+
+  // Open Full-Featured Event Edit Modal (Requirement 3 & 4)
+  const handleOpenFullEditModal = () => {
+    setEditingEvent({
+      id: booking.id,
+      studioId,
+      eventNumber: booking.bookingNumber,
+      name: booking.eventName,
+      title: booking.eventName,
+      customerId: booking.customerId,
+      customerName: booking.customerName,
+      customerPhone: booking.customerPhone,
+      category: booking.category as any,
+      startDate: booking.mainEventDate || booking.startDate || '',
+      startTime: (booking.functions && booking.functions[0]?.startTime) || '10:00',
+      endDate: (booking.functions && booking.functions[booking.functions.length - 1]?.date) || booking.mainEventDate || '',
+      endTime: (booking.functions && booking.functions[booking.functions.length - 1]?.endTime) || '18:00',
+      venue: booking.venue,
+      venueCity: booking.city,
+      priority: 'High',
+      status: (booking.status === 'completed' || booking.status === 'fully_delivered' ? 'Completed' : booking.status === 'cancelled' ? 'Cancelled' : 'Confirmed') as any,
+      assignedTeamIds: (booking.functions || []).flatMap(f => (f.assignedCrew || []).map(c => c.employeeId)),
+      estimatedBudget: booking.financials?.finalAgreedAmount || booking.financials?.originalQuotation || 0,
+      advancePaid: booking.financials?.verifiedPaymentsReceived || booking.financials?.advanceReceived || 0,
+      notes: booking.notes
+    } as unknown as StudioEvent);
+    setIsEventFormOpen(true);
+  };
+
+  // Handle Add Crew Member with Conflict Detection
+  const handleAssignCrew = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCrewEmployeeId) return;
+
+    const roster = crewConflictService.getActiveEmployees(studioId);
+    const emp = roster.find(e => e.id === selectedCrewEmployeeId) || employees.find(e => e.id === selectedCrewEmployeeId);
+    if (!emp) return;
+
+    // Check conflict warning if not overridden
+    if (crewConflictWarn?.hasConflict && !allowCrewConflictOverride) {
+      alert(`Scheduling Warning: ${crewConflictWarn.warningMessage}\nPlease check "Allow Overlap" to confirm.`);
+      return;
+    }
+
+    if (!booking.functions || booking.functions.length === 0) {
+      booking.functions = [{
+        id: `fn_${booking.id}_main`,
+        bookingId: booking.id,
+        name: 'Main Event Coverage',
+        category: booking.category || 'Wedding',
+        date: booking.mainEventDate || booking.startDate || '',
+        startTime: '10:00',
+        endTime: '18:00',
+        venue: booking.venue,
+        city: booking.city,
+        assignedPhotographerIds: [],
+        assignedVideographerIds: [],
+        assignedDroneOperatorIds: [],
+        assignedEditorIds: [],
+        assignedSupplierIds: [],
+        deliverables: [],
+        priority: 'normal',
+        status: 'scheduled',
+        assignedCrew: []
+      }];
+    }
+
+    const mainFn = booking.functions[0];
+    if (!mainFn.assignedCrew) mainFn.assignedCrew = [];
+
+    // Avoid duplicate assignment
+    if (!mainFn.assignedCrew.some(c => c.employeeId === emp.id)) {
+      mainFn.assignedCrew.push({
+        employeeId: emp.id,
+        employeeName: emp.fullName,
+        role: selectedCrewRole,
+        contact: emp.phone || ''
+      });
+
+      // Save assignment to Firestore subcollection: studios/{studioId}/bookings/{bookingId}/assignments/{assignmentId}
+      crewConflictService.saveAssignmentToFirestore(studioId, booking.id, {
+        assignmentId: `asgn_${booking.id}_${emp.id}`,
+        studioId,
+        bookingId: booking.id,
+        subEventId: mainFn.id,
+        employeeId: emp.id,
+        employeeName: emp.fullName,
+        designation: emp.designation || selectedCrewRole,
+        department: emp.department || 'Photography',
+        assignedAt: new Date().toISOString(),
+        assignedBy: 'Studio Owner',
+        assignmentStatus: 'confirmed',
+        role: selectedCrewRole
+      });
+
+      // Record in Complete History
+      bookingHistoryService.addHistoryItem(studioId, {
+        bookingId: booking.id,
+        customerId: booking.customerId,
+        activityType: 'crew_assigned',
+        title: `Crew Assigned — ${emp.fullName}`,
+        description: `Assigned ${emp.fullName} as ${selectedCrewRole} for ${mainFn.name}.`,
+        relatedFunctionId: mainFn.id,
+        relatedFunctionName: mainFn.name,
+        performedBy: 'owner',
+        performedByName: 'Studio Owner'
+      });
+    }
+
+    bookingProductionService.saveBooking(studioId, booking);
+    setIsCrewModalOpen(false);
+    setSelectedCrewEmployeeId('');
+    setCrewConflictWarn(null);
+    setAllowCrewConflictOverride(false);
+    setRefreshKey(k => k + 1);
+    showToast(`${emp.fullName} assigned as ${selectedCrewRole}`);
+  };
+
+  // Add Internal Note
+  const handleAddInternalNote = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newInternalNote.trim()) return;
+
+    bookingProductionService.addCustomerNote(studioId, {
+      customerId: booking.customerId,
+      bookingId: booking.id,
+      noteType: 'internal_private',
+      title: 'Studio Internal Note',
+      content: newInternalNote.trim(),
+      isPrivate: true,
+      createdBy: 'Studio Owner'
+    });
+
+    setNewInternalNote('');
+    setRefreshKey(k => k + 1);
+    showToast('Internal note saved!');
+  };
+
+  // 1-Tap PDF Generators
+  const handleGeneratePdf = (type: 'quotation' | 'invoice' | 'receipt' | 'summary') => {
+    setIsPdfDropdownOpen(false);
+    const studioName = currentStudio?.name || 'Shreeji Films and Photography';
+    const cleanDate = booking.mainEventDate || booking.startDate || new Date().toISOString().split('T')[0];
+
+    if (type === 'quotation') {
+      openPdfViewer({
+        documentType: 'quotation',
+        title: 'PHOTOGRAPHY SERVICE QUOTATION',
+        documentNumber: `QT-${booking.bookingNumber}`,
+        date: cleanDate,
+        customer: {
+          name: booking.customerName,
+          phone: booking.customerPhone,
+          email: booking.customerEmail,
+          address: `${booking.venue}, ${booking.city}`
+        },
+        event: {
+          name: booking.eventName,
+          category: booking.category || 'Wedding',
+          date: cleanDate,
+          venue: booking.venue
+        },
+        items: (booking.functions || []).map(fn => ({
+          name: `${fn.name} Coverage`,
+          description: `Full photo & video coverage on ${fn.date} at ${fn.venue}`,
+          quantity: 1,
+          unitPrice: Math.round(finalAgreedAmount / (booking.functions?.length || 1)),
+          amount: Math.round(finalAgreedAmount / (booking.functions?.length || 1))
+        })),
+        financials: {
+          subtotal: originalQuotation,
+          discountAmount: negotiatedDiscount,
+          totalAmount: finalAgreedAmount,
+          paidAmount: verifiedPaymentsReceived,
+          pendingAmount: remainingBalance
+        },
+        terms: '1. 25% Advance payment required to block dates.\n2. Balance payable upon delivery handover.\n3. Digital files delivered within agreed deadlines.'
+      });
+    } else if (type === 'invoice') {
+      openPdfViewer({
+        documentType: 'invoice',
+        title: 'TAX INVOICE',
+        documentNumber: `INV-${booking.bookingNumber}`,
+        date: cleanDate,
+        dueDate: cleanDate,
+        customer: {
+          name: booking.customerName,
+          phone: booking.customerPhone,
+          email: booking.customerEmail,
+          address: `${booking.venue}, ${booking.city}`
+        },
+        event: {
+          name: booking.eventName,
+          category: booking.category || 'Wedding',
+          date: cleanDate,
+          venue: booking.venue
+        },
+        items: [
+          {
+            name: `${booking.eventName} Package Coverage`,
+            description: `All photographic and video deliverables as agreed`,
+            quantity: 1,
+            unitPrice: finalAgreedAmount,
+            amount: finalAgreedAmount
+          }
+        ],
+        financials: {
+          subtotal: originalQuotation,
+          discountAmount: negotiatedDiscount,
+          totalAmount: finalAgreedAmount,
+          paidAmount: verifiedPaymentsReceived,
+          pendingAmount: remainingBalance
+        },
+        terms: 'Thank you for choosing Shreeji Films & Photography. Please settle any balance due upon completion.'
+      });
+    } else if (type === 'receipt') {
+      openPdfViewer({
+        documentType: 'payment_receipt',
+        title: 'PAYMENT RECEIPT',
+        documentNumber: `REC-${booking.bookingNumber}`,
+        date: new Date().toISOString().split('T')[0],
+        customer: {
+          name: booking.customerName,
+          phone: booking.customerPhone,
+          address: `${booking.venue}, ${booking.city}`
+        },
+        event: {
+          name: booking.eventName,
+          category: booking.category || 'Wedding',
+          date: cleanDate,
+          venue: booking.venue
+        },
+        items: [
+          {
+            name: 'Verified Payment Received',
+            description: `Received towards booking ${booking.bookingNumber}`,
+            quantity: 1,
+            unitPrice: verifiedPaymentsReceived,
+            amount: verifiedPaymentsReceived
+          }
+        ],
+        financials: {
+          subtotal: verifiedPaymentsReceived,
+          totalAmount: verifiedPaymentsReceived,
+          paidAmount: verifiedPaymentsReceived,
+          pendingAmount: remainingBalance
+        },
+        terms: 'Official payment receipt. Verified by Shreeji Films and Photography.'
+      });
+    } else {
+      // Summary PDF
+      openPdfViewer({
+        documentType: 'quotation',
+        title: 'COMPLETE BOOKING SUMMARY',
+        documentNumber: `SUM-${booking.bookingNumber}`,
+        date: cleanDate,
+        customer: {
+          name: booking.customerName,
+          phone: booking.customerPhone,
+          email: booking.customerEmail,
+          address: `${booking.venue}, ${booking.city}`
+        },
+        event: {
+          name: booking.eventName,
+          category: booking.category || 'Wedding',
+          date: cleanDate,
+          venue: booking.venue
+        },
+        items: checklistItems.map(item => ({
+          name: item.name,
+          description: `Deadline: ${item.deadline} • Status: ${item.status.toUpperCase()}`,
+          quantity: 1,
+          unitPrice: Math.round(finalAgreedAmount / checklistItems.length),
+          amount: Math.round(finalAgreedAmount / checklistItems.length)
+        })),
+        financials: {
+          subtotal: originalQuotation,
+          discountAmount: negotiatedDiscount,
+          totalAmount: finalAgreedAmount,
+          paidAmount: verifiedPaymentsReceived,
+          pendingAmount: remainingBalance
+        },
+        terms: 'Confidential production brief for studio & client reference.'
+      });
+    }
+  };
+
+  const handleGenerateReceipt = (_amount?: number) => {
+    handleGeneratePdf('receipt');
+  };
+
+  // Pre-formatted WhatsApp Messages
+  const whatsappMessages = useMemo(() => {
+    const studioName = currentStudio?.name || 'Shreeji Films and Photography';
+    const cust = booking.customerName || 'Valued Client';
+    const ev = booking.eventName || 'Event';
+    const dt = booking.mainEventDate || booking.startDate || '';
+    const vn = booking.venue || 'Venue';
+
+    const fnList = (booking.functions || []).map(f => `• ${f.name} on ${f.date} @ ${f.venue}`).join('\n');
+
+    return {
+      booking_confirmation: `Hello ${cust},\n\nBooking Confirmation with ${studioName}!\n\nYour photography booking is confirmed.\n\nEvent: ${ev}\nDate: ${dt}\nVenue: ${vn}\n${fnList ? '\nSchedule:\n' + fnList + '\n' : ''}\nAgreed Amount: ₹${finalAgreedAmount.toLocaleString('en-IN')}\nAdvance Received: ₹${verifiedPaymentsReceived.toLocaleString('en-IN')}\nRemaining Balance: ₹${remainingBalance.toLocaleString('en-IN')}\n\nThank you for choosing ${studioName}!`,
+
+      payment_receipt: `Hello ${cust},\n\nPayment Receipt from ${studioName}:\n\nWe have successfully recorded your payment towards ${ev}.\nTotal Agreed Amount: ₹${finalAgreedAmount.toLocaleString('en-IN')}\nTotal Received: ₹${verifiedPaymentsReceived.toLocaleString('en-IN')}\nRemaining Balance Due: ₹${remainingBalance.toLocaleString('en-IN')}\n\nThank you for your payment!`,
+
+      event_reminder: `Hello ${cust},\n\nGentle reminder from ${studioName} regarding your upcoming shoot for ${ev} on ${dt} at ${vn}.\n\nOur photography & cinematic team is fully prepped and will arrive on time.\nPlease let us know if there are any timing updates!\n\nBest regards,\n${studioName}`,
+
+      delivery_ready: `Hello ${cust},\n\nExciting news from ${studioName}! Your deliverables for ${ev} are ready.\n\nCompleted Deliverables:\n${checklistItems.filter(i => i.status === 'done').map(i => `✓ ${i.name}`).join('\n') || '✓ All photo & video deliverables'}\n\nPlease visit our studio or check your cloud gallery link to preview & download.\n\nThank you for trusting us with your special memories!`
+    };
+  }, [booking, finalAgreedAmount, verifiedPaymentsReceived, remainingBalance, checklistItems, currentStudio]);
+
+  const cleanPhone = (booking.customerWhatsApp || booking.customerPhone || '').replace(/[^0-9]/g, '');
+  const activeWhatsAppText = whatsappMessages[activeWhatsAppTemplate];
+  const activeWhatsAppUrl = `https://wa.me/${cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone}?text=${encodeURIComponent(activeWhatsAppText)}`;
+
+  // Assigned crew combined list
+  const assignedCrewList = useMemo(() => {
+    const list: Array<{ employeeId: string; employeeName: string; role: string; contact?: string }> = [];
+    (booking.functions || []).forEach(fn => {
+      (fn.assignedCrew || []).forEach(c => {
+        if (!list.some(l => l.employeeId === c.employeeId)) {
+          list.push(c);
+        }
+      });
+    });
+    return list;
+  }, [booking]);
+
+  return (
+    <div className="space-y-6 max-w-6xl mx-auto pb-24 font-sans animate-in fade-in duration-150">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-5 right-5 z-50 bg-zinc-900 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Back button */}
+      <div>
+        <button
+          onClick={() => {
+            if (onBack) onBack();
+            else {
+              setActiveTab('bookings');
+              window.location.hash = '#/app/bookings';
+            }
+          }}
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 text-xs font-semibold cursor-pointer shadow-2xs transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to All Bookings</span>
+        </button>
+      </div>
+
+      {/* 1. TOP HEADER */}
+      <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="w-12 h-12 rounded-xl bg-zinc-900 text-white flex items-center justify-center font-bold text-lg font-display shrink-0">
+              {booking.customerName ? booking.customerName.charAt(0).toUpperCase() : 'B'}
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight font-display">
+                  {booking.customerName}
+                </h1>
+                <span className="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-600 text-xs font-mono font-semibold">
+                  {booking.bookingNumber}
+                </span>
+
+                {/* 1-Tap Status Dropdown */}
+                <div className="relative inline-block">
+                  <button
+                    onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border cursor-pointer transition-all bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100"
+                  >
+                    <span>{BOOKING_STATUS_LABELS[booking.status] || booking.status}</span>
+                    <ChevronDown className="w-3 h-3 text-emerald-700" />
+                  </button>
+
+                  {isStatusDropdownOpen && (
+                    <div className="absolute left-0 mt-1 w-48 bg-white border border-zinc-200 rounded-xl shadow-lg z-30 py-1 text-xs">
+                      {[
+                        { id: 'new_inquiry', label: 'New Inquiry' },
+                        { id: 'quotation_sent', label: 'Quotation Sent' },
+                        { id: 'deal_confirmed', label: 'Deal Confirmed' },
+                        { id: 'advance_received', label: 'Advance Received' },
+                        { id: 'in_production', label: 'In Production' },
+                        { id: 'editing', label: 'Editing' },
+                        { id: 'delivery_in_progress', label: 'Delivery In Progress' },
+                        { id: 'fully_delivered', label: 'Fully Delivered' },
+                        { id: 'completed', label: 'Completed' },
+                        { id: 'cancelled', label: 'Cancelled' }
+                      ].map(st => (
+                        <button
+                          key={st.id}
+                          onClick={() => handleUpdateStatus(st.id as BookingStatus)}
+                          className="w-full text-left px-3 py-1.5 hover:bg-zinc-50 font-medium text-zinc-700 flex items-center justify-between"
+                        >
+                          <span>{st.label}</span>
+                          {booking.status === st.id && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-xs text-zinc-500 mt-1 flex flex-wrap items-center gap-2">
+                <span className="font-semibold text-zinc-700">{booking.eventName}</span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3 text-zinc-400" />
+                  {booking.mainEventDate || booking.startDate}
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-zinc-400" />
+                  {booking.venue}, {booking.city}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+            {/* Final Agreed Amount */}
+            <div className="text-right px-3 py-1.5 bg-zinc-50 border border-zinc-200 rounded-xl mr-1">
+              <span className="text-[10px] text-zinc-500 block uppercase tracking-wider font-semibold">Agreed Amount</span>
+              <span className="text-base font-extrabold text-zinc-900 font-display">
+                ₹{finalAgreedAmount.toLocaleString('en-IN')}
+              </span>
+            </div>
+
+            {/* Edit Booking */}
+            <button
+              onClick={handleOpenFullEditModal}
+              className="min-h-[44px] px-3.5 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-zinc-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>Edit</span>
+            </button>
+
+            {/* WhatsApp Chat */}
+            <a
+              href={`https://wa.me/${cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone}`}
+              target="_blank"
+              rel="noreferrer"
+              className="min-h-[44px] px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>WhatsApp</span>
+            </a>
+
+            {/* 1-Tap PDF Dropdown */}
+            <div className="relative inline-block">
+              <button
+                onClick={() => setIsPdfDropdownOpen(!isPdfDropdownOpen)}
+                className="min-h-[44px] px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Download / Print</span>
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+
+              {isPdfDropdownOpen && (
+                <div className="absolute right-0 mt-1 w-52 bg-white border border-zinc-200 rounded-xl shadow-xl z-30 py-1.5 text-xs">
+                  <button
+                    onClick={() => handleGeneratePdf('quotation')}
+                    className="w-full text-left px-3.5 py-2 hover:bg-zinc-50 text-zinc-700 font-medium flex items-center gap-2"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Quotation PDF</span>
+                  </button>
+                  <button
+                    onClick={() => handleGeneratePdf('invoice')}
+                    className="w-full text-left px-3.5 py-2 hover:bg-zinc-50 text-zinc-700 font-medium flex items-center gap-2"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Final Invoice PDF</span>
+                  </button>
+                  <button
+                    onClick={() => handleGeneratePdf('receipt')}
+                    className="w-full text-left px-3.5 py-2 hover:bg-zinc-50 text-zinc-700 font-medium flex items-center gap-2"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Payment Receipt PDF</span>
+                  </button>
+                  <button
+                    onClick={() => handleGeneratePdf('summary')}
+                    className="w-full text-left px-3.5 py-2 hover:bg-zinc-50 text-zinc-700 font-medium flex items-center gap-2"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-purple-600" />
+                    <span>Booking Summary PDF</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. TOP SUMMARY CARD */}
+      <div className="bg-white rounded-2xl border border-zinc-200/90 p-4 sm:p-5 shadow-2xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-zinc-100">
+          {/* Mobile */}
+          <div className="pt-2 sm:pt-0 sm:pr-3">
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Customer Mobile</span>
+            <a 
+              href={`tel:${booking.customerPhone}`} 
+              className="text-xs font-bold text-zinc-900 hover:text-blue-600 mt-1 inline-flex items-center gap-1"
+            >
+              <Phone className="w-3 h-3 text-zinc-400" />
+              <span>{booking.customerPhone || 'N/A'}</span>
+            </a>
+          </div>
+
+          {/* Dates */}
+          <div className="pt-2 sm:pt-0 sm:px-3">
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Event Date</span>
+            <div className="text-xs font-bold text-zinc-900 mt-1 flex items-center gap-1">
+              <Calendar className="w-3 h-3 text-zinc-400" />
+              <span>{booking.mainEventDate || booking.startDate}</span>
+            </div>
+          </div>
+
+          {/* Venue */}
+          <div className="pt-2 sm:pt-0 sm:px-3">
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Venue</span>
+            <div className="text-xs font-bold text-zinc-900 mt-1 truncate" title={booking.venue}>
+              {booking.venue || 'Studio'}
+            </div>
+          </div>
+
+          {/* Functions Count */}
+          <div className="pt-2 sm:pt-0 sm:px-3">
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Functions</span>
+            <div className="text-xs font-bold text-zinc-900 mt-1">
+              {(booking.functions || []).length} Sub-events
+            </div>
+          </div>
+
+          {/* Agreed Amount */}
+          <div className="pt-2 sm:pt-0 sm:px-3">
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Agreed Amount</span>
+            <div className="text-xs font-bold text-zinc-900 mt-1">
+              ₹{finalAgreedAmount.toLocaleString('en-IN')}
+            </div>
+          </div>
+
+          {/* Advance Received */}
+          <div className="pt-2 sm:pt-0 sm:px-3">
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Advance Received</span>
+            <div className="text-xs font-bold text-emerald-700 mt-1">
+              ₹{verifiedPaymentsReceived.toLocaleString('en-IN')}
+            </div>
+          </div>
+
+          {/* Remaining Balance */}
+          <div className="pt-2 sm:pt-0 sm:pl-3">
+            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Remaining Balance</span>
+            <div className={`text-xs font-extrabold mt-1 ${isFullyPaid ? 'text-emerald-700' : 'text-rose-600'}`}>
+              {isFullyPaid ? '✓ Fully Paid' : `₹${remainingBalance.toLocaleString('en-IN')}`}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. 5 EMBEDDED SECTIONS NAVIGATION */}
+      <div className="flex items-center gap-2 border-b border-zinc-200/90 pb-2 overflow-x-auto">
+        {[
+          { id: 'details', label: '1. Details & Crew', icon: <User className="w-4 h-4" /> },
+          { id: 'money', label: '2. Money & Payments', icon: <IndianRupee className="w-4 h-4" /> },
+          { id: 'delivery', label: '3. Work & Delivery Checklist', icon: <PackageCheck className="w-4 h-4" /> },
+          { id: 'messages', label: '4. Notes & WhatsApp', icon: <MessageCircle className="w-4 h-4" /> },
+          { id: 'history', label: '5. Complete History', icon: <History className="w-4 h-4" /> }
+        ].map(sec => (
+          <button
+            key={sec.id}
+            onClick={() => setActiveSection(sec.id as BookingSectionTab)}
+            className={`min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeSection === sec.id
+                ? 'bg-zinc-900 text-white shadow-xs'
+                : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+            }`}
+          >
+            {sec.icon}
+            <span>{sec.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* SECTION 1: DETAILS */}
+      {activeSection === 'details' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Customer Details */}
+            <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
+              <h3 className="text-sm font-bold text-zinc-900 font-display flex items-center gap-2 border-b border-zinc-100 pb-2">
+                <User className="w-4 h-4 text-zinc-500" />
+                <span>Customer Information</span>
+              </h3>
+              <div className="space-y-2.5 text-xs">
+                <div className="flex justify-between py-1 border-b border-zinc-50">
+                  <span className="text-zinc-400">Full Name</span>
+                  <span className="font-bold text-zinc-900">{booking.customerName}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-zinc-50">
+                  <span className="text-zinc-400">Phone Number</span>
+                  <a href={`tel:${booking.customerPhone}`} className="font-semibold text-blue-600 hover:underline">
+                    {booking.customerPhone}
+                  </a>
+                </div>
+                <div className="flex justify-between py-1 border-b border-zinc-50">
+                  <span className="text-zinc-400">WhatsApp</span>
+                  <span className="font-semibold text-zinc-900">{booking.customerWhatsApp || booking.customerPhone}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-zinc-50">
+                  <span className="text-zinc-400">Email Address</span>
+                  <span className="font-semibold text-zinc-900">{booking.customerEmail || 'Not specified'}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-zinc-50">
+                  <span className="text-zinc-400">City / Location</span>
+                  <span className="font-semibold text-zinc-900">{booking.city}</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-zinc-400">Venue Address</span>
+                  <span className="font-semibold text-zinc-900 text-right">{booking.venue}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Event Information */}
+            <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
+              <h3 className="text-sm font-bold text-zinc-900 font-display flex items-center gap-2 border-b border-zinc-100 pb-2">
+                <Calendar className="w-4 h-4 text-zinc-500" />
+                <span>Event Information</span>
+              </h3>
+              <div className="space-y-2.5 text-xs">
+                <div className="flex justify-between py-1 border-b border-zinc-50">
+                  <span className="text-zinc-400">Event Title</span>
+                  <span className="font-bold text-zinc-900">{booking.eventName}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-zinc-50">
+                  <span className="text-zinc-400">Photography Category</span>
+                  <span className="font-semibold text-zinc-900">{booking.category || 'Wedding'}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-zinc-50">
+                  <span className="text-zinc-400">Main Event Date</span>
+                  <span className="font-semibold text-zinc-900">{booking.mainEventDate || booking.startDate}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-zinc-50">
+                  <span className="text-zinc-400">Primary Venue</span>
+                  <span className="font-semibold text-zinc-900">{booking.venue}</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-zinc-400">Special Notes</span>
+                  <span className="font-semibold text-zinc-600 text-right">{booking.description || 'Standard high-end coverage'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Functions / Sub-Events Schedule */}
+          <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-zinc-900 font-display">Functions & Sub-Events Schedule</h3>
+                <p className="text-xs text-zinc-400 mt-0.5">Pre-wedding, ceremony, reception & individual function plans</p>
+              </div>
+              <span className="text-xs font-bold text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-lg">
+                {(booking.functions || []).length} Scheduled
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {(booking.functions || []).map((fn, idx) => (
+                <div 
+                  key={fn.id || idx}
+                  className="p-4 rounded-xl border border-zinc-200 bg-zinc-50/60 flex flex-col md:flex-row md:items-center justify-between gap-3"
+                >
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-zinc-900 text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                        {idx + 1}
+                      </span>
+                      <h4 className="text-xs font-bold text-zinc-900">{fn.name}</h4>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-zinc-500 pl-7">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3 text-zinc-400" />
+                        {fn.date}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-zinc-400" />
+                        {fn.startTime} - {fn.endTime}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-zinc-400" />
+                        {fn.venue}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Assigned crew for this function */}
+                  <div className="flex items-center gap-1.5 flex-wrap pl-7 md:pl-0">
+                    {(fn.assignedCrew && fn.assignedCrew.length > 0) ? (
+                      fn.assignedCrew.map((c, cIdx) => (
+                        <span 
+                          key={cIdx} 
+                          className="px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[10px] font-semibold"
+                        >
+                          {c.employeeName} ({c.role})
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-[11px] text-zinc-400 italic">No specific crew pinned</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Assigned Crew Section */}
+          <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-zinc-900 font-display">Assigned Production Crew</h3>
+                <p className="text-xs text-zinc-400 mt-0.5">Lead photographer, candid, cinematic, drone operator & editors</p>
+              </div>
+
+              <button
+                onClick={() => setIsCrewModalOpen(true)}
+                className="px-3 py-1.5 rounded-xl bg-zinc-900 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-zinc-800"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Assign Crew</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {assignedCrewList.map((crew, idx) => (
+                <div key={idx} className="p-3 rounded-xl border border-zinc-200 bg-white flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs shrink-0">
+                    {crew.employeeName.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <h5 className="text-xs font-bold text-zinc-900 truncate">{crew.employeeName}</h5>
+                    <p className="text-[11px] text-indigo-600 font-medium">{crew.role}</p>
+                    {crew.contact && (
+                      <p className="text-[10px] text-zinc-400">{crew.contact}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {assignedCrewList.length === 0 && (
+                <div className="col-span-full py-6 text-center text-zinc-400 text-xs">
+                  No crew members assigned yet. Tap "+ Assign Crew" to assign your team members.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* SECTION 2: MONEY & PAYMENTS */}
+      {activeSection === 'money' && (
+        <div className="space-y-6">
+          {/* Financial Breakdown Card */}
+          <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
+            <h3 className="text-sm font-bold text-zinc-900 font-display border-b border-zinc-100 pb-2">
+              Financial Breakdown & Quotation Terms
+            </h3>
+
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200">
+                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Original Quotation</span>
+                <span className="text-sm font-bold text-zinc-700 mt-1 block">
+                  ₹{originalQuotation.toLocaleString('en-IN')}
+                </span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200">
+                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Negotiated Discount</span>
+                <span className="text-sm font-bold text-amber-700 mt-1 block">
+                  - ₹{negotiatedDiscount.toLocaleString('en-IN')}
+                </span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-zinc-900 text-white">
+                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Final Agreed Amount</span>
+                <span className="text-base font-extrabold text-white mt-1 block font-display">
+                  ₹{finalAgreedAmount.toLocaleString('en-IN')}
+                </span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                <span className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider block">Total Received</span>
+                <span className="text-base font-bold text-emerald-800 mt-1 block font-display">
+                  ₹{verifiedPaymentsReceived.toLocaleString('en-IN')}
+                </span>
+              </div>
+
+              <div className={`p-3 rounded-xl border ${isFullyPaid ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`}>
+                <span className={`text-[10px] font-bold uppercase tracking-wider block ${isFullyPaid ? 'text-emerald-700' : 'text-rose-700'}`}>
+                  Remaining Balance
+                </span>
+                <span className={`text-base font-extrabold mt-1 block font-display ${isFullyPaid ? 'text-emerald-800' : 'text-rose-700'}`}>
+                  {isFullyPaid ? '✓ Nil (Paid)' : `₹${remainingBalance.toLocaleString('en-IN')}`}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment History Table & Add Payment */}
+          <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-zinc-900 font-display">Payment History & Receipts</h3>
+                <p className="text-xs text-zinc-400 mt-0.5">Recorded advance payments, cash receipts, UPI transactions & settlements</p>
+              </div>
+
+              <button
+                onClick={() => setIsPaymentModalOpen(true)}
+                className="min-h-[44px] px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Add Payment</span>
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-zinc-200 text-zinc-400 uppercase text-[10px] font-bold">
+                    <th className="py-2.5 px-3">Date</th>
+                    <th className="py-2.5 px-3">Amount Paid</th>
+                    <th className="py-2.5 px-3">Payment Mode</th>
+                    <th className="py-2.5 px-3">Receipt / Reference</th>
+                    <th className="py-2.5 px-3">Recorded By</th>
+                    <th className="py-2.5 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-100">
+                  {paymentHistoryItems.length > 0 ? (
+                    paymentHistoryItems.map(item => {
+                      const meta = item.metadata;
+                      const amount = item.amount || meta?.amount || 0;
+                      const dateStr = item.createdAt ? item.createdAt.split('T')[0] : 'Verified';
+                      const mode = meta?.paymentMethod || 'UPI';
+                      const refStr = meta?.receiptNumber || meta?.reference || item.relatedRecordId || 'Verified';
+                      const recordedBy = item.performedByName || 'Studio Owner';
+
+                      return (
+                        <tr key={item.historyId} className="hover:bg-zinc-50">
+                          <td className="py-3 px-3 font-medium text-zinc-900">
+                            {dateStr}
+                          </td>
+                          <td className="py-3 px-3 font-bold text-emerald-700">
+                            ₹{amount.toLocaleString('en-IN')}
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-semibold">
+                              {mode}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 font-mono text-zinc-600">
+                            {refStr}
+                          </td>
+                          <td className="py-3 px-3 text-zinc-600">
+                            {recordedBy}
+                          </td>
+                          <td className="py-3 px-3 text-right">
+                            <button
+                              onClick={() => handleGenerateReceipt(amount)}
+                              className="px-2.5 py-1 rounded-lg border border-zinc-200 hover:bg-zinc-100 text-[11px] font-semibold text-zinc-700 cursor-pointer"
+                            >
+                              View Receipt
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : verifiedPaymentsReceived > 0 ? (
+                    <tr className="hover:bg-zinc-50">
+                      <td className="py-3 px-3 font-medium text-zinc-900">
+                        {booking.financials?.advanceReceivedDate ? booking.financials.advanceReceivedDate.split('T')[0] : booking.mainEventDate || 'Verified'}
+                      </td>
+                      <td className="py-3 px-3 font-bold text-emerald-700">
+                        ₹{verifiedPaymentsReceived.toLocaleString('en-IN')}
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-semibold">
+                          UPI / Digital
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 font-mono text-zinc-600">
+                        ADV-{booking.bookingNumber}
+                      </td>
+                      <td className="py-3 px-3 text-zinc-600">
+                        Studio Owner
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        <button
+                          onClick={() => handleGenerateReceipt(verifiedPaymentsReceived)}
+                          className="px-2.5 py-1 rounded-lg border border-zinc-200 hover:bg-zinc-100 text-[11px] font-semibold text-zinc-700 cursor-pointer"
+                        >
+                          View Receipt
+                        </button>
+                      </td>
+                    </tr>
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-zinc-400 text-xs">
+                        No payments recorded yet. Tap "+ Add Payment" to record client advance.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* SECTION 3: WORK & DELIVERY CHECKLIST */}
+      {activeSection === 'delivery' && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-zinc-900 font-display">
+                  Deliverables Checklist & Production Progress
+                </h3>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  Independent event-specific deliverable checklist saved to Firestore
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <button
+                  onClick={() => setShowAddCustomDel(!showAddCustomDel)}
+                  className="px-3 py-1.5 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-xs font-semibold text-zinc-700 flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Deliverable</span>
+                </button>
+                <span className="text-xs font-bold text-zinc-700">
+                  {completedCount} / {checklistItems.length} Done ({completionPercentage}%)
+                </span>
+              </div>
+            </div>
+
+            {/* Inline Add Custom Deliverable Form */}
+            {showAddCustomDel && (
+              <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2.5 animate-in fade-in duration-150">
+                <div className="flex items-center justify-between text-xs font-bold text-zinc-700">
+                  <span>Add Custom Deliverable</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCustomDel(false)}
+                    className="text-zinc-400 hover:text-zinc-600"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <input
+                    type="text"
+                    placeholder="Deliverable Name (e.g. 100 Edited Stills)"
+                    value={customDelName}
+                    onChange={e => setCustomDelName(e.target.value)}
+                    className="px-3 py-2 rounded-xl border border-zinc-200 text-xs bg-white focus:outline-none"
+                  />
+                  <select
+                    value={customDelCat}
+                    onChange={e => setCustomDelCat(e.target.value as any)}
+                    className="px-3 py-2 rounded-xl border border-zinc-200 text-xs bg-white focus:outline-none"
+                  >
+                    <option value="photography">Photography</option>
+                    <option value="video">Videography</option>
+                    <option value="physical">Physical Album</option>
+                    <option value="digital">Digital / Gallery</option>
+                  </select>
+                  <input
+                    type="date"
+                    value={customDelDueDate}
+                    onChange={e => setCustomDelDueDate(e.target.value)}
+                    className="px-3 py-2 rounded-xl border border-zinc-200 text-xs bg-white focus:outline-none"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCustomDel(false)}
+                    className="px-3 py-1.5 text-xs text-zinc-500 hover:bg-zinc-200 rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleAddCustomDeliverable}
+                    className="px-3.5 py-1.5 text-xs font-bold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 cursor-pointer"
+                  >
+                    Save Deliverable
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Visual Progress Bar */}
+            <div className="space-y-1.5">
+              <div className="w-full h-2.5 bg-zinc-100 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                  style={{ width: `${completionPercentage}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Checklist Items */}
+            <div className="space-y-2.5">
+              {checklistItems.map((item, idx) => {
+                const isDone = item.status === 'done';
+                const isInProgress = item.status === 'in_progress';
+
+                return (
+                  <div
+                    key={item.id}
+                    className={`p-3.5 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                      isDone 
+                        ? 'bg-emerald-50/50 border-emerald-200' 
+                        : isInProgress 
+                          ? 'bg-blue-50/50 border-blue-200' 
+                          : 'bg-white border-zinc-200 hover:border-zinc-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* Interactive 1-tap Checkbox */}
+                      <button
+                        onClick={() => handleToggleDeliverableStatus(item.id)}
+                        className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                          isDone 
+                            ? 'bg-emerald-600 text-white' 
+                            : 'border-2 border-zinc-300 hover:border-zinc-500 text-transparent'
+                        }`}
+                        title="Click to toggle Done"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                      </button>
+
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs font-bold ${isDone ? 'line-through text-zinc-500' : 'text-zinc-900'}`}>
+                            {idx + 1}. {item.name}
+                          </span>
+                          <span className="text-[10px] text-zinc-400 capitalize">
+                            • {item.category}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-zinc-500 flex items-center gap-1 mt-0.5">
+                          <Clock className="w-3 h-3 text-zinc-400" />
+                          <span>Deadline: {item.deadline}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {/* 1-Tap Status Pill */}
+                      <button
+                        onClick={() => handleToggleDeliverableStatus(item.id)}
+                        className={`min-h-[36px] px-3 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                          isDone
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                            : isInProgress
+                              ? 'bg-blue-100 text-blue-800 border-blue-300'
+                              : 'bg-zinc-100 text-zinc-600 border-zinc-200 hover:bg-zinc-200'
+                        }`}
+                      >
+                        {isDone ? '✓ Done' : isInProgress ? 'In Progress' : 'Pending'}
+                      </button>
+
+                      {/* Remove Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveDeliverable(item.id)}
+                        className="p-1.5 text-zinc-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+                        title="Delete Deliverable"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* SECTION 4: NOTES & MESSAGES */}
+      {activeSection === 'messages' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Customer & Internal Notes */}
+            <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
+              <h3 className="text-sm font-bold text-zinc-900 font-display border-b border-zinc-100 pb-2">
+                Customer & Internal Notes
+              </h3>
+
+              {/* Customer Requests */}
+              <div className="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200 space-y-1">
+                <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">
+                  Customer Special Requests & Family Preferences
+                </span>
+                <p className="text-xs text-zinc-700">
+                  {booking.description || 'No special requests submitted by client.'}
+                </p>
+              </div>
+
+              {/* Add Internal Note */}
+              <form onSubmit={handleAddInternalNote} className="space-y-2 pt-2">
+                <label className="text-[11px] font-bold text-zinc-700 block">
+                  + Add Internal Studio / Crew Note
+                </label>
+                <textarea
+                  rows={2}
+                  value={newInternalNote}
+                  onChange={e => setNewInternalNote(e.target.value)}
+                  placeholder="e.g. Lens requirements, drone permit, client requested warm grading..."
+                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-zinc-900"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-bold cursor-pointer"
+                >
+                  Save Internal Note
+                </button>
+              </form>
+
+              {/* Notes list */}
+              <div className="space-y-2 pt-2">
+                {(booking.notes || []).map((n, idx) => (
+                  <div key={n.id || idx} className="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs space-y-0.5">
+                    <div className="flex items-center justify-between text-[10px] text-zinc-400">
+                      <span className="font-semibold text-zinc-600">{n.createdByName || 'Studio'}</span>
+                      <span>{n.createdAt ? n.createdAt.split('T')[0] : ''}</span>
+                    </div>
+                    <p className="text-zinc-800">{n.content}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Ready-to-Send WhatsApp Messages */}
+            <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4 text-emerald-600" />
+                  <h3 className="text-sm font-bold text-zinc-900 font-display">
+                    Ready-to-Send WhatsApp Messages
+                  </h3>
+                </div>
+                <span className="text-[10px] text-zinc-400">Click-to-Chat</span>
+              </div>
+
+              {/* Template Selectors */}
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: 'booking_confirmation', label: '1. Confirmation' },
+                  { id: 'payment_receipt', label: '2. Payment Receipt' },
+                  { id: 'event_reminder', label: '3. Event Reminder' },
+                  { id: 'delivery_ready', label: '4. Delivery Ready' }
+                ].map(tmpl => (
+                  <button
+                    key={tmpl.id}
+                    onClick={() => setActiveWhatsAppTemplate(tmpl.id as any)}
+                    className={`min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold transition-all text-left cursor-pointer border ${
+                      activeWhatsAppTemplate === tmpl.id
+                        ? 'bg-emerald-50 text-emerald-900 border-emerald-300'
+                        : 'bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100'
+                    }`}
+                  >
+                    {tmpl.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Live Preview of Message */}
+              <div className="p-3.5 bg-zinc-50 border border-zinc-200 rounded-xl space-y-2">
+                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">
+                  Message Preview for {booking.customerPhone}
+                </span>
+                <pre className="text-xs font-sans text-zinc-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-zinc-200 max-h-48 overflow-y-auto">
+                  {activeWhatsAppText}
+                </pre>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2">
+                <a
+                  href={activeWhatsAppUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 min-h-[44px] px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Send on WhatsApp</span>
+                </a>
+
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(activeWhatsAppText);
+                    showToast('Message copied to clipboard!');
+                  }}
+                  className="min-h-[44px] px-3.5 py-2.5 rounded-xl border border-zinc-200 hover:bg-zinc-100 text-zinc-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  title="Copy Text"
+                >
+                  <Copy className="w-4 h-4" />
+                  <span>Copy</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SECTION 5: COMPLETE HISTORY */}
+      {activeSection === 'history' && (
+        <CompleteBookingHistoryTab
+          booking={booking}
+          onRefresh={() => setRefreshKey(k => k + 1)}
+          onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+        />
+      )}
+
+      {/* MODAL 1: ADD PAYMENT */}
+      {isPaymentModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <h3 className="text-base font-bold text-zinc-900 font-display">Record Client Payment</h3>
+              <button 
+                onClick={() => setIsPaymentModalOpen(false)}
+                className="w-8 h-8 rounded-lg hover:bg-zinc-100 flex items-center justify-center text-zinc-500"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleRecordPayment} className="space-y-3.5 text-xs">
+              <div>
+                <label className="font-semibold text-zinc-700 block mb-1">Amount to Credit (₹)</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={paymentAmount}
+                  onChange={e => setPaymentAmount(Number(e.target.value))}
+                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl font-bold text-base text-zinc-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-zinc-900"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-zinc-700 block mb-1">Payment Mode</label>
+                <select
+                  value={paymentMode}
+                  onChange={e => setPaymentMode(e.target.value as any)}
+                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:outline-none focus:bg-white"
+                >
+                  <option value="UPI">UPI / GPay / PhonePe</option>
+                  <option value="Cash">Cash at Studio</option>
+                  <option value="Bank Transfer">Bank Transfer (NEFT/IMPS)</option>
+                  <option value="Card">Credit / Debit Card</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-semibold text-zinc-700 block mb-1">Receipt / Reference Number</label>
+                <input
+                  type="text"
+                  value={paymentRef}
+                  onChange={e => setPaymentRef(e.target.value)}
+                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:outline-none focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-zinc-700 block mb-1">Notes / Remarks</label>
+                <input
+                  type="text"
+                  value={paymentNote}
+                  onChange={e => setPaymentNote(e.target.value)}
+                  placeholder="e.g. Booking advance / Haldi installment"
+                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:outline-none focus:bg-white"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsPaymentModalOpen(false)}
+                  className="px-4 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-xs"
+                >
+                  Confirm & Credit Payment
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+
+      {/* MODAL 2: EDIT BOOKING DETAILS */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl border border-zinc-200 max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <h3 className="text-base font-bold text-zinc-900 font-display">Edit Booking Details</h3>
+              <button 
+                onClick={() => setIsEditModalOpen(false)}
+                className="w-8 h-8 rounded-lg hover:bg-zinc-100 flex items-center justify-center text-zinc-500"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditBooking} className="space-y-3.5 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Customer Name</label>
+                  <input
+                    type="text"
+                    value={editFormData.customerName}
+                    onChange={e => setEditFormData({ ...editFormData, customerName: e.target.value })}
+                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Customer Phone</label>
+                  <input
+                    type="text"
+                    value={editFormData.customerPhone}
+                    onChange={e => setEditFormData({ ...editFormData, customerPhone: e.target.value })}
+                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-semibold text-zinc-700 block mb-1">Customer Email</label>
+                <input
+                  type="email"
+                  value={editFormData.customerEmail}
+                  onChange={e => setEditFormData({ ...editFormData, customerEmail: e.target.value })}
+                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Event Name</label>
+                  <input
+                    type="text"
+                    value={editFormData.eventName}
+                    onChange={e => setEditFormData({ ...editFormData, eventName: e.target.value })}
+                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Event Date</label>
+                  <input
+                    type="date"
+                    value={editFormData.eventDate}
+                    onChange={e => setEditFormData({ ...editFormData, eventDate: e.target.value })}
+                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-semibold text-zinc-700 block mb-1">Primary Venue</label>
+                <input
+                  type="text"
+                  value={editFormData.venue}
+                  onChange={e => setEditFormData({ ...editFormData, venue: e.target.value })}
+                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3 border-t border-zinc-100 pt-3">
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Quotation (₹)</label>
+                  <input
+                    type="number"
+                    value={editFormData.originalQuotation}
+                    onChange={e => setEditFormData({ ...editFormData, originalQuotation: Number(e.target.value) })}
+                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Discount (₹)</label>
+                  <input
+                    type="number"
+                    value={editFormData.negotiatedDiscount}
+                    onChange={e => setEditFormData({ ...editFormData, negotiatedDiscount: Number(e.target.value) })}
+                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-zinc-700 block mb-1">Final Agreed (₹)</label>
+                  <input
+                    type="number"
+                    value={editFormData.finalAgreedAmount}
+                    onChange={e => setEditFormData({ ...editFormData, finalAgreedAmount: Number(e.target.value) })}
+                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 font-bold focus:bg-white"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-2 border-t border-zinc-100">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-4 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl shadow-xs"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+
+      {/* MODAL 3: ASSIGN CREW */}
+      {isCrewModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <h3 className="text-base font-bold text-zinc-900 font-display">Assign Team Member</h3>
+              <button 
+                onClick={() => setIsCrewModalOpen(false)}
+                className="w-8 h-8 rounded-lg hover:bg-zinc-100 flex items-center justify-center text-zinc-500"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAssignCrew} className="space-y-3.5 text-xs">
+              {crewConflictWarn && (
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 space-y-2">
+                  <div className="flex items-start gap-1.5 font-bold text-amber-800">
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <span>Scheduling Warning</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed">{crewConflictWarn.warningMessage}</p>
+                  <label className="flex items-center gap-2 font-bold text-amber-950 cursor-pointer pt-1">
+                    <input
+                      type="checkbox"
+                      checked={allowCrewConflictOverride}
+                      onChange={e => setAllowCrewConflictOverride(e.target.checked)}
+                      className="rounded text-amber-600 focus:ring-amber-500"
+                    />
+                    <span>Allow Overlap & Confirm Assignment</span>
+                  </label>
+                </div>
+              )}
+
+              <div>
+                <label className="font-semibold text-zinc-700 block mb-1">Select Employee</label>
+                <select
+                  value={selectedCrewEmployeeId}
+                  onChange={e => {
+                    const empId = e.target.value;
+                    setSelectedCrewEmployeeId(empId);
+                    setAllowCrewConflictOverride(false);
+                    if (empId) {
+                      const warn = crewConflictService.checkConflict(
+                        studioId,
+                        empId,
+                        booking.mainEventDate || booking.startDate || '',
+                        '10:00',
+                        '18:00',
+                        booking.id
+                      );
+                      setCrewConflictWarn(warn.hasConflict ? warn : null);
+                    } else {
+                      setCrewConflictWarn(null);
+                    }
+                  }}
+                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                  required
+                >
+                  <option value="">-- Choose team member --</option>
+                  {crewConflictService.getActiveEmployees(studioId).map(emp => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.fullName} ({emp.designation || emp.roleName || 'Staff'})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="font-semibold text-zinc-700 block mb-1">Assigned Role</label>
+                <select
+                  value={selectedCrewRole}
+                  onChange={e => setSelectedCrewRole(e.target.value)}
+                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                >
+                  <option value="Lead Photographer">Lead Photographer</option>
+                  <option value="Candid Photographer">Candid Photographer</option>
+                  <option value="Cinematographer">Cinematographer</option>
+                  <option value="Drone Operator">Drone Operator</option>
+                  <option value="Photo Editor">Photo Editor</option>
+                  <option value="Video Editor">Video Editor</option>
+                  <option value="Album Designer">Album Designer</option>
+                  <option value="Production Assistant">Production Assistant</option>
+                </select>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCrewModalOpen(false)}
+                  className="px-4 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-xs"
+                >
+                  Assign Member
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+};

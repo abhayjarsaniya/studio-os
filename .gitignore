@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Production builds
+/dist/
+/dist-ssr/
+/lib/
+/functions/lib/
+*.local
+
+# Environment variables & secrets (CRITICAL: NEVER COMMIT SECRETS)
+.env
+.env.*
+!.env.example
+*.env
+*.env.*
+!.env.example
+
+# Credentials & Service Accounts
+*serviceAccount*.json
+*service-account*.json
+firebase-adminsdk*.json
+*-credentials*.json
+*.pem
+*.key
+*.p12
+
+# Firebase cache
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
