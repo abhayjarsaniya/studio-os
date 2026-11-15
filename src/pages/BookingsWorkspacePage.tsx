@@ -4,6 +4,7 @@ import { useStudio } from '../context/StudioContext';
 import { bookingProductionService } from '../services/bookingProductionService';
 import { SingleBookingWorkspace } from '../components/bookings/SingleBookingWorkspace';
 import { 
+  BookingRecord,
   BOOKING_STATUS_LABELS 
 } from '../types/bookingProduction';
 import { 
@@ -20,14 +21,27 @@ import {
   Phone,
   IndianRupee,
   CalendarDays,
-  Building2
+  Building2,
+  Trash2,
+  Loader2,
+  AlertCircle,
+  X
 } from 'lucide-react';
 
 export const BookingsWorkspacePage: React.FC = () => {
   const { currentStudio } = useStudio();
-  const { setActiveTab } = useApp();
+  const { setActiveTab, currentUser } = useApp();
   const studioId = currentStudio?.id || 'studio_shreeji_films';
   const todayStr = new Date().toISOString().split('T')[0];
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const userRole = localStorage.getItem('studio_os_user_role') || (currentUser as any)?.role || 'owner';
+  const isOwner = userRole === 'owner' || userRole === 'studio_owner' || userRole === 'platform_master_admin';
+
+  // Delete modal state
+  const [deletingBooking, setDeletingBooking] = useState<BookingRecord | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
@@ -60,7 +74,32 @@ export const BookingsWorkspacePage: React.FC = () => {
 
   const bookings = useMemo(() => {
     return bookingProductionService.listBookings(studioId);
-  }, [studioId]);
+  }, [studioId, refreshKey]);
+
+  // Soft Delete Handler with explicit confirmation and Owner authorization
+  const handleConfirmDelete = async () => {
+    if (!deletingBooking || isDeleting) return;
+    setIsDeleting(true);
+    setDeleteError('');
+    try {
+      const res = await bookingProductionService.softDeleteBooking(
+        studioId,
+        deletingBooking.id,
+        userRole,
+        currentUser?.name || 'Studio Owner'
+      );
+      if (!res.success) {
+        throw new Error(res.error || 'Failed to delete booking');
+      }
+      setDeletingBooking(null);
+      setRefreshKey(k => k + 1);
+    } catch (err: any) {
+      console.error('[BookingsWorkspacePage.handleConfirmDelete] Error:', err);
+      setDeleteError(err.message || 'Failed to delete booking. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Filters: All, Upcoming, Confirmed, In Progress, Completed, Pending Payment
   const filteredBookings = useMemo(() => {
@@ -245,7 +284,22 @@ export const BookingsWorkspacePage: React.FC = () => {
                 <h3 className="text-base font-bold text-zinc-900">{b.customerName}</h3>
                 <p className="text-sm text-zinc-600 mt-0.5">{b.eventName}</p>
               </div>
-              {renderStatusBadge(b.status)}
+              <div className="flex items-center gap-1.5">
+                {renderStatusBadge(b.status)}
+                {isOwner && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeletingBooking(b);
+                    }}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-rose-600 hover:bg-rose-50 border border-zinc-200 transition-colors"
+                    title="Delete booking"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center justify-between text-xs sm:text-sm pt-2 border-t border-zinc-100 text-zinc-600">
@@ -351,16 +405,32 @@ export const BookingsWorkspacePage: React.FC = () => {
                     )}
                   </td>
                   <td className="py-3.5 px-4 text-right">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenBooking(b.id);
-                      }}
-                      className="min-h-[36px] px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-500 hover:text-white font-bold text-xs text-orange-900 border border-orange-200/80 transition-all inline-flex items-center gap-1 shadow-2xs"
-                    >
-                      <span>Open</span>
-                      <ChevronRight className="w-3 h-3" />
-                    </button>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenBooking(b.id);
+                        }}
+                        className="min-h-[36px] px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-500 hover:text-white font-bold text-xs text-orange-900 border border-orange-200/80 transition-all inline-flex items-center gap-1 shadow-2xs"
+                      >
+                        <span>Open</span>
+                        <ChevronRight className="w-3 h-3" />
+                      </button>
+
+                      {isOwner && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeletingBooking(b);
+                          }}
+                          className="min-h-[36px] min-w-[36px] p-2 rounded-xl border border-zinc-200 hover:border-rose-300 hover:bg-rose-50 text-zinc-400 hover:text-rose-600 transition-colors inline-flex items-center justify-center shadow-2xs"
+                          title="Delete booking"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
@@ -376,6 +446,81 @@ export const BookingsWorkspacePage: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Delete Confirmation Modal (Studio Owner Only - Requirement 2) */}
+      {deletingBooking && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/45 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <div className="flex items-center gap-2.5 text-rose-600">
+                <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center">
+                  <Trash2 className="w-5 h-5 text-rose-600" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-zinc-900 font-display">Delete Event Booking</h3>
+                  <p className="text-xs text-zinc-500 font-mono">{deletingBooking.bookingNumber}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setDeletingBooking(null)}
+                className="min-w-[44px] min-h-[44px] rounded-xl hover:bg-zinc-100 flex items-center justify-center text-zinc-500 cursor-pointer disabled:opacity-50"
+              >
+                <X className="w-5 h-5 sm:w-4 sm:h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs text-zinc-600">
+              <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80 space-y-1.5">
+                <div className="font-bold text-zinc-900 text-sm">{deletingBooking.eventName}</div>
+                <div className="text-zinc-500 font-medium">Customer: <strong className="text-zinc-800">{deletingBooking.customerName}</strong></div>
+                <div className="text-zinc-500 font-medium">Date: <strong className="text-zinc-800">{deletingBooking.mainEventDate || deletingBooking.startDate}</strong></div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200 text-rose-900 leading-relaxed">
+                <strong>Warning:</strong> Deleting this booking will remove it from active studio schedules, day agenda, and calendar. Financial transactions and audit logs will be securely preserved. This action cannot be undone.
+              </div>
+
+              {deleteError && (
+                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 font-semibold flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  <span>{deleteError}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-2 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setDeletingBooking(null)}
+                className="w-full sm:w-auto min-h-[48px] sm:min-h-[42px] px-5 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50 text-sm sm:text-xs cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleConfirmDelete}
+                className="w-full sm:w-auto min-h-[50px] sm:min-h-[42px] px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    <span>Deleting Booking...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4 text-white" />
+                    <span>Delete Event Booking</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

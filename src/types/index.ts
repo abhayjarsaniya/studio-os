@@ -141,6 +141,9 @@ export interface StudioEvent {
   createdAt: string;
   updatedAt: string;
   createdBy?: string;
+  isDeleted?: boolean;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 export type { 

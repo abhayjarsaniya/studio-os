@@ -50,6 +50,7 @@ export const DashboardPage: React.FC = () => {
   const upcomingBookings = useMemo(() => {
     return bookings
       .filter(b => {
+        if (b.isDeleted) return false;
         const d = b.mainEventDate || b.startDate || '';
         return d >= todayStr && b.status !== 'completed' && b.status !== 'cancelled';
       })
@@ -59,13 +60,13 @@ export const DashboardPage: React.FC = () => {
   // 2. Confirmed Bookings Count
   const confirmedBookingsCount = useMemo(() => {
     return bookings.filter(b => 
-      ['deal_confirmed', 'advance_received', 'event_scheduled', 'confirmed', 'in_progress'].includes(b.status)
+      !b.isDeleted && ['deal_confirmed', 'advance_received', 'event_scheduled', 'confirmed', 'in_progress'].includes(b.status)
     ).length;
   }, [bookings]);
 
   // 3. Pending Payments Total (in ₹)
   const pendingPaymentsTotal = useMemo(() => {
-    return bookings.reduce((sum, b) => sum + (b.financials?.remainingBalance || 0), 0);
+    return bookings.filter(b => !b.isDeleted).reduce((sum, b) => sum + (b.financials?.remainingBalance || 0), 0);
   }, [bookings]);
 
   // 4. Pending Deliveries Count
@@ -75,7 +76,7 @@ export const DashboardPage: React.FC = () => {
 
   // Today's Events
   const todayEvents = useMemo(() => {
-    return bookings.filter(b => (b.mainEventDate || b.startDate) === todayStr);
+    return bookings.filter(b => !b.isDeleted && (b.mainEventDate || b.startDate) === todayStr);
   }, [bookings, todayStr]);
 
   // Next 5 upcoming bookings

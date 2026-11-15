@@ -303,6 +303,9 @@ export interface BookingRecord {
   createdAt: string;
   updatedAt: string;
   createdBy?: string;
+  isDeleted?: boolean;
+  deletedAt?: string;
+  deletedBy?: string;
 }
 
 // ==========================================

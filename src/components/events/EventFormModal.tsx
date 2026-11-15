@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useStudio } from '../../context/StudioContext';
 import { StudioEvent, EventCategory, EventStatus, Priority } from '../../types';
@@ -27,6 +27,7 @@ import { bookingProductionService } from '../../services/bookingProductionServic
 import { bookingHistoryService } from '../../services/bookingHistoryService';
 import { firestoreService } from '../../services/firestoreService';
 import { DeliverableSpecification, DeliverableCategory } from '../../types/bookingProduction';
+import { useOutsideClick } from '../../hooks/useOutsideClick';
 
 interface EventFormModalProps {
   isOpen: boolean;
@@ -109,6 +110,15 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Stable booking session refs & Submission lock to prevent duplicate creations
+  const employeeDropdownRef = useRef<HTMLDivElement>(null);
+  const formSubmissionIdRef = useRef<string | null>(null);
+  const formBookingNumRef = useRef<string | null>(null);
+  const isSubmittingRef = useRef<boolean>(false);
+
+  // Requirement 3: Outside click/tap and Escape to close employee dropdown
+  useOutsideClick(employeeDropdownRef, () => setIsEmployeeDropdownOpen(false), isEmployeeDropdownOpen);
+
   // Populate form if editing or initializing
   useEffect(() => {
     if (!isOpen) {
@@ -117,8 +127,21 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       setIsSaving(false);
       setConflictWarnings([]);
       setOverriddenConflictIds([]);
+      formSubmissionIdRef.current = null;
+      formBookingNumRef.current = null;
+      isSubmittingRef.current = false;
       return;
     }
+
+    // Stable unique booking ID for this modal session (reused across retries)
+    if (eventToEdit) {
+      formSubmissionIdRef.current = eventToEdit.id;
+      formBookingNumRef.current = eventToEdit.eventNumber?.replace('EVT-', '') || `BKG-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    } else if (!formSubmissionIdRef.current) {
+      formSubmissionIdRef.current = `bkg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      formBookingNumRef.current = `BKG-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    }
+    isSubmittingRef.current = false;
 
     if (eventToEdit) {
       setName(eventToEdit.name || eventToEdit.title || '');
@@ -359,17 +382,28 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
     setFunctionsList(prev => prev.filter(f => f.id !== fnId));
   };
 
-  // Form Submission & Unbreakable Save Handler
+  // Form Submission & Unbreakable Save Handler with Synchronous Lock
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 0. Synchronous Submission Lock: Prevent multiple rapid clicks & duplicate creation
+    if (isSubmittingRef.current || isSaving) {
+      return;
+    }
+    isSubmittingRef.current = true;
+    setIsSaving(true);
     setErrorMessage('');
 
     if (!name.trim()) {
+      setIsSaving(false);
+      isSubmittingRef.current = false;
       setErrorMessage('Please enter an event name.');
       return;
     }
 
     if (!venue.trim()) {
+      setIsSaving(false);
+      isSubmittingRef.current = false;
       setErrorMessage('Please enter a venue / location.');
       return;
     }
@@ -380,11 +414,11 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
     );
 
     if (unacknowledgedConflicts.length > 0) {
+      setIsSaving(false);
+      isSubmittingRef.current = false;
       setErrorMessage(`Please review scheduling warning for ${unacknowledgedConflicts[0].employeeName} or click "Allow Overlap" to confirm.`);
       return;
     }
-
-    setIsSaving(true);
 
     try {
       let finalCustomerId = customerId;
@@ -395,6 +429,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       if (isNewCustomer) {
         if (!customerName.trim() || !customerPhone.trim()) {
           setIsSaving(false);
+          isSubmittingRef.current = false;
           setErrorMessage('Please enter client full name and phone number.');
           return;
         }
@@ -411,8 +446,10 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       }
 
       const assignedEmployees = allEmployees.filter(e => assignedEmployeeIds.includes(e.id));
-      const targetId = eventToEdit?.id || `bkg_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-      const bookingNumber = eventToEdit?.eventNumber?.replace('EVT-', '') || `BKG-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      
+      // Stable unique booking ID for this submission session (reused on retries)
+      const targetId = formSubmissionIdRef.current || eventToEdit?.id || `bkg_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      const bookingNumber = formBookingNumRef.current || eventToEdit?.eventNumber?.replace('EVT-', '') || `BKG-2026-${Math.floor(1000 + Math.random() * 9000)}`;
 
       // 1. Build sub-events / functions
       const formattedFunctions = functionsList.map((f, idx) => ({
@@ -489,7 +526,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       };
 
       // 4. Save to bookingProductionService (persists to store, syncs StudioEvent, and writes to Firestore)
-      bookingProductionService.saveBooking(studioId, bookingRecord as any);
+      await bookingProductionService.saveBooking(studioId, bookingRecord as any);
 
       // 5. Update/Create Event in AppContext
       if (isEditing && eventToEdit) {
@@ -590,12 +627,14 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       setSaveSuccess(true);
       setTimeout(() => {
         setIsSaving(false);
+        isSubmittingRef.current = false;
         onClose();
       }, 700);
 
     } catch (err: any) {
       console.error('[EventFormModal.handleSubmit] Error saving event:', err);
       setIsSaving(false);
+      isSubmittingRef.current = false;
       setErrorMessage(err.message || 'Failed to save event. Your entries have been preserved. Please try again.');
     }
   };
@@ -608,7 +647,21 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       subtitle={isEditing ? `Updating ${eventToEdit?.eventNumber || ''}` : 'Add a new photography assignment or project to Studio OS'}
       maxWidth="2xl"
     >
-      <form onSubmit={handleSubmit} className="space-y-6 text-xs text-zinc-900 pb-2">
+      <form onSubmit={handleSubmit} className="space-y-6 text-xs text-zinc-900 pb-2 relative">
+        {/* Visible Saving/Loading Progress Overlay */}
+        {isSaving && (
+          <div className="absolute inset-0 bg-white/90 backdrop-blur-xs z-50 rounded-2xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-150">
+            <div className="w-14 h-14 rounded-2xl bg-orange-50 border border-orange-200 flex items-center justify-center shadow-xs mb-3">
+              <Loader2 className="w-7 h-7 text-orange-600 animate-spin" />
+            </div>
+            <h4 className="text-base font-bold text-zinc-900 font-display">
+              {isEditing ? 'Saving Event Changes...' : 'Creating Event Booking...'}
+            </h4>
+            <p className="text-xs text-zinc-500 mt-1 max-w-xs">
+              Synchronizing schedule, assigning crew, and saving confirmed booking to Firestore...
+            </p>
+          </div>
+        )}
         {/* Error Banner */}
         {errorMessage && (
           <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 flex items-center gap-2">
@@ -902,7 +955,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
             ))}
 
           {/* Searchable Employee Dropdown */}
-          <div className="relative">
+          <div className="relative" ref={employeeDropdownRef}>
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-3 text-zinc-400" />
               <input
@@ -1287,12 +1340,12 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
             type="submit"
             variant="primary"
             disabled={isSaving}
-            className="min-h-[44px] px-6"
+            className="min-h-[48px] px-6"
           >
             {isSaving ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Saving to Cloud...
+                {isEditing ? 'Saving Changes...' : 'Creating Booking...'}
               </span>
             ) : saveSuccess ? (
               <span className="flex items-center gap-2 text-white">

@@ -87,10 +87,11 @@ export const CalendarPage: React.FC = () => {
       } as unknown as StudioEvent));
     }
 
-    const list: StudioEvent[] = [...events] as any[];
+    const list: StudioEvent[] = [...events].filter(e => !e.isDeleted) as any[];
     const bookings = bookingProductionService.listBookings(studioId);
 
     bookings.forEach(bkg => {
+      if (bkg.isDeleted) return;
       // If not already in list, map into StudioEvent structure
       if (!list.some(e => e.id === bkg.id)) {
         list.push({

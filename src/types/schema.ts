@@ -82,7 +82,10 @@ export const StudioSchema = z.object({
   storageQuotaMb: z.number().default(15360), // 15GB
   createdAt: z.string(),
   updatedAt: z.string(),
-  createdBy: z.string()
+  createdBy: z.string(),
+  isDeleted: z.boolean().optional(),
+  deletedAt: z.string().optional(),
+  deletedBy: z.string().optional()
 });
 export type Studio = z.infer<typeof StudioSchema>;
 
@@ -509,7 +512,10 @@ export const EventSchema = z.object({
   paymentSchedule: z.array(PaymentScheduleItemSchema).optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  createdBy: z.string()
+  createdBy: z.string(),
+  isDeleted: z.boolean().optional(),
+  deletedAt: z.string().optional(),
+  deletedBy: z.string().optional()
 });
 export type StudioEvent = z.infer<typeof EventSchema>;
 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { useStudio } from '../context/StudioContext';
 import { bookingProductionService } from '../services/bookingProductionService';
@@ -33,8 +33,10 @@ import {
   ChevronRight,
   PackageCheck,
   Tag,
+  Loader2,
   ListPlus
 } from 'lucide-react';
+import { useOutsideClick } from '../hooks/useOutsideClick';
 
 export interface PackageLineItem {
   id: string;
@@ -73,6 +75,15 @@ export const UnifiedBookingPage: React.FC = () => {
 
   // Step 1: Customer Details
   const [customerSearch, setCustomerSearch] = useState('');
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
+  const formBookingIdRef = useRef<string | null>(null);
+  const formBookingNumberRef = useRef<string | null>(null);
+  const customerSearchRef = useRef<HTMLDivElement>(null);
+
+  // Close customer dropdown on outside click/tap or Escape
+  useOutsideClick(customerSearchRef, () => setShowCustomerDropdown(false), showCustomerDropdown);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -254,8 +265,10 @@ export const UnifiedBookingPage: React.FC = () => {
     openPdfViewer(payload);
   };
 
-  // Save Booking (Draft or Confirmed)
-  const handleSaveBooking = (status: 'quotation' | 'confirmed') => {
+  // Save Booking (Draft or Confirmed) with Submission Lock & Idempotency
+  const handleSaveBooking = async (status: 'quotation' | 'confirmed') => {
+    if (isSubmittingRef.current || isSubmitting) return;
+
     if (!customerName.trim() || !customerPhone.trim()) {
       alert('Please fill customer name and mobile number.');
       setCurrentStep(1);
@@ -267,8 +280,17 @@ export const UnifiedBookingPage: React.FC = () => {
       return;
     }
 
-    const bookingId = `book_${Date.now()}`;
-    const bookingNumber = `BK-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+
+    try {
+      // Reuse stable booking ID across retries / submissions
+      if (!formBookingIdRef.current) {
+        formBookingIdRef.current = `book_${Date.now()}`;
+        formBookingNumberRef.current = `BK-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+      }
+      const bookingId = formBookingIdRef.current;
+      const bookingNumber = formBookingNumberRef.current;
 
     // Convert functions
     const fnPlans: FunctionPlan[] = functions.map((fn, idx) => ({
@@ -398,8 +420,15 @@ export const UnifiedBookingPage: React.FC = () => {
       updatedAt: new Date().toISOString()
     };
 
-    bookingProductionService.saveBooking(studioId, newBooking);
-    setSuccessBookingId(bookingId);
+      await bookingProductionService.saveBooking(studioId, newBooking);
+      setSuccessBookingId(bookingId);
+    } catch (err: any) {
+      console.error('[UnifiedBookingPage.handleSaveBooking] Error:', err);
+      alert('Failed to save booking. Please check your network and try again.');
+    } finally {
+      setIsSubmitting(false);
+      isSubmittingRef.current = false;
+    }
   };
 
   const steps = [
@@ -528,7 +557,7 @@ export const UnifiedBookingPage: React.FC = () => {
               </div>
 
               {/* Duplicate Prevention Search */}
-              <div className="relative">
+              <div className="relative" ref={customerSearchRef}>
                 <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">
                   Lookup Existing Customer (Prevent Duplicates)
                 </label>
@@ -537,19 +566,26 @@ export const UnifiedBookingPage: React.FC = () => {
                   <input
                     type="text"
                     value={customerSearch}
-                    onChange={(e) => setCustomerSearch(e.target.value)}
+                    onChange={(e) => {
+                      setCustomerSearch(e.target.value);
+                      setShowCustomerDropdown(true);
+                    }}
+                    onFocus={() => setShowCustomerDropdown(true)}
                     placeholder="Type client mobile number or name..."
                     className="w-full pl-9 pr-4 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
                   />
                 </div>
 
-                {matchingCustomers.length > 0 && (
+                {showCustomerDropdown && matchingCustomers.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-zinc-200 rounded-xl shadow-xl z-20 overflow-hidden divide-y divide-zinc-100">
                     {matchingCustomers.map(c => (
                       <button
                         type="button"
                         key={c.id}
-                        onClick={() => handleSelectCustomer(c)}
+                        onClick={() => {
+                          handleSelectCustomer(c);
+                          setShowCustomerDropdown(false);
+                        }}
                         className="w-full p-2.5 text-left text-xs hover:bg-zinc-50 flex items-center justify-between"
                       >
                         <div>
@@ -1183,19 +1219,30 @@ export const UnifiedBookingPage: React.FC = () => {
 
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={() => handleSaveBooking('quotation')}
-                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px] px-5 py-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-sm sm:text-xs cursor-pointer transition-colors touch-manipulation active:scale-98"
+                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px] px-5 py-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-sm sm:text-xs cursor-pointer transition-colors touch-manipulation active:scale-98 disabled:opacity-50"
                 >
                   Save as Draft Quotation
                 </button>
 
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={() => handleSaveBooking('confirmed')}
-                  className="w-full sm:w-auto min-h-[52px] sm:min-h-[44px] px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-sm sm:text-xs shadow-md cursor-pointer transition-all flex items-center justify-center gap-2 touch-manipulation active:scale-98"
+                  className="w-full sm:w-auto min-h-[52px] sm:min-h-[44px] px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-sm sm:text-xs shadow-md cursor-pointer transition-all flex items-center justify-center gap-2 touch-manipulation active:scale-98 disabled:opacity-50"
                 >
-                  <CheckCircle2 className="w-4 h-4 text-white" />
-                  <span>Confirm Deal & Booking</span>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      <span>Creating Booking...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-white" />
+                      <span>Confirm Deal & Booking</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>

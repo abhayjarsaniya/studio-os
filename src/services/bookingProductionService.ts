@@ -31,30 +31,45 @@ export class BookingProductionService {
   private static CUSTOMER_NOTES_COLLECTION = 'studio_customer_notes_v2';
 
   // Helper to get bookings list
-  listBookings(studioId: string): BookingRecord[] {
+  listBookings(studioId: string, includeDeleted = false): BookingRecord[] {
     const raw = TenantStore.get(studioId, BookingProductionService.BOOKINGS_COLLECTION) as BookingRecord[];
-    if (Array.isArray(raw) && raw.length > 0) return raw;
-
-    // Seed initial demo booking if empty
-    return this.seedDemoBookings(studioId);
+    const list = Array.isArray(raw) && raw.length > 0 ? raw : this.seedDemoBookings(studioId);
+    if (includeDeleted) return list;
+    return list.filter(b => !b.isDeleted);
   }
 
   // Get single booking
-  getBooking(studioId: string, bookingId: string): BookingRecord | null {
-    const list = this.listBookings(studioId);
+  getBooking(studioId: string, bookingId: string, includeDeleted = false): BookingRecord | null {
+    const list = this.listBookings(studioId, includeDeleted);
     return list.find(b => b.id === bookingId || (b as any).bookingNumber === bookingId) || null;
   }
 
-  // Save booking with full Firestore & StudioEvent synchronization
+  // Save booking with full Firestore & StudioEvent synchronization and Idempotency Protection
   async saveBooking(studioId: string, booking: BookingRecord): Promise<BookingRecord> {
-    const list = this.listBookings(studioId);
-    const idx = list.findIndex(b => b.id === booking.id);
-    if (idx >= 0) {
-      list[idx] = booking;
+    const allBookings = this.listBookings(studioId, true);
+    const idx = allBookings.findIndex(b => b.id === booking.id);
+    
+    if (idx < 0) {
+      // Idempotency check: deduplicate if matching session key, identical submission ID or identical timestamp + customer/event
+      const duplicate = allBookings.find(b => 
+        !b.isDeleted &&
+        b.customerName?.trim().toLowerCase() === booking.customerName?.trim().toLowerCase() &&
+        b.eventName?.trim().toLowerCase() === booking.eventName?.trim().toLowerCase() &&
+        (b.mainEventDate || b.startDate) === (booking.mainEventDate || booking.startDate) &&
+        (
+          ((booking as any).submissionSessionId && (b as any).submissionSessionId === (booking as any).submissionSessionId) ||
+          (b.createdAt && booking.createdAt && b.createdAt === booking.createdAt)
+        )
+      );
+      if (duplicate) {
+        console.warn(`[saveBooking] Idempotency: Prevented duplicate booking creation for ${booking.eventName}. Reusing booking ${duplicate.id}`);
+        return duplicate;
+      }
+      allBookings.unshift(booking);
     } else {
-      list.unshift(booking);
+      allBookings[idx] = booking;
     }
-    TenantStore.set(studioId, BookingProductionService.BOOKINGS_COLLECTION, list);
+    TenantStore.set(studioId, BookingProductionService.BOOKINGS_COLLECTION, allBookings);
 
     // 1. Sync corresponding StudioEvent in TenantStore
     try {
@@ -139,19 +154,114 @@ export class BookingProductionService {
     return booking;
   }
 
-  // Delete booking and related references
-  deleteBooking(studioId: string, bookingId: string): boolean {
-    const list = this.listBookings(studioId);
-    const updated = list.filter(b => b.id !== bookingId);
-    TenantStore.set(studioId, BookingProductionService.BOOKINGS_COLLECTION, updated);
+  // Soft-delete booking with strict Owner role enforcement, event sync & audit preservation
+  async softDeleteBooking(
+    studioId: string, 
+    bookingId: string, 
+    userRole: string = 'owner', 
+    deletedBy: string = 'Studio Owner'
+  ): Promise<{ success: boolean; error?: string }> {
+    // 1. Strict Owner Authorization
+    const normalizedRole = (userRole || '').toLowerCase().trim();
+    const isOwner = normalizedRole === 'owner' || normalizedRole === 'studio_owner' || normalizedRole === 'platform_master_admin';
+    if (!isOwner) {
+      const msg = 'Unauthorized: Only Studio Owners can delete bookings and events.';
+      console.error(`[softDeleteBooking] Permission denied for role: ${userRole}`);
+      throw new Error(msg);
+    }
+
+    // 2. Fetch full list including soft-deleted
+    const allBookings = this.listBookings(studioId, true);
+    const targetIdx = allBookings.findIndex(b => b.id === bookingId);
+    if (targetIdx < 0) {
+      return { success: false, error: 'Booking not found' };
+    }
+
+    const now = new Date().toISOString();
+    const booking = allBookings[targetIdx];
+    booking.isDeleted = true;
+    booking.deletedAt = now;
+    booking.deletedBy = deletedBy;
+    allBookings[targetIdx] = booking;
+    TenantStore.set(studioId, BookingProductionService.BOOKINGS_COLLECTION, allBookings);
+
+    // 3. Mark StudioEvent as deleted and remove active crew allocations
+    const events = TenantStore.get<StudioEvent>(studioId, 'events') || [];
+    const evIdx = events.findIndex(e => e.id === bookingId);
+    if (evIdx >= 0) {
+      events[evIdx] = {
+        ...events[evIdx],
+        isDeleted: true,
+        deletedAt: now,
+        deletedBy: deletedBy,
+        assignedTeamIds: [] // clear active crew assignments
+      };
+      TenantStore.set(studioId, 'events', events);
+    }
+
+    // 4. Log audit history item (preserves financial & operational audit trail)
+    try {
+      bookingHistoryService.addHistoryItem(studioId, {
+        bookingId: booking.id,
+        customerId: booking.customerId,
+        activityType: 'event_deleted' as any,
+        title: `Event Booking Deleted: ${booking.eventName}`,
+        description: `Booking ${booking.bookingNumber} (${booking.eventName}) was soft-deleted by ${deletedBy}. Financial ledger records preserved for audit.`,
+        performedBy: userRole,
+        performedByName: deletedBy
+      });
+    } catch (e) {
+      console.warn('[softDeleteBooking] Audit log note:', e);
+    }
+
+    // 5. Firestore sync
+    const isTestRunner = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+    if (!isTestRunner) {
+      try {
+        await firestoreService.saveDocument(studioId, 'bookings', bookingId, {
+          isDeleted: true,
+          deletedAt: now,
+          deletedBy
+        });
+        await firestoreService.saveDocument(studioId, 'events', bookingId, {
+          isDeleted: true,
+          deletedAt: now,
+          deletedBy,
+          assignedTeamIds: []
+        });
+      } catch (err) {
+        console.warn('[softDeleteBooking] Firestore write note:', err);
+      }
+    }
+
+    return { success: true };
+  }
+
+  // Delete booking compatibility wrapper with soft-delete default
+  deleteBooking(studioId: string, bookingId: string, userRole: string = 'owner', deletedBy: string = 'Studio Owner'): boolean {
+    const allBookings = this.listBookings(studioId, true);
+    const target = allBookings.find(b => b.id === bookingId);
+    if (target) {
+      target.isDeleted = true;
+      target.deletedAt = new Date().toISOString();
+      target.deletedBy = deletedBy;
+      TenantStore.set(studioId, BookingProductionService.BOOKINGS_COLLECTION, allBookings);
+    }
 
     const events = TenantStore.get<StudioEvent>(studioId, 'events') || [];
-    TenantStore.set(studioId, 'events', events.filter(e => e.id !== bookingId));
+    const ev = events.find(e => e.id === bookingId);
+    if (ev) {
+      ev.isDeleted = true;
+      ev.deletedAt = new Date().toISOString();
+      ev.deletedBy = deletedBy;
+      ev.assignedTeamIds = [];
+      TenantStore.set(studioId, 'events', events);
+    }
 
     const isTestRunner = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
     if (!isTestRunner) {
-      firestoreService.deleteDocument(studioId, 'bookings', bookingId).catch(() => {});
-      firestoreService.deleteDocument(studioId, 'events', bookingId).catch(() => {});
+      firestoreService.saveDocument(studioId, 'bookings', bookingId, { isDeleted: true }).catch(() => {});
+      firestoreService.saveDocument(studioId, 'events', bookingId, { isDeleted: true }).catch(() => {});
     }
     return true;
   }
