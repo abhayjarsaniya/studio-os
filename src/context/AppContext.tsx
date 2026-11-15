@@ -720,6 +720,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     loadTenantData(currentStudio.id);
   }, [currentStudio.id, loadTenantData]);
 
+  // Synchronize context and tenant events immediately when bookings/events are updated or soft-deleted
+  useEffect(() => {
+    const handleDataUpdate = () => {
+      loadTenantData(currentStudio.id);
+    };
+    window.addEventListener('studio_data_updated', handleDataUpdate);
+    return () => window.removeEventListener('studio_data_updated', handleDataUpdate);
+  }, [currentStudio.id, loadTenantData]);
+
   // Event Handlers
   const createEvent = (eventData: Omit<StudioEvent, 'id' | 'eventNumber' | 'createdAt' | 'updatedAt'>): StudioEvent => {
     const newEvent = eventService.createEvent(currentStudio.id, {

@@ -203,6 +203,78 @@ describe('Studio OS — Duplicate Booking Prevention, Soft Delete & Outside Clic
       expect(ev.isDeleted).toBe(true);
       expect(ev.assignedTeamIds).toEqual([]);
     });
+
+    it('immediately broadcasts studio_data_updated event and removes booking from active list', async () => {
+      let broadcastReceived = false;
+      let eventDetail: any = null;
+
+      if (typeof (globalThis as any).CustomEvent === 'undefined') {
+        (globalThis as any).CustomEvent = class CustomEvent {
+          type: string;
+          detail: any;
+          constructor(type: string, params: any = {}) {
+            this.type = type;
+            this.detail = params.detail;
+          }
+        };
+      }
+
+      const target: any = typeof window !== 'undefined' ? window : globalThis;
+      const listeners: Record<string, Function[]> = {};
+      target.addEventListener = (evt: string, fn: Function) => {
+        listeners[evt] = listeners[evt] || [];
+        listeners[evt].push(fn);
+      };
+      target.removeEventListener = (evt: string, fn: Function) => {
+        if (listeners[evt]) {
+          listeners[evt] = listeners[evt].filter(f => f !== fn);
+        }
+      };
+      target.dispatchEvent = (evtObj: any) => {
+        (listeners[evtObj.type] || []).forEach(fn => fn(evtObj));
+        return true;
+      };
+
+      const listener = (e: any) => {
+        broadcastReceived = true;
+        eventDetail = e.detail;
+      };
+
+      target.addEventListener('studio_data_updated', listener);
+
+      try {
+        const res = await bookingProductionService.softDeleteBooking(
+          testStudioId,
+          mockBooking.id,
+          'owner',
+          'Abhay Jarsaniya'
+        );
+
+        expect(res.success).toBe(true);
+        expect(broadcastReceived).toBe(true);
+        expect(eventDetail?.type).toBe('booking_deleted');
+        expect(eventDetail?.bookingId).toBe(mockBooking.id);
+        expect(eventDetail?.studioId).toBe(testStudioId);
+
+        // Immediate removal from active bookings
+        const active = bookingProductionService.listBookings(testStudioId);
+        expect(active.find(b => b.id === mockBooking.id)).toBeUndefined();
+      } finally {
+        target.removeEventListener('studio_data_updated', listener);
+      }
+    });
+
+    it('returns error when trying to delete a non-existent booking without throwing', async () => {
+      const res = await bookingProductionService.softDeleteBooking(
+        testStudioId,
+        'non_existent_booking_99999',
+        'owner',
+        'Abhay Jarsaniya'
+      );
+
+      expect(res.success).toBe(false);
+      expect(res.error).toBe('Booking not found');
+    });
   });
 
   // =========================================================================

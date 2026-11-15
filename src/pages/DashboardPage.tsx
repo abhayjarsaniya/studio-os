@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { useStudio } from '../context/StudioContext';
 import { bookingProductionService } from '../services/bookingProductionService';
@@ -34,10 +34,18 @@ export const DashboardPage: React.FC = () => {
     year: 'numeric'
   });
 
+  const [dataVersion, setDataVersion] = useState(0);
+
+  useEffect(() => {
+    const handleUpdate = () => setDataVersion(v => v + 1);
+    window.addEventListener('studio_data_updated', handleUpdate);
+    return () => window.removeEventListener('studio_data_updated', handleUpdate);
+  }, []);
+
   // Bookings list from production service
   const bookings = useMemo(() => {
     return bookingProductionService.listBookings(studioId);
-  }, [studioId]);
+  }, [studioId, dataVersion]);
 
   // All deliverables across all bookings
   const allDeliverables = useMemo(() => {

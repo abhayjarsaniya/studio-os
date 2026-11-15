@@ -151,6 +151,20 @@ export class BookingProductionService {
         console.warn(`[bookingProductionService.saveBooking] Firestore save note:`, err);
       }
     }
+
+    // Broadcast update event so all open views (Dashboard, Calendar, Bookings list) sync immediately
+    const targetObj: any = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null);
+    if (targetObj && typeof targetObj.dispatchEvent === 'function') {
+      try {
+        const evt = typeof CustomEvent !== 'undefined'
+          ? new CustomEvent('studio_data_updated', { detail: { type: 'booking_saved', bookingId: booking.id, studioId } })
+          : { type: 'studio_data_updated', detail: { type: 'booking_saved', bookingId: booking.id, studioId } };
+        targetObj.dispatchEvent(evt);
+      } catch (e) {
+        console.warn('[saveBooking] Broadcast event note:', e);
+      }
+    }
+
     return booking;
   }
 
@@ -214,23 +228,42 @@ export class BookingProductionService {
       console.warn('[softDeleteBooking] Audit log note:', e);
     }
 
-    // 5. Firestore sync
+    // 5. Resilient Firestore sync with safety timeout
     const isTestRunner = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
     if (!isTestRunner) {
       try {
-        await firestoreService.saveDocument(studioId, 'bookings', bookingId, {
-          isDeleted: true,
-          deletedAt: now,
-          deletedBy
-        });
-        await firestoreService.saveDocument(studioId, 'events', bookingId, {
-          isDeleted: true,
-          deletedAt: now,
-          deletedBy,
-          assignedTeamIds: []
-        });
+        const firestoreDeletePromise = Promise.all([
+          firestoreService.saveDocument(studioId, 'bookings', bookingId, {
+            isDeleted: true,
+            deletedAt: now,
+            deletedBy
+          }),
+          firestoreService.saveDocument(studioId, 'events', bookingId, {
+            isDeleted: true,
+            deletedAt: now,
+            deletedBy,
+            assignedTeamIds: []
+          })
+        ]);
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Cloud sync timeout for delete')), 3500)
+        );
+        await Promise.race([firestoreDeletePromise, timeoutPromise]);
       } catch (err) {
         console.warn('[softDeleteBooking] Firestore write note:', err);
+      }
+    }
+
+    // 6. Broadcast update event so all open views (Dashboard, Calendar, Bookings list) sync immediately
+    const targetObj: any = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null);
+    if (targetObj && typeof targetObj.dispatchEvent === 'function') {
+      try {
+        const evt = typeof CustomEvent !== 'undefined'
+          ? new CustomEvent('studio_data_updated', { detail: { type: 'booking_deleted', bookingId, studioId } })
+          : { type: 'studio_data_updated', detail: { type: 'booking_deleted', bookingId, studioId } };
+        targetObj.dispatchEvent(evt);
+      } catch (e) {
+        console.warn('[softDeleteBooking] Broadcast event note:', e);
       }
     }
 

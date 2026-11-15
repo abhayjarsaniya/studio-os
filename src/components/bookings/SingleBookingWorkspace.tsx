@@ -100,6 +100,18 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
   const [isDeletingBooking, setIsDeletingBooking] = useState(false);
   const [deleteError, setDeleteError] = useState('');
 
+  // Escape key closes delete modal
+  useEffect(() => {
+    if (!isDeleteModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isDeletingBooking) {
+        setIsDeleteModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDeleteModalOpen, isDeletingBooking]);
+
   // Modals
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<number>(25000);
@@ -787,17 +799,18 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
         throw new Error(res.error || 'Failed to delete booking');
       }
       setIsDeleteModalOpen(false);
-      showToast(`Booking ${booking.bookingNumber} (${booking.eventName}) has been safely deleted.`);
+      showToast(`Booking ${booking.bookingNumber} (${booking.eventName}) deleted successfully.`);
       setTimeout(() => {
         if (onBack) onBack();
         else {
           setActiveTab('bookings');
           window.location.hash = '#/app/bookings';
         }
-      }, 500);
+      }, 300);
     } catch (err: any) {
       console.error('[handleDeleteBookingConfirm] Error:', err);
       setDeleteError(err.message || 'Failed to delete booking. Please try again.');
+    } finally {
       setIsDeletingBooking(false);
     }
   };
@@ -2479,11 +2492,21 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
       {/* MODAL 4: DELETE EVENT BOOKING (Studio Owner Only - Requirement 2) */}
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/45 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isDeletingBooking) {
+              setIsDeleteModalOpen(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-white rounded-3xl border border-zinc-200/90 max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div className="flex items-center gap-2.5 text-rose-600">
-                <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center shrink-0">
                   <Trash2 className="w-5 h-5 text-rose-600" />
                 </div>
                 <div>
@@ -2495,25 +2518,26 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 type="button"
                 disabled={isDeletingBooking}
                 onClick={() => setIsDeleteModalOpen(false)}
-                className="min-w-[44px] min-h-[44px] rounded-xl hover:bg-zinc-100 flex items-center justify-center text-zinc-500 cursor-pointer disabled:opacity-50"
+                className="min-w-[44px] min-h-[44px] rounded-xl hover:bg-zinc-100 flex items-center justify-center text-zinc-500 cursor-pointer disabled:opacity-50 touch-manipulation active:scale-95 transition-transform"
+                aria-label="Close delete confirmation"
               >
-                <X className="w-5 h-5 sm:w-4 sm:h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-3 text-xs text-zinc-600">
+            <div className="space-y-3 text-xs sm:text-sm text-zinc-600">
               <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80 space-y-1.5">
-                <div className="font-bold text-zinc-900 text-sm">{booking.eventName}</div>
-                <div className="text-zinc-500 font-medium">Customer: <strong className="text-zinc-800">{booking.customerName}</strong></div>
-                <div className="text-zinc-500 font-medium">Date: <strong className="text-zinc-800">{booking.mainEventDate || booking.startDate}</strong></div>
+                <div className="font-bold text-zinc-900 text-sm sm:text-base">{booking.eventName}</div>
+                <div className="text-zinc-500 font-medium text-xs sm:text-sm">Customer: <strong className="text-zinc-800">{booking.customerName}</strong></div>
+                <div className="text-zinc-500 font-medium text-xs sm:text-sm">Date: <strong className="text-zinc-800">{booking.mainEventDate || booking.startDate}</strong></div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200 text-rose-900 leading-relaxed">
+              <div className="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200 text-rose-900 leading-relaxed text-xs">
                 <strong>Warning:</strong> Deleting this booking will remove it from active studio schedules, day agenda, and calendar. Financial transactions and audit logs will be securely preserved. This action cannot be undone.
               </div>
 
               {deleteError && (
-                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 font-semibold flex items-center gap-2">
+                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 font-semibold flex items-center gap-2 text-xs">
                   <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
                   <span>{deleteError}</span>
                 </div>
@@ -2525,7 +2549,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 type="button"
                 disabled={isDeletingBooking}
                 onClick={() => setIsDeleteModalOpen(false)}
-                className="w-full sm:w-auto min-h-[48px] sm:min-h-[42px] px-5 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50 text-sm sm:text-xs cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto min-h-[48px] px-5 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50 text-sm cursor-pointer disabled:opacity-50 touch-manipulation active:scale-95"
               >
                 Cancel
               </button>
@@ -2533,7 +2557,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 type="button"
                 disabled={isDeletingBooking}
                 onClick={handleDeleteBookingConfirm}
-                className="w-full sm:w-auto min-h-[50px] sm:min-h-[42px] px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full sm:w-auto min-h-[50px] px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-xs text-sm cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 touch-manipulation"
               >
                 {isDeletingBooking ? (
                   <>

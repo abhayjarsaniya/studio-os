@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { useStudio } from '../context/StudioContext';
 import { unifiedAuthService } from '../services/unifiedAuthService';
@@ -69,6 +69,18 @@ export const CrewMembersPage: React.FC = () => {
   const [editingCrew, setEditingCrew] = useState<Employee | null>(null);
   const [deactivatingCrew, setDeactivatingCrew] = useState<Employee | null>(null);
   const [deletingCrew, setDeletingCrew] = useState<Employee | null>(null);
+
+  // Escape key closes deletingCrew modal
+  useEffect(() => {
+    if (!deletingCrew) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setDeletingCrew(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [deletingCrew]);
   const [assigningCrew, setAssigningCrew] = useState<Employee | null>(null);
   const [selectedEventToAssign, setSelectedEventToAssign] = useState<string>('');
 
@@ -1238,16 +1250,36 @@ export const CrewMembersPage: React.FC = () => {
 
       {/* Delete / Safe Archival Modal */}
       {deletingCrew && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in duration-150">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                <AlertTriangle className="w-5 h-5" />
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setDeletingCrew(null);
+            }
+          }}
+        >
+          <div 
+            className="bg-white rounded-3xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-zinc-900 font-display">Delete or Archive Employee</h3>
+                  <p className="text-xs text-zinc-500 font-mono">{deletingCrew.fullName}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-base font-bold text-zinc-900 font-display">Delete or Archive Employee</h3>
-                <p className="text-xs text-zinc-500">{deletingCrew.fullName}</p>
-              </div>
+              <button
+                type="button"
+                onClick={() => setDeletingCrew(null)}
+                className="min-w-[44px] min-h-[44px] rounded-xl hover:bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-zinc-600 cursor-pointer touch-manipulation active:scale-95"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             {events.some(ev => ev.assignedTeamIds?.includes(deletingCrew.id)) ? (
@@ -1255,8 +1287,8 @@ export const CrewMembersPage: React.FC = () => {
                 <p className="font-bold">
                   Historical Records Detected
                 </p>
-                <p className="text-xs text-amber-800">
-                  This employee is linked to historical shoot assignments. Studio OS policy prohibits destructive deletion of business records. Their login account will be **Archived** instead of deleted, revoking all portal access while preserving your event data.
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  This employee is linked to historical shoot assignments. Studio OS policy prohibits destructive deletion of business records. Their login account will be <strong>Archived</strong> instead of deleted, revoking all portal access while preserving your event data.
                 </p>
               </div>
             ) : (
@@ -1264,22 +1296,24 @@ export const CrewMembersPage: React.FC = () => {
                 <p className="font-semibold">
                   Are you sure you want to delete this employee?
                 </p>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-zinc-500 leading-relaxed">
                   This team member has no historical event records and will be removed from your studio roster.
                 </p>
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-2">
               <button
+                type="button"
                 onClick={() => setDeletingCrew(null)}
-                className="px-4 py-2 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-xs hover:bg-zinc-50 cursor-pointer"
+                className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-xs hover:bg-zinc-50 cursor-pointer touch-manipulation"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={handleConfirmDelete}
-                className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs cursor-pointer transition-colors"
+                className="w-full sm:w-auto min-h-[46px] px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs cursor-pointer transition-colors touch-manipulation active:scale-95 flex items-center justify-center"
               >
                 {events.some(ev => ev.assignedTeamIds?.includes(deletingCrew.id)) ? 'Archive Account Safely' : 'Delete Employee'}
               </button>

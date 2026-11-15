@@ -54,6 +54,25 @@ export const EmployeeDashboardPage: React.FC = () => {
   const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
 
+  // Escape key closes security modal
+  useEffect(() => {
+    if (!isSecurityModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsSecurityModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSecurityModalOpen]);
+
+  // Sync data immediately when studio events/bookings are updated
+  useEffect(() => {
+    const handleDataUpdate = () => setRefreshTrigger(prev => prev + 1);
+    window.addEventListener('studio_data_updated', handleDataUpdate);
+    return () => window.removeEventListener('studio_data_updated', handleDataUpdate);
+  }, []);
+
   const passwordStrength = useMemo(() => {
     if (!newPassword) return null;
     let score = 0;
@@ -594,11 +613,23 @@ export const EmployeeDashboardPage: React.FC = () => {
 
       {/* Security & Password Modal */}
       {isSecurityModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-zinc-200 space-y-5 animate-in fade-in zoom-in-95 duration-150 relative">
+        <div 
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setIsSecurityModalOpen(false);
+              setPasswordError(null);
+              setPasswordSuccess(null);
+            }
+          }}
+        >
+          <div 
+            className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-zinc-200 space-y-5 animate-in zoom-in-95 duration-150 relative max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-700 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0">
                   <KeyRound className="w-5 h-5" />
                 </div>
                 <div>
@@ -607,14 +638,16 @@ export const EmployeeDashboardPage: React.FC = () => {
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => {
                   setIsSecurityModalOpen(false);
                   setPasswordError(null);
                   setPasswordSuccess(null);
                 }}
-                className="p-1 rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 cursor-pointer"
+                className="min-w-[44px] min-h-[44px] rounded-xl text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 flex items-center justify-center cursor-pointer touch-manipulation active:scale-95"
+                aria-label="Close modal"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -716,27 +749,27 @@ export const EmployeeDashboardPage: React.FC = () => {
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-between border-t border-zinc-100">
+              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-zinc-100">
                 <button
                   type="button"
                   onClick={handleSendResetEmail}
-                  className="text-amber-700 hover:underline text-xs sm:text-sm font-semibold cursor-pointer"
+                  className="text-amber-700 hover:underline text-xs sm:text-sm font-semibold cursor-pointer text-left"
                 >
                   Forgot your password?
                 </button>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 justify-end">
                   <button
                     type="button"
                     onClick={() => setIsSecurityModalOpen(false)}
-                    className="px-3 py-2 rounded-xl border border-zinc-200 text-zinc-600 hover:bg-zinc-50 font-semibold cursor-pointer"
+                    className="min-h-[44px] px-4 py-2 rounded-xl border border-zinc-200 text-zinc-600 hover:bg-zinc-50 font-semibold cursor-pointer touch-manipulation text-xs sm:text-sm"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSavingPassword}
-                    className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+                    className="min-h-[44px] px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold transition-all disabled:opacity-50 cursor-pointer shadow-sm touch-manipulation text-xs sm:text-sm"
                   >
                     {isSavingPassword ? 'Updating...' : 'Update Password'}
                   </button>

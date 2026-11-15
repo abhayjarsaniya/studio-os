@@ -44,6 +44,13 @@ export const CalendarPage: React.FC = () => {
     });
   }, [studioId]);
 
+  // Sync calendar immediately whenever a booking/event is created, updated or soft-deleted
+  useEffect(() => {
+    const handleUpdate = () => setDataVersion(v => v + 1);
+    window.addEventListener('studio_data_updated', handleUpdate);
+    return () => window.removeEventListener('studio_data_updated', handleUpdate);
+  }, []);
+
   // Calendar view mode: month, week, day
   const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
   const [ownerScheduleFilter, setOwnerScheduleFilter] = useState<'all' | 'mine'>('all');

@@ -14,6 +14,7 @@ import {
   Plus, 
   CreditCard, 
   CheckCircle2, 
+  CheckCircle,
   Sparkles, 
   ArrowLeft,
   ChevronRight,
@@ -42,6 +43,31 @@ export const BookingsWorkspacePage: React.FC = () => {
   const [deletingBooking, setDeletingBooking] = useState<BookingRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // Listen for Escape key on delete confirmation modal
+  useEffect(() => {
+    if (!deletingBooking) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isDeleting) {
+        setDeletingBooking(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [deletingBooking, isDeleting]);
+
+  // Synchronize state immediately whenever bookings change across tabs/modals
+  useEffect(() => {
+    const handleUpdate = () => setRefreshKey(k => k + 1);
+    window.addEventListener('studio_data_updated', handleUpdate);
+    return () => window.removeEventListener('studio_data_updated', handleUpdate);
+  }, []);
 
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
@@ -81,6 +107,8 @@ export const BookingsWorkspacePage: React.FC = () => {
     if (!deletingBooking || isDeleting) return;
     setIsDeleting(true);
     setDeleteError('');
+    const targetBookingNumber = deletingBooking.bookingNumber;
+    const targetEventName = deletingBooking.eventName;
     try {
       const res = await bookingProductionService.softDeleteBooking(
         studioId,
@@ -93,6 +121,7 @@ export const BookingsWorkspacePage: React.FC = () => {
       }
       setDeletingBooking(null);
       setRefreshKey(k => k + 1);
+      showToast(`Booking ${targetBookingNumber} (${targetEventName}) deleted successfully.`);
     } catch (err: any) {
       console.error('[BookingsWorkspacePage.handleConfirmDelete] Error:', err);
       setDeleteError(err.message || 'Failed to delete booking. Please try again.');
@@ -293,10 +322,11 @@ export const BookingsWorkspacePage: React.FC = () => {
                       e.stopPropagation();
                       setDeletingBooking(b);
                     }}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-rose-600 hover:bg-rose-50 border border-zinc-200 transition-colors"
+                    className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-xl flex items-center justify-center text-zinc-400 hover:text-rose-600 hover:bg-rose-50 border border-zinc-200 transition-colors cursor-pointer touch-manipulation active:scale-95"
                     title="Delete booking"
+                    aria-label={`Delete booking ${b.bookingNumber}`}
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 )}
               </div>
@@ -449,11 +479,21 @@ export const BookingsWorkspacePage: React.FC = () => {
 
       {/* Delete Confirmation Modal (Studio Owner Only - Requirement 2) */}
       {deletingBooking && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/45 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isDeleting) {
+              setDeletingBooking(null);
+            }
+          }}
+        >
+          <div 
+            className="bg-white rounded-3xl border border-zinc-200/90 max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div className="flex items-center gap-2.5 text-rose-600">
-                <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center shrink-0">
                   <Trash2 className="w-5 h-5 text-rose-600" />
                 </div>
                 <div>
@@ -465,25 +505,26 @@ export const BookingsWorkspacePage: React.FC = () => {
                 type="button"
                 disabled={isDeleting}
                 onClick={() => setDeletingBooking(null)}
-                className="min-w-[44px] min-h-[44px] rounded-xl hover:bg-zinc-100 flex items-center justify-center text-zinc-500 cursor-pointer disabled:opacity-50"
+                className="min-w-[44px] min-h-[44px] rounded-xl hover:bg-zinc-100 flex items-center justify-center text-zinc-500 cursor-pointer disabled:opacity-50 touch-manipulation active:scale-95 transition-transform"
+                aria-label="Close delete confirmation"
               >
-                <X className="w-5 h-5 sm:w-4 sm:h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-3 text-xs text-zinc-600">
+            <div className="space-y-3 text-xs sm:text-sm text-zinc-600">
               <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80 space-y-1.5">
-                <div className="font-bold text-zinc-900 text-sm">{deletingBooking.eventName}</div>
-                <div className="text-zinc-500 font-medium">Customer: <strong className="text-zinc-800">{deletingBooking.customerName}</strong></div>
-                <div className="text-zinc-500 font-medium">Date: <strong className="text-zinc-800">{deletingBooking.mainEventDate || deletingBooking.startDate}</strong></div>
+                <div className="font-bold text-zinc-900 text-sm sm:text-base">{deletingBooking.eventName}</div>
+                <div className="text-zinc-500 font-medium text-xs sm:text-sm">Customer: <strong className="text-zinc-800">{deletingBooking.customerName}</strong></div>
+                <div className="text-zinc-500 font-medium text-xs sm:text-sm">Date: <strong className="text-zinc-800">{deletingBooking.mainEventDate || deletingBooking.startDate}</strong></div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200 text-rose-900 leading-relaxed">
+              <div className="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200 text-rose-900 leading-relaxed text-xs">
                 <strong>Warning:</strong> Deleting this booking will remove it from active studio schedules, day agenda, and calendar. Financial transactions and audit logs will be securely preserved. This action cannot be undone.
               </div>
 
               {deleteError && (
-                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 font-semibold flex items-center gap-2">
+                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 font-semibold flex items-center gap-2 text-xs">
                   <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
                   <span>{deleteError}</span>
                 </div>
@@ -495,7 +536,7 @@ export const BookingsWorkspacePage: React.FC = () => {
                 type="button"
                 disabled={isDeleting}
                 onClick={() => setDeletingBooking(null)}
-                className="w-full sm:w-auto min-h-[48px] sm:min-h-[42px] px-5 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50 text-sm sm:text-xs cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto min-h-[48px] px-5 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50 text-sm cursor-pointer disabled:opacity-50 touch-manipulation active:scale-95"
               >
                 Cancel
               </button>
@@ -503,7 +544,7 @@ export const BookingsWorkspacePage: React.FC = () => {
                 type="button"
                 disabled={isDeleting}
                 onClick={handleConfirmDelete}
-                className="w-full sm:w-auto min-h-[50px] sm:min-h-[42px] px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full sm:w-auto min-h-[50px] px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-xs text-sm cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 touch-manipulation"
               >
                 {isDeleting ? (
                   <>
@@ -519,6 +560,14 @@ export const BookingsWorkspacePage: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Immediate Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-zinc-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 text-xs sm:text-sm font-semibold border border-zinc-700 animate-in slide-in-from-bottom-5">
+          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{toastMessage}</span>
         </div>
       )}
     </div>
