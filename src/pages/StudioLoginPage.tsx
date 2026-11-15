@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { unifiedAuthService } from '../services/unifiedAuthService';
 import { Lock, User, ArrowRight, ShieldCheck, Camera, Check, Eye, EyeOff } from 'lucide-react';
+import { ForgotPasswordModal } from '../components/auth/ForgotPasswordModal';
 
 export const StudioLoginPage: React.FC = () => {
   const [identifier, setIdentifier] = useState('shreeji.owner');
   const [password, setPassword] = useState('7FgBK8@TUsxV@H');
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -145,6 +147,16 @@ export const StudioLoginPage: React.FC = () => {
             </div>
           </div>
 
+          <div className="flex justify-end -mt-1">
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(true)}
+              className="text-[11px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
+            >
+              Forgot Password?
+            </button>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -209,6 +221,13 @@ export const StudioLoginPage: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+        portalTitle="Studio Owner"
+        defaultEmail={identifier.includes('@') ? identifier : 'aarav@shreejifilms.in'}
+      />
     </div>
   );
 };

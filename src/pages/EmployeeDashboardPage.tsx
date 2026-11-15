@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { employeeWorkspaceService, EmployeeDashboardMetrics } from '../services/employeeWorkspaceService';
+import { firebaseAuthService } from '../services/firebaseAuthService';
+import { unifiedAuthService } from '../services/unifiedAuthService';
 import { 
   Calendar, 
   Clock, 
@@ -12,7 +14,13 @@ import {
   MapPin, 
   User, 
   ShieldCheck,
-  Check
+  Check,
+  Lock,
+  Eye,
+  EyeOff,
+  KeyRound,
+  X,
+  Sparkles
 } from 'lucide-react';
 
 export const EmployeeDashboardPage: React.FC = () => {
@@ -27,6 +35,92 @@ export const EmployeeDashboardPage: React.FC = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<'overview' | 'events' | 'tasks'>('overview');
+
+  // Security Modal State
+  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+
+  const passwordStrength = useMemo(() => {
+    if (!newPassword) return null;
+    let score = 0;
+    if (newPassword.length >= 8) score++;
+    if (/[A-Z]/.test(newPassword)) score++;
+    if (/[0-9]/.test(newPassword)) score++;
+    if (/[^A-Za-z0-9]/.test(newPassword)) score++;
+
+    if (score <= 1) return { label: 'Weak', color: 'bg-rose-500', text: 'text-rose-600' };
+    if (score <= 3) return { label: 'Moderate', color: 'bg-amber-500', text: 'text-amber-600' };
+    return { label: 'Strong', color: 'bg-emerald-500', text: 'text-emerald-600' };
+  }, [newPassword]);
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError(null);
+    setPasswordSuccess(null);
+
+    if (newPassword.length < 8) {
+      setPasswordError('New password must be at least 8 characters long.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New passwords do not match.');
+      return;
+    }
+
+    setIsSavingPassword(true);
+    try {
+      const session = unifiedAuthService.getCurrentSession();
+      const accountId = session?.account?.id || `usr_${employeeId}`;
+
+      const res = await firebaseAuthService.reauthenticateAndChangePassword(
+        currentPassword,
+        newPassword,
+        accountId
+      );
+
+      if (!res.success) {
+        setPasswordError(res.error || 'Failed to update password.');
+      } else {
+        setPasswordSuccess('Password successfully updated! You can now use this password permanently.');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setTimeout(() => {
+          setPasswordSuccess(null);
+          setIsSecurityModalOpen(false);
+        }, 3000);
+      }
+    } catch (err: any) {
+      setPasswordError(err.message || 'An error occurred while changing password.');
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
+
+  const handleSendResetEmail = async () => {
+    try {
+      const session = unifiedAuthService.getCurrentSession();
+      const email = session?.account?.email || `${employeeId}@shreejifilms.in`;
+      const res = await firebaseAuthService.sendPasswordReset(email);
+      if (res.success) {
+        setResetEmailSent(true);
+        setTimeout(() => setResetEmailSent(false), 5000);
+      } else {
+        alert(res.error || 'Failed to dispatch reset email.');
+      }
+    } catch (e: any) {
+      alert(e.message || 'Error dispatching reset email.');
+    }
+  };
 
   const loadDashboard = () => {
     try {
@@ -117,6 +211,14 @@ export const EmployeeDashboardPage: React.FC = () => {
               {actionSuccess}
             </span>
           )}
+
+          <button
+            onClick={() => setIsSecurityModalOpen(true)}
+            className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-zinc-100 text-zinc-700 border border-zinc-200 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+          >
+            <KeyRound className="w-4 h-4 text-amber-500" />
+            <span className="hidden sm:inline">Security & Password</span>
+          </button>
 
           <button
             onClick={handleLogout}
@@ -405,6 +507,161 @@ export const EmployeeDashboardPage: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Security & Password Modal */}
+      {isSecurityModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-zinc-200 space-y-5 animate-in fade-in zoom-in-95 duration-150 relative">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-700 flex items-center justify-center">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-zinc-900 font-display">Security & Password</h3>
+                  <p className="text-xs text-zinc-500">Update your employee portal sign-in password.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setIsSecurityModalOpen(false);
+                  setPasswordError(null);
+                  setPasswordSuccess(null);
+                }}
+                className="p-1 rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {passwordError && (
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{passwordError}</span>
+              </div>
+            )}
+
+            {passwordSuccess && (
+              <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{passwordSuccess}</span>
+              </div>
+            )}
+
+            {resetEmailSent && (
+              <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Password reset link sent to your registered email!</span>
+              </div>
+            )}
+
+            <form onSubmit={handlePasswordSubmit} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">
+                  Current Password *
+                </label>
+                <div className="relative">
+                  <input
+                    type={showCurrentPass ? 'text' : 'password'}
+                    required
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    placeholder="Enter your current password"
+                    className="w-full pl-3 pr-10 py-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-amber-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPass(!showCurrentPass)}
+                    className="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-600 cursor-pointer"
+                  >
+                    {showCurrentPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">
+                  New Password *
+                </label>
+                <div className="relative">
+                  <input
+                    type={showNewPass ? 'text' : 'password'}
+                    required
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    placeholder="At least 8 characters"
+                    className="w-full pl-3 pr-10 py-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-amber-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPass(!showNewPass)}
+                    className="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-600 cursor-pointer"
+                  >
+                    {showNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                {passwordStrength && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="flex-1 h-1.5 rounded-full bg-zinc-100 overflow-hidden">
+                      <div
+                        className={`h-full ${passwordStrength.color} transition-all`}
+                        style={{
+                          width: passwordStrength.label === 'Strong' ? '100%' : passwordStrength.label === 'Moderate' ? '60%' : '30%'
+                        }}
+                      />
+                    </div>
+                    <span className={`text-[10px] font-bold ${passwordStrength.text}`}>
+                      {passwordStrength.label}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">
+                  Confirm New Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter new password"
+                  className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-between border-t border-zinc-100">
+                <button
+                  type="button"
+                  onClick={handleSendResetEmail}
+                  className="text-amber-700 hover:underline text-[11px] font-semibold cursor-pointer"
+                >
+                  Forgot your password?
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsSecurityModalOpen(false)}
+                    className="px-3 py-2 rounded-xl border border-zinc-200 text-zinc-600 hover:bg-zinc-50 font-semibold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSavingPassword}
+                    className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+                  >
+                    {isSavingPassword ? 'Updating...' : 'Update Password'}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

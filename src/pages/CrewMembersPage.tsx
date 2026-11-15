@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { useStudio } from '../context/StudioContext';
 import { unifiedAuthService } from '../services/unifiedAuthService';
+import { firebaseAuthService } from '../services/firebaseAuthService';
 import { Employee, EmploymentStatus } from '../types';
 import { 
   Users, 
@@ -35,7 +36,8 @@ import {
   AlertTriangle,
   Send,
   MoreVertical,
-  CheckSquare
+  CheckSquare,
+  Share2
 } from 'lucide-react';
 
 export type CrewType = 'Permanent Employee' | 'Freelance Crew' | 'External Supplier' | 'Partner Studio Crew';
@@ -110,9 +112,12 @@ export const CrewMembersPage: React.FC = () => {
     username: string;
     password: string;
     loginUrl: string;
+    phone?: string;
+    email?: string;
     isReset?: boolean;
   } | null>(null);
-  const [copiedKey, setCopiedKey] = useState(false);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
 
   // Filtered Crew Members
   const filteredCrew = useMemo(() => {
@@ -216,6 +221,8 @@ export const CrewMembersPage: React.FC = () => {
         username: generatedUsername,
         password: tempPassword,
         loginUrl: `${window.location.origin}/#/employee/login`,
+        phone: formData.mobile || formData.whatsapp,
+        email: formData.email,
         isReset: false
       });
     }
@@ -366,6 +373,8 @@ export const CrewMembersPage: React.FC = () => {
       username,
       password: newTempPassword,
       loginUrl: `${window.location.origin}/#/employee/login`,
+      phone: emp.phone || (emp as any).whatsapp,
+      email: emp.email,
       isReset: true
     });
   };
@@ -389,12 +398,46 @@ export const CrewMembersPage: React.FC = () => {
   };
 
   // Copy credentials
-  const handleCopyCredentials = () => {
+  const handleCopyCredentials = (key?: string) => {
     if (!generatedCreds) return;
-    const text = `Studio OS Crew Login Credentials\nName: ${generatedCreds.name}\nUsername / Email: ${generatedCreds.username}\nTemporary Password: ${generatedCreds.password}\nLogin Portal: ${generatedCreds.loginUrl}`;
-    navigator.clipboard.writeText(text);
-    setCopiedKey(true);
-    setTimeout(() => setCopiedKey(false), 2000);
+    if (key === 'user') {
+      navigator.clipboard.writeText(generatedCreds.username);
+      setCopiedKey('user');
+    } else if (key === 'pass') {
+      navigator.clipboard.writeText(generatedCreds.password);
+      setCopiedKey('pass');
+    } else if (key === 'url') {
+      navigator.clipboard.writeText(generatedCreds.loginUrl);
+      setCopiedKey('url');
+    } else {
+      const text = `=== STUDIO OS CREW LOGIN CREDENTIALS ===\nEmployee: ${generatedCreds.name}\nLogin Portal: ${generatedCreds.loginUrl}\nUsername / Email: ${generatedCreds.username}\nTemporary Password: ${generatedCreds.password}\n\nPlease keep these login details secure. You can update your password from Security & Password in the portal.`;
+      navigator.clipboard.writeText(text);
+      setCopiedKey('all');
+    }
+    setTimeout(() => setCopiedKey(null), 2500);
+  };
+
+  const handleShareWhatsAppCrew = () => {
+    if (!generatedCreds) return;
+    const cleanPhone = (generatedCreds.phone || '').replace(/[^0-9]/g, '');
+    const msg = `Hello ${generatedCreds.name},\n\nYour Studio OS employee portal login details:\n\nPortal: ${generatedCreds.loginUrl}\nUsername / Email: ${generatedCreds.username}\nTemporary Password: ${generatedCreds.password}\n\nPlease keep these details secure. You can update your password anytime from Security & Password in the portal.`;
+    const url = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}` : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  };
+
+  const handleSendResetEmailCrew = async () => {
+    if (!generatedCreds?.email) return;
+    try {
+      const res = await firebaseAuthService.sendPasswordReset(generatedCreds.email);
+      if (res.success) {
+        setResetEmailSent(true);
+        setTimeout(() => setResetEmailSent(false), 4000);
+      } else {
+        alert(res.error || 'Failed to dispatch reset email.');
+      }
+    } catch (e: any) {
+      alert(e.message || 'Error dispatching reset email.');
+    }
   };
 
   // Get assignments for selected crew
@@ -1248,57 +1291,120 @@ export const CrewMembersPage: React.FC = () => {
       {/* Generated Credentials Modal (Add or Reset) */}
       {generatedCreds && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5" />
+          <div className="bg-white rounded-3xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-zinc-900 font-display">
+                    {generatedCreds.isReset ? 'Password Reset Generated' : 'Employee Account Provisioned'}
+                  </h3>
+                  <p className="text-xs text-zinc-500">Official Crew Login Handover</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-base font-bold text-zinc-900 font-display">
-                  {generatedCreds.isReset ? 'Password Reset Generated' : 'Employee Account Provisioned'}
-                </h3>
-                <p className="text-xs text-zinc-500">Provide these credentials securely to the employee.</p>
-              </div>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200 space-y-2 text-xs font-mono">
-              <div className="flex items-center justify-between">
-                <span className="text-zinc-500">Employee:</span>
-                <span className="font-bold text-zinc-900">{generatedCreds.name}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-zinc-500">Username / Email:</span>
-                <span className="font-bold text-indigo-700">{generatedCreds.username}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-zinc-500">Temporary Password:</span>
-                <span className="font-bold text-rose-700">{generatedCreds.password}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-zinc-500">Login Portal:</span>
-                <span className="text-zinc-600 truncate max-w-[200px]">{generatedCreds.loginUrl}</span>
-              </div>
-            </div>
-
-            <p className="text-[11px] text-zinc-500">
-              Note: The employee will be required to create a new password on their first login.
-            </p>
-
-            <div className="flex items-center gap-2 pt-2">
-              <button
-                onClick={handleCopyCredentials}
-                className="flex-1 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-              >
-                {copiedKey ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                <span>{copiedKey ? 'Copied to Clipboard!' : 'Copy Credentials'}</span>
-              </button>
               <button
                 onClick={() => setGeneratedCreds(null)}
-                className="px-4 py-2.5 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-xs hover:bg-zinc-100 cursor-pointer"
+                className="p-1 rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 cursor-pointer"
               >
-                Done
+                <X className="w-4 h-4" />
               </button>
             </div>
+
+            {resetEmailSent && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>Password reset link sent to {generatedCreds.email}!</span>
+              </div>
+            )}
+
+            <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2.5 text-xs font-mono">
+              <div className="flex items-center justify-between pb-1.5 border-b border-zinc-200/60 font-sans">
+                <span className="text-zinc-400 text-[11px] uppercase font-bold">Crew Member</span>
+                <span className="font-bold text-zinc-900 text-xs">{generatedCreds.name}</span>
+              </div>
+
+              <div className="flex items-center justify-between py-0.5">
+                <span className="text-zinc-500 font-sans">Login Portal:</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-zinc-800 truncate max-w-[180px] text-[11px]">{generatedCreds.loginUrl}</span>
+                  <button
+                    onClick={() => handleCopyCredentials('url')}
+                    className="p-1 hover:bg-zinc-200 rounded text-zinc-600 cursor-pointer"
+                    title="Copy Login Portal URL"
+                  >
+                    {copiedKey === 'url' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between py-0.5">
+                <span className="text-zinc-500 font-sans">Username / Email:</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-indigo-700">{generatedCreds.username}</span>
+                  <button
+                    onClick={() => handleCopyCredentials('user')}
+                    className="p-1 hover:bg-zinc-200 rounded text-zinc-600 cursor-pointer"
+                    title="Copy Username"
+                  >
+                    {copiedKey === 'user' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between py-1 px-2 bg-amber-50 rounded-xl border border-amber-200/70">
+                <span className="text-amber-900 font-sans font-semibold">Temporary Password:</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-amber-950 bg-white px-2 py-0.5 rounded border border-amber-300">
+                    {generatedCreds.password}
+                  </span>
+                  <button
+                    onClick={() => handleCopyCredentials('pass')}
+                    className="p-1 hover:bg-amber-200 rounded text-amber-900 cursor-pointer"
+                    title="Copy Temporary Password"
+                  >
+                    {copiedKey === 'pass' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-zinc-500 font-sans leading-relaxed">
+              <strong>Security note:</strong> The employee can sign in immediately and update their password from Security & Password in the portal, or request a password reset anytime.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-sans">
+              <button
+                onClick={() => handleCopyCredentials('all')}
+                className="py-2.5 px-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              >
+                {copiedKey === 'all' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                <span>{copiedKey === 'all' ? 'Details Copied!' : 'Copy All Details'}</span>
+              </button>
+
+              <button
+                onClick={handleShareWhatsAppCrew}
+                className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              >
+                <Share2 className="w-4 h-4" />
+                <span>Share WhatsApp</span>
+              </button>
+
+              {generatedCreds.email && (
+                <button
+                  onClick={handleSendResetEmailCrew}
+                  className="py-2 px-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer sm:col-span-2 border border-zinc-200"
+                >
+                  <Mail className="w-3.5 h-3.5 text-zinc-600" />
+                  <span>Send Reset Email to {generatedCreds.email}</span>
+                </button>
+              )}
+            </div>
+
+            <p className="text-[10px] text-zinc-400 text-center font-sans">
+              WhatsApp click-to-chat opens with prefilled text. Press Send in WhatsApp.
+            </p>
           </div>
         </div>
       )}

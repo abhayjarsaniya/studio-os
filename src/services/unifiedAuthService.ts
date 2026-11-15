@@ -273,6 +273,30 @@ export class UnifiedAuthService {
           this.saveAccount(existingEmp);
         }
       }
+
+      // Sanitize all established accounts so mustChangePassword is permanently false
+      const allAccs = this.listStoredAccounts();
+      let modifiedAccs = false;
+      for (const a of allAccs) {
+        if (a.mustChangePassword) {
+          a.mustChangePassword = false;
+          modifiedAccs = true;
+        }
+      }
+      if (modifiedAccs) {
+        TenantStore.set('platform_system', GLOBAL_ACCOUNTS_KEY, allAccs);
+      }
+
+      // Sanitize active sessions
+      const activeSessions = TenantStore.get<UserSession>('platform_system', ACTIVE_SESSIONS_KEY) || [];
+      const updatedSessions = activeSessions.map(s => ({
+        ...s,
+        account: {
+          ...s.account,
+          mustChangePassword: false
+        }
+      }));
+      TenantStore.set('platform_system', ACTIVE_SESSIONS_KEY, updatedSessions);
     } catch (e) {
       // In-memory / test environment safe fallback
     }
@@ -652,12 +676,49 @@ export class UnifiedAuthService {
     }
 
     const salt = generateCryptoSalt();
-    account.passwordHash = hashCredential(newPassword, salt);
+    const newHash = hashCredential(newPassword, salt);
+    account.passwordHash = newHash;
     account.salt = salt;
     account.mustChangePassword = false;
+    (account as any).hasChangedPassword = true;
     account.updatedAt = new Date().toISOString();
 
     this.saveAccount(account);
+
+    // Also update any alias accounts with matching email or username so authentication succeeds uniformly
+    const allStored = this.listStoredAccounts();
+    let aliasesUpdated = false;
+    for (const other of allStored) {
+      if (other.id !== account.id && (other.email?.toLowerCase() === account.email?.toLowerCase() || other.loginId?.toLowerCase() === account.loginId?.toLowerCase())) {
+        other.passwordHash = newHash;
+        other.salt = salt;
+        other.mustChangePassword = false;
+        (other as any).hasChangedPassword = true;
+        other.updatedAt = account.updatedAt;
+        aliasesUpdated = true;
+      }
+    }
+    if (aliasesUpdated) {
+      TenantStore.set('platform_system', GLOBAL_ACCOUNTS_KEY, allStored);
+    }
+
+    // Update any active sessions for this account so mustChangePassword becomes false immediately
+    const activeSessions = TenantStore.get<UserSession>('platform_system', ACTIVE_SESSIONS_KEY) || [];
+    const updatedSessions = activeSessions.map(s => {
+      if (s.account.id === accountId || s.account.loginId === account.loginId || s.account.email === account.email) {
+        return {
+          ...s,
+          account: {
+            ...s.account,
+            mustChangePassword: false,
+            updatedAt: account.updatedAt
+          }
+        };
+      }
+      return s;
+    });
+    TenantStore.set('platform_system', ACTIVE_SESSIONS_KEY, updatedSessions);
+
     return true;
   }
 

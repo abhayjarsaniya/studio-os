@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useStudio } from '../context/StudioContext';
 import { unifiedAuthService } from '../services/unifiedAuthService';
+import { firebaseAuthService } from '../services/firebaseAuthService';
 import { studioService } from '../services/studioService';
 import { 
   Building2, 
@@ -17,20 +18,25 @@ import {
   MapPin,
   Globe,
   Upload,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  Shield,
+  HelpCircle
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const { studio, currentUser } = useApp();
   const { currentStudio, refreshStudioData } = useStudio();
 
-  // Tab: profile | password
-  const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
+  // Tab: profile | security
+  const [activeTab, setActiveTab] = useState<'profile' | 'security'>('profile');
 
   // Profile Form State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({
-    name: studio.name || currentStudio.name || 'SHREEJI STUDIO',
+    name: studio.name || currentStudio.name || 'SHREEJI FILMS AND PHOTOGRAPHY',
     tagline: studio.tagline || currentStudio.tagline || '',
     phone: studio.phone || currentStudio.phone || '',
     email: studio.email || currentStudio.email || '',
@@ -38,19 +44,24 @@ export const SettingsPage: React.FC = () => {
     city: studio.city || currentStudio.city || '',
     gstNumber: studio.gstNumber || currentStudio.gstNumber || '',
     logoUrl: currentStudio.logoUrl || studio.logo || '/shreeji-logo.svg',
-    website: studio.website || 'https://shreejistudio.in',
+    website: studio.website || 'https://shreejifilms.in',
     businessHours: '09:00 AM - 08:00 PM (Mon-Sat)'
   });
   const [profileSaved, setProfileSaved] = useState(false);
 
-  // Password Form State
+  // Security & Password Form State
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [resetSentNotice, setResetSentNotice] = useState<string | null>(null);
 
   const handleLogoFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -87,39 +98,86 @@ export const SettingsPage: React.FC = () => {
     setTimeout(() => setProfileSaved(false), 2500);
   };
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  // Password strength calculation
+  const getPasswordStrength = (pass: string) => {
+    if (!pass) return { score: 0, label: 'None', color: 'bg-zinc-200' };
+    let score = 0;
+    if (pass.length >= 8) score++;
+    if (pass.length >= 12) score++;
+    if (/[A-Z]/.test(pass) && /[a-z]/.test(pass)) score++;
+    if (/[0-9]/.test(pass)) score++;
+    if (/[!@#$%&*]/.test(pass)) score++;
+
+    if (score <= 2) return { score, label: 'Weak', color: 'bg-rose-500' };
+    if (score <= 4) return { score, label: 'Moderate', color: 'bg-amber-500' };
+    return { score, label: 'Strong', color: 'bg-emerald-500' };
+  };
+
+  const passwordStrength = getPasswordStrength(passwordForm.newPassword);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordSuccess(null);
     setPasswordError(null);
+    setResetSentNotice(null);
 
-    if (passwordForm.newPassword.length < 6) {
-      setPasswordError('New password must be at least 6 characters.');
+    if (!passwordForm.currentPassword) {
+      setPasswordError('Please enter your current password.');
       return;
     }
+
+    if (passwordForm.newPassword.length < 8) {
+      setPasswordError('New password must be at least 8 characters long.');
+      return;
+    }
+
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setPasswordError('Passwords do not match.');
+      setPasswordError('New passwords do not match. Please re-type.');
       return;
     }
+
+    setIsUpdatingPassword(true);
 
     try {
       const accountId = currentUser.id.startsWith('usr_') ? currentUser.id : `usr_${currentUser.id}`;
-      // Fallback search in unifiedAuthService
       const acc = unifiedAuthService.findAccountByIdentifier(currentUser.email || currentUser.name, currentStudio.id);
       const targetId = acc ? acc.id : accountId;
 
-      unifiedAuthService.changePassword(targetId, passwordForm.newPassword);
-      setPasswordSuccess('Password successfully updated!');
-      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      setTimeout(() => setPasswordSuccess(null), 3000);
+      const res = await firebaseAuthService.reauthenticateAndChangePassword(
+        passwordForm.currentPassword,
+        passwordForm.newPassword,
+        targetId
+      );
+
+      if (res.success) {
+        setPasswordSuccess('Password Updated Successfully! Your account credentials have been updated.');
+        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      } else {
+        setPasswordError(res.error || 'Failed to update password. Please check your current password.');
+      }
     } catch (err: any) {
       setPasswordError(err.message || 'Failed to update password.');
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    const email = currentUser.email || profileForm.email || 'aarav@shreejifilms.in';
+    try {
+      const res = await firebaseAuthService.sendPasswordReset(email);
+      if (res.success) {
+        setResetSentNotice(`A password reset link has been dispatched to ${email}. Check your inbox.`);
+      } else {
+        setPasswordError(res.error || 'Unable to send password reset email.');
+      }
+    } catch (e: any) {
+      setPasswordError(e.message || 'Failed to dispatch reset email.');
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('studio_os_session_token');
-    localStorage.removeItem('studio_os_user_role');
-    window.location.hash = '#/studio/login';
+    firebaseAuthService.logout();
   };
 
   return (
@@ -128,10 +186,10 @@ export const SettingsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-zinc-900 font-display">
-            Studio Profile & Account
+            Studio Profile & Settings
           </h2>
           <p className="text-xs text-zinc-500 mt-0.5">
-            Manage your studio contact information, update account password, or log out.
+            Manage your studio contact details, security credentials, and system settings.
           </p>
         </div>
 
@@ -159,15 +217,15 @@ export const SettingsPage: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('password')}
+          onClick={() => setActiveTab('security')}
           className={`pb-2.5 px-3 border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
-            activeTab === 'password'
+            activeTab === 'security'
               ? 'border-zinc-900 text-zinc-900'
               : 'border-transparent text-zinc-500 hover:text-zinc-800'
           }`}
         >
-          <KeyRound className="w-4 h-4" />
-          <span>Change Password</span>
+          <Shield className="w-4 h-4" />
+          <span>Security & Password</span>
         </button>
       </div>
 
@@ -180,23 +238,17 @@ export const SettingsPage: React.FC = () => {
                 Studio Business Details
               </h3>
               <p className="text-xs text-zinc-500 mt-0.5">
-                Printed on quotations, customer agreements, and official receipts
+                These details will appear on client estimates, quotations, and official invoices.
               </p>
             </div>
-
-            {!isEditingProfile ? (
+            {!isEditingProfile && (
               <button
-                type="button"
                 onClick={() => setIsEditingProfile(true)}
-                className="px-3 py-1.5 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-zinc-700 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
               >
                 <Edit3 className="w-3.5 h-3.5" />
                 <span>Edit Profile</span>
               </button>
-            ) : (
-              <span className="text-[11px] text-amber-600 font-bold">
-                Editing Mode Active
-              </span>
             )}
           </div>
 
@@ -211,235 +263,321 @@ export const SettingsPage: React.FC = () => {
             <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-zinc-700 font-semibold mb-1">Studio Brand Name</label>
+                  <label className="block text-zinc-700 font-semibold mb-1">Studio Brand Name *</label>
                   <input
                     type="text"
+                    required
                     value={profileForm.name}
                     onChange={e => setProfileForm({ ...profileForm, name: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900 font-bold"
-                    required
+                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-zinc-700 font-semibold mb-1">Business Tagline</label>
+                  <label className="block text-zinc-700 font-semibold mb-1">Tagline</label>
                   <input
                     type="text"
                     value={profileForm.tagline}
                     onChange={e => setProfileForm({ ...profileForm, tagline: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
+                    placeholder="e.g. Wedding Films & Candid Photography"
+                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-zinc-700 font-semibold mb-1">Official Mobile / WhatsApp</label>
+                  <label className="block text-zinc-700 font-semibold mb-1">Official Mobile / WhatsApp *</label>
                   <input
-                    type="text"
+                    type="tel"
+                    required
                     value={profileForm.phone}
                     onChange={e => setProfileForm({ ...profileForm, phone: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900 font-mono"
-                    required
+                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-zinc-700 font-semibold mb-1">Official Studio Email</label>
+                  <label className="block text-zinc-700 font-semibold mb-1">Official Studio Email *</label>
                   <input
                     type="email"
+                    required
                     value={profileForm.email}
                     onChange={e => setProfileForm({ ...profileForm, email: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
-                    required
+                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-zinc-700 font-semibold mb-1">City & State</label>
+                  <label className="block text-zinc-700 font-semibold mb-1">City *</label>
                   <input
                     type="text"
+                    required
                     value={profileForm.city}
                     onChange={e => setProfileForm({ ...profileForm, city: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
+                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-zinc-700 font-semibold mb-1">GSTIN (Optional)</label>
+                  <label className="block text-zinc-700 font-semibold mb-1">GST Number (Optional)</label>
                   <input
                     type="text"
                     value={profileForm.gstNumber}
-                    onChange={e => setProfileForm({ ...profileForm, gstNumber: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900 font-mono"
+                    onChange={e => setProfileForm({ ...profileForm, gstNumber: e.target.value.toUpperCase() })}
+                    placeholder="24AAACR1234D1Z5"
+                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl font-mono focus:bg-white focus:outline-none focus:border-zinc-900"
                   />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block text-zinc-700 font-semibold mb-1">Studio Address / Landmark</label>
-                  <input
-                    type="text"
-                    value={profileForm.address}
-                    onChange={e => setProfileForm({ ...profileForm, address: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
-                  />
-                </div>
-
-                {/* Studio Logo Upload */}
-                <div className="sm:col-span-2 p-3.5 rounded-2xl bg-zinc-100/70 border border-zinc-200">
-                  <label className="block text-zinc-700 font-semibold mb-1.5">Studio Logo & Brand Emblem</label>
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
-                      {profileForm.logoUrl ? (
-                        <img src={profileForm.logoUrl} alt="Logo Preview" className="w-full h-full object-contain p-1" />
-                      ) : (
-                        <Building2 className="w-6 h-6 text-amber-400" />
-                      )}
-                    </div>
-                    <div className="flex-1 space-y-1.5">
-                      <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-800 text-xs font-semibold cursor-pointer transition-all shadow-xs">
-                        <Upload className="w-3.5 h-3.5 text-zinc-600" />
-                        <span>Upload New Logo</span>
-                        <input type="file" accept="image/*" onChange={handleLogoFileUpload} className="hidden" />
-                      </label>
-                      <p className="text-[10px] text-zinc-500">Supports PNG, JPG, or SVG vector. Tenant-isolated to your studio.</p>
-                    </div>
-                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 pt-3">
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>Save Changes</span>
-                </button>
+              <div>
+                <label className="block text-zinc-700 font-semibold mb-1">Studio Address</label>
+                <textarea
+                  rows={2}
+                  value={profileForm.address}
+                  onChange={e => setProfileForm({ ...profileForm, address: e.target.value })}
+                  className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-zinc-700 font-semibold mb-1">Logo URL or Upload</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    value={profileForm.logoUrl}
+                    onChange={e => setProfileForm({ ...profileForm, logoUrl: e.target.value })}
+                    placeholder="https://..."
+                    className="flex-1 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900 font-mono text-[11px]"
+                  />
+                  <label className="px-3 py-2 bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 rounded-xl cursor-pointer flex items-center gap-1.5 font-bold">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload</span>
+                    <input type="file" accept="image/*" onChange={handleLogoFileUpload} className="hidden" />
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
                 <button
                   type="button"
                   onClick={() => setIsEditingProfile(false)}
-                  className="px-4 py-2.5 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-zinc-700 font-semibold text-xs transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold transition-all"
                 >
                   Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold shadow-sm transition-all"
+                >
+                  Save Changes
                 </button>
               </div>
             </form>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80">
-                <span className="text-zinc-400 block text-[10px] font-bold uppercase tracking-wider">Studio Name</span>
-                <div className="font-bold text-sm text-zinc-900 mt-0.5">{profileForm.name}</div>
-                <div className="text-zinc-500 text-[11px] mt-0.5">{profileForm.tagline}</div>
+            <div className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200">
+                  <span className="text-zinc-400 block text-[10px] font-bold uppercase tracking-wider">Studio Name</span>
+                  <div className="text-sm font-bold text-zinc-900 mt-0.5">{profileForm.name}</div>
+                  {profileForm.tagline && <div className="text-zinc-500 text-[11px] mt-0.5 italic">{profileForm.tagline}</div>}
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200">
+                  <span className="text-zinc-400 block text-[10px] font-bold uppercase tracking-wider">Contact Phone</span>
+                  <div className="text-xs font-semibold text-zinc-800 mt-0.5 flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-zinc-400" />
+                    <span>{profileForm.phone}</span>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200">
+                  <span className="text-zinc-400 block text-[10px] font-bold uppercase tracking-wider">Official Email</span>
+                  <div className="text-xs font-semibold text-zinc-800 mt-0.5 flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-zinc-400" />
+                    <span>{profileForm.email}</span>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200">
+                  <span className="text-zinc-400 block text-[10px] font-bold uppercase tracking-wider">Location</span>
+                  <div className="text-xs font-semibold text-zinc-800 mt-0.5 flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-zinc-400" />
+                    <span>{profileForm.city}, {profileForm.address || 'Flagship Studio'}</span>
+                  </div>
+                </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80">
-                <span className="text-zinc-400 block text-[10px] font-bold uppercase tracking-wider">Contact & WhatsApp</span>
-                <div className="font-mono font-bold text-zinc-900 mt-0.5 flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-zinc-500" />
-                  <span>{profileForm.phone}</span>
+              {profileForm.gstNumber && (
+                <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200">
+                  <span className="text-zinc-400 block text-[10px] font-bold uppercase tracking-wider">Tax GSTIN</span>
+                  <div className="text-xs font-mono font-bold text-zinc-900 mt-0.5">{profileForm.gstNumber}</div>
                 </div>
-                <div className="text-zinc-600 text-[11px] mt-1 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-zinc-400" />
-                  <span>{profileForm.email}</span>
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80">
-                <span className="text-zinc-400 block text-[10px] font-bold uppercase tracking-wider">Address & Location</span>
-                <div className="text-zinc-800 mt-0.5 flex items-start gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
-                  <span>{profileForm.address}, {profileForm.city}</span>
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80">
-                <span className="text-zinc-400 block text-[10px] font-bold uppercase tracking-wider">Tax Registration (GSTIN)</span>
-                <div className="font-mono font-bold text-zinc-800 mt-0.5">
-                  {profileForm.gstNumber || 'Not registered / Composition'}
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80 sm:col-span-2 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
-                  {profileForm.logoUrl ? (
-                    <img src={profileForm.logoUrl} alt={profileForm.name} className="w-full h-full object-contain p-1" />
-                  ) : (
-                    <Building2 className="w-6 h-6 text-amber-400" />
-                  )}
-                </div>
-                <div>
-                  <span className="text-zinc-400 block text-[10px] font-bold uppercase tracking-wider">Brand Logo Emblem</span>
-                  <div className="text-xs font-semibold text-zinc-800 mt-0.5">Shreeji Studio brand identity configured</div>
-                </div>
-              </div>
+              )}
             </div>
           )}
         </div>
       )}
 
-      {/* TAB 2: CHANGE PASSWORD */}
-      {activeTab === 'password' && (
+      {/* TAB 2: SECURITY & PASSWORD */}
+      {activeTab === 'security' && (
         <div className="p-6 rounded-3xl bg-white border border-zinc-200 shadow-xs space-y-6">
-          <div className="pb-4 border-b border-zinc-100">
-            <h3 className="font-bold text-sm text-zinc-900 font-display">
-              Change Account Password
-            </h3>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              Update your individual Studio Owner sign-in password. Passwords are never stored in plaintext.
-            </p>
+          <div className="pb-4 border-b border-zinc-100 flex items-start justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                <h3 className="font-bold text-sm text-zinc-900 font-display">
+                  Security & Password
+                </h3>
+              </div>
+              <p className="text-xs text-zinc-500 mt-1">
+                Update your Studio Owner credentials. Once changed, you can continue logging in permanently with no repeated reset prompts.
+              </p>
+            </div>
           </div>
 
           {passwordSuccess && (
-            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2.5">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
               <span>{passwordSuccess}</span>
             </div>
           )}
 
           {passwordError && (
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold">
-              {passwordError}
+            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>{passwordError}</span>
+            </div>
+          )}
+
+          {resetSentNotice && (
+            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center gap-2">
+              <Mail className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>{resetSentNotice}</span>
             </div>
           )}
 
           <form onSubmit={handleChangePassword} className="space-y-4 max-w-md text-xs">
+            {/* Field 1: Current Password */}
             <div>
-              <label className="block text-zinc-700 font-semibold mb-1">New Password (min 6 characters)</label>
+              <label className="block text-zinc-700 font-semibold mb-1">Current Password *</label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
                 <input
-                  type="password"
-                  value={passwordForm.newPassword}
-                  onChange={e => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                  placeholder="Enter new password"
-                  className="w-full pl-9 pr-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
+                  type={showCurrentPassword ? 'text' : 'password'}
+                  value={passwordForm.currentPassword}
+                  onChange={e => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                  placeholder="Enter your current password"
+                  className="w-full pl-9 pr-10 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="absolute right-3 top-3 text-zinc-400 hover:text-zinc-600 cursor-pointer p-0.5"
+                  aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
+            {/* Field 2: New Password */}
             <div>
-              <label className="block text-zinc-700 font-semibold mb-1">Confirm New Password</label>
+              <label className="block text-zinc-700 font-semibold mb-1">New Password (min 8 characters) *</label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
                 <input
-                  type="password"
+                  type={showNewPassword ? 'text' : 'password'}
+                  value={passwordForm.newPassword}
+                  onChange={e => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                  placeholder="Enter strong new password"
+                  className="w-full pl-9 pr-10 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-3 text-zinc-400 hover:text-zinc-600 cursor-pointer p-0.5"
+                  aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {/* Strength Indicator */}
+              {passwordForm.newPassword && (
+                <div className="mt-2 space-y-1">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-zinc-500">Password Strength:</span>
+                    <span className="font-bold text-zinc-700">{passwordStrength.label}</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-zinc-100 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-300 ${passwordStrength.color}`}
+                      style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Field 3: Confirm New Password */}
+            <div>
+              <label className="block text-zinc-700 font-semibold mb-1">Confirm New Password *</label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
                   value={passwordForm.confirmPassword}
                   onChange={e => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                   placeholder="Re-enter new password"
-                  className="w-full pl-9 pr-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
+                  className="w-full pl-9 pr-10 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-3 text-zinc-400 hover:text-zinc-600 cursor-pointer p-0.5"
+                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="py-2.5 px-5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm"
-            >
-              <KeyRound className="w-4 h-4" />
-              <span>Update Password</span>
-            </button>
+            {/* Save Button */}
+            <div className="pt-2 flex items-center justify-between gap-4">
+              <button
+                type="submit"
+                disabled={isUpdatingPassword}
+                className="py-2.5 px-6 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm disabled:opacity-60"
+              >
+                <KeyRound className="w-4 h-4" />
+                <span>{isUpdatingPassword ? 'Updating Password...' : 'Save Password'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-[11px] font-semibold text-zinc-500 hover:text-zinc-900 underline-offset-2 hover:underline cursor-pointer"
+              >
+                Forgot your current password?
+              </button>
+            </div>
           </form>
+
+          {/* Security Best Practices Card */}
+          <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/80 space-y-2 text-xs">
+            <h4 className="font-bold text-zinc-800 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span>Password Security Standards</span>
+            </h4>
+            <ul className="text-zinc-500 space-y-1 list-disc list-inside text-[11px] leading-relaxed">
+              <li>Use at least 8-12 characters with a mix of uppercase, lowercase, numbers, and symbols.</li>
+              <li>Passwords are protected by Firebase Authentication and are never stored in plaintext.</li>
+              <li>Your updated password remains valid across sessions without repeated password change prompts.</li>
+            </ul>
+          </div>
         </div>
       )}
     </div>

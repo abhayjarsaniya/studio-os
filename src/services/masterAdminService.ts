@@ -502,6 +502,14 @@ export class MasterAdminService {
   resetStudioOwnerCredentials(studioId: string, actingAdmin = 'Master Admin') {
     return platformStudioService.resetStudioOwnerCredentials(studioId, actingAdmin);
   }
+
+  setStudioOwnerPassword(studioId: string, customPassword?: string, actingAdmin = 'Master Admin') {
+    return platformStudioService.setStudioOwnerPassword(studioId, customPassword, actingAdmin);
+  }
+
+  updateStudio(studioId: string, updates: any, actingAdmin = 'Master Admin') {
+    return platformStudioService.updateStudio(studioId, updates, actingAdmin);
+  }
 }
 
 export const masterAdminService = new MasterAdminService();

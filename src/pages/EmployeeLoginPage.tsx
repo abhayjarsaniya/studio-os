@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { unifiedAuthService } from '../services/unifiedAuthService';
 import { Briefcase, Lock, User, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { ForgotPasswordModal } from '../components/auth/ForgotPasswordModal';
 
 export const EmployeeLoginPage: React.FC = () => {
   const [identifier, setIdentifier] = useState('rahul.sharma');
   const [password, setPassword] = useState('!Bd2*9R7vJUy8W');
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -144,6 +146,16 @@ export const EmployeeLoginPage: React.FC = () => {
             </div>
           </div>
 
+          <div className="flex justify-end -mt-1">
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(true)}
+              className="text-[11px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
+            >
+              Forgot Password?
+            </button>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -208,6 +220,13 @@ export const EmployeeLoginPage: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+        portalTitle="Employee"
+        defaultEmail={identifier.includes('@') ? identifier : 'rahul.sharma@shreejifilms.in'}
+      />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useMasterAdmin } from '../../context/MasterAdminContext';
 import { masterAdminService } from '../../services/masterAdminService';
 import { MasterStudioListItem } from '../../types/masterAdmin';
+import { StudioHandoverModal, StudioHandoverData } from '../../components/master/StudioHandoverModal';
 import { 
   Building2, 
   Search, 
@@ -22,7 +23,10 @@ import {
   ArrowUpDown,
   CheckCircle2,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  KeyRound,
+  Share2,
+  Edit3
 } from 'lucide-react';
 
 export const MasterStudiosPage: React.FC = () => {
@@ -31,6 +35,10 @@ export const MasterStudiosPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'hidden' | 'suspended'>('all');
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [activeMenuStudioId, setActiveMenuStudioId] = useState<string | null>(null);
+
+  // Handover Modal State
+  const [handoverData, setHandoverData] = useState<StudioHandoverData | null>(null);
+  const [isHandoverOpen, setIsHandoverOpen] = useState(false);
 
   const studios = useMemo(() => {
     return masterAdminService.getMasterStudiosList();
@@ -87,6 +95,41 @@ export const MasterStudiosPage: React.FC = () => {
     }
     setActiveMenuStudioId(null);
     triggerRefresh();
+  };
+
+  const handleResetPassword = (studio: MasterStudioListItem) => {
+    setActiveMenuStudioId(null);
+    try {
+      const res = masterAdminService.setStudioOwnerPassword(studio.studioId, undefined, 'Master Admin');
+      setHandoverData({
+        studioName: studio.name,
+        studioId: studio.studioId,
+        ownerName: studio.ownerName,
+        ownerMobile: studio.ownerPhone || '9876543210',
+        ownerEmail: res.ownerEmail || studio.ownerEmail,
+        username: res.username || studio.ownerEmail.split('@')[0],
+        temporaryPassword: res.temporaryPassword,
+        loginUrl: `${window.location.origin}/#/studio/login`
+      });
+      setIsHandoverOpen(true);
+    } catch (e: any) {
+      alert(e.message || 'Failed to reset password');
+    }
+  };
+
+  const handleShareLogin = (studio: MasterStudioListItem) => {
+    setActiveMenuStudioId(null);
+    setHandoverData({
+      studioName: studio.name,
+      studioId: studio.studioId,
+      ownerName: studio.ownerName,
+      ownerMobile: studio.ownerPhone || '9876543210',
+      ownerEmail: studio.ownerEmail,
+      username: studio.ownerEmail.split('@')[0],
+      temporaryPassword: 'Password previously set',
+      loginUrl: `${window.location.origin}/#/studio/login`
+    });
+    setIsHandoverOpen(true);
   };
 
   return (
@@ -309,8 +352,24 @@ export const MasterStudiosPage: React.FC = () => {
                               onClick={() => handleDrilldown(studio.studioId, 'overview')}
                               className="w-full px-3 py-2 text-zinc-800 hover:bg-zinc-100 flex items-center gap-2"
                             >
-                              <Eye className="w-3.5 h-3.5 text-amber-400" />
+                              <Eye className="w-3.5 h-3.5 text-amber-500" />
                               <span>View Studio (8 Tabs)</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleShareLogin(studio)}
+                              className="w-full px-3 py-2 text-zinc-800 hover:bg-zinc-100 flex items-center gap-2"
+                            >
+                              <Share2 className="w-3.5 h-3.5 text-indigo-600" />
+                              <span>Share Login Details</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleResetPassword(studio)}
+                              className="w-full px-3 py-2 text-zinc-800 hover:bg-zinc-100 flex items-center gap-2"
+                            >
+                              <KeyRound className="w-3.5 h-3.5 text-amber-600" />
+                              <span>Reset Owner Password</span>
                             </button>
 
                             <button
@@ -384,6 +443,15 @@ export const MasterStudiosPage: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Handover Modal */}
+      {handoverData && (
+        <StudioHandoverModal
+          isOpen={isHandoverOpen}
+          onClose={() => setIsHandoverOpen(false)}
+          data={handoverData}
+        />
+      )}
     </div>
   );
 };

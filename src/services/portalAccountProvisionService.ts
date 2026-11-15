@@ -330,10 +330,24 @@ export class PortalAccountProvisionService {
   /**
    * Syncs the verified accounts with unifiedAuthService so both Firebase Auth
    * and local salted hashed credentials validate flawlessly.
+   * Non-destructive: preserves existing accounts and never forces mustChangePassword.
    */
   syncWithUnifiedAuthService(): void {
+    const existingAccounts = (unifiedAuthService as any).listStoredAccounts?.() || [];
+    
     for (const item of PROVISIONED_PORTAL_ACCOUNTS) {
-      const salt = generateCryptoSalt();
+      // Check if user has already changed their password on any alias
+      const anyExistingWithCustomPass = existingAccounts.find((a: any) => 
+        (a.id === item.uid || 
+        a.email?.toLowerCase() === item.email.toLowerCase() || 
+        a.loginId?.toLowerCase() === item.username.toLowerCase()) &&
+        Boolean((a as any).hasChangedPassword)
+      );
+
+      const salt = anyExistingWithCustomPass?.salt || generateCryptoSalt();
+      const passwordHash = anyExistingWithCustomPass?.passwordHash || hashCredential(item.temporaryPassword, salt);
+      const mustChangePassword = false; // Never force repeated password change on normal app flow!
+
       const account: UserAccount = {
         id: item.uid || (item.employeeId || `usr_${item.username}`),
         accountType: item.accountType,
@@ -345,12 +359,16 @@ export class PortalAccountProvisionService {
         roleId: item.role,
         roleTitle: item.designation,
         status: 'active',
-        passwordHash: hashCredential(item.temporaryPassword, salt),
+        passwordHash,
         salt,
-        mustChangePassword: true,
-        createdAt: new Date().toISOString(),
+        mustChangePassword,
+        createdAt: anyExistingWithCustomPass?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
+
+      if (anyExistingWithCustomPass) {
+        (account as any).hasChangedPassword = true;
+      }
 
       // Register account in unifiedAuthService
       (unifiedAuthService as any).saveAccount(account);

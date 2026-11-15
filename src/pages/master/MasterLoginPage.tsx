@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useMasterAdmin } from '../../context/MasterAdminContext';
 import { unifiedAuthService } from '../../services/unifiedAuthService';
 import { Crown, Lock, Mail, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { ForgotPasswordModal } from '../../components/auth/ForgotPasswordModal';
 
 export const MasterLoginPage: React.FC = () => {
   const { setMasterRoute } = useMasterAdmin();
   const [email, setEmail] = useState('masteradmin');
   const [password, setPassword] = useState('Hz9#*R*r2&#%L3');
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // First-time password change modal state
@@ -137,6 +139,16 @@ export const MasterLoginPage: React.FC = () => {
             </div>
           </div>
 
+          <div className="flex justify-end -mt-1">
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(true)}
+              className="text-[11px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
+            >
+              Forgot Password?
+            </button>
+          </div>
+
           <button
             type="submit"
             className="w-full min-h-[48px] py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all mt-2 cursor-pointer"
@@ -217,6 +229,14 @@ export const MasterLoginPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+        portalTitle="Master Admin"
+        defaultEmail={email.includes('@') ? email : 'masteradmin@studioos.internal'}
+      />
     </div>
   );
 };

@@ -11,6 +11,7 @@ import { platformSubscriptionManager } from './platformSubscriptionManager';
 import { platformBillingService } from './platformBillingService';
 import { platformAuditService } from './platformAuditService';
 import { employeeAuthService } from './employeeAuthService';
+import { unifiedAuthService } from './unifiedAuthService';
 import { studioA, studioB } from '../data/multiTenantDemoData';
 import { shreejiStudio } from './studioService';
 
@@ -486,40 +487,195 @@ export class PlatformStudioService {
     ownerEmail: string;
     temporaryPassword: string;
   } {
+    return this.setStudioOwnerPassword(studioId, undefined, actingAdminName, true);
+  }
+
+  setStudioOwnerPassword(studioId: string, customPassword?: string, actingAdminName = 'Master Admin', mustChangePassword = true): {
+    success: boolean;
+    username: string;
+    email: string;
+    ownerEmail: string;
+    temporaryPassword: string;
+  } {
     const creds = employeeAuthService.listCredentials(studioId);
     const ownerCred = creds.find(c => c.employeeId.includes('owner') || c.email.includes('owner')) || creds[0];
-    if (!ownerCred) throw new Error(`No owner account found for studio "${studioId}"`);
+    const temporaryPassword = customPassword || `Studio#${Math.floor(1000 + Math.random() * 9000)}`;
 
-    const temporaryPassword = `Reset#${Math.floor(1000 + Math.random() * 9000)}`;
-    ownerCred.passwordHash = `hash_${temporaryPassword}`;
-    ownerCred.initialPassword = temporaryPassword;
-    ownerCred.mustChangePassword = true;
-    ownerCred.hasChangedPassword = false;
-    ownerCred.updatedAt = new Date().toISOString();
+    let username = 'shreeji.owner';
+    let email = 'aarav@shreejifilms.in';
 
-    const allCreds = employeeAuthService.listCredentials();
-    const idx = allCreds.findIndex(c => c.employeeId === ownerCred.employeeId);
-    if (idx >= 0) {
-      allCreds[idx] = ownerCred;
-      TenantStore.set('platform_system', 'employee_credentials', allCreds);
+    if (ownerCred) {
+      username = ownerCred.username;
+      email = ownerCred.email;
+      ownerCred.passwordHash = `hash_${temporaryPassword}`;
+      ownerCred.initialPassword = temporaryPassword;
+      ownerCred.mustChangePassword = mustChangePassword;
+      ownerCred.updatedAt = new Date().toISOString();
+
+      const allCreds = employeeAuthService.listCredentials();
+      const idx = allCreds.findIndex(c => c.employeeId === ownerCred.employeeId);
+      if (idx >= 0) {
+        allCreds[idx] = ownerCred;
+        TenantStore.set('platform_system', 'employee_credentials', allCreds);
+      }
+    }
+
+    // Synchronize with unifiedAuthService
+    try {
+      const accounts = unifiedAuthService.listAllAccounts();
+      const ownerAcc = accounts.find(a => a.studioId === studioId && (a.accountType === 'STUDIO_OWNER' || a.email?.toLowerCase() === email.toLowerCase()));
+      if (ownerAcc) {
+        username = ownerAcc.loginId;
+        email = ownerAcc.email;
+        unifiedAuthService.changePassword(ownerAcc.id, temporaryPassword);
+      }
+    } catch (e) {
+      // Continue safely
     }
 
     platformAuditService.log({
       adminId: 'admin_sys',
       adminName: actingAdminName,
-      action: 'RESET_STUDIO_OWNER_CREDENTIALS',
+      action: 'SET_STUDIO_OWNER_PASSWORD',
       targetType: 'studio_owner',
-      targetId: ownerCred.employeeId,
-      details: `Reset login credentials for Studio Owner (${ownerCred.email}) of studio ${studioId}. Mandatory password change flagged.`
+      targetId: ownerCred?.employeeId || studioId,
+      details: `Password configured for Studio Owner of studio ${studioId}.`
     });
 
     return {
       success: true,
-      username: ownerCred.username,
-      email: ownerCred.email,
-      ownerEmail: ownerCred.email,
+      username,
+      email,
+      ownerEmail: email,
       temporaryPassword
     };
+  }
+
+  updateStudio(studioId: string, updates: {
+    name?: string;
+    phone?: string;
+    email?: string;
+    city?: string;
+    state?: string;
+    address?: string;
+    gstNumber?: string;
+    website?: string;
+    description?: string;
+    subscriptionPlan?: string;
+    subscriptionStatus?: string;
+    renewalDate?: string;
+    lifecycleStatus?: StudioLifecycleStatus;
+    ownerEmail?: string;
+  }, actingAdminName = 'Master Admin'): boolean {
+    let profile = TenantStore.getSingle<Studio>(studioId, 'profile');
+    if (!profile) {
+      const studioView = this.getStudioDetails(studioId);
+      profile = studioView?.profile || {
+        id: studioId,
+        tenantId: studioId,
+        name: updates.name || studioId,
+        email: updates.email || 'studio@studio-os.internal',
+        phone: updates.phone || '9876543210',
+        address: updates.address || '',
+        city: updates.city || 'Ahmedabad',
+        state: updates.state || 'Gujarat',
+        pincode: '380001',
+        settings: {
+          defaultCurrency: 'INR',
+          timezone: 'Asia/Kolkata',
+          dateFormat: 'DD/MM/YYYY',
+          timeFormat: '12h',
+          allowDirectWhatsApp: true,
+          watermarkEnabled: true,
+          invoicePrefix: 'INV',
+          eventPrefix: 'EV'
+        },
+        storageUsageMb: 120,
+        storageQuotaMb: 15360,
+        subscription: {
+          planId: 'standard',
+          planName: 'Studio OS Monthly',
+          pricePerMonth: 500,
+          currency: 'INR',
+          autoRenew: true,
+          status: 'active',
+          validUntil: new Date(Date.now() + 30 * 86400000).toISOString()
+        } as any,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        createdBy: actingAdminName
+      };
+    }
+
+    if (updates.name) profile.name = updates.name;
+    if (updates.phone) profile.phone = updates.phone;
+    if (updates.email) profile.email = updates.email;
+    if (updates.city) profile.city = updates.city;
+    if (updates.state) profile.state = updates.state;
+    if (updates.address) profile.address = updates.address;
+    if (updates.gstNumber !== undefined) profile.gstNumber = updates.gstNumber;
+    if (updates.website !== undefined) profile.website = updates.website;
+    if (updates.description !== undefined) (profile as any).description = updates.description;
+    profile.updatedAt = new Date().toISOString();
+
+    if (updates.subscriptionPlan || updates.subscriptionStatus || updates.renewalDate) {
+      if (!profile.subscription) {
+        profile.subscription = {
+          planId: 'standard',
+          planName: 'Studio OS Monthly',
+          status: (updates.subscriptionStatus as any) || 'active',
+          pricePerMonth: 500,
+          currency: 'INR',
+          autoRenew: true,
+          validUntil: updates.renewalDate || new Date(Date.now() + 30 * 86400000).toISOString()
+        } as any;
+      } else {
+        if (updates.subscriptionPlan) (profile.subscription as any).planName = updates.subscriptionPlan;
+        if (updates.subscriptionStatus) profile.subscription.status = updates.subscriptionStatus as any;
+        if (updates.renewalDate) profile.subscription.validUntil = updates.renewalDate;
+      }
+    }
+
+    if (updates.lifecycleStatus) {
+      this.updateStudioStatus(studioId, updates.lifecycleStatus, 'Updated via Master Admin Edit Studio', actingAdminName);
+      profile.lifecycleStatus = updates.lifecycleStatus;
+      profile.isHidden = updates.lifecycleStatus === 'hidden';
+    }
+
+    TenantStore.set(studioId, 'profile', profile);
+
+    // If owner email was updated, update owner employee record & credentials
+    if (updates.ownerEmail) {
+      const employees = TenantStore.get<Employee>(studioId, 'employees') || [];
+      const ownerEmp = employees.find(e => e.designation?.toLowerCase().includes('owner') || (e as any).role === 'studio_owner');
+      if (ownerEmp) {
+        ownerEmp.email = updates.ownerEmail;
+        ownerEmp.updatedAt = new Date().toISOString();
+        TenantStore.set(studioId, 'employees', employees);
+      }
+      try {
+        const accounts = unifiedAuthService.listAllAccounts();
+        const ownerAcc = accounts.find(a => (a.studioId === studioId && a.accountType === 'STUDIO_OWNER') || a.id.includes('owner'));
+        if (ownerAcc) {
+          ownerAcc.email = updates.ownerEmail;
+          ownerAcc.updatedAt = new Date().toISOString();
+          (unifiedAuthService as any).saveAccount(ownerAcc);
+        }
+      } catch (e) {
+        // Continue
+      }
+    }
+
+    platformAuditService.log({
+      adminId: 'admin_sys',
+      adminName: actingAdminName,
+      action: 'UPDATE_STUDIO_INFO',
+      targetType: 'studio',
+      targetId: studioId,
+      details: `Updated studio profile and configuration for ${profile.name} (${studioId}).`
+    });
+
+    return true;
   }
 
   addInternalNote(studioId: string, noteText: string, authorName = 'Master Admin'): void {

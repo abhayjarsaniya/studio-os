@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useMasterAdmin } from '../../context/MasterAdminContext';
 import { platformStudioService, CreatedStudioResult } from '../../services/platformStudioService';
+import { StudioHandoverModal, StudioHandoverData } from '../../components/master/StudioHandoverModal';
 import { 
   Building2, 
   ArrowLeft, 
@@ -15,7 +16,8 @@ import {
   Calendar,
   Lock,
   Layers,
-  Crown
+  Crown,
+  Share2
 } from 'lucide-react';
 
 export const MasterStudioCreatePage: React.FC = () => {
@@ -40,6 +42,7 @@ export const MasterStudioCreatePage: React.FC = () => {
   });
 
   const [createdResult, setCreatedResult] = useState<CreatedStudioResult | null>(null);
+  const [showHandoverModal, setShowHandoverModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -54,6 +57,7 @@ export const MasterStudioCreatePage: React.FC = () => {
     try {
       const res = platformStudioService.createStudioWithOwner(formData, 'Master Admin');
       setCreatedResult(res);
+      setShowHandoverModal(true);
       triggerRefresh();
     } catch (err: any) {
       alert(err.message || 'Failed to create studio account.');
@@ -64,14 +68,35 @@ export const MasterStudioCreatePage: React.FC = () => {
 
   const copyCredentials = () => {
     if (!createdResult) return;
-    const text = `=== STUDIO OS OWNER CREDENTIALS ===\nStudio: ${createdResult.studio.name}\nStudio ID: ${createdResult.studio.id}\nOwner Name: ${createdResult.ownerEmployee.name}\nUsername: ${createdResult.credentials.username}\nLogin Email: ${createdResult.ownerEmployee.email}\nTemporary Password: ${createdResult.temporaryPassword}\nLogin URL: ${window.location.origin}/#/app/dashboard\n* Note: Password change is required upon first login.`;
+    const loginUrl = `${window.location.origin}/#/studio/login`;
+    const text = `=== STUDIO OS CLIENT LOGIN HANDOVER ===\nStudio: ${createdResult.studio.name}\nStudio Login: ${loginUrl}\nStudio ID: ${createdResult.studio.id}\nLogin ID: ${createdResult.credentials.username}\nTemporary Password: ${createdResult.temporaryPassword}\n\nPlease keep these login details secure.\nYou can change your password anytime from Settings or use Forgot Password on the login page.`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
   };
 
+  const handoverData: StudioHandoverData | null = createdResult ? {
+    studioName: createdResult.studio.name,
+    studioId: createdResult.studio.id,
+    ownerName: createdResult.ownerEmployee.name,
+    ownerMobile: formData.ownerMobile,
+    ownerEmail: createdResult.ownerEmployee.email,
+    username: createdResult.credentials.username,
+    temporaryPassword: createdResult.temporaryPassword,
+    loginUrl: `${window.location.origin}/#/studio/login`
+  } : null;
+
   return (
     <div className="space-y-6 max-w-4xl pb-20">
+      {/* Handover Modal */}
+      {handoverData && (
+        <StudioHandoverModal
+          isOpen={showHandoverModal}
+          onClose={() => setShowHandoverModal(false)}
+          data={handoverData}
+        />
+      )}
+
       {/* Back button and Header */}
       <div className="flex items-center gap-3">
         <button
@@ -93,38 +118,45 @@ export const MasterStudioCreatePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Success Modal / Card when created */}
+      {/* Success Summary Card when created */}
       {createdResult ? (
         <div className="bg-white border border-emerald-500/40 rounded-3xl p-6 shadow-2xl space-y-5 animate-in fade-in duration-200">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-600 flex items-center justify-center border border-emerald-500/30">
               <Check className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-zinc-900 font-display">Studio Account Created Successfully!</h2>
               <p className="text-xs text-zinc-500">
-                Secure credentials generated for the Studio Owner. Password change is enforced on first sign-in.
+                Secure credentials generated for the Studio Owner. Account is active and ready for immediate sign-in.
               </p>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white border border-zinc-200 space-y-3 font-mono text-xs">
-            <div className="grid grid-cols-2 gap-2 text-zinc-700">
-              <div><span className="text-zinc-400">Studio ID:</span> <strong className="text-amber-400">{createdResult.studio.id}</strong></div>
-              <div><span className="text-zinc-400">Studio Name:</span> <strong className="text-white">{createdResult.studio.name}</strong></div>
+          <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-3 font-mono text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-zinc-700">
+              <div><span className="text-zinc-400">Studio ID:</span> <strong className="text-amber-800">{createdResult.studio.id}</strong></div>
+              <div><span className="text-zinc-400">Studio Name:</span> <strong className="text-zinc-900">{createdResult.studio.name}</strong></div>
               <div><span className="text-zinc-400">Owner Name:</span> <strong className="text-zinc-800">{createdResult.ownerEmployee.name}</strong></div>
-              <div><span className="text-zinc-400">Username:</span> <strong className="text-indigo-300">{createdResult.credentials.username}</strong></div>
+              <div><span className="text-zinc-400">Username:</span> <strong className="text-indigo-700 font-bold">{createdResult.credentials.username}</strong></div>
               <div><span className="text-zinc-400">Login Email:</span> <strong className="text-zinc-800">{createdResult.ownerEmployee.email}</strong></div>
-              <div><span className="text-zinc-400">Temporary Password:</span> <strong className="text-emerald-400 bg-white px-2 py-0.5 rounded border border-zinc-200">{createdResult.temporaryPassword}</strong></div>
+              <div><span className="text-zinc-400">Temporary Password:</span> <strong className="text-emerald-700 bg-white px-2 py-0.5 rounded border border-zinc-200">{createdResult.temporaryPassword}</strong></div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => setShowHandoverModal(true)}
+              className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs flex items-center gap-2 shadow-md shadow-amber-500/20 transition-all cursor-pointer"
+            >
+              <Share2 className="w-4 h-4" />
+              <span>Open Handover & Share WhatsApp</span>
+            </button>
             <button
               onClick={copyCredentials}
-              className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs flex items-center gap-2 shadow-md shadow-amber-500/20 transition-all"
+              className="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer"
             >
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
               <span>{copied ? 'Credentials Copied!' : 'Copy Owner Credentials'}</span>
             </button>
             <button
@@ -132,7 +164,7 @@ export const MasterStudioCreatePage: React.FC = () => {
                 setCreatedResult(null);
                 setMasterRoute('studios');
               }}
-              className="px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold border border-zinc-200 transition-all"
+              className="px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold border border-zinc-200 transition-all cursor-pointer"
             >
               Return to Studio Directory
             </button>
@@ -321,10 +353,10 @@ export const MasterStudioCreatePage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2.5 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md shadow-amber-500/20 transition-all flex items-center gap-2"
+              className="px-5 py-2.5 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md shadow-amber-500/20 transition-all flex items-center gap-2 cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-zinc-950" />
-              <span>{isSubmitting ? 'Provisioning Studio...' : 'Provision Studio & Generate Credentials'}</span>
+              <span>{isSubmitting ? 'Creating Studio & Owner...' : 'Create Studio & Owner Account'}</span>
             </button>
           </div>
         </form>

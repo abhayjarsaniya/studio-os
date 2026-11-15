@@ -4,7 +4,9 @@ import { masterAdminService } from '../../services/masterAdminService';
 import { globalRbacService } from '../../services/globalRbacService';
 import { featureVisibilityService } from '../../services/featureVisibilityService';
 import { platformAuditService } from '../../services/platformAuditService';
+import { firebaseAuthService } from '../../services/firebaseAuthService';
 import { TenantStore } from '../../services/tenantStore';
+import { StudioHandoverModal, StudioHandoverData } from '../../components/master/StudioHandoverModal';
 import { 
   Building2, 
   ArrowLeft, 
@@ -23,7 +25,14 @@ import {
   Lock,
   Unlock,
   Eye,
-  EyeOff
+  EyeOff,
+  Edit3,
+  Share2,
+  Mail,
+  X,
+  Key,
+  Copy,
+  Check
 } from 'lucide-react';
 import { Studio, StudioEvent, Employee, Invoice, Payment } from '../../types/schema';
 import { MasterGlobalRoleId } from '../../types/masterAdmin';
@@ -32,6 +41,29 @@ export const MasterStudioDetailPage: React.FC = () => {
   const { selectedStudioId, setSelectedStudioId, setMasterRoute, triggerRefresh, refreshTrigger } = useMasterAdmin();
   const [activeTab, setActiveTab] = useState<'overview' | 'events' | 'employees' | 'revenue' | 'subscription' | 'roles' | 'features' | 'activity'>('overview');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Password & Handover State
+  const [isHandoverOpen, setIsHandoverOpen] = useState(false);
+  const [handoverData, setHandoverData] = useState<StudioHandoverData | null>(null);
+  const [isEditStudioOpen, setIsEditStudioOpen] = useState(false);
+  const [isSetPasswordOpen, setIsSetPasswordOpen] = useState(false);
+  const [customPasswordInput, setCustomPasswordInput] = useState('');
+
+  // Edit Studio Form
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    city: '',
+    state: '',
+    address: '',
+    gstNumber: '',
+    subscriptionPlan: '',
+    subscriptionStatus: 'active',
+    renewalDate: '',
+    lifecycleStatus: 'active' as any,
+    ownerEmail: ''
+  });
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -72,14 +104,128 @@ export const MasterStudioDetailPage: React.FC = () => {
   const paymentsReceived = events.reduce((sum, e) => sum + (Number(e.advancePaid) || 0), 0) || 85000;
   const pendingBalance = Math.max(0, totalInvoiced - paymentsReceived);
 
+  // Open Edit Studio
+  const handleOpenEdit = () => {
+    if (!studio) return;
+    setEditFormData({
+      name: studio.name || '',
+      phone: studio.phone || '',
+      email: studio.email || '',
+      city: studio.city || 'Ahmedabad',
+      state: studio.state || 'Gujarat',
+      address: studio.address || '',
+      gstNumber: studio.gstNumber || '',
+      subscriptionPlan: studio.subscription?.planName || 'Studio OS Standard (₹500/mo)',
+      subscriptionStatus: studio.subscription?.status || 'active',
+      renewalDate: studio.subscription?.validUntil ? studio.subscription.validUntil.slice(0, 10) : new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
+      lifecycleStatus: studio.lifecycleStatus || 'active',
+      ownerEmail: studio.email || ''
+    });
+    setIsEditStudioOpen(true);
+  };
+
+  const handleSaveEditStudio = (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      masterAdminService.updateStudio(studioId, editFormData, 'Master Admin');
+      showToast('Studio profile and configuration updated successfully!');
+      setIsEditStudioOpen(false);
+      triggerRefresh();
+    } catch (err: any) {
+      alert(err.message || 'Failed to update studio');
+    }
+  };
+
   // Password reset handler
   const handleResetOwnerPassword = () => {
+    if (!studio) return;
     try {
-      const res = masterAdminService.resetStudioOwnerCredentials(studioId, 'Master Admin');
-      showToast(`Credentials Generated! Temporary Password: ${res.temporaryPassword}`);
+      const res = masterAdminService.setStudioOwnerPassword(studioId, undefined, 'Master Admin');
+      setHandoverData({
+        studioName: studio.name,
+        studioId: studio.id,
+        ownerName: (studio as any).ownerName || studio.name + ' Owner',
+        ownerMobile: studio.phone || '9876543210',
+        ownerEmail: res.ownerEmail || studio.email,
+        username: res.username || 'shreeji.owner',
+        temporaryPassword: res.temporaryPassword,
+        loginUrl: `${window.location.origin}/#/studio/login`
+      });
+      setIsHandoverOpen(true);
+      showToast(`Temporary password generated: ${res.temporaryPassword}`);
     } catch (e: any) {
       showToast(`Password reset generated: StudioOwner@2026`);
     }
+  };
+
+  const handleOpenSetPassword = () => {
+    setCustomPasswordInput(`Studio#${Math.floor(1000 + Math.random() * 9000)}`);
+    setIsSetPasswordOpen(true);
+  };
+
+  const handleGenerateSecurePassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
+    let pwd = '';
+    for (let i = 0; i < 12; i++) {
+      pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setCustomPasswordInput(pwd);
+  };
+
+  const handleSaveCustomPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!studio) return;
+    if (!customPasswordInput.trim() || customPasswordInput.length < 6) {
+      alert('Password must be at least 6 characters.');
+      return;
+    }
+    try {
+      const res = masterAdminService.setStudioOwnerPassword(studioId, customPasswordInput.trim(), 'Master Admin');
+      setIsSetPasswordOpen(false);
+      setHandoverData({
+        studioName: studio.name,
+        studioId: studio.id,
+        ownerName: (studio as any).ownerName || studio.name + ' Owner',
+        ownerMobile: studio.phone || '9876543210',
+        ownerEmail: res.ownerEmail || studio.email,
+        username: res.username || 'shreeji.owner',
+        temporaryPassword: res.temporaryPassword,
+        loginUrl: `${window.location.origin}/#/studio/login`
+      });
+      setIsHandoverOpen(true);
+      showToast('New password configured and handover panel ready!');
+    } catch (err: any) {
+      alert(err.message || 'Failed to set password');
+    }
+  };
+
+  const handleSendResetEmail = async () => {
+    if (!studio) return;
+    try {
+      const res = await firebaseAuthService.sendPasswordReset(studio.email);
+      if (res.success) {
+        showToast(`Password reset link dispatched to ${studio.email}`);
+      } else {
+        alert(res.error || 'Failed to dispatch reset email.');
+      }
+    } catch (e: any) {
+      alert(e.message || 'Error dispatching password reset email.');
+    }
+  };
+
+  const handleShareLoginDetails = () => {
+    if (!studio) return;
+    setHandoverData({
+      studioName: studio.name,
+      studioId: studio.id,
+      ownerName: (studio as any).ownerName || studio.name + ' Owner',
+      ownerMobile: studio.phone || '9876543210',
+      ownerEmail: studio.email,
+      username: (studio as any).ownerUsername || studio.email.split('@')[0],
+      temporaryPassword: 'Password previously set',
+      loginUrl: `${window.location.origin}/#/studio/login`
+    });
+    setIsHandoverOpen(true);
   };
 
   // Reset roles handler
@@ -154,23 +300,44 @@ export const MasterStudioDetailPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleOpenEdit}
+            className="min-h-[40px] px-3 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+          >
+            <Edit3 className="w-3.5 h-3.5 text-zinc-600" />
+            <span>Edit Studio</span>
+          </button>
+          <button
+            onClick={handleShareLoginDetails}
+            className="min-h-[40px] px-3 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+          >
+            <Share2 className="w-3.5 h-3.5 text-indigo-600" />
+            <span>Share Login Details</span>
+          </button>
+          <button
+            onClick={handleOpenSetPassword}
+            className="min-h-[40px] px-3 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+          >
+            <KeyRound className="w-3.5 h-3.5 text-amber-500" />
+            <span>Set / Reset Password</span>
+          </button>
+          <button
+            onClick={handleSendResetEmail}
+            className="min-h-[40px] px-3 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+          >
+            <Mail className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Send Reset Email</span>
+          </button>
           <button
             onClick={() => {
               setSelectedStudioId(studio.id);
               setMasterRoute('studio-features');
             }}
-            className="min-h-[44px] px-3.5 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+            className="min-h-[40px] px-3 py-1.5 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
           >
             <ToggleRight className="w-3.5 h-3.5" />
             <span>Configure Features</span>
-          </button>
-          <button
-            onClick={handleResetOwnerPassword}
-            className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer"
-          >
-            <KeyRound className="w-3.5 h-3.5 text-amber-500" />
-            <span>Reset Owner Login</span>
           </button>
         </div>
       </div>
@@ -283,13 +450,85 @@ export const MasterStudioDetailPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between py-1 border-b border-zinc-200">
                   <span className="text-zinc-400">Account Health</span>
-                  <span className="text-emerald-400 font-bold">Active & Verified</span>
+                  <span className="text-emerald-600 font-bold">Active & Verified</span>
                 </div>
                 <div className="flex justify-between py-1">
                   <span className="text-zinc-400">Storage Used</span>
                   <span className="text-zinc-800">{((studio.storageUsageMb || 1200) / 1024).toFixed(1)} GB / 15.0 GB (8%)</span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Password Management & Account Handover Section */}
+          <div className="bg-white p-6 rounded-2xl border border-zinc-200 space-y-4 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-900 font-display">Studio Owner Password & Account Management</h3>
+                  <p className="text-xs text-zinc-500">Manage login credentials, set temporary passwords, dispatch reset emails, or share via WhatsApp.</p>
+                </div>
+              </div>
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200 self-start sm:self-auto">
+                No Repeated Reset Enforced
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+              <button
+                type="button"
+                onClick={handleResetOwnerPassword}
+                className="p-3.5 rounded-xl border border-zinc-200 hover:border-amber-400 hover:bg-amber-50/50 text-left transition-all group cursor-pointer"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <Key className="w-4 h-4 text-amber-600" />
+                  <span className="text-[10px] font-mono text-zinc-400 group-hover:text-amber-700">Auto-Gen</span>
+                </div>
+                <div className="text-xs font-bold text-zinc-900">Reset Owner Password</div>
+                <div className="text-[11px] text-zinc-500 mt-0.5">Generates secure temporary password & opens handover panel</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleOpenSetPassword}
+                className="p-3.5 rounded-xl border border-zinc-200 hover:border-indigo-400 hover:bg-indigo-50/50 text-left transition-all group cursor-pointer"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <Lock className="w-4 h-4 text-indigo-600" />
+                  <span className="text-[10px] font-mono text-zinc-400 group-hover:text-indigo-700">Custom</span>
+                </div>
+                <div className="text-xs font-bold text-zinc-900">Set New Temp Password</div>
+                <div className="text-[11px] text-zinc-500 mt-0.5">Specify or randomize password with live preview</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSendResetEmail}
+                className="p-3.5 rounded-xl border border-zinc-200 hover:border-emerald-400 hover:bg-emerald-50/50 text-left transition-all group cursor-pointer"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <Mail className="w-4 h-4 text-emerald-600" />
+                  <span className="text-[10px] font-mono text-zinc-400 group-hover:text-emerald-700">Firebase</span>
+                </div>
+                <div className="text-xs font-bold text-zinc-900">Send Reset Email</div>
+                <div className="text-[11px] text-zinc-500 mt-0.5">Dispatches official Firebase reset link to {studio.email}</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleShareLoginDetails}
+                className="p-3.5 rounded-xl border border-zinc-200 hover:border-purple-400 hover:bg-purple-50/50 text-left transition-all group cursor-pointer"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <Share2 className="w-4 h-4 text-purple-600" />
+                  <span className="text-[10px] font-mono text-zinc-400 group-hover:text-purple-700">WhatsApp / Copy</span>
+                </div>
+                <div className="text-xs font-bold text-zinc-900">Share Login Details</div>
+                <div className="text-[11px] text-zinc-500 mt-0.5">Clean handover panel with WhatsApp native click-to-chat</div>
+              </button>
             </div>
           </div>
         </div>
@@ -650,6 +889,257 @@ export const MasterStudioDetailPage: React.FC = () => {
                 </div>
               ))
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Handover Modal */}
+      {handoverData && (
+        <StudioHandoverModal
+          isOpen={isHandoverOpen}
+          onClose={() => setIsHandoverOpen(false)}
+          data={handoverData}
+        />
+      )}
+
+      {/* Edit Studio Modal */}
+      {isEditStudioOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl border border-zinc-200 space-y-5 animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-700 flex items-center justify-center">
+                  <Edit3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-zinc-900 font-display">Edit Studio Profile & Account</h3>
+                  <p className="text-xs text-zinc-500">Update business info, subscription, lifecycle status, and owner email.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsEditStudioOpen(false)}
+                className="p-1 rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditStudio} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">Studio Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editFormData.name}
+                    onChange={e => setEditFormData({ ...editFormData, name: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">Phone / Mobile *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editFormData.phone}
+                    onChange={e => setEditFormData({ ...editFormData, phone: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">Studio Contact Email *</label>
+                  <input
+                    type="email"
+                    required
+                    value={editFormData.email}
+                    onChange={e => setEditFormData({ ...editFormData, email: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">Owner Login Email *</label>
+                  <input
+                    type="email"
+                    required
+                    value={editFormData.ownerEmail}
+                    onChange={e => setEditFormData({ ...editFormData, ownerEmail: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">City</label>
+                  <input
+                    type="text"
+                    value={editFormData.city}
+                    onChange={e => setEditFormData({ ...editFormData, city: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">State</label>
+                  <input
+                    type="text"
+                    value={editFormData.state}
+                    onChange={e => setEditFormData({ ...editFormData, state: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">GST Number</label>
+                  <input
+                    type="text"
+                    value={editFormData.gstNumber}
+                    onChange={e => setEditFormData({ ...editFormData, gstNumber: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">Studio Address</label>
+                <input
+                  type="text"
+                  value={editFormData.address}
+                  onChange={e => setEditFormData({ ...editFormData, address: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-3">
+                <span className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider block">
+                  Subscription & Account Status
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[10px] text-zinc-500 uppercase mb-1">Subscription Plan</label>
+                    <select
+                      value={editFormData.subscriptionPlan}
+                      onChange={e => setEditFormData({ ...editFormData, subscriptionPlan: e.target.value })}
+                      className="w-full px-2.5 py-1.5 rounded-xl border border-zinc-200 bg-white text-xs font-semibold"
+                    >
+                      <option value="Studio OS Standard (₹500/mo)">Standard (₹500/mo)</option>
+                      <option value="Studio OS Professional (₹1,500/mo)">Professional (₹1,500/mo)</option>
+                      <option value="Studio OS Enterprise (₹3,500/mo)">Enterprise (₹3,500/mo)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-zinc-500 uppercase mb-1">Subscription Status</label>
+                    <select
+                      value={editFormData.subscriptionStatus}
+                      onChange={e => setEditFormData({ ...editFormData, subscriptionStatus: e.target.value })}
+                      className="w-full px-2.5 py-1.5 rounded-xl border border-zinc-200 bg-white text-xs font-semibold"
+                    >
+                      <option value="active">Active</option>
+                      <option value="trial">Trial</option>
+                      <option value="pending">Pending</option>
+                      <option value="suspended">Suspended</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-zinc-500 uppercase mb-1">Account Visibility</label>
+                    <select
+                      value={editFormData.lifecycleStatus}
+                      onChange={e => setEditFormData({ ...editFormData, lifecycleStatus: e.target.value as any })}
+                      className="w-full px-2.5 py-1.5 rounded-xl border border-zinc-200 bg-white text-xs font-semibold"
+                    >
+                      <option value="active">Active (Visible)</option>
+                      <option value="hidden">Hidden from Discovery</option>
+                      <option value="suspended">Suspended</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100">
+                <button
+                  type="button"
+                  onClick={() => setIsEditStudioOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-zinc-200 text-zinc-600 hover:bg-zinc-50 font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold transition-all shadow-sm cursor-pointer"
+                >
+                  Save Studio Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Set Custom Password Modal */}
+      {isSetPasswordOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-zinc-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-700 flex items-center justify-center">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-zinc-900 font-display">Set Owner Temporary Password</h3>
+                  <p className="text-xs text-zinc-500">Configure or auto-generate a secure temporary password.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsSetPasswordOpen(false)}
+                className="p-1 rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCustomPassword} className="space-y-4 text-xs">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-bold text-zinc-600 uppercase">Temporary Password *</label>
+                  <button
+                    type="button"
+                    onClick={handleGenerateSecurePassword}
+                    className="text-amber-700 hover:underline font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    <span>Generate Secure</span>
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  required
+                  value={customPasswordInput}
+                  onChange={e => setCustomPasswordInput(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 font-mono text-sm font-bold bg-zinc-50 text-zinc-900 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-xl text-[11px] text-amber-900">
+                Saving will set this temporary password and open the official handover panel to copy or share directly via WhatsApp.
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100">
+                <button
+                  type="button"
+                  onClick={() => setIsSetPasswordOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-zinc-200 text-zinc-600 hover:bg-zinc-50 font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold transition-all shadow-sm cursor-pointer"
+                >
+                  Save & Open Handover
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
