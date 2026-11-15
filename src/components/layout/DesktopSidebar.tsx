@@ -35,23 +35,28 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all group select-none min-h-[44px] cursor-pointer ${
+      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[14px] font-medium transition-all duration-200 group select-none min-h-[46px] cursor-pointer ${
         active 
-          ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs font-bold' 
-          : 'text-zinc-600 hover:text-zinc-900 hover:bg-orange-50/50'
+          ? 'text-orange-600 font-bold bg-orange-50/40' 
+          : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/70'
       }`}
     >
       <div className="flex items-center gap-3 min-w-0">
-        <span className={`shrink-0 transition-transform ${active ? 'text-white' : 'text-zinc-500 group-hover:text-orange-600'}`}>
+        <span className={`shrink-0 transition-colors duration-200 ${active ? 'text-orange-600' : 'text-zinc-500 group-hover:text-zinc-800'}`}>
           {icon}
         </span>
-        <span className="truncate">{label}</span>
+        <div className="relative inline-flex flex-col py-0.5">
+          <span className="truncate tracking-tight">{label}</span>
+          {active && (
+            <span className="absolute -bottom-0.5 left-0 right-0 h-[2px] bg-gradient-to-r from-orange-500 to-amber-500 rounded-full animate-in fade-in duration-200" />
+          )}
+        </div>
       </div>
 
       {badge !== undefined && (
         <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
           active 
-            ? 'bg-white/20 text-white' 
+            ? 'bg-orange-100 text-orange-700 border border-orange-200/80' 
             : 'bg-zinc-200/80 text-zinc-700'
         }`}>
           {badge}
@@ -159,7 +164,7 @@ export const DesktopSidebar: React.FC = () => {
           {/* 3. Bookings */}
           <SidebarItem
             id="bookings"
-            icon={<BookOpen className="w-4 h-4 text-amber-600" />}
+            icon={<BookOpen className="w-4 h-4" />}
             label="Bookings"
             active={activeTab === 'bookings' || activeTab === 'history'}
             onClick={() => {
@@ -171,7 +176,7 @@ export const DesktopSidebar: React.FC = () => {
           {/* 4. Crew */}
           <SidebarItem
             id="crew"
-            icon={<Users className="w-4 h-4 text-indigo-600" />}
+            icon={<Users className="w-4 h-4" />}
             label="Crew"
             active={activeTab === 'crew' || activeTab === 'team'}
             onClick={() => {

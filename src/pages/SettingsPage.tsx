@@ -574,7 +574,7 @@ export const SettingsPage: React.FC = () => {
             </h4>
             <ul className="text-zinc-500 space-y-1 list-disc list-inside text-xs leading-relaxed">
               <li>Use at least 8-12 characters with a mix of uppercase, lowercase, numbers, and symbols.</li>
-              <li>Passwords are protected by Firebase Authentication and are never stored in plaintext.</li>
+              <li>Passwords are encrypted with industry-standard secure authentication and are never stored in plaintext.</li>
               <li>Your updated password remains valid across sessions without repeated password change prompts.</li>
             </ul>
           </div>

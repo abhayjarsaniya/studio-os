@@ -95,7 +95,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <p className="text-xs text-zinc-600 leading-relaxed">
-              Enter the email address registered with your {portalTitle} account. We will send you a secure Firebase link to reset your password.
+              Enter the email address registered with your {portalTitle} account. We will send you a secure link to reset your password.
             </p>
 
             {error && (

@@ -44,16 +44,13 @@ export const DesktopHeader: React.FC = () => {
         {/* Real-Time Cloud Save Status Indicator */}
         <SaveIndicator />
 
-        {/* Studio Tenant Identity Pill */}
+        {/* Studio Workspace Pill */}
         <div
           className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs font-medium text-zinc-800 shadow-2xs"
           title="Active photography studio workspace"
         >
           <Building2 className="w-3.5 h-3.5 text-zinc-600" />
-          <span className="truncate max-w-[130px] font-semibold text-zinc-900">{currentStudio.name}</span>
-          <span className="text-xs bg-zinc-200/80 px-1.5 py-0.5 rounded text-zinc-600 font-mono">
-            {currentStudio.id}
-          </span>
+          <span className="truncate max-w-[150px] font-semibold text-zinc-900">{currentStudio.name}</span>
         </div>
 
         {/* Authenticated User Role Badge (Non-clickable, derived from backend membership) */}

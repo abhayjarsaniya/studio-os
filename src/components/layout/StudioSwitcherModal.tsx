@@ -17,16 +17,16 @@ export const StudioSwitcherModal: React.FC = () => {
     <Modal
       isOpen={isStudioSwitcherOpen}
       onClose={() => setIsStudioSwitcherOpen(false)}
-      title="Multi-Tenant Studio Switcher"
-      subtitle="Switch between independent photography studio tenants to test complete data isolation."
+      title="Switch Studio Workspace"
+      subtitle="Switch between your photography studio locations and workspaces."
       maxWidth="lg"
     >
       <div className="space-y-4">
-        {/* Architecture Note */}
+        {/* Workspace Info */}
         <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200/80 flex items-start gap-3 text-xs text-emerald-900 leading-relaxed">
           <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
           <div>
-            <strong className="font-semibold">Tenant Isolation Guarantee:</strong> Each studio maintains its own independent database partition (customers, events, branches, team crew, tasks, and settings). No data leaks across studios.
+            <strong className="font-semibold">Dedicated Workspace:</strong> Each studio location maintains its own independent bookings, clients, crew roster, and financials securely.
           </div>
         </div>
 
@@ -108,9 +108,9 @@ export const StudioSwitcherModal: React.FC = () => {
           </div>
         </div>
 
-        <div className="pt-2 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-400 font-mono">
-          <span>Active Tenant: {currentStudio.tenantId}</span>
-          <span className="text-xs text-zinc-500">SaaS Multi-Tenant Mode</span>
+        <div className="pt-2 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
+          <span>Active Studio: {currentStudio.name}</span>
+          <span className="text-xs text-emerald-600 font-semibold">Verified Workspace</span>
         </div>
       </div>
     </Modal>

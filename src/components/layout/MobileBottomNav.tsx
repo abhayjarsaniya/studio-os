@@ -27,7 +27,10 @@ export const MobileBottomNav: React.FC = () => {
         }`}
       >
         <LayoutDashboard className="w-5 h-5 mb-0.5" />
-        <span className="text-xs font-semibold">Dashboard</span>
+        <div className="relative inline-flex flex-col items-center">
+          <span className="text-xs font-semibold">Dashboard</span>
+          {activeTab === 'dashboard' && <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-orange-500 rounded-full" />}
+        </div>
       </button>
 
       {/* 2. Calendar */}
@@ -41,7 +44,10 @@ export const MobileBottomNav: React.FC = () => {
         }`}
       >
         <Calendar className="w-5 h-5 mb-0.5" />
-        <span className="text-xs font-semibold">Calendar</span>
+        <div className="relative inline-flex flex-col items-center">
+          <span className="text-xs font-semibold">Calendar</span>
+          {activeTab === 'calendar' && <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-orange-500 rounded-full" />}
+        </div>
       </button>
 
       {/* 3. + New Booking (Elevated Center Button) */}
@@ -69,7 +75,10 @@ export const MobileBottomNav: React.FC = () => {
         }`}
       >
         <BookOpen className="w-5 h-5 mb-0.5" />
-        <span className="text-xs font-semibold">Bookings</span>
+        <div className="relative inline-flex flex-col items-center">
+          <span className="text-xs font-semibold">Bookings</span>
+          {(activeTab === 'bookings' || activeTab === 'history') && <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-orange-500 rounded-full" />}
+        </div>
       </button>
 
       {/* 5. Crew */}
@@ -83,7 +92,10 @@ export const MobileBottomNav: React.FC = () => {
         }`}
       >
         <Users className="w-5 h-5 mb-0.5" />
-        <span className="text-xs font-semibold">Crew</span>
+        <div className="relative inline-flex flex-col items-center">
+          <span className="text-xs font-semibold">Crew</span>
+          {(activeTab === 'crew' || activeTab === 'team') && <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-orange-500 rounded-full" />}
+        </div>
       </button>
     </nav>
   );

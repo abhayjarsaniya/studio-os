@@ -203,14 +203,14 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
     const executePersistence = async () => {
       setInstantSaveStatus('saving');
-      setInstantSaveMsg('Saving to cloud...');
-      firestoreService.setStatus('saving', 'Saving booking to Firestore...');
+      setInstantSaveMsg('Saving...');
+      firestoreService.setStatus('saving', 'Saving booking...');
 
       try {
         await bookingProductionService.saveBooking(studioId, booking);
         setInstantSaveStatus('saved');
         setInstantSaveMsg('Saved');
-        firestoreService.setStatus('saved', 'Booking saved to Firestore');
+        firestoreService.setStatus('saved', 'Booking saved');
         setRefreshKey(k => k + 1);
 
         setTimeout(() => {
@@ -1118,7 +1118,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs sm:text-sm font-bold text-zinc-800">Instant Actions & Auto-Save Active</span>
-              <span className="hidden sm:inline text-xs text-zinc-500">— All changes save automatically to Firestore</span>
+              <span className="hidden sm:inline text-xs text-zinc-500">— Changes save automatically</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs font-bold">
               {instantSaveStatus === 'saving' && (
@@ -1789,7 +1789,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   Deliverables Checklist & Production Progress
                 </h3>
                 <p className="text-xs text-zinc-400 mt-0.5">
-                  Independent event-specific deliverable checklist saved to Firestore
+                  Track photography and video fulfillment items for this booking
                 </p>
               </div>
 

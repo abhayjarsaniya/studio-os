@@ -1068,7 +1068,7 @@ export const HistoryBookingsPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="text-sm font-bold text-zinc-900">Executive Business Performance Reports</h4>
-                <p className="text-xs text-zinc-500">Live consolidated calculations from actual Firestore booking records</p>
+                <p className="text-xs text-zinc-500">Live consolidated calculations from confirmed studio bookings</p>
               </div>
               <button
                 onClick={handleExportCSV}

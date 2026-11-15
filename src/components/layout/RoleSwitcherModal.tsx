@@ -50,15 +50,15 @@ export const RoleSwitcherModal: React.FC = () => {
     <Modal
       isOpen={isRoleSwitcherOpen}
       onClose={() => setIsRoleSwitcherOpen(false)}
-      title="Development Role Switcher"
-      subtitle="Preview Studio OS from different staff perspectives without requiring actual authentication login."
+      title="Team Perspective Switcher"
+      subtitle="Preview Studio OS from different staff perspectives and roles."
       maxWidth="lg"
     >
       <div className="space-y-4">
         <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-200/80 flex items-start gap-3 text-xs text-amber-900 leading-relaxed">
           <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <div>
-            <strong className="font-semibold">Development Preview Mode:</strong> No login or password required. Switch roles below to test how different team members interact with the dashboard, tasks, and events.
+            <strong className="font-semibold">Team Role Preview:</strong> Switch roles below to preview how different team members interact with the dashboard, tasks, shoots, and calendar.
           </div>
         </div>
 
@@ -112,9 +112,9 @@ export const RoleSwitcherModal: React.FC = () => {
 
         <div className="pt-2 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
           <span className="flex items-center gap-1.5">
-            <Shield className="w-3.5 h-3.5 text-zinc-400" /> Multi-Tenant Isolation Active
+            <Shield className="w-3.5 h-3.5 text-emerald-600" /> Secure Studio Workspace Active
           </span>
-          <span className="font-mono text-xs text-zinc-400">Preview: Tenant_Aura_098</span>
+          <span className="text-xs text-zinc-400">Production Mode</span>
         </div>
       </div>
     </Modal>
