@@ -217,7 +217,7 @@ You can change your password anytime from Settings or use Forgot Password on the
           <button
             type="button"
             onClick={copyAllDetails}
-            className="min-h-[48px] sm:min-h-[44px] py-3 px-4 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-sm sm:text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm touch-manipulation active:scale-[0.98]"
+            className="min-h-[48px] sm:min-h-[44px] py-3 px-4 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-sm sm:text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm touch-manipulation active:scale-[0.98]"
           >
             {copiedKey === 'all' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
             <span>{copiedKey === 'all' ? 'All Details Copied!' : 'Copy All Login Details'}</span>

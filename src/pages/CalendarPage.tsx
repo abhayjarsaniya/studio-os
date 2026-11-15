@@ -21,6 +21,8 @@ import { TenantStore } from '../services/tenantStore';
 import { StudioEvent } from '../types';
 import { BookingRecord } from '../types/bookingProduction';
 import { bookingProductionService } from '../services/bookingProductionService';
+import { calendarVisibilityService } from '../services/calendarVisibilityService';
+import { THEME } from '../utils/theme';
 
 type CalendarViewMode = 'month' | 'week' | 'day';
 
@@ -56,6 +58,35 @@ export const CalendarPage: React.FC = () => {
 
   // Combine StudioEvents and BookingRecords for seamless calendar visibility
   const combinedCalendarEvents = useMemo(() => {
+    const userRole = localStorage.getItem('studio_os_user_role');
+    const employeeId = localStorage.getItem('studio_os_employee_id');
+
+    // If viewing as an employee, strictly show ONLY assigned and visible events
+    if (userRole === 'employee' && employeeId) {
+      const empEvents = calendarVisibilityService.getEmployeeCalendarEvents(studioId, employeeId);
+      return empEvents.map(ev => ({
+        id: ev.bookingId,
+        studioId,
+        eventNumber: ev.bookingNumber,
+        name: ev.eventName,
+        title: ev.eventName,
+        customerId: '',
+        customerName: ev.customerName,
+        customerPhone: ev.customerPhone,
+        category: ev.category as any,
+        startDate: ev.date,
+        startTime: ev.startTime,
+        endDate: ev.date,
+        endTime: ev.endTime,
+        venue: ev.venue,
+        venueCity: ev.city,
+        priority: 'High',
+        status: ev.status as any,
+        assignedTeamIds: [employeeId],
+        notes: ''
+      } as unknown as StudioEvent));
+    }
+
     const list: StudioEvent[] = [...events] as any[];
     const bookings = bookingProductionService.listBookings(studioId);
 
@@ -276,7 +307,7 @@ export const CalendarPage: React.FC = () => {
             <h2 className="text-2xl font-bold tracking-tight text-zinc-900 font-display">
               Studio Shoot Calendar
             </h2>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-zinc-900 text-white font-bold">
+            <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-2xs">
               {combinedCalendarEvents.length} Shoots
             </span>
           </div>
@@ -287,27 +318,27 @@ export const CalendarPage: React.FC = () => {
 
         <div className="flex items-center gap-2.5">
           {/* Mode Switcher: Month / Week / Day */}
-          <div className="flex items-center p-1 bg-zinc-100 rounded-xl text-xs font-semibold">
+          <div className="flex items-center p-1 bg-zinc-100 rounded-xl text-xs font-semibold border border-zinc-200/70">
             <button
               onClick={() => setViewMode('month')}
-              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                viewMode === 'month' ? 'bg-white text-zinc-900 shadow-2xs font-bold' : 'text-zinc-500 hover:text-zinc-800'
+              className={`min-h-[40px] px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                viewMode === 'month' ? 'bg-orange-500 text-white shadow-2xs font-bold' : 'text-zinc-600 hover:text-zinc-900'
               }`}
             >
               Month
             </button>
             <button
               onClick={() => setViewMode('week')}
-              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                viewMode === 'week' ? 'bg-white text-zinc-900 shadow-2xs font-bold' : 'text-zinc-500 hover:text-zinc-800'
+              className={`min-h-[40px] px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                viewMode === 'week' ? 'bg-orange-500 text-white shadow-2xs font-bold' : 'text-zinc-600 hover:text-zinc-900'
               }`}
             >
               Week
             </button>
             <button
               onClick={() => setViewMode('day')}
-              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                viewMode === 'day' ? 'bg-white text-zinc-900 shadow-2xs font-bold' : 'text-zinc-500 hover:text-zinc-800'
+              className={`min-h-[40px] px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                viewMode === 'day' ? 'bg-orange-500 text-white shadow-2xs font-bold' : 'text-zinc-600 hover:text-zinc-900'
               }`}
             >
               Day
@@ -316,7 +347,7 @@ export const CalendarPage: React.FC = () => {
 
           <Button
             variant="primary"
-            size="sm"
+            size="md"
             icon={<Plus className="w-4 h-4" />}
             onClick={() => {
               setEditingEvent(null);
@@ -342,26 +373,29 @@ export const CalendarPage: React.FC = () => {
               </h3>
               <button
                 onClick={handleToday}
-                className="text-xs px-2.5 py-1 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-zinc-700 font-medium cursor-pointer"
+                className="text-xs min-h-[40px] px-3 py-1.5 rounded-xl border border-orange-200 bg-orange-50/70 hover:bg-orange-100 text-orange-800 font-bold cursor-pointer transition-all active:scale-95"
               >
                 Today
               </button>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            {/* 48x48px Touch-friendly Navigation Buttons with Orange Hover/Active States */}
+            <div className="flex items-center gap-2">
               <button
                 onClick={handlePrev}
-                className="w-8 h-8 rounded-lg border border-zinc-200 flex items-center justify-center text-zinc-600 hover:bg-zinc-50 cursor-pointer"
+                className="min-w-[48px] min-h-[48px] w-12 h-12 rounded-xl border border-zinc-200 bg-white hover:bg-orange-50 hover:border-orange-300 text-zinc-700 hover:text-orange-600 flex items-center justify-center cursor-pointer transition-all active:scale-95 shadow-2xs"
                 title="Previous"
+                aria-label="Previous Month"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-5 h-5" />
               </button>
               <button
                 onClick={handleNext}
-                className="w-8 h-8 rounded-lg border border-zinc-200 flex items-center justify-center text-zinc-600 hover:bg-zinc-50 cursor-pointer"
+                className="min-w-[48px] min-h-[48px] w-12 h-12 rounded-xl border border-zinc-200 bg-white hover:bg-orange-50 hover:border-orange-300 text-zinc-700 hover:text-orange-600 flex items-center justify-center cursor-pointer transition-all active:scale-95 shadow-2xs"
                 title="Next"
+                aria-label="Next Month"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -399,25 +433,25 @@ export const CalendarPage: React.FC = () => {
                       onClick={() => handleDateClick(day)}
                       className={`h-16 sm:h-22 p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
                         isSelected
-                          ? 'border-zinc-900 bg-zinc-900/5 ring-1 ring-zinc-900'
+                          ? 'border-orange-500 bg-orange-50/70 ring-2 ring-orange-500/40'
                           : isToday
-                          ? 'border-amber-300 bg-amber-50/40 hover:border-amber-400'
-                          : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50'
+                          ? 'border-orange-300 bg-orange-50/40 hover:border-orange-400'
+                          : 'border-zinc-200 hover:border-orange-300 hover:bg-orange-50/20'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className={`text-xs font-semibold ${
-                          isSelected ? 'text-zinc-900' : isToday ? 'text-amber-800' : 'text-zinc-700'
+                        <span className={`text-xs ${
+                          isSelected ? 'text-orange-950 font-black' : isToday ? 'text-orange-800 font-bold' : 'text-zinc-700 font-semibold'
                         }`}>
                           {day}
                         </span>
                         {isToday && (
-                          <span className="text-[9px] font-bold px-1 rounded bg-amber-200 text-amber-900 hidden sm:inline">
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-200 text-orange-900 hidden sm:inline">
                             Today
                           </span>
                         )}
                         {hasMultiple && (
-                          <span className="text-[9px] font-bold px-1 rounded bg-purple-100 text-purple-700">
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-800 border border-orange-200">
                             {eventsOnDay.length} shoots
                           </span>
                         )}
@@ -435,7 +469,7 @@ export const CalendarPage: React.FC = () => {
                           </div>
                         ))}
                         {eventsOnDay.length > 2 && (
-                          <div className="text-[9px] text-zinc-500 font-bold px-1">
+                          <div className="text-[9px] text-orange-700 font-bold px-1">
                             +{eventsOnDay.length - 2} more
                           </div>
                         )}
@@ -472,14 +506,14 @@ export const CalendarPage: React.FC = () => {
                       }
                     }}
                     className={`min-h-[220px] p-2 rounded-xl border flex flex-col justify-between cursor-pointer transition-all ${
-                      isSelected ? 'border-zinc-900 bg-zinc-900/5 ring-1 ring-zinc-900' : 'border-zinc-200 bg-white hover:bg-zinc-50'
+                      isSelected ? 'border-orange-500 bg-orange-50/70 ring-2 ring-orange-500/40' : 'border-zinc-200 bg-white hover:border-orange-200 hover:bg-orange-50/20'
                     }`}
                   >
                     <div>
                       <div className="text-[11px] font-bold text-zinc-400 uppercase">
                         {d.toLocaleDateString('en-US', { weekday: 'short' })}
                       </div>
-                      <div className="text-sm font-bold text-zinc-900">{dayNum}</div>
+                      <div className={`text-sm font-bold ${isSelected ? 'text-orange-950 font-black' : 'text-zinc-900'}`}>{dayNum}</div>
 
                       <div className="space-y-1.5 mt-2">
                         {dayEventsForWeek.map(ev => (
@@ -495,7 +529,7 @@ export const CalendarPage: React.FC = () => {
                     </div>
 
                     {dayEventsForWeek.length === 0 && (
-                      <span className="text-[10px] text-zinc-400 text-center py-2">+ Add</span>
+                      <span className="text-[10px] text-orange-600 font-semibold text-center py-2">+ Add</span>
                     )}
                   </div>
                 );
@@ -506,13 +540,13 @@ export const CalendarPage: React.FC = () => {
           {/* VIEW MODE 3: DAY VIEW */}
           {viewMode === 'day' && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-50 border border-zinc-200">
-                <span className="text-xs font-bold text-zinc-700">
+              <div className="flex items-center justify-between p-3.5 rounded-xl bg-orange-50/50 border border-orange-200/80">
+                <span className="text-xs font-bold text-orange-950">
                   Detailed Hourly Schedule for {formatDate(formattedSelectedDayStr)}
                 </span>
                 <button
                   onClick={handleCreateBookingForDay}
-                  className="px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-bold hover:bg-zinc-800"
+                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-bold shadow-2xs cursor-pointer active:scale-95 transition-all"
                 >
                   + Add Shoot on this Day
                 </button>
@@ -560,20 +594,22 @@ export const CalendarPage: React.FC = () => {
               <h3 className="text-base font-bold text-zinc-900 font-display">
                 {monthNames[currentMonth]} {selectedDay}, {currentYear}
               </h3>
-              <p className="text-xs text-zinc-500">{dayEvents.length} Shoots Scheduled</p>
+              <p className="text-xs text-orange-700 font-medium">{dayEvents.length} Shoots Scheduled</p>
             </div>
-            <CalendarIcon className="w-5 h-5 text-zinc-400" />
+            <div className="w-9 h-9 rounded-xl bg-orange-50 border border-orange-200/80 flex items-center justify-center text-orange-600">
+              <CalendarIcon className="w-4 h-4" />
+            </div>
           </div>
 
           {/* Crew Conflict Warning Banner if multiple events share crew */}
           {crewConflictsOnSelectedDay.length > 0 && (
-            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1">
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1.5 shadow-2xs">
               <div className="font-bold flex items-center gap-1.5 text-amber-800">
-                <AlertTriangle className="w-4 h-4 text-amber-600" />
-                Crew Scheduling Conflict Detected
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>Crew Scheduling Conflict Detected</span>
               </div>
               {crewConflictsOnSelectedDay.map((msg, i) => (
-                <p key={i} className="text-[11px] leading-relaxed">{msg}</p>
+                <p key={i} className="text-[11px] leading-relaxed text-amber-900/90">{msg}</p>
               ))}
             </div>
           )}
@@ -583,7 +619,7 @@ export const CalendarPage: React.FC = () => {
             {dayEvents.map(ev => (
               <div
                 key={ev.id}
-                className="p-3.5 rounded-xl border border-zinc-200 hover:border-zinc-300 transition-all space-y-2.5 bg-zinc-50/50"
+                className="p-3.5 rounded-xl border border-zinc-200 hover:border-orange-200 transition-all space-y-2.5 bg-zinc-50/50 hover:bg-orange-50/10"
               >
                 <div className="flex items-center justify-between">
                   <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getCategoryBadgeColor(ev.category)}`}>
@@ -613,7 +649,7 @@ export const CalendarPage: React.FC = () => {
                 {/* Assigned Crew Indicators */}
                 {ev.assignedTeamIds && ev.assignedTeamIds.length > 0 && (
                   <div className="flex items-center gap-1 text-[10px] text-zinc-500">
-                    <Users className="w-3 h-3 text-zinc-400" />
+                    <Users className="w-3 h-3 text-orange-500" />
                     <span>{ev.assignedTeamIds.length} team members assigned</span>
                   </div>
                 )}
@@ -624,9 +660,9 @@ export const CalendarPage: React.FC = () => {
                     onClick={() => {
                       window.location.hash = `#/app/bookings/${ev.id}`;
                     }}
-                    className="flex-1 py-1.5 px-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer"
+                    className="flex-1 min-h-[38px] py-1.5 px-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 transition-all"
                   >
-                    <ExternalLink className="w-3 h-3" />
+                    <ExternalLink className="w-3.5 h-3.5" />
                     <span>Workspace</span>
                   </button>
 
@@ -635,10 +671,10 @@ export const CalendarPage: React.FC = () => {
                       setEditingEvent(ev as unknown as StudioEvent);
                       setIsEventFormOpen(true);
                     }}
-                    className="py-1.5 px-2.5 rounded-lg border border-zinc-200 hover:bg-zinc-100 text-zinc-700 text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
+                    className="min-h-[38px] py-1.5 px-3 rounded-xl border border-zinc-200 hover:border-orange-300 hover:bg-orange-50/40 text-zinc-700 text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors"
                     title="Edit Event Details"
                   >
-                    <Edit3 className="w-3 h-3" />
+                    <Edit3 className="w-3.5 h-3.5" />
                     <span>Edit</span>
                   </button>
                 </div>
@@ -650,7 +686,7 @@ export const CalendarPage: React.FC = () => {
                 <p>No shoots booked on this date.</p>
                 <button
                   onClick={handleCreateBookingForDay}
-                  className="text-xs font-semibold text-zinc-900 underline hover:text-zinc-700 cursor-pointer"
+                  className="text-xs font-bold text-orange-600 underline hover:text-orange-700 cursor-pointer"
                 >
                   Schedule a shoot
                 </button>
@@ -662,9 +698,9 @@ export const CalendarPage: React.FC = () => {
           <div className="pt-2 border-t border-zinc-100">
             <button
               onClick={handleCreateBookingForDay}
-              className="w-full py-2.5 px-3 rounded-xl border border-dashed border-zinc-300 hover:border-zinc-400 text-xs font-bold text-zinc-700 hover:bg-zinc-50 flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full min-h-[44px] py-2.5 px-3 rounded-xl border border-dashed border-orange-300 hover:border-orange-500 text-xs font-bold text-orange-800 hover:bg-orange-50/50 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
             >
-              <Plus className="w-4 h-4 text-zinc-500" />
+              <Plus className="w-4 h-4 text-orange-600" />
               <span>+ Book Another Shoot on this Date</span>
             </button>
           </div>

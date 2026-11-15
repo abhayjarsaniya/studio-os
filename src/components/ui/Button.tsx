@@ -27,12 +27,12 @@ export const Button: React.FC<ButtonProps> = ({
   }[size];
 
   const variantClasses = {
-    primary: 'bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm shadow-zinc-900/10 active:bg-zinc-950',
-    secondary: 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200/80 active:bg-zinc-200',
-    outline: 'border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50 hover:border-zinc-300 shadow-xs',
-    ghost: 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100',
-    danger: 'bg-rose-600 text-white hover:bg-rose-700 shadow-sm shadow-rose-600/15',
-    whatsapp: 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm shadow-emerald-600/20'
+    primary: 'bg-gradient-to-r from-orange-500 via-orange-500 to-amber-600 hover:from-orange-600 hover:via-orange-600 hover:to-amber-700 text-white shadow-sm shadow-orange-500/25 border border-orange-400/20 active:brightness-95 font-bold',
+    secondary: 'bg-orange-50 text-orange-900 hover:bg-orange-100 border border-orange-200/80 active:bg-orange-200 font-semibold',
+    outline: 'border border-zinc-200 bg-white text-zinc-800 hover:bg-orange-50/50 hover:text-orange-900 hover:border-orange-200 shadow-xs font-semibold',
+    ghost: 'text-zinc-600 hover:text-orange-900 hover:bg-orange-50/60 font-semibold',
+    danger: 'bg-rose-600 text-white hover:bg-rose-700 shadow-sm shadow-rose-600/15 font-bold',
+    whatsapp: 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm shadow-emerald-600/20 font-bold'
   }[variant];
 
   return (

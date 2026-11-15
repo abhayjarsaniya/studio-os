@@ -37,12 +37,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       onClick={onClick}
       className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group select-none min-h-[44px] cursor-pointer ${
         active 
-          ? 'bg-zinc-900 text-white shadow-xs' 
-          : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/80'
+          ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs font-bold' 
+          : 'text-zinc-600 hover:text-zinc-900 hover:bg-orange-50/50'
       }`}
     >
       <div className="flex items-center gap-3 min-w-0">
-        <span className={`shrink-0 transition-transform ${active ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-800'}`}>
+        <span className={`shrink-0 transition-transform ${active ? 'text-white' : 'text-zinc-500 group-hover:text-orange-600'}`}>
           {icon}
         </span>
         <span className="truncate">{label}</span>
@@ -85,7 +85,7 @@ export const DesktopSidebar: React.FC = () => {
         <div className="p-3 border-b border-zinc-100">
           <div className="w-full flex items-center justify-between p-2.5 rounded-xl border border-zinc-200/80 bg-zinc-50/70 shadow-2xs">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-white flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 border border-orange-400/40 text-white flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
                 {currentStudio.logoUrl || studio.logo ? (
                   <img 
                     src={currentStudio.logoUrl || studio.logo} 

@@ -39,10 +39,13 @@ import {
   ExternalLink,
   ShieldCheck,
   CheckSquare,
-  History
+  History,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { CompleteBookingHistoryTab } from './CompleteBookingHistoryTab';
 import { bookingHistoryService } from '../../services/bookingHistoryService';
+import { calendarVisibilityService } from '../../services/calendarVisibilityService';
 import { generateDeliverablesForCategory } from '../../services/deliverablesPresetService';
 import { crewConflictService, CrewConflictInfo } from '../../services/crewConflictService';
 import { StudioEvent } from '../../types';
@@ -102,6 +105,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
   const [isCrewModalOpen, setIsCrewModalOpen] = useState(false);
   const [selectedCrewEmployeeId, setSelectedCrewEmployeeId] = useState('');
   const [selectedCrewRole, setSelectedCrewRole] = useState('Lead Photographer');
+  const [crewModalVisibleOnCalendar, setCrewModalVisibleOnCalendar] = useState(true);
   const [crewConflictWarn, setCrewConflictWarn] = useState<CrewConflictInfo | null>(null);
   const [allowCrewConflictOverride, setAllowCrewConflictOverride] = useState(false);
 
@@ -166,7 +170,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
               window.location.hash = '#/app/bookings';
             }
           }}
-          className="px-4 py-2 bg-zinc-900 text-white text-xs font-bold rounded-xl"
+          className="min-h-[44px] px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-bold rounded-xl cursor-pointer shadow-xs active:scale-95 transition-all"
         >
           Return to All Bookings
         </button>
@@ -389,7 +393,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
     setIsEventFormOpen(true);
   };
 
-  // Handle Add Crew Member with Conflict Detection
+  // Handle Add Crew Member with Conflict Detection and Smart Calendar Visibility
   const handleAssignCrew = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCrewEmployeeId) return;
@@ -428,54 +432,46 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
     }
 
     const mainFn = booking.functions[0];
-    if (!mainFn.assignedCrew) mainFn.assignedCrew = [];
 
-    // Avoid duplicate assignment
-    if (!mainFn.assignedCrew.some(c => c.employeeId === emp.id)) {
-      mainFn.assignedCrew.push({
+    calendarVisibilityService.assignCrewMember(
+      studioId,
+      booking.id,
+      mainFn.id,
+      {
         employeeId: emp.id,
         employeeName: emp.fullName,
+        designation: emp.designation,
+        department: emp.department,
         role: selectedCrewRole,
         contact: emp.phone || ''
-      });
+      },
+      crewModalVisibleOnCalendar,
+      'Studio Owner'
+    );
 
-      // Save assignment to Firestore subcollection: studios/{studioId}/bookings/{bookingId}/assignments/{assignmentId}
-      crewConflictService.saveAssignmentToFirestore(studioId, booking.id, {
-        assignmentId: `asgn_${booking.id}_${emp.id}`,
-        studioId,
-        bookingId: booking.id,
-        subEventId: mainFn.id,
-        employeeId: emp.id,
-        employeeName: emp.fullName,
-        designation: emp.designation || selectedCrewRole,
-        department: emp.department || 'Photography',
-        assignedAt: new Date().toISOString(),
-        assignedBy: 'Studio Owner',
-        assignmentStatus: 'confirmed',
-        role: selectedCrewRole
-      });
-
-      // Record in Complete History
-      bookingHistoryService.addHistoryItem(studioId, {
-        bookingId: booking.id,
-        customerId: booking.customerId,
-        activityType: 'crew_assigned',
-        title: `Crew Assigned — ${emp.fullName}`,
-        description: `Assigned ${emp.fullName} as ${selectedCrewRole} for ${mainFn.name}.`,
-        relatedFunctionId: mainFn.id,
-        relatedFunctionName: mainFn.name,
-        performedBy: 'owner',
-        performedByName: 'Studio Owner'
-      });
-    }
-
-    bookingProductionService.saveBooking(studioId, booking);
     setIsCrewModalOpen(false);
     setSelectedCrewEmployeeId('');
     setCrewConflictWarn(null);
     setAllowCrewConflictOverride(false);
     setRefreshKey(k => k + 1);
-    showToast(`${emp.fullName} assigned as ${selectedCrewRole}`);
+    showToast(`${emp.fullName} assigned as ${selectedCrewRole} (${crewModalVisibleOnCalendar ? 'Visible on calendar' : 'Hidden from calendar'})`);
+  };
+
+  const handleToggleVisibility = (empId: string, fnId: string, currentVisible: boolean) => {
+    const nextVisible = !currentVisible;
+    calendarVisibilityService.setEmployeeCalendarVisibility(studioId, booking.id, empId, fnId, nextVisible);
+    setRefreshKey(k => k + 1);
+    const emp = employees.find(e => e.id === empId);
+    showToast(nextVisible 
+      ? `${emp?.fullName || 'Crew member'} is now visible on team calendar.` 
+      : `${emp?.fullName || 'Crew member'} is now hidden from calendar. (Assignment preserved in Firestore)`
+    );
+  };
+
+  const handleUnassignCrew = (empId: string, fnId: string) => {
+    calendarVisibilityService.unassignCrewMember(studioId, booking.id, fnId, empId);
+    setRefreshKey(k => k + 1);
+    showToast('Crew member removed from assignment.');
   };
 
   // Add Internal Note
@@ -676,18 +672,10 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
   const activeWhatsAppText = whatsappMessages[activeWhatsAppTemplate];
   const activeWhatsAppUrl = `https://wa.me/${cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone}?text=${encodeURIComponent(activeWhatsAppText)}`;
 
-  // Assigned crew combined list
-  const assignedCrewList = useMemo(() => {
-    const list: Array<{ employeeId: string; employeeName: string; role: string; contact?: string }> = [];
-    (booking.functions || []).forEach(fn => {
-      (fn.assignedCrew || []).forEach(c => {
-        if (!list.some(l => l.employeeId === c.employeeId)) {
-          list.push(c);
-        }
-      });
-    });
-    return list;
-  }, [booking]);
+  // Assigned crew combined table rows with visibility state
+  const crewTableRows = useMemo(() => {
+    return calendarVisibilityService.getBookingCrewTable(studioId, booking);
+  }, [studioId, booking, refreshKey]);
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-24 font-sans animate-in fade-in duration-150">
@@ -720,7 +708,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
       <div className="bg-white rounded-2xl border border-zinc-200/90 p-4 sm:p-5 shadow-2xs space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start sm:items-center gap-3.5">
-            <div className="w-12 h-12 rounded-xl bg-zinc-900 text-white flex items-center justify-center font-bold text-lg font-display shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 text-white flex items-center justify-center font-bold text-lg font-display shrink-0 shadow-2xs">
               {booking.customerName ? booking.customerName.charAt(0).toUpperCase() : 'B'}
             </div>
             <div>
@@ -820,7 +808,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
             <div className="relative inline-block w-full sm:w-auto">
               <button
                 onClick={() => setIsPdfDropdownOpen(!isPdfDropdownOpen)}
-                className="w-full sm:w-auto min-h-[48px] sm:min-h-[42px] px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-sm sm:text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs touch-manipulation active:scale-95"
+                className="w-full sm:w-auto min-h-[48px] sm:min-h-[42px] px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-sm sm:text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs touch-manipulation active:scale-95"
               >
                 <Printer className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                 <span>Download / Print</span>
@@ -944,8 +932,8 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
             onClick={() => setActiveSection(sec.id as BookingSectionTab)}
             className={`min-h-[48px] px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
               activeSection === sec.id
-                ? 'bg-zinc-900 text-white shadow-xs'
-                : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+                ? 'bg-orange-500 text-white shadow-xs font-bold'
+                : 'text-zinc-600 hover:text-zinc-900 hover:bg-orange-50/40'
             }`}
           >
             {sec.icon}
@@ -1090,40 +1078,126 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
           <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-3">
               <div>
-                <h3 className="text-sm font-bold text-zinc-900 font-display">Assigned Production Crew</h3>
-                <p className="text-xs text-zinc-400 mt-0.5">Lead photographer, candid, cinematic, drone operator & editors</p>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-zinc-900 font-display">Crew Assignments & Calendar Visibility</h3>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200">
+                    {crewTableRows.length} Assigned
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  Manage crew responsibilities and toggle employee calendar visibility with one tap
+                </p>
               </div>
 
               <button
-                onClick={() => setIsCrewModalOpen(true)}
-                className="w-full sm:w-auto min-h-[48px] sm:min-h-[38px] px-4 py-2 rounded-xl bg-zinc-900 text-white text-sm sm:text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover:bg-zinc-800 touch-manipulation active:scale-95"
+                onClick={() => {
+                  setSelectedCrewEmployeeId('');
+                  setCrewModalVisibleOnCalendar(true);
+                  setIsCrewModalOpen(true);
+                }}
+                className="w-full sm:w-auto min-h-[44px] px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 transition-all"
               >
-                <Plus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                <Plus className="w-4 h-4" />
                 <span>+ Assign Crew</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {assignedCrewList.map((crew, idx) => (
-                <div key={idx} className="p-3 rounded-xl border border-zinc-200 bg-white flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs shrink-0">
-                    {crew.employeeName.charAt(0)}
-                  </div>
-                  <div className="min-w-0">
-                    <h5 className="text-xs font-bold text-zinc-900 truncate">{crew.employeeName}</h5>
-                    <p className="text-[11px] text-indigo-600 font-medium">{crew.role}</p>
-                    {crew.contact && (
-                      <p className="text-[10px] text-zinc-400">{crew.contact}</p>
-                    )}
-                  </div>
-                </div>
-              ))}
+            {/* Crew Assignment Interactive Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-zinc-200/80 text-[11px] font-bold text-zinc-500 uppercase tracking-wider bg-zinc-50/80">
+                    <th className="py-3 px-3.5 rounded-l-xl">Employee</th>
+                    <th className="py-3 px-3.5">Responsibility</th>
+                    <th className="py-3 px-3.5">Assigned</th>
+                    <th className="py-3 px-3.5">Calendar</th>
+                    <th className="py-3 px-3.5 text-right rounded-r-xl">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-100 text-xs">
+                  {crewTableRows.map((row) => (
+                    <tr key={`${row.employeeId}_${row.functionId}`} className="hover:bg-orange-50/20 transition-colors">
+                      {/* 1. Employee */}
+                      <td className="py-3.5 px-3.5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-orange-100 border border-orange-200 text-orange-800 font-bold flex items-center justify-center text-xs shrink-0">
+                            {row.employeeName.charAt(0)}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-zinc-900 truncate">{row.employeeName}</div>
+                            <div className="text-[11px] text-zinc-500 truncate">{row.designation || 'Production Staff'}</div>
+                            {row.contact && <div className="text-[10px] text-zinc-400">{row.contact}</div>}
+                          </div>
+                        </div>
+                      </td>
 
-              {assignedCrewList.length === 0 && (
-                <div className="col-span-full py-6 text-center text-zinc-400 text-xs">
-                  No crew members assigned yet. Tap "+ Assign Crew" to assign your team members.
-                </div>
-              )}
+                      {/* 2. Responsibility */}
+                      <td className="py-3.5 px-3.5">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-orange-50 text-orange-900 border border-orange-200/80">
+                          {row.responsibility}
+                        </span>
+                        <div className="text-[10px] text-zinc-400 mt-1">{row.functionName}</div>
+                      </td>
+
+                      {/* 3. Assigned */}
+                      <td className="py-3.5 px-3.5">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Yes • Confirmed</span>
+                        </span>
+                      </td>
+
+                      {/* 4. Calendar Visibility Switch */}
+                      <td className="py-3.5 px-3.5">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleVisibility(row.employeeId, row.functionId, row.isVisibleOnCalendar)}
+                          className={`min-h-[42px] px-3.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 cursor-pointer transition-all active:scale-95 ${
+                            row.isVisibleOnCalendar
+                              ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300 shadow-2xs'
+                              : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300'
+                          }`}
+                          title={row.isVisibleOnCalendar ? 'Currently visible on employee calendar. Click to hide.' : 'Currently hidden from employee calendar. Click to show.'}
+                        >
+                          {row.isVisibleOnCalendar ? (
+                            <>
+                              <Eye className="w-4 h-4 text-emerald-600 shrink-0" />
+                              <span>Show on calendar</span>
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                            </>
+                          ) : (
+                            <>
+                              <EyeOff className="w-4 h-4 text-amber-600 shrink-0" />
+                              <span>Hide from calendar</span>
+                              <span className="text-[10px] font-medium text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded">(Hidden)</span>
+                            </>
+                          )}
+                        </button>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3.5 px-3.5 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleUnassignCrew(row.employeeId, row.functionId)}
+                          className="min-h-[36px] px-2.5 py-1 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg text-xs font-medium cursor-pointer transition-colors"
+                          title="Remove Assignment"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {crewTableRows.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-zinc-400 text-xs">
+                        No crew members assigned yet. Tap "+ Assign Crew" above to assign photographers, videographers, and editors.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1154,8 +1228,8 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 </span>
               </div>
 
-              <div className="p-3 rounded-xl bg-zinc-900 text-white">
-                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Final Agreed Amount</span>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-2xs">
+                <span className="text-[10px] text-orange-100 font-bold uppercase tracking-wider block">Final Agreed Amount</span>
                 <span className="text-base font-extrabold text-white mt-1 block font-display">
                   ₹{finalAgreedAmount.toLocaleString('en-IN')}
                 </span>
@@ -1436,7 +1510,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   <button
                     type="button"
                     onClick={handleAddCustomDeliverable}
-                    className="min-h-[44px] px-5 py-2 text-xs font-bold text-white bg-zinc-900 rounded-xl hover:bg-zinc-800 cursor-pointer shadow-xs"
+                    className="min-h-[44px] px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 rounded-xl cursor-pointer shadow-xs active:scale-95 transition-all"
                   >
                     Save Deliverable
                   </button>
@@ -1569,7 +1643,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 />
                 <button
                   type="submit"
-                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[40px] px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-sm sm:text-xs font-bold cursor-pointer touch-manipulation active:scale-95"
+                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[40px] px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-xl text-sm sm:text-xs font-bold cursor-pointer touch-manipulation active:scale-95 transition-all shadow-2xs"
                 >
                   Save Internal Note
                 </button>
@@ -1875,7 +1949,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs"
+                  className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs cursor-pointer active:scale-95 transition-all"
                 >
                   Save Changes
                 </button>
@@ -1971,17 +2045,36 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 </select>
               </div>
 
+              {/* Calendar Visibility setting */}
+              <div className="p-3 rounded-xl bg-orange-50/60 border border-orange-200/80 flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-bold text-zinc-900 flex items-center gap-1.5">
+                    {crewModalVisibleOnCalendar ? <Eye className="w-4 h-4 text-emerald-600" /> : <EyeOff className="w-4 h-4 text-amber-600" />}
+                    <span>Show on Employee's Calendar</span>
+                  </div>
+                  <div className="text-[11px] text-zinc-500">
+                    {crewModalVisibleOnCalendar ? 'Event will appear on the employee’s personal schedule' : 'Assigned in studio roster; schedule hidden from employee view'}
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={crewModalVisibleOnCalendar}
+                  onChange={e => setCrewModalVisibleOnCalendar(e.target.checked)}
+                  className="w-5 h-5 rounded border-zinc-300 text-orange-600 focus:ring-orange-500 cursor-pointer"
+                />
+              </div>
+
               <div className="pt-2 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsCrewModalOpen(false)}
-                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[40px] px-5 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50 text-sm sm:text-xs"
+                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[40px] px-5 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50 text-sm sm:text-xs cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs"
+                  className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs cursor-pointer active:scale-95 transition-all"
                 >
                   Assign Member
                 </button>

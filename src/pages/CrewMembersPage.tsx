@@ -469,9 +469,9 @@ export const CrewMembersPage: React.FC = () => {
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
+          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
         >
-          <Plus className="w-4 h-4 text-emerald-400" />
+          <Plus className="w-4 h-4 text-white" />
           <span>Add Employee</span>
         </button>
       </div>
@@ -773,8 +773,8 @@ export const CrewMembersPage: React.FC = () => {
                       onClick={() => setFormData(prev => ({ ...prev, crewType: t }))}
                       className={`p-2.5 rounded-xl border text-xs font-semibold text-left transition-all ${
                         formData.crewType === t 
-                          ? 'bg-zinc-900 text-white border-zinc-900 shadow-xs' 
-                          : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border-zinc-200'
+                          ? 'bg-orange-500 text-white border-orange-500 shadow-xs font-bold' 
+                          : 'bg-zinc-50 hover:bg-orange-50/50 text-zinc-700 border-zinc-200'
                       }`}
                     >
                       {t}
@@ -1027,7 +1027,7 @@ export const CrewMembersPage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold shadow-xs cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold shadow-xs cursor-pointer active:scale-95 transition-all"
                 >
                   Save & Provision Employee
                 </button>
@@ -1185,7 +1185,7 @@ export const CrewMembersPage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold shadow-xs cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold shadow-xs cursor-pointer active:scale-95 transition-all"
                 >
                   Save Changes
                 </button>
@@ -1377,9 +1377,9 @@ export const CrewMembersPage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-sans">
               <button
                 onClick={() => handleCopyCredentials('all')}
-                className="py-2.5 px-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+                className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
               >
-                {copiedKey === 'all' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                {copiedKey === 'all' ? <Check className="w-4 h-4 text-emerald-300" /> : <Copy className="w-4 h-4" />}
                 <span>{copiedKey === 'all' ? 'Details Copied!' : 'Copy All Details'}</span>
               </button>
 
@@ -1462,7 +1462,7 @@ export const CrewMembersPage: React.FC = () => {
               <button
                 disabled={!selectedEventToAssign}
                 onClick={handleAssignToEvent}
-                className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white font-bold text-xs cursor-pointer transition-colors"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:opacity-50 text-white font-bold text-xs cursor-pointer transition-all shadow-xs active:scale-95"
               >
                 Confirm Assignment
               </button>
@@ -1477,7 +1477,7 @@ export const CrewMembersPage: React.FC = () => {
           <div className="bg-white rounded-2xl border border-zinc-200 max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in duration-150">
             <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-zinc-50/70">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-zinc-900 text-white flex items-center justify-center font-bold text-sm overflow-hidden">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 text-white flex items-center justify-center font-bold text-sm overflow-hidden shadow-2xs">
                   {selectedCrew.profilePhoto ? (
                     <img src={selectedCrew.profilePhoto} alt={selectedCrew.fullName} className="w-full h-full object-cover" />
                   ) : (
@@ -1571,7 +1571,7 @@ export const CrewMembersPage: React.FC = () => {
             <div className="p-4 border-t border-zinc-100 bg-zinc-50 flex justify-end">
               <button
                 onClick={() => setIsDetailModalOpen(false)}
-                className="px-4 py-2 rounded-xl bg-zinc-900 text-white font-bold text-xs cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs cursor-pointer shadow-xs active:scale-95 transition-all"
               >
                 Close
               </button>

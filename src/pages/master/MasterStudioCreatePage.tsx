@@ -154,7 +154,7 @@ export const MasterStudioCreatePage: React.FC = () => {
             </button>
             <button
               onClick={copyCredentials}
-              className="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-95"
             >
               {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
               <span>{copied ? 'Credentials Copied!' : 'Copy Owner Credentials'}</span>

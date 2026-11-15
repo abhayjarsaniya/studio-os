@@ -151,7 +151,7 @@ export const MasterLoginPage: React.FC = () => {
 
           <button
             type="submit"
-            className="w-full min-h-[48px] py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all mt-2 cursor-pointer"
+            className="w-full min-h-[48px] py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all mt-2 cursor-pointer active:scale-95"
           >
             <span>Sign In to Studio OS Master Console</span>
             <ArrowRight className="w-4 h-4" />

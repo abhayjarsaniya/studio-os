@@ -143,10 +143,10 @@ export const BookingsWorkspacePage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-900 text-white">
+            <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs">
               Studio Workspace
             </span>
-            <span className="text-xs text-zinc-500">{bookings.length} Bookings Registered</span>
+            <span className="text-xs text-zinc-500 font-medium">{bookings.length} Bookings Registered</span>
           </div>
           <h1 className="text-2xl font-bold text-zinc-900 tracking-tight mt-1 font-display">
             Bookings Directory
@@ -161,9 +161,9 @@ export const BookingsWorkspacePage: React.FC = () => {
             setActiveTab('create-booking');
             window.location.hash = '#/app/bookings/new';
           }}
-          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
+          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
         >
-          <Plus className="w-4 h-4 text-emerald-400" />
+          <Plus className="w-4 h-4 text-white" />
           <span>+ New Booking</span>
         </button>
       </div>
@@ -216,8 +216,8 @@ export const BookingsWorkspacePage: React.FC = () => {
               onClick={() => setStatusFilter(f.id)}
               className={`min-h-[44px] sm:min-h-[36px] px-4 py-2 sm:px-3.5 sm:py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 touch-manipulation active:scale-95 ${
                 statusFilter === f.id
-                  ? 'bg-zinc-900 text-white shadow-xs'
-                  : 'bg-zinc-100/80 text-zinc-600 hover:bg-zinc-200/70 hover:text-zinc-900'
+                  ? 'bg-orange-500 text-white shadow-xs'
+                  : 'bg-zinc-100/80 text-zinc-600 hover:bg-orange-50/60 hover:text-orange-950'
               }`}
             >
               <span>{f.label}</span>
@@ -356,7 +356,7 @@ export const BookingsWorkspacePage: React.FC = () => {
                         e.stopPropagation();
                         handleOpenBooking(b.id);
                       }}
-                      className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-900 hover:text-white font-bold text-[11px] text-zinc-700 transition-all inline-flex items-center gap-1 shadow-2xs"
+                      className="min-h-[36px] px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-500 hover:text-white font-bold text-[11px] text-orange-900 border border-orange-200/80 transition-all inline-flex items-center gap-1 shadow-2xs"
                     >
                       <span>Open</span>
                       <ChevronRight className="w-3 h-3" />

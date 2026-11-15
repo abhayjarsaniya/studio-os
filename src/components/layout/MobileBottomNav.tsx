@@ -23,7 +23,7 @@ export const MobileBottomNav: React.FC = () => {
           window.location.hash = '#/app/dashboard';
         }}
         className={`flex flex-col items-center justify-center flex-1 min-h-[52px] py-1 transition-transform active:scale-95 cursor-pointer touch-manipulation ${
-          activeTab === 'dashboard' ? 'text-zinc-900 font-bold' : 'text-zinc-400 hover:text-zinc-600'
+          activeTab === 'dashboard' ? 'text-orange-600 font-bold' : 'text-zinc-400 hover:text-zinc-600'
         }`}
       >
         <LayoutDashboard className="w-5 h-5 mb-1" />
@@ -37,7 +37,7 @@ export const MobileBottomNav: React.FC = () => {
           window.location.hash = '#/app/calendar';
         }}
         className={`flex flex-col items-center justify-center flex-1 min-h-[52px] py-1 transition-transform active:scale-95 cursor-pointer touch-manipulation ${
-          activeTab === 'calendar' ? 'text-zinc-900 font-bold' : 'text-zinc-400 hover:text-zinc-600'
+          activeTab === 'calendar' ? 'text-orange-600 font-bold' : 'text-zinc-400 hover:text-zinc-600'
         }`}
       >
         <Calendar className="w-5 h-5 mb-1" />
@@ -52,10 +52,10 @@ export const MobileBottomNav: React.FC = () => {
         }}
         className="flex flex-col items-center justify-center flex-1 min-h-[52px] py-1 transition-transform active:scale-95 cursor-pointer group touch-manipulation"
       >
-        <div className="w-12 h-12 rounded-full bg-zinc-900 text-white flex items-center justify-center shadow-lg group-hover:bg-zinc-800 transition-colors -mt-5 border-2 border-white">
-          <PlusCircle className="w-6 h-6 text-emerald-400" />
+        <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-orange-600 via-orange-500 to-amber-500 text-white flex items-center justify-center shadow-lg shadow-orange-500/30 group-hover:from-orange-500 group-hover:to-amber-600 transition-all -mt-5 border-2 border-white">
+          <PlusCircle className="w-6 h-6 text-white" />
         </div>
-        <span className="text-[11px] text-zinc-900 font-bold mt-1">New</span>
+        <span className="text-[11px] text-orange-600 font-bold mt-1">New</span>
       </button>
 
       {/* 4. Bookings */}
@@ -65,7 +65,7 @@ export const MobileBottomNav: React.FC = () => {
           window.location.hash = '#/app/bookings';
         }}
         className={`flex flex-col items-center justify-center flex-1 min-h-[52px] py-1 transition-transform active:scale-95 cursor-pointer touch-manipulation ${
-          activeTab === 'bookings' || activeTab === 'history' ? 'text-amber-700 font-bold' : 'text-zinc-400 hover:text-zinc-600'
+          activeTab === 'bookings' || activeTab === 'history' ? 'text-orange-600 font-bold' : 'text-zinc-400 hover:text-zinc-600'
         }`}
       >
         <BookOpen className="w-5 h-5 mb-1" />
@@ -79,7 +79,7 @@ export const MobileBottomNav: React.FC = () => {
           window.location.hash = '#/app/crew';
         }}
         className={`flex flex-col items-center justify-center flex-1 min-h-[52px] py-1 transition-transform active:scale-95 cursor-pointer touch-manipulation ${
-          activeTab === 'crew' || activeTab === 'team' ? 'text-indigo-700 font-bold' : 'text-zinc-400 hover:text-zinc-600'
+          activeTab === 'crew' || activeTab === 'team' ? 'text-orange-600 font-bold' : 'text-zinc-400 hover:text-zinc-600'
         }`}
       >
         <Users className="w-5 h-5 mb-1" />

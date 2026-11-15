@@ -161,7 +161,7 @@ export const DashboardPage: React.FC = () => {
       {/* 1. Top Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-zinc-200/90 shadow-2xs">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 border border-orange-400/40 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs text-white">
             {currentStudio.logoUrl ? (
               <img 
                 src={currentStudio.logoUrl} 
@@ -169,7 +169,7 @@ export const DashboardPage: React.FC = () => {
                 className="w-full h-full object-contain p-1 rounded-lg" 
               />
             ) : (
-              <Building2 className="w-6 h-6 text-amber-400" />
+              <Building2 className="w-6 h-6 text-white" />
             )}
           </div>
           <div>
@@ -177,7 +177,7 @@ export const DashboardPage: React.FC = () => {
               {currentStudio.name || 'Shreeji Films & Photography'}
             </h1>
             <p className="text-xs text-zinc-500 flex items-center gap-1.5 mt-0.5">
-              <CalendarDays className="w-3.5 h-3.5 text-zinc-400" />
+              <CalendarDays className="w-3.5 h-3.5 text-orange-500" />
               <span>{todayFormatted}</span>
             </p>
           </div>
@@ -188,9 +188,9 @@ export const DashboardPage: React.FC = () => {
             setActiveTab('create-booking');
             window.location.hash = '#/app/bookings/new';
           }}
-          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
+          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
         >
-          <Plus className="w-4 h-4 text-emerald-400" />
+          <Plus className="w-4 h-4 text-white" />
           <span>+ New Booking</span>
         </button>
       </div>
@@ -324,7 +324,7 @@ export const DashboardPage: React.FC = () => {
                         e.stopPropagation();
                         openBookingWorkspace(ev.id);
                       }}
-                      className="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 text-white text-xs font-bold shrink-0 hover:bg-zinc-800 touch-manipulation active:scale-95"
+                      className="min-h-[44px] px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-bold shrink-0 touch-manipulation active:scale-95 shadow-2xs"
                     >
                       Open
                     </button>
@@ -461,13 +461,13 @@ export const DashboardPage: React.FC = () => {
                   setActiveTab('create-booking');
                   window.location.hash = '#/app/bookings/new';
                 }}
-                className="w-full min-h-[50px] sm:min-h-[44px] px-4 py-3 sm:py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-sm sm:text-xs font-bold flex items-center justify-between transition-all cursor-pointer shadow-2xs touch-manipulation active:scale-[0.98]"
+                className="w-full min-h-[50px] sm:min-h-[44px] px-4 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-sm sm:text-xs font-bold flex items-center justify-between transition-all cursor-pointer shadow-2xs touch-manipulation active:scale-[0.98]"
               >
                 <div className="flex items-center gap-2.5">
-                  <Plus className="w-4 h-4 text-emerald-400" />
+                  <Plus className="w-4 h-4 text-white" />
                   <span>+ New Booking</span>
                 </div>
-                <ArrowRight className="w-3.5 h-3.5 text-zinc-400" />
+                <ArrowRight className="w-3.5 h-3.5 text-orange-200" />
               </button>
 
               <button

@@ -249,7 +249,7 @@ export class BookingProductionService {
   // 2. COMPLETE BOOKING WORKSPACE & LIFECYCLE
   // ==========================================
   createBooking(studioId: string, data: {
-    customerId: string;
+    customerId?: string;
     customerName: string;
     customerPhone: string;
     customerWhatsApp?: string;
@@ -258,19 +258,40 @@ export class BookingProductionService {
     eventName: string;
     category: string;
     mainEventDate: string;
+    startDate?: string;
     venue: string;
     city: string;
     description?: string;
     numberOfDays?: number;
     numberOfFunctions?: number;
+    financials?: Partial<BookingFinancialSummary>;
     functions?: Array<{
+      id?: string;
+      bookingId?: string;
       name: string;
       category?: string;
       date: string;
       startTime?: string;
       endTime?: string;
       venue?: string;
+      city?: string;
+      assignedPhotographerIds?: string[];
+      assignedVideographerIds?: string[];
+      assignedDroneOperatorIds?: string[];
+      assignedEditorIds?: string[];
+      assignedSupplierIds?: string[];
       deliverablesConfig?: Partial<DeliverableSpecification>[];
+      deliverables?: DeliverableSpecification[];
+      priority?: 'low' | 'normal' | 'high' | 'urgent';
+      status?: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+      assignedCrew?: Array<{
+        employeeId: string;
+        employeeName: string;
+        role: string;
+        phone?: string;
+        assignedAt?: string;
+        isVisibleOnCalendar?: boolean;
+      }>;
     }>;
     initialQuotationAmount?: number;
     originalQuotation?: number;
@@ -285,12 +306,12 @@ export class BookingProductionService {
     const allDeliverables: DeliverableSpecification[] = [];
 
     // Construct functions and child deliverables
-    (data.functions || []).forEach((fn, fIdx) => {
-      const functionId = `fn_${bookingId}_${fIdx + 1}`;
+    (data.functions || []).forEach((fn: any, fIdx) => {
+      const functionId = fn.id || `fn_${bookingId}_${fIdx + 1}`;
       const fnDeliverables: DeliverableSpecification[] = [];
 
-      (fn.deliverablesConfig || []).forEach((delCfg, dIdx) => {
-        const delId = `del_${functionId}_${dIdx + 1}`;
+      (fn.deliverablesConfig || fn.deliverables || []).forEach((delCfg: any, dIdx: number) => {
+        const delId = delCfg.id || `del_${functionId}_${dIdx + 1}`;
         const deadline = this.calculateDeadline({
           baseDate: fn.date || data.mainEventDate,
           deadlineType: delCfg.deadlineType || 'relative_to_shoot',
@@ -307,7 +328,7 @@ export class BookingProductionService {
           name: delCfg.name || `${fn.name} Edited Photos`,
           category: delCfg.category || 'photography',
           requiredQty: delCfg.requiredQty || 100,
-          completedQty: 0,
+          completedQty: delCfg.completedQty || 0,
           unit: delCfg.unit || 'photos',
           photoCount: delCfg.photoCount,
           videoCount: delCfg.videoCount,
@@ -320,9 +341,9 @@ export class BookingProductionService {
           deadlineDays: delCfg.deadlineDays ?? 2,
           calculatedDeadline: delCfg.calculatedDeadline || deadline,
           priority: delCfg.priority || 'normal',
-          stage: 'not_started',
-          isDelivered: false,
-          isPartiallyDelivered: false
+          stage: delCfg.stage || 'not_started',
+          isDelivered: delCfg.isDelivered || false,
+          isPartiallyDelivered: delCfg.isPartiallyDelivered || false
         };
 
         fnDeliverables.push(spec);
@@ -339,26 +360,27 @@ export class BookingProductionService {
         endTime: fn.endTime || '02:00 PM',
         venue: fn.venue || data.venue,
         city: data.city,
-        assignedPhotographerIds: [],
-        assignedVideographerIds: [],
-        assignedDroneOperatorIds: [],
-        assignedEditorIds: [],
-        assignedSupplierIds: [],
+        assignedPhotographerIds: fn.assignedPhotographerIds || [],
+        assignedVideographerIds: fn.assignedVideographerIds || [],
+        assignedDroneOperatorIds: fn.assignedDroneOperatorIds || [],
+        assignedEditorIds: fn.assignedEditorIds || [],
+        assignedSupplierIds: fn.assignedSupplierIds || [],
+        assignedCrew: fn.assignedCrew || [],
         deliverables: fnDeliverables,
-        priority: 'normal',
-        status: 'scheduled'
+        priority: fn.priority || 'normal',
+        status: fn.status || 'scheduled'
       });
     });
 
-    const agreedPrice = data.initialQuotationAmount ?? data.originalQuotation ?? 150000;
-    const advancePaid = data.advanceReceived || 0;
+    const agreedPrice = data.financials?.finalAgreedAmount ?? data.financials?.originalQuotation ?? data.initialQuotationAmount ?? data.originalQuotation ?? 150000;
+    const advancePaid = data.financials?.verifiedPaymentsReceived ?? data.financials?.advanceReceived ?? data.advanceReceived ?? 0;
 
     const record: BookingRecord = {
       id: bookingId,
       studioId,
       bookingNumber,
       status: advancePaid > 0 ? 'deal_confirmed' : 'new_inquiry',
-      customerId: data.customerId,
+      customerId: data.customerId || `cust_${Date.now()}`,
       customerName: data.customerName,
       customerPhone: data.customerPhone,
       customerWhatsApp: data.customerWhatsApp || data.customerPhone,
@@ -367,6 +389,7 @@ export class BookingProductionService {
       eventName: data.eventName,
       category: data.category,
       mainEventDate: data.mainEventDate,
+      startDate: data.startDate || data.mainEventDate,
       venue: data.venue,
       city: data.city,
       description: data.description,
@@ -375,16 +398,16 @@ export class BookingProductionService {
       functions,
       deliverables: allDeliverables,
       financials: {
-        originalQuotation: agreedPrice,
-        negotiatedDiscount: 0,
+        originalQuotation: data.financials?.originalQuotation ?? agreedPrice,
+        negotiatedDiscount: data.financials?.negotiatedDiscount ?? 0,
         finalAgreedAmount: agreedPrice,
         verifiedPaymentsReceived: advancePaid,
         remainingBalance: Math.max(0, agreedPrice - advancePaid),
-        advanceRequired: data.advanceRequired || Math.round(agreedPrice * 0.3),
+        advanceRequired: data.financials?.advanceRequired ?? data.advanceRequired ?? Math.round(agreedPrice * 0.3),
         advanceReceived: advancePaid,
-        advanceReceivedDate: advancePaid > 0 ? new Date().toISOString() : undefined,
+        advanceReceivedDate: advancePaid > 0 ? (data.financials?.advanceReceivedDate || new Date().toISOString()) : undefined,
         isAdvanceConfirmed: advancePaid > 0,
-        paymentMilestones: [
+        paymentMilestones: data.financials?.paymentMilestones || [
           {
             id: `m_${bookingId}_adv`,
             title: 'Booking Advance (Token)',

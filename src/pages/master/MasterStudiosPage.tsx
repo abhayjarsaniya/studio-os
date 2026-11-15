@@ -259,7 +259,7 @@ export const MasterStudiosPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <button
                   onClick={() => handleDrilldown(studio.studioId)}
-                  className="min-h-[44px] px-3 py-2 rounded-xl bg-zinc-900 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation active:scale-95"
+                  className="min-h-[44px] px-3 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation active:scale-95 shadow-2xs"
                 >
                   <Eye className="w-4 h-4" />
                   <span>View Studio</span>

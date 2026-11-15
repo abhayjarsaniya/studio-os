@@ -57,7 +57,7 @@ export const MobileHeader: React.FC = () => {
           </button>
 
           <div className="flex items-center gap-2.5 min-w-0 text-left">
-            <div className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 text-white flex items-center justify-center shrink-0 overflow-hidden shadow-xs">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 border border-orange-400/40 text-white flex items-center justify-center shrink-0 overflow-hidden shadow-xs">
               {currentStudio.logoUrl ? (
                 <img 
                   src={currentStudio.logoUrl} 
@@ -133,7 +133,7 @@ export const MobileHeader: React.FC = () => {
                   window.location.hash = '#/app/dashboard';
                 }}
                 className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 touch-manipulation ${
-                  activeTab === 'dashboard' ? 'bg-zinc-900 text-white' : 'text-zinc-700 hover:bg-zinc-100'
+                  activeTab === 'dashboard' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
                 }`}
               >
                 <LayoutDashboard className="w-4 h-4" />
@@ -147,7 +147,7 @@ export const MobileHeader: React.FC = () => {
                   window.location.hash = '#/app/calendar';
                 }}
                 className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 touch-manipulation ${
-                  activeTab === 'calendar' ? 'bg-zinc-900 text-white' : 'text-zinc-700 hover:bg-zinc-100'
+                  activeTab === 'calendar' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
                 }`}
               >
                 <Calendar className="w-4 h-4" />
@@ -161,7 +161,7 @@ export const MobileHeader: React.FC = () => {
                   window.location.hash = '#/app/history';
                 }}
                 className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 touch-manipulation ${
-                  activeTab === 'history' ? 'bg-zinc-900 text-white' : 'text-zinc-700 hover:bg-zinc-100'
+                  activeTab === 'history' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
                 }`}
               >
                 <History className="w-4 h-4 text-amber-600" />
@@ -175,7 +175,7 @@ export const MobileHeader: React.FC = () => {
                   window.location.hash = '#/app/bookings/new';
                 }}
                 className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 touch-manipulation ${
-                  activeTab === 'create-booking' || activeTab === 'new-booking' ? 'bg-zinc-900 text-white' : 'text-zinc-700 hover:bg-zinc-100'
+                  activeTab === 'create-booking' || activeTab === 'new-booking' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
                 }`}
               >
                 <PlusCircle className="w-4 h-4 text-emerald-600" />
@@ -189,7 +189,7 @@ export const MobileHeader: React.FC = () => {
                   window.location.hash = '#/app/crew';
                 }}
                 className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 touch-manipulation ${
-                  activeTab === 'crew' ? 'bg-zinc-900 text-white' : 'text-zinc-700 hover:bg-zinc-100'
+                  activeTab === 'crew' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
                 }`}
               >
                 <Users className="w-4 h-4 text-indigo-600" />
@@ -206,7 +206,7 @@ export const MobileHeader: React.FC = () => {
                     window.location.hash = `#/app/${feat.route}`;
                   }}
                   className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-xs font-semibold flex items-center justify-between touch-manipulation ${
-                    activeTab === feat.route ? 'bg-zinc-900 text-white' : 'text-zinc-700 hover:bg-zinc-100'
+                    activeTab === feat.route ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
                   }`}
                 >
                   <span className="truncate">{feat.name}</span>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { employeeWorkspaceService, EmployeeDashboardMetrics } from '../services/employeeWorkspaceService';
+import { calendarVisibilityService, EmployeeCalendarEvent } from '../services/calendarVisibilityService';
 import { firebaseAuthService } from '../services/firebaseAuthService';
 import { unifiedAuthService } from '../services/unifiedAuthService';
 import { 
@@ -34,7 +35,12 @@ export const EmployeeDashboardPage: React.FC = () => {
   const [metrics, setMetrics] = useState<EmployeeDashboardMetrics | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
-  const [mobileTab, setMobileTab] = useState<'overview' | 'events' | 'tasks'>('overview');
+  const [mobileTab, setMobileTab] = useState<'overview' | 'events' | 'tasks' | 'calendar'>('overview');
+
+  // Load employee's assigned and visible events strictly respecting Smart Team Calendar Visibility
+  const calendarEvents = useMemo(() => {
+    return calendarVisibilityService.getEmployeeCalendarEvents(studioId, employeeId);
+  }, [studioId, employeeId, refreshTrigger]);
 
   // Security Modal State
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
@@ -190,13 +196,13 @@ export const EmployeeDashboardPage: React.FC = () => {
       {/* Top Header */}
       <header className="bg-white border-b border-zinc-200/90 px-4 sm:px-8 py-3.5 flex items-center justify-between sticky top-0 z-40 shadow-2xs">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white shadow-xs shrink-0">
-            <User className="w-4 h-4 text-emerald-400" />
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 border border-orange-400/40 flex items-center justify-center text-white shadow-xs shrink-0">
+            <User className="w-4 h-4 text-white" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-bold text-sm text-zinc-900 truncate font-display">Employee Workspace</span>
-              <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-orange-800 border border-orange-200">
                 Authorized Crew
               </span>
             </div>
@@ -214,7 +220,7 @@ export const EmployeeDashboardPage: React.FC = () => {
 
           <button
             onClick={() => setIsSecurityModalOpen(true)}
-            className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-zinc-100 text-zinc-700 border border-zinc-200 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+            className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-orange-50/50 hover:border-orange-300 text-zinc-700 border border-zinc-200 text-xs font-bold transition-all shadow-2xs cursor-pointer"
           >
             <KeyRound className="w-4 h-4 text-amber-500" />
             <span className="hidden sm:inline">Security & Password</span>
@@ -230,28 +236,36 @@ export const EmployeeDashboardPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Mobile Sub-Navigation Tabs */}
-      <div className="sm:hidden bg-white border-b border-zinc-200 px-4 py-2.5 flex items-center gap-2 sticky top-[57px] z-30">
+      {/* Sub-Navigation Tabs with Orange Active States */}
+      <div className="bg-white border-b border-zinc-200 px-4 py-2.5 flex items-center gap-2 sticky top-[57px] z-30 overflow-x-auto">
         <button
           onClick={() => setMobileTab('overview')}
-          className={`flex-1 min-h-[48px] py-2 text-xs font-bold rounded-xl transition-all touch-manipulation active:scale-95 ${
-            mobileTab === 'overview' ? 'bg-zinc-900 text-white shadow-xs' : 'text-zinc-600 hover:bg-zinc-100'
+          className={`flex-1 min-w-[90px] min-h-[48px] py-2 px-3 text-xs font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
+            mobileTab === 'overview' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs' : 'text-zinc-600 hover:bg-orange-50/40'
           }`}
         >
           Overview
         </button>
         <button
           onClick={() => setMobileTab('events')}
-          className={`flex-1 min-h-[48px] py-2 text-xs font-bold rounded-xl transition-all touch-manipulation active:scale-95 ${
-            mobileTab === 'events' ? 'bg-zinc-900 text-white shadow-xs' : 'text-zinc-600 hover:bg-zinc-100'
+          className={`flex-1 min-w-[90px] min-h-[48px] py-2 px-3 text-xs font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
+            mobileTab === 'events' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs' : 'text-zinc-600 hover:bg-orange-50/40'
           }`}
         >
           Events ({metrics.assignedEvents.length})
         </button>
         <button
+          onClick={() => setMobileTab('calendar')}
+          className={`flex-1 min-w-[100px] min-h-[48px] py-2 px-3 text-xs font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
+            mobileTab === 'calendar' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs' : 'text-zinc-600 hover:bg-orange-50/40'
+          }`}
+        >
+          My Calendar ({calendarEvents.length})
+        </button>
+        <button
           onClick={() => setMobileTab('tasks')}
-          className={`flex-1 min-h-[48px] py-2 text-xs font-bold rounded-xl transition-all touch-manipulation active:scale-95 ${
-            mobileTab === 'tasks' ? 'bg-zinc-900 text-white shadow-xs' : 'text-zinc-600 hover:bg-zinc-100'
+          className={`flex-1 min-w-[90px] min-h-[48px] py-2 px-3 text-xs font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
+            mobileTab === 'tasks' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs' : 'text-zinc-600 hover:bg-orange-50/40'
           }`}
         >
           Tasks ({metrics.pendingTasks.length})
@@ -349,8 +363,78 @@ export const EmployeeDashboardPage: React.FC = () => {
           </div>
         </div>
 
+        {/* VIEW: MY CONFIRMED CALENDAR SCHEDULE */}
+        {mobileTab === 'calendar' && (
+          <div className="bg-white rounded-3xl border border-zinc-200/90 p-5 sm:p-6 shadow-sm space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-zinc-900 font-display">My Confirmed Shoot Calendar</h2>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800 font-bold border border-orange-200">
+                    {calendarEvents.length} Visible Shoots
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Only assigned shoots marked visible by studio owner appear on your schedule
+                </p>
+              </div>
+
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-50 border border-orange-200/80 text-orange-800 text-xs font-semibold">
+                <ShieldCheck className="w-4 h-4 text-orange-600 shrink-0" />
+                <span>Financial & Customer Billing Data Restricted</span>
+              </div>
+            </div>
+
+            {calendarEvents.length === 0 ? (
+              <div className="py-12 text-center text-zinc-400 text-xs bg-zinc-50 rounded-2xl border border-dashed border-zinc-200 space-y-2">
+                <Calendar className="w-8 h-8 text-zinc-300 mx-auto" />
+                <p className="font-semibold text-zinc-600">No shoots currently scheduled or visible on your calendar.</p>
+                <p className="text-[11px] text-zinc-400">If you were recently assigned to a shoot, your studio owner may have hidden it until call times are finalized.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {calendarEvents.map(evt => (
+                  <div
+                    key={`${evt.bookingId}_${evt.functionId}`}
+                    className="p-4 rounded-2xl border border-zinc-200 hover:border-orange-300 bg-white shadow-2xs space-y-3 transition-all"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
+                        {evt.bookingNumber}
+                      </span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        {evt.status}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-bold text-zinc-900">{evt.eventName}</h4>
+                      <p className="text-xs text-zinc-500 mt-0.5">{evt.functionName} • {evt.category}</p>
+                    </div>
+
+                    <div className="space-y-1.5 text-xs text-zinc-600 pt-1 border-t border-zinc-100">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-orange-500" />
+                        <span className="font-semibold">{evt.date} • {evt.startTime} - {evt.endTime}</span>
+                      </div>
+                      <div className="flex items-center gap-2 truncate">
+                        <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                        <span className="truncate">{evt.venue}, {evt.city}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-indigo-700 font-semibold pt-1">
+                        <User className="w-3.5 h-3.5 text-indigo-500" />
+                        <span>Role: {evt.responsibility}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Two-Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 ${mobileTab === 'calendar' ? 'hidden' : ''}`}>
           {/* Left Column: Today's Schedule & Assigned Events */}
           <div className={`space-y-6 ${mobileTab === 'tasks' ? 'hidden lg:block' : ''}`}>
             {/* Today's Shoot Call Times */}

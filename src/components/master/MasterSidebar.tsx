@@ -52,13 +52,13 @@ export const MasterSidebar: React.FC = () => {
       {/* Brand & Platform Identity */}
       <div className="p-4 border-b border-zinc-100">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white shadow-xs">
-            <Crown className="w-5 h-5 text-amber-400" />
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 border border-orange-400/40 flex items-center justify-center text-white shadow-xs">
+            <Crown className="w-5 h-5 text-white" />
           </div>
           <div className="min-w-0">
             <div className="text-sm font-black tracking-tight text-zinc-900 flex items-center gap-1.5 font-display">
               <span>Studio OS</span>
-              <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+              <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-orange-50 text-orange-800 border border-orange-200">
                 Master
               </span>
             </div>
@@ -104,8 +104,8 @@ export const MasterSidebar: React.FC = () => {
               }}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-medium transition-all text-left min-h-[44px] cursor-pointer ${
                 isActive
-                  ? 'bg-zinc-900 text-white font-bold shadow-xs'
-                  : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/80'
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs'
+                  : 'text-zinc-600 hover:text-zinc-900 hover:bg-orange-50/50'
               }`}
             >
               <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-zinc-500'}`} />

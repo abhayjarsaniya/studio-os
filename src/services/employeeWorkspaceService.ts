@@ -3,6 +3,7 @@ import { StudioEvent, Task, AttendanceRecord, LeaveRequest } from '../types/sche
 import { attendanceService } from './attendanceService';
 import { taskService } from './taskService';
 import { leaveService } from './leaveService';
+import { calendarVisibilityService } from './calendarVisibilityService';
 
 export interface EmployeeDashboardMetrics {
   employeeId: string;
@@ -56,12 +57,16 @@ export class EmployeeWorkspaceService {
 
     const todayStr = new Date().toISOString().slice(0, 10);
 
-    // 1. Assigned events (STRICT PRIVACY: Strip financial amounts, mask customer personal contact info)
+    // 1. Assigned events (STRICT PRIVACY: Strip financial amounts, mask customer personal contact info, respect calendar visibility)
     const myEvents = allEvents.filter(e => {
       const isAssigned = (e.assignedTeamIds && e.assignedTeamIds.includes(employeeId)) ||
         (e.detailedAssignments && e.detailedAssignments.some(a => a.memberId === employeeId || (a as any).employeeId === employeeId)) ||
         e.leadPhotographerId === employeeId;
-      return isAssigned;
+      if (!isAssigned) return false;
+
+      // Smart Team Calendar: Check Visibility (Assignment != Visibility)
+      const isVisible = calendarVisibilityService.isEmployeeVisibleOnCalendar(studioId, e.id, employeeId);
+      return isVisible;
     });
 
     const sanitizedEvents = myEvents.map(e => ({
