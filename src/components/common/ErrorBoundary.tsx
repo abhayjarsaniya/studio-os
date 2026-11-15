@@ -68,7 +68,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 {this.props.fallbackMessage || friendlyMessage}
               </p>
               {this.state.errorId && (
-                <p className="text-[10px] font-mono text-zinc-400 bg-zinc-50 py-1 px-2 rounded-md inline-block border border-zinc-200/60">
+                <p className="text-xs font-mono text-zinc-400 bg-zinc-50 py-1 px-2 rounded-md inline-block border border-zinc-200/60">
                   Ref ID: {this.state.errorId}
                 </p>
               )}

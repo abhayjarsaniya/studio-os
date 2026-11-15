@@ -140,14 +140,14 @@ You can change your password anytime from Settings or use Forgot Password on the
         {/* Handover Details Card */}
         <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/90 space-y-3 text-xs font-mono">
           <div className="flex items-center justify-between pb-2 border-b border-zinc-200/60 font-sans">
-            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Studio</span>
+            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Studio</span>
             <strong className="text-xs font-bold text-zinc-900">{data.studioName}</strong>
           </div>
 
           <div className="flex items-center justify-between py-1">
             <span className="text-zinc-500 font-sans">Login URL:</span>
             <div className="flex items-center gap-1">
-              <span className="text-zinc-900 truncate max-w-[170px] sm:max-w-[200px] text-[11px]">{loginUrl}</span>
+              <span className="text-zinc-900 truncate max-w-[170px] sm:max-w-[200px] text-xs">{loginUrl}</span>
               <button
                 type="button"
                 onClick={() => copyToClipboard(loginUrl, 'url')}
@@ -208,7 +208,7 @@ You can change your password anytime from Settings or use Forgot Password on the
         </div>
 
         {/* Security Notice */}
-        <p className="text-[11px] text-zinc-500 leading-relaxed font-sans">
+        <p className="text-xs text-zinc-500 leading-relaxed font-sans">
           <strong>Security note:</strong> For safety, this temporary password is shown once. The studio owner can sign in immediately and change their password anytime from Settings, or use Forgot Password on the login page.
         </p>
 
@@ -243,7 +243,7 @@ You can change your password anytime from Settings or use Forgot Password on the
           </button>
         </div>
 
-        <p className="text-[10px] text-zinc-400 text-center font-sans">
+        <p className="text-xs text-zinc-400 text-center font-sans">
           WhatsApp click-to-chat opens your WhatsApp client with the prefilled message. The administrator must press Send in WhatsApp.
         </p>
       </div>

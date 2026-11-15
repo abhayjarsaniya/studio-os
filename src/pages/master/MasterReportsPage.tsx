@@ -66,7 +66,7 @@ export const MasterReportsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-50 text-purple-800 border border-purple-200">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-purple-50 text-purple-800 border border-purple-200">
               Intelligence Vault
             </span>
             <span className="text-xs text-zinc-500">13 Consolidated Platform Reports</span>
@@ -99,7 +99,7 @@ export const MasterReportsPage: React.FC = () => {
 
       {/* 13 Reports Grid Selector */}
       <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-md">
-        <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-3 flex items-center gap-2">
+        <div className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-3 flex items-center gap-2">
           <BarChart2 className="w-3.5 h-3.5 text-amber-400" />
           <span>Select Report Category (13 Consolidated Platform Reports)</span>
         </div>
@@ -120,11 +120,11 @@ export const MasterReportsPage: React.FC = () => {
                   <div className={`text-xs font-bold truncate ${isSelected ? 'text-amber-800' : 'text-zinc-800'}`}>
                     {rep.title}
                   </div>
-                  <div className="text-[10px] text-zinc-500 mt-1 line-clamp-2">
+                  <div className="text-xs text-zinc-500 mt-1 line-clamp-2">
                     {rep.description}
                   </div>
                 </div>
-                <div className="mt-2 text-[9px] font-mono uppercase text-zinc-500">
+                <div className="mt-2 text-xs font-mono uppercase text-zinc-500">
                   {rep.category}
                 </div>
               </button>
@@ -167,7 +167,7 @@ export const MasterReportsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="text-[11px] font-mono text-zinc-500">
+        <div className="text-xs font-mono text-zinc-500">
           Generated: {new Date(reportData.generatedAt).toLocaleString('en-IN')}
         </div>
       </div>
@@ -176,10 +176,10 @@ export const MasterReportsPage: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {reportData.summaryMetrics.map((met, idx) => (
           <div key={idx} className="bg-white p-4 rounded-2xl border border-zinc-200">
-            <span className="text-[11px] text-zinc-500 block">{met.label}</span>
+            <span className="text-xs text-zinc-500 block">{met.label}</span>
             <span className="text-xl font-black text-zinc-900 font-display mt-1 block">{met.value}</span>
             {met.change && (
-              <span className="text-[10px] text-emerald-400 font-semibold block mt-1">{met.change}</span>
+              <span className="text-xs text-emerald-400 font-semibold block mt-1">{met.change}</span>
             )}
           </div>
         ))}
@@ -189,12 +189,12 @@ export const MasterReportsPage: React.FC = () => {
       <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-xl">
         <div className="p-4 border-b border-zinc-200 flex items-center justify-between">
           <h3 className="text-xs font-bold text-zinc-900 font-display uppercase tracking-wider">{reportData.title}</h3>
-          <span className="text-[11px] font-mono text-zinc-500">{reportData.rows.length} rows calculated</span>
+          <span className="text-xs font-mono text-zinc-500">{reportData.rows.length} rows calculated</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs whitespace-nowrap">
-            <thead className="bg-zinc-50 text-zinc-500 text-[10px] uppercase font-semibold border-b border-zinc-200">
+            <thead className="bg-zinc-50 text-zinc-500 text-xs uppercase font-semibold border-b border-zinc-200">
               <tr>
                 {reportData.columns.map((col, idx) => (
                   <th key={idx} className="px-4 py-3">{col}</th>

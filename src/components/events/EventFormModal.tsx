@@ -829,7 +829,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
             <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider flex items-center gap-1.5">
               <UserCheck className="w-3.5 h-3.5 text-zinc-500" /> Assign Team Members ({assignedEmployeeIds.length} Assigned)
             </label>
-            <span className="text-[11px] text-zinc-500">Shreeji Studio Crew Roster</span>
+            <span className="text-xs text-zinc-500">Shreeji Studio Crew Roster</span>
           </div>
 
           {/* Compact Removable Chips of Assigned Employees */}
@@ -852,7 +852,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                   >
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
                     <span className="font-bold">{emp.fullName}</span>
-                    <span className="text-[10px] text-zinc-400 font-normal">({emp.designation})</span>
+                    <span className="text-xs text-zinc-400 font-normal">({emp.designation})</span>
                     <button
                       type="button"
                       onClick={() => handleToggleEmployee(empId)}
@@ -886,14 +886,14 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                   <button
                     type="button"
                     onClick={() => handleToggleEmployee(warn.employeeId)}
-                    className="px-2.5 py-1 rounded-lg border border-amber-300 bg-white text-[11px] font-semibold text-amber-800 hover:bg-amber-100 cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg border border-amber-300 bg-white text-xs font-semibold text-amber-800 hover:bg-amber-100 cursor-pointer"
                   >
                     Change Member
                   </button>
                   <button
                     type="button"
                     onClick={() => handleOverrideConflict(warn.employeeId)}
-                    className="px-2.5 py-1 rounded-lg bg-amber-600 text-white text-[11px] font-bold hover:bg-amber-700 cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg bg-amber-600 text-white text-xs font-bold hover:bg-amber-700 cursor-pointer"
                   >
                     Allow Overlap
                   </button>
@@ -930,7 +930,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
             {/* Dropdown List */}
             {isEmployeeDropdownOpen && (
               <div className="absolute z-20 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white border border-zinc-200 rounded-xl shadow-lg p-2 space-y-1">
-                <div className="flex items-center justify-between px-2 py-1 border-b border-zinc-100 text-[10px] text-zinc-400 font-semibold uppercase">
+                <div className="flex items-center justify-between px-2 py-1 border-b border-zinc-100 text-xs text-zinc-400 font-semibold uppercase">
                   <span>Select Active Team Members</span>
                   <button
                     type="button"
@@ -954,25 +954,25 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] ${
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
                           isChecked ? 'bg-zinc-700 text-white' : 'bg-zinc-200 text-zinc-700'
                         }`}>
                           {emp.fullName.charAt(0)}
                         </div>
                         <div>
                           <div className="font-semibold">{emp.fullName}</div>
-                          <div className={`text-[10px] ${isChecked ? 'text-zinc-300' : 'text-zinc-400'}`}>
+                          <div className={`text-xs ${isChecked ? 'text-zinc-300' : 'text-zinc-400'}`}>
                             {emp.designation} • {emp.department}
                           </div>
                         </div>
                       </div>
                       <div>
                         {isChecked ? (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500 text-white font-bold">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500 text-white font-bold">
                             ✓ Assigned
                           </span>
                         ) : (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full border border-zinc-200 text-zinc-500">
+                          <span className="text-xs px-2 py-0.5 rounded-full border border-zinc-200 text-zinc-500">
                             + Assign
                           </span>
                         )}
@@ -1052,7 +1052,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               >
                 <div>
                   <div className="font-bold text-zinc-900">{idx + 1}. {fn.name}</div>
-                  <div className="text-[11px] text-zinc-500">
+                  <div className="text-xs text-zinc-500">
                     {fn.date} • {fn.startTime} - {fn.endTime} • {fn.venue || venue}
                   </div>
                 </div>
@@ -1078,7 +1078,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               <span className="text-xs font-semibold text-zinc-700 uppercase tracking-wider flex items-center gap-1.5">
                 <PackageCheck className="w-3.5 h-3.5 text-zinc-500" /> Event-Specific Deliverables ({deliverablesList.length} Items)
               </span>
-              <p className="text-[11px] text-zinc-400 mt-0.5">
+              <p className="text-xs text-zinc-400 mt-0.5">
                 Independent deliverable checklist saved specifically to this booking
               </p>
             </div>
@@ -1169,7 +1169,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                       <span className={`font-semibold ${isDone ? 'line-through text-zinc-400' : ''}`}>
                         {idx + 1}. {del.name}
                       </span>
-                      <span className="text-[10px] text-zinc-400 ml-1.5 capitalize">
+                      <span className="text-xs text-zinc-400 ml-1.5 capitalize">
                         • {del.category} • Due: {del.calculatedDeadline}
                       </span>
                     </div>
@@ -1179,7 +1179,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                     <button
                       type="button"
                       onClick={() => handleToggleDeliverableStatus(del.id)}
-                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold cursor-pointer ${
+                      className={`px-2 py-0.5 rounded-md text-xs font-bold cursor-pointer ${
                         isDone 
                           ? 'bg-emerald-100 text-emerald-800' 
                           : isInProgress 
@@ -1211,7 +1211,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div>
-              <label className="block text-[11px] text-zinc-500 mb-1">Total Agreed Amount (₹)</label>
+              <label className="block text-xs text-zinc-500 mb-1">Total Agreed Amount (₹)</label>
               <input
                 type="number"
                 min="0"
@@ -1222,7 +1222,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-[11px] text-zinc-500 mb-1">Advance Received (₹)</label>
+              <label className="block text-xs text-zinc-500 mb-1">Advance Received (₹)</label>
               <input
                 type="number"
                 min="0"
@@ -1233,7 +1233,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-[11px] text-zinc-500 mb-1">Payment Method</label>
+              <label className="block text-xs text-zinc-500 mb-1">Payment Method</label>
               <select
                 value={paymentMethod}
                 onChange={e => setPaymentMethod(e.target.value as any)}
@@ -1246,7 +1246,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               </select>
             </div>
             <div>
-              <label className="block text-[11px] text-zinc-500 mb-1">Receipt / Ref No.</label>
+              <label className="block text-xs text-zinc-500 mb-1">Receipt / Ref No.</label>
               <input
                 type="text"
                 placeholder="e.g. UPI-2026-0042"

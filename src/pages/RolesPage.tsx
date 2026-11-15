@@ -147,7 +147,7 @@ export const RolesPage: React.FC = () => {
             <ListOrdered className="w-4 h-4 mr-1.5" />
             Approvals Queue
             {approvalRequests.filter(r => r.status === 'pending').length > 0 && (
-              <span className="ml-1.5 px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] font-bold">
+              <span className="ml-1.5 px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-xs font-bold">
                 {approvalRequests.filter(r => r.status === 'pending').length}
               </span>
             )}
@@ -192,7 +192,7 @@ export const RolesPage: React.FC = () => {
               <h3 className="text-sm font-bold text-zinc-900">Configured Roles</h3>
               <p className="text-xs text-zinc-500">{roles.length} roles available</p>
             </div>
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-700">
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-700">
               {employees.length} Employees Active
             </span>
           </div>
@@ -225,20 +225,20 @@ export const RolesPage: React.FC = () => {
 
                     <div className="flex items-center gap-1.5 shrink-0">
                       {isOwner ? (
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
                           isSelected ? 'bg-emerald-950 text-emerald-300' : 'bg-emerald-100 text-emerald-800'
                         }`}>
                           Owner
                         </span>
                       ) : r.isSystem ? (
-                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                        <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${
                           isSelected ? 'bg-zinc-800 text-zinc-300' : 'bg-zinc-100 text-zinc-600'
                         }`}>
                           System
                         </span>
                       ) : null}
 
-                      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded flex items-center gap-1 ${
+                      <span className={`text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-1 ${
                         isSelected ? 'bg-zinc-800 text-zinc-300' : 'bg-zinc-100 text-zinc-500'
                       }`}>
                         <Users className="w-2.5 h-2.5" /> {memberCount}
@@ -246,7 +246,7 @@ export const RolesPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <p className={`text-[11px] line-clamp-1 mt-1 ${
+                  <p className={`text-xs line-clamp-1 mt-1 ${
                     isSelected ? 'text-zinc-300' : 'text-zinc-500'
                   }`}>
                     {r.description || 'Custom studio role.'}
@@ -254,7 +254,7 @@ export const RolesPage: React.FC = () => {
 
                   {/* Actions Row */}
                   <div className="mt-2.5 pt-2 border-t border-zinc-200/20 flex items-center justify-between">
-                    <span className="text-[10px] opacity-70">
+                    <span className="text-xs opacity-70">
                       {Object.keys(r.permissions || {}).length} modules configured
                     </span>
 

@@ -35,7 +35,7 @@ export const PlatformDashboardPage: React.FC = () => {
       {/* Page Header */}
       <div>
         <div className="flex items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-100 text-indigo-800 border border-indigo-200">
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-indigo-100 text-indigo-800 border border-indigo-200">
             SaaS Platform Console
           </span>
           <span className="text-xs text-slate-400">Strictly Isolated from Photography Studio Financials</span>
@@ -60,7 +60,7 @@ export const PlatformDashboardPage: React.FC = () => {
             <Building2 className="w-4 h-4 text-slate-400" />
           </div>
           <div className="text-2xl font-black text-slate-900">{kpis.totalStudios}</div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-xs text-slate-400 mt-1">
             {kpis.activeStudios} Active / {kpis.trialStudios} Trial
           </div>
         </div>
@@ -75,7 +75,7 @@ export const PlatformDashboardPage: React.FC = () => {
             <IndianRupee className="w-4 h-4 text-indigo-600" />
           </div>
           <div className="text-2xl font-black text-indigo-700">₹{kpis.monthlyRecurringRevenue.toLocaleString('en-IN')}</div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-xs text-slate-400 mt-1">
             ARR: ₹{kpis.annualizedRunRate.toLocaleString('en-IN')}
           </div>
         </div>
@@ -90,7 +90,7 @@ export const PlatformDashboardPage: React.FC = () => {
             <CreditCard className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-2xl font-black text-emerald-700">₹{kpis.paymentsReceivedTotal.toLocaleString('en-IN')}</div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-xs text-slate-400 mt-1">
             Pending: ₹{kpis.pendingInvoicedRevenue.toLocaleString('en-IN')}
           </div>
         </div>
@@ -105,7 +105,7 @@ export const PlatformDashboardPage: React.FC = () => {
             <RotateCcw className="w-4 h-4 text-blue-600" />
           </div>
           <div className="text-2xl font-black text-blue-700">{kpis.renewalRate}%</div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-xs text-slate-400 mt-1">
             Churn: {kpis.churnRate}% ({kpis.cancelledStudios} cancelled)
           </div>
         </div>
@@ -165,15 +165,15 @@ export const PlatformDashboardPage: React.FC = () => {
                     <tr key={s.id} className="hover:bg-slate-50">
                       <td className="px-4 py-3">
                         <div className="font-bold text-slate-900">{s.name}</div>
-                        <div className="text-[11px] text-slate-400 font-mono">{s.id}</div>
+                        <div className="text-xs text-slate-400 font-mono">{s.id}</div>
                       </td>
                       <td className="px-4 py-3">
                         <span className="font-medium text-slate-700">{s.planName}</span>
-                        <span className="text-[10px] text-slate-400 block">₹{s.planPrice}/mo</span>
+                        <span className="text-xs text-slate-400 block">₹{s.planPrice}/mo</span>
                       </td>
                       <td className="px-4 py-3 text-slate-600">{s.renewalDate}</td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
                           s.subscriptionStatus === 'active'
                             ? 'bg-emerald-100 text-emerald-800'
                             : s.subscriptionStatus === 'trial'
@@ -200,7 +200,7 @@ export const PlatformDashboardPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-3 bg-slate-50 border-t border-slate-100 text-[11px] text-slate-400 text-center">
+          <div className="p-3 bg-slate-50 border-t border-slate-100 text-xs text-slate-400 text-center">
             Studio data isolation guaranteed. Platform admins cannot view or alter studio client shoots or salaries without explicit audited support grants.
           </div>
         </div>
@@ -225,14 +225,14 @@ export const PlatformDashboardPage: React.FC = () => {
               <div key={log.id} className="text-xs pb-2 border-b border-slate-100 last:border-0">
                 <div className="flex items-center justify-between font-semibold text-slate-800">
                   <span className="truncate">{log.action}</span>
-                  <span className="text-[10px] text-slate-400 font-mono">
+                  <span className="text-xs text-slate-400 font-mono">
                     {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">
+                <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
                   {log.details}
                 </p>
-                <div className="text-[10px] text-slate-400 mt-1">
+                <div className="text-xs text-slate-400 mt-1">
                   Actor: <span className="font-medium text-slate-600">{log.adminName}</span>
                 </div>
               </div>

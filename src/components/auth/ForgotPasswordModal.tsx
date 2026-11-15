@@ -81,7 +81,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               </div>
             </div>
 
-            <p className="text-[11px] text-zinc-500 leading-relaxed">
+            <p className="text-xs text-zinc-500 leading-relaxed">
               Open the link in your email to choose your new password. Once updated, you can immediately sign in with your new credentials.
             </p>
 

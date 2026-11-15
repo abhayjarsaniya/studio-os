@@ -58,11 +58,11 @@ export const MasterSidebar: React.FC = () => {
           <div className="min-w-0">
             <div className="text-sm font-black tracking-tight text-zinc-900 flex items-center gap-1.5 font-display">
               <span>Studio OS</span>
-              <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-orange-50 text-orange-800 border border-orange-200">
+              <span className="text-xs font-bold uppercase px-1.5 py-0.5 rounded bg-orange-50 text-orange-800 border border-orange-200">
                 Master
               </span>
             </div>
-            <div className="text-[11px] text-zinc-500 font-medium truncate">Platform Master Control</div>
+            <div className="text-xs text-zinc-500 font-medium truncate">Platform Master Control</div>
           </div>
         </div>
       </div>
@@ -74,15 +74,15 @@ export const MasterSidebar: React.FC = () => {
             MA
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-xs font-semibold text-zinc-900 truncate">{currentAdmin.name}</div>
-            <div className="text-[10px] text-amber-700 font-medium truncate">Platform Owner (Level 1)</div>
+            <div className="text-sm font-semibold text-zinc-900 truncate">{currentAdmin.name}</div>
+            <div className="text-xs text-orange-700 font-medium truncate">Platform Owner (Level 1)</div>
           </div>
         </div>
       </div>
 
       {/* Navigation Links */}
       <nav className="flex-1 px-2.5 py-3.5 space-y-1 overflow-y-auto">
-        <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+        <div className="px-2 py-1 text-xs font-bold uppercase tracking-wider text-zinc-400">
           Master Workspace (15 Modules)
         </div>
 
@@ -102,7 +102,7 @@ export const MasterSidebar: React.FC = () => {
                   setMasterRoute(item.id);
                 }
               }}
-              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-medium transition-all text-left min-h-[44px] cursor-pointer ${
+              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all text-left min-h-[44px] cursor-pointer ${
                 isActive
                   ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs'
                   : 'text-zinc-600 hover:text-zinc-900 hover:bg-orange-50/50'
@@ -124,7 +124,7 @@ export const MasterSidebar: React.FC = () => {
           <LogOut className="w-4 h-4" />
           <span>Log Out</span>
         </button>
-        <div className="mt-2 text-[10px] text-center text-zinc-400 font-mono">
+        <div className="mt-2 text-xs text-center text-zinc-400 font-mono">
           Studio OS Enterprise v2.4
         </div>
       </div>

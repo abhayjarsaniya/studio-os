@@ -132,7 +132,7 @@ export const EventCalendarMultiView: React.FC<EventCalendarMultiViewProps> = ({
       {/* MONTH VIEW */}
       {mode === 'month' && (
         <div className="space-y-2">
-          <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-zinc-400 uppercase tracking-wider py-1">
+          <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wider py-1">
             <span>Sun</span>
             <span>Mon</span>
             <span>Tue</span>
@@ -170,7 +170,7 @@ export const EventCalendarMultiView: React.FC<EventCalendarMultiViewProps> = ({
                       {day}
                     </span>
                     {dayEvents.length > 0 && (
-                      <span className="text-[9px] font-bold text-zinc-400">{dayEvents.length}</span>
+                      <span className="text-xs font-bold text-zinc-400">{dayEvents.length}</span>
                     )}
                   </div>
 
@@ -181,7 +181,7 @@ export const EventCalendarMultiView: React.FC<EventCalendarMultiViewProps> = ({
                         <div
                           key={ev.id}
                           onClick={() => onSelectEvent(ev.id)}
-                          className={`text-[9px] sm:text-[10px] font-medium px-1.5 py-0.5 rounded truncate border cursor-pointer hover:opacity-85 ${getCategoryBadgeColor(ev.category)}`}
+                          className={`text-xs sm:text-xs font-medium px-1.5 py-0.5 rounded truncate border cursor-pointer hover:opacity-85 ${getCategoryBadgeColor(ev.category)}`}
                           title={`${ev.name} (${formatTime(ev.startTime)})${isMultiDay ? ' [Multi-Day Shoot]' : ''}`}
                         >
                           {isMultiDay && <span className="font-bold mr-0.5">●</span>}
@@ -214,7 +214,7 @@ export const EventCalendarMultiView: React.FC<EventCalendarMultiViewProps> = ({
                   <span className="text-xs font-bold text-zinc-800">
                     {d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}
                   </span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-zinc-100 text-zinc-600">
+                  <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-zinc-100 text-zinc-600">
                     {dayEvents.length}
                   </span>
                 </div>
@@ -226,18 +226,18 @@ export const EventCalendarMultiView: React.FC<EventCalendarMultiViewProps> = ({
                       onClick={() => onSelectEvent(ev.id)}
                       className="p-2 rounded-xl border border-zinc-200/80 bg-zinc-50 hover:bg-zinc-100 cursor-pointer text-xs space-y-1 transition-all"
                     >
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${getCategoryBadgeColor(ev.category)}`}>
+                      <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full border ${getCategoryBadgeColor(ev.category)}`}>
                         {ev.category}
                       </span>
                       <div className="font-bold text-zinc-900 line-clamp-1">{ev.name}</div>
-                      <div className="text-[10px] text-zinc-500 flex items-center gap-1">
+                      <div className="text-xs text-zinc-500 flex items-center gap-1">
                         <Clock className="w-2.5 h-2.5" /> {formatTime(ev.startTime)}
                       </div>
                     </div>
                   ))}
 
                   {dayEvents.length === 0 && (
-                    <div className="text-[11px] text-zinc-400 italic pt-6 text-center">No shoots</div>
+                    <div className="text-xs text-zinc-400 italic pt-6 text-center">No shoots</div>
                   )}
                 </div>
               </div>
@@ -269,13 +269,13 @@ export const EventCalendarMultiView: React.FC<EventCalendarMultiViewProps> = ({
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getCategoryBadgeColor(ev.category)}`}>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${getCategoryBadgeColor(ev.category)}`}>
                       {ev.category}
                     </span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full border ${getStatusBadgeColor(ev.status)}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full border ${getStatusBadgeColor(ev.status)}`}>
                       {ev.status}
                     </span>
-                    <span className="font-mono text-[10px] text-zinc-400">{ev.eventNumber}</span>
+                    <span className="font-mono text-xs text-zinc-400">{ev.eventNumber}</span>
                   </div>
                   <h4 className="text-sm font-bold text-zinc-900 group-hover:text-zinc-950 font-display">
                     {ev.name}
@@ -295,7 +295,7 @@ export const EventCalendarMultiView: React.FC<EventCalendarMultiViewProps> = ({
 
                 <div className="text-right">
                   <div className="text-xs font-semibold text-zinc-900">{ev.customerName}</div>
-                  <div className="text-[10px] text-zinc-400">{ev.customerPhone}</div>
+                  <div className="text-xs text-zinc-400">{ev.customerPhone}</div>
                 </div>
               </div>
             ))}

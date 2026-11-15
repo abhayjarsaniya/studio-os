@@ -220,7 +220,7 @@ export const HistoryBookingsPage: React.FC = () => {
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 font-display">
                 History Bookings
               </h1>
-              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
                 Shreeji Studio
               </span>
             </div>
@@ -260,7 +260,7 @@ export const HistoryBookingsPage: React.FC = () => {
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
             Platform Business History Overview
           </h3>
-          <span className="text-[11px] text-zinc-400">Click any card to inspect filtered records</span>
+          <span className="text-xs text-zinc-400">Click any card to inspect filtered records</span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
@@ -272,11 +272,11 @@ export const HistoryBookingsPage: React.FC = () => {
             }`}
           >
             <div className="flex items-center justify-between text-zinc-400 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Total Bookings</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Total Bookings</span>
               <Calendar className="w-4 h-4 text-zinc-500" />
             </div>
             <p className="text-lg font-bold text-zinc-900">{mainKPIs.totalBookings}</p>
-            <span className="text-[10px] text-zinc-500 font-medium">All recorded orders</span>
+            <span className="text-xs text-zinc-500 font-medium">All recorded orders</span>
           </div>
 
           {/* 2. Total Customers */}
@@ -287,11 +287,11 @@ export const HistoryBookingsPage: React.FC = () => {
             }`}
           >
             <div className="flex items-center justify-between text-zinc-400 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Total Customers</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Total Customers</span>
               <Users className="w-4 h-4 text-sky-600" />
             </div>
             <p className="text-lg font-bold text-zinc-900">{mainKPIs.totalCustomers}</p>
-            <span className="text-[10px] text-sky-600 font-medium">{additionalInsights.repeatCustomerCount} Repeat Clients</span>
+            <span className="text-xs text-sky-600 font-medium">{additionalInsights.repeatCustomerCount} Repeat Clients</span>
           </div>
 
           {/* 3. Confirmed Bookings */}
@@ -300,11 +300,11 @@ export const HistoryBookingsPage: React.FC = () => {
             className="p-3.5 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 transition-all cursor-pointer shadow-2xs"
           >
             <div className="flex items-center justify-between text-zinc-400 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Confirmed</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Confirmed</span>
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             </div>
             <p className="text-lg font-bold text-emerald-600">{mainKPIs.confirmedBookings}</p>
-            <span className="text-[10px] text-zinc-500 font-medium">Active & In Production</span>
+            <span className="text-xs text-zinc-500 font-medium">Active & In Production</span>
           </div>
 
           {/* 4. Completed Events */}
@@ -313,11 +313,11 @@ export const HistoryBookingsPage: React.FC = () => {
             className="p-3.5 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 transition-all cursor-pointer shadow-2xs"
           >
             <div className="flex items-center justify-between text-zinc-400 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Completed</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Completed</span>
               <Clock className="w-4 h-4 text-zinc-700" />
             </div>
             <p className="text-lg font-bold text-zinc-900">{mainKPIs.completedEvents}</p>
-            <span className="text-[10px] text-zinc-500 font-medium">Delivered & Closed</span>
+            <span className="text-xs text-zinc-500 font-medium">Delivered & Closed</span>
           </div>
 
           {/* 5. Total Quotation Value */}
@@ -328,11 +328,11 @@ export const HistoryBookingsPage: React.FC = () => {
             }`}
           >
             <div className="flex items-center justify-between text-zinc-400 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Quoted Total</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Quoted Total</span>
               <FileText className="w-4 h-4 text-indigo-600" />
             </div>
             <p className="text-lg font-bold text-zinc-900">₹{(mainKPIs.totalQuotationValue / 100000).toFixed(1)}L</p>
-            <span className="text-[10px] text-zinc-500 font-medium">₹{mainKPIs.totalQuotationValue.toLocaleString('en-IN')}</span>
+            <span className="text-xs text-zinc-500 font-medium">₹{mainKPIs.totalQuotationValue.toLocaleString('en-IN')}</span>
           </div>
 
           {/* 6. Final Agreed Value */}
@@ -341,11 +341,11 @@ export const HistoryBookingsPage: React.FC = () => {
             className="p-3.5 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 transition-all cursor-pointer shadow-2xs"
           >
             <div className="flex items-center justify-between text-zinc-400 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Agreed Value</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Agreed Value</span>
               <IndianRupee className="w-4 h-4 text-emerald-600" />
             </div>
             <p className="text-lg font-bold text-emerald-700">₹{(mainKPIs.finalAgreedValue / 100000).toFixed(1)}L</p>
-            <span className="text-[10px] text-emerald-600 font-medium">Net Booking Value</span>
+            <span className="text-xs text-emerald-600 font-medium">Net Booking Value</span>
           </div>
 
           {/* 7. Payments Received */}
@@ -356,11 +356,11 @@ export const HistoryBookingsPage: React.FC = () => {
             }`}
           >
             <div className="flex items-center justify-between text-zinc-400 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Received</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Received</span>
               <TrendingUp className="w-4 h-4 text-emerald-600" />
             </div>
             <p className="text-lg font-bold text-emerald-600">₹{(mainKPIs.totalPaymentsReceived / 100000).toFixed(1)}L</p>
-            <span className="text-[10px] text-zinc-500 font-medium">Verified in Ledger</span>
+            <span className="text-xs text-zinc-500 font-medium">Verified in Ledger</span>
           </div>
 
           {/* 8. Outstanding Payments */}
@@ -369,11 +369,11 @@ export const HistoryBookingsPage: React.FC = () => {
             className="p-3.5 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 transition-all cursor-pointer shadow-2xs"
           >
             <div className="flex items-center justify-between text-zinc-400 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Outstanding</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Outstanding</span>
               <AlertCircle className="w-4 h-4 text-rose-500" />
             </div>
             <p className="text-lg font-bold text-rose-600">₹{(mainKPIs.outstandingPayments / 100000).toFixed(1)}L</p>
-            <span className="text-[10px] text-rose-500 font-medium">Remaining Balance</span>
+            <span className="text-xs text-rose-500 font-medium">Remaining Balance</span>
           </div>
 
           {/* 9. Negotiated Discounts */}
@@ -384,11 +384,11 @@ export const HistoryBookingsPage: React.FC = () => {
             }`}
           >
             <div className="flex items-center justify-between text-zinc-400 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Discounts Given</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Discounts Given</span>
               <TrendingDown className="w-4 h-4 text-amber-600" />
             </div>
             <p className="text-lg font-bold text-amber-700">₹{(mainKPIs.negotiatedDiscounts / 1000).toFixed(0)}K</p>
-            <span className="text-[10px] text-zinc-500 font-medium">Avg ₹{additionalInsights.averageNegotiationDiscount.toLocaleString('en-IN')}</span>
+            <span className="text-xs text-zinc-500 font-medium">Avg ₹{additionalInsights.averageNegotiationDiscount.toLocaleString('en-IN')}</span>
           </div>
 
           {/* 10. Total Deliverables */}
@@ -399,11 +399,11 @@ export const HistoryBookingsPage: React.FC = () => {
             }`}
           >
             <div className="flex items-center justify-between text-zinc-400 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Deliverables</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Deliverables</span>
               <Tag className="w-4 h-4 text-purple-600" />
             </div>
             <p className="text-lg font-bold text-zinc-900">{mainKPIs.totalDeliverables}</p>
-            <span className="text-[10px] text-zinc-500 font-medium">{additionalInsights.pendingDeliveries} In Progress</span>
+            <span className="text-xs text-zinc-500 font-medium">{additionalInsights.pendingDeliveries} In Progress</span>
           </div>
 
           {/* 11. Photos Delivered */}
@@ -412,11 +412,11 @@ export const HistoryBookingsPage: React.FC = () => {
             className="p-3.5 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 transition-all cursor-pointer shadow-2xs"
           >
             <div className="flex items-center justify-between text-zinc-400 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Photos Delivered</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Photos Delivered</span>
               <Camera className="w-4 h-4 text-teal-600" />
             </div>
             <p className="text-lg font-bold text-teal-700">{mainKPIs.photosDelivered.toLocaleString('en-IN')}</p>
-            <span className="text-[10px] text-zinc-500 font-medium">Curated High-Res</span>
+            <span className="text-xs text-zinc-500 font-medium">Curated High-Res</span>
           </div>
 
           {/* 12. Albums Completed */}
@@ -425,11 +425,11 @@ export const HistoryBookingsPage: React.FC = () => {
             className="p-3.5 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 transition-all cursor-pointer shadow-2xs"
           >
             <div className="flex items-center justify-between text-zinc-400 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Albums Done</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Albums Done</span>
               <BookOpen className="w-4 h-4 text-amber-600" />
             </div>
             <p className="text-lg font-bold text-amber-700">{mainKPIs.albumsCompleted}</p>
-            <span className="text-[10px] text-zinc-500 font-medium">Canvera Photobooks</span>
+            <span className="text-xs text-zinc-500 font-medium">Canvera Photobooks</span>
           </div>
         </div>
       </div>
@@ -437,27 +437,27 @@ export const HistoryBookingsPage: React.FC = () => {
       {/* 3. BUSINESS INSIGHTS HIGHLIGHT BAR */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 p-3.5 bg-white rounded-xl border border-zinc-200 text-xs shadow-2xs">
         <div>
-          <span className="text-zinc-400 block text-[10px] uppercase font-bold">Avg Booking</span>
+          <span className="text-zinc-400 block text-xs uppercase font-bold">Avg Booking</span>
           <span className="font-bold text-zinc-900">₹{additionalInsights.averageBookingValue.toLocaleString('en-IN')}</span>
         </div>
         <div>
-          <span className="text-zinc-400 block text-[10px] uppercase font-bold">Conversion Rate</span>
+          <span className="text-zinc-400 block text-xs uppercase font-bold">Conversion Rate</span>
           <span className="font-bold text-emerald-600">{additionalInsights.quotationConversionRate}% ({additionalInsights.quotationConversionsCount} won)</span>
         </div>
         <div>
-          <span className="text-zinc-400 block text-[10px] uppercase font-bold">Upcoming Shoots</span>
+          <span className="text-zinc-400 block text-xs uppercase font-bold">Upcoming Shoots</span>
           <span className="font-bold text-sky-700">{additionalInsights.upcomingShoots} Booked</span>
         </div>
         <div>
-          <span className="text-zinc-400 block text-[10px] uppercase font-bold">Videos Done</span>
+          <span className="text-zinc-400 block text-xs uppercase font-bold">Videos Done</span>
           <span className="font-bold text-indigo-700">{additionalInsights.completedVideos} Delivered</span>
         </div>
         <div>
-          <span className="text-zinc-400 block text-[10px] uppercase font-bold">Pending Quotations</span>
+          <span className="text-zinc-400 block text-xs uppercase font-bold">Pending Quotations</span>
           <span className="font-bold text-amber-700">{additionalInsights.pendingQuotations} Active</span>
         </div>
         <div>
-          <span className="text-zinc-400 block text-[10px] uppercase font-bold">Overdue Handover</span>
+          <span className="text-zinc-400 block text-xs uppercase font-bold">Overdue Handover</span>
           <span className="font-bold text-emerald-600">0 Overdue (100% on time)</span>
         </div>
       </div>
@@ -532,24 +532,24 @@ export const HistoryBookingsPage: React.FC = () => {
         {/* Active Filters Pill display */}
         {(searchQuery || filterCategory !== 'all' || filterCity !== 'all' || filterStatus !== 'all' || filterNegotiated !== 'all') && (
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-zinc-100 text-xs">
-            <span className="text-zinc-400 text-[11px] font-bold">Filtered:</span>
+            <span className="text-zinc-400 text-xs font-bold">Filtered:</span>
             {searchQuery && (
-              <span className="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 text-[11px] font-medium">
+              <span className="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 text-xs font-medium">
                 Query: "{searchQuery}"
               </span>
             )}
             {filterCategory !== 'all' && (
-              <span className="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 text-[11px] font-medium">
+              <span className="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 text-xs font-medium">
                 Category: {filterCategory}
               </span>
             )}
             {filterCity !== 'all' && (
-              <span className="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 text-[11px] font-medium">
+              <span className="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 text-xs font-medium">
                 City: {filterCity}
               </span>
             )}
             {filterNegotiated !== 'all' && (
-              <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 text-[11px] font-medium border border-amber-200">
+              <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 text-xs font-medium border border-amber-200">
                 {filterNegotiated === 'negotiated' ? 'Negotiated Only' : 'Standard Price Only'}
               </span>
             )}
@@ -561,7 +561,7 @@ export const HistoryBookingsPage: React.FC = () => {
                 setFilterStatus('all');
                 setFilterNegotiated('all');
               }}
-              className="text-[11px] font-bold text-rose-600 hover:underline cursor-pointer ml-auto"
+              className="text-xs font-bold text-rose-600 hover:underline cursor-pointer ml-auto"
             >
               Clear All Filters
             </button>
@@ -592,7 +592,7 @@ export const HistoryBookingsPage: React.FC = () => {
           >
             <span>{tab.label}</span>
             {tab.count !== undefined && (
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+              <span className={`text-xs px-1.5 py-0.2 rounded-full ${
                 activeTab === tab.id ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600'
               }`}>
                 {tab.count}
@@ -610,7 +610,7 @@ export const HistoryBookingsPage: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between text-xs text-zinc-500 pb-1">
               <span>Showing <strong>{filteredBookings.length}</strong> bookings for Shreeji Studio</span>
-              <span className="text-[11px] text-zinc-400">Gujarat Destinations & Local Events</span>
+              <span className="text-xs text-zinc-400">Gujarat Destinations & Local Events</span>
             </div>
 
             <div className="space-y-3">
@@ -625,10 +625,10 @@ export const HistoryBookingsPage: React.FC = () => {
                         <h4 className="text-sm font-bold text-zinc-900 truncate font-display">
                           {b.eventName}
                         </h4>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
                           {b.bookingNumber}
                         </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
                           {b.category}
                         </span>
                       </div>
@@ -655,11 +655,11 @@ export const HistoryBookingsPage: React.FC = () => {
                         <p className="text-sm font-bold text-zinc-900">
                           ₹{(b.financials?.finalAgreedAmount || 0).toLocaleString('en-IN')}
                         </p>
-                        <p className="text-[11px] font-semibold text-emerald-600">
+                        <p className="text-xs font-semibold text-emerald-600">
                           ₹{(b.financials?.verifiedPaymentsReceived || 0).toLocaleString('en-IN')} Paid
                         </p>
                       </div>
-                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full uppercase ${
                         b.status === 'completed' || b.status === 'fully_delivered'
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                           : b.status === 'cancelled'
@@ -673,7 +673,7 @@ export const HistoryBookingsPage: React.FC = () => {
 
                   {/* Pricing Concession Ribbon */}
                   {(b.financials?.negotiatedDiscount || 0) > 0 && (
-                    <div className="px-3 py-1.5 rounded-lg bg-amber-50/70 border border-amber-200/80 text-[11px] text-amber-900 flex items-center justify-between">
+                    <div className="px-3 py-1.5 rounded-lg bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900 flex items-center justify-between">
                       <span>
                         <strong>Negotiation Concession:</strong> Quoted ₹{b.financials.originalQuotation.toLocaleString('en-IN')} → Discount -₹{b.financials.negotiatedDiscount.toLocaleString('en-IN')}
                       </span>
@@ -767,28 +767,28 @@ export const HistoryBookingsPage: React.FC = () => {
                         </div>
                         <div className="min-w-0">
                           <h4 className="text-xs font-bold text-zinc-900 truncate">{c.name}</h4>
-                          <p className="text-[11px] text-zinc-500 truncate flex items-center gap-1">
+                          <p className="text-xs text-zinc-500 truncate flex items-center gap-1">
                             <MapPin className="w-3 h-3 text-zinc-400" />
                             {c.city || 'Gujarat'}
                           </p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700">
                         {cBookings.length} Bookings
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-zinc-100 text-[11px] text-center">
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-zinc-100 text-xs text-center">
                       <div>
-                        <span className="text-zinc-400 block text-[9px] uppercase font-bold">Total</span>
+                        <span className="text-zinc-400 block text-xs uppercase font-bold">Total</span>
                         <span className="font-bold text-zinc-900">₹{totalVal.toLocaleString('en-IN')}</span>
                       </div>
                       <div>
-                        <span className="text-zinc-400 block text-[9px] uppercase font-bold">Paid</span>
+                        <span className="text-zinc-400 block text-xs uppercase font-bold">Paid</span>
                         <span className="font-bold text-emerald-600">₹{totalPaid.toLocaleString('en-IN')}</span>
                       </div>
                       <div>
-                        <span className="text-zinc-400 block text-[9px] uppercase font-bold">Balance</span>
+                        <span className="text-zinc-400 block text-xs uppercase font-bold">Balance</span>
                         <span className={`font-bold ${bal > 0 ? 'text-rose-600' : 'text-zinc-600'}`}>
                           ₹{bal.toLocaleString('en-IN')}
                         </span>
@@ -812,7 +812,7 @@ export const HistoryBookingsPage: React.FC = () => {
             <div className="overflow-x-auto w-full">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-zinc-200 text-zinc-400 uppercase text-[10px] font-bold">
+                  <tr className="border-b border-zinc-200 text-zinc-400 uppercase text-xs font-bold">
                     <th className="py-3 px-3">Quotation ID</th>
                     <th className="py-3 px-3">Customer</th>
                     <th className="py-3 px-3">Valid Until</th>
@@ -831,7 +831,7 @@ export const HistoryBookingsPage: React.FC = () => {
                       <td className="py-3 px-3 text-zinc-500">{q.items?.length || 0} line items</td>
                       <td className="py-3 px-3 text-right font-bold text-zinc-900">₹{q.totalAmount.toLocaleString('en-IN')}</td>
                       <td className="py-3 px-3 text-center">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-full uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
                           {q.status}
                         </span>
                       </td>
@@ -857,12 +857,12 @@ export const HistoryBookingsPage: React.FC = () => {
             <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/80 text-xs text-amber-900 flex items-center justify-between">
               <div>
                 <h4 className="font-bold">Negotiation & Discount Transparency Ledger</h4>
-                <p className="text-[11px] text-amber-800 mt-0.5">
+                <p className="text-xs text-amber-800 mt-0.5">
                   Original quotations are permanently preserved. Discounts are recorded with reasons.
                 </p>
               </div>
               <div className="text-right">
-                <span className="text-[10px] font-bold uppercase text-amber-700 block">Total Concessions</span>
+                <span className="text-xs font-bold uppercase text-amber-700 block">Total Concessions</span>
                 <span className="text-base font-bold text-amber-900">₹{mainKPIs.negotiatedDiscounts.toLocaleString('en-IN')}</span>
               </div>
             </div>
@@ -873,7 +873,7 @@ export const HistoryBookingsPage: React.FC = () => {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                     <div>
                       <h4 className="text-xs font-bold text-zinc-900">{item.booking.eventName}</h4>
-                      <p className="text-[11px] text-zinc-500">{item.booking.customerName} • {item.booking.city} • {item.date}</p>
+                      <p className="text-xs text-zinc-500">{item.booking.customerName} • {item.booking.city} • {item.date}</p>
                     </div>
                     <span className="text-xs font-bold text-rose-600 self-start sm:self-center">
                       -₹{item.discount.toLocaleString('en-IN')} ({item.percent}% Off)
@@ -909,7 +909,7 @@ export const HistoryBookingsPage: React.FC = () => {
             <div className="overflow-x-auto w-full">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-zinc-200 text-zinc-400 uppercase text-[10px] font-bold">
+                  <tr className="border-b border-zinc-200 text-zinc-400 uppercase text-xs font-bold">
                     <th className="py-3 px-3">Invoice No</th>
                     <th className="py-3 px-3">Customer</th>
                     <th className="py-3 px-3">Issue Date</th>
@@ -930,7 +930,7 @@ export const HistoryBookingsPage: React.FC = () => {
                       <td className="py-3 px-3 text-right font-bold text-zinc-900">₹{inv.totalAmount.toLocaleString('en-IN')}</td>
                       <td className="py-3 px-3 text-right font-bold text-rose-600">₹{((inv as any).balanceAmount ?? ((inv.totalAmount || 0) - (inv.paidAmount || 0))).toLocaleString('en-IN')}</td>
                       <td className="py-3 px-3 text-center">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full uppercase ${
                           inv.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
                         }`}>
                           {inv.status}
@@ -958,7 +958,7 @@ export const HistoryBookingsPage: React.FC = () => {
             <div className="overflow-x-auto w-full">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-zinc-200 text-zinc-400 uppercase text-[10px] font-bold">
+                  <tr className="border-b border-zinc-200 text-zinc-400 uppercase text-xs font-bold">
                     <th className="py-3 px-3">Receipt / Ref</th>
                     <th className="py-3 px-3">Customer</th>
                     <th className="py-3 px-3">Date</th>
@@ -979,10 +979,10 @@ export const HistoryBookingsPage: React.FC = () => {
                           {p.paymentMethod.replace('_', ' ')}
                         </span>
                       </td>
-                      <td className="py-3 px-3 text-zinc-500 font-mono text-[11px]">{p.transactionReference || 'N/A'}</td>
+                      <td className="py-3 px-3 text-zinc-500 font-mono text-xs">{p.transactionReference || 'N/A'}</td>
                       <td className="py-3 px-3 text-right font-bold text-emerald-600">₹{p.amount.toLocaleString('en-IN')}</td>
                       <td className="py-3 px-3 text-center">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-full uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
                           Verified
                         </span>
                       </td>
@@ -1004,7 +1004,7 @@ export const HistoryBookingsPage: React.FC = () => {
                   <span className="text-xs font-bold">Photos Delivered</span>
                 </div>
                 <p className="text-2xl font-bold text-zinc-900">{mainKPIs.photosDelivered.toLocaleString('en-IN')}</p>
-                <p className="text-[11px] text-zinc-500 mt-1">Curated, Color-Graded Stills</p>
+                <p className="text-xs text-zinc-500 mt-1">Curated, Color-Graded Stills</p>
               </div>
 
               <div className="p-4 rounded-xl border border-zinc-200 bg-white shadow-2xs">
@@ -1013,7 +1013,7 @@ export const HistoryBookingsPage: React.FC = () => {
                   <span className="text-xs font-bold">Videos & Reels</span>
                 </div>
                 <p className="text-2xl font-bold text-zinc-900">{additionalInsights.completedVideos}</p>
-                <p className="text-[11px] text-zinc-500 mt-1">4K Cinematic Films & 9:16 Reels</p>
+                <p className="text-xs text-zinc-500 mt-1">4K Cinematic Films & 9:16 Reels</p>
               </div>
 
               <div className="p-4 rounded-xl border border-zinc-200 bg-white shadow-2xs">
@@ -1022,7 +1022,7 @@ export const HistoryBookingsPage: React.FC = () => {
                   <span className="text-xs font-bold">Luxury Albums</span>
                 </div>
                 <p className="text-2xl font-bold text-zinc-900">{mainKPIs.albumsCompleted}</p>
-                <p className="text-[11px] text-zinc-500 mt-1">Canvera Ultra-HD Print Spec</p>
+                <p className="text-xs text-zinc-500 mt-1">Canvera Ultra-HD Print Spec</p>
               </div>
             </div>
 
@@ -1031,7 +1031,7 @@ export const HistoryBookingsPage: React.FC = () => {
                 <div key={b.id} className="p-3.5 rounded-xl border border-zinc-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-2xs">
                   <div>
                     <h4 className="font-bold text-zinc-900">{b.eventName}</h4>
-                    <p className="text-[11px] text-zinc-500 mt-0.5">
+                    <p className="text-xs text-zinc-500 mt-0.5">
                       Client: {b.customerName} • {b.deliverables?.length || 0} deliverable items configured
                     </p>
                   </div>

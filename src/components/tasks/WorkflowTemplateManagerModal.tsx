@@ -178,14 +178,14 @@ export const WorkflowTemplateManagerModal: React.FC<WorkflowTemplateManagerModal
                     <div className="flex items-center justify-between">
                       <span className="font-bold truncate">{tmpl.name}</span>
                       {tmpl.isDefault && (
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
                           isSelected ? 'bg-zinc-800 text-zinc-300' : 'bg-zinc-100 text-zinc-600'
                         }`}>
                           Default
                         </span>
                       )}
                     </div>
-                    <div className={`text-[10px] mt-1 ${isSelected ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                    <div className={`text-xs mt-1 ${isSelected ? 'text-zinc-300' : 'text-zinc-500'}`}>
                       {tmpl.stages.length} Stages • {tmpl.category || 'General'}
                     </div>
 
@@ -193,7 +193,7 @@ export const WorkflowTemplateManagerModal: React.FC<WorkflowTemplateManagerModal
                       <button
                         type="button"
                         onClick={() => handleDuplicate(tmpl.id)}
-                        className={`hover:underline text-[10px] ${isSelected ? 'text-zinc-300' : 'text-zinc-600'}`}
+                        className={`hover:underline text-xs ${isSelected ? 'text-zinc-300' : 'text-zinc-600'}`}
                       >
                         Duplicate
                       </button>
@@ -201,7 +201,7 @@ export const WorkflowTemplateManagerModal: React.FC<WorkflowTemplateManagerModal
                         <button
                           type="button"
                           onClick={() => handleDelete(tmpl)}
-                          className="hover:underline text-[10px] text-rose-500"
+                          className="hover:underline text-xs text-rose-500"
                         >
                           Delete
                         </button>
@@ -234,12 +234,12 @@ export const WorkflowTemplateManagerModal: React.FC<WorkflowTemplateManagerModal
                       className="p-3 rounded-xl border border-zinc-200 bg-white flex items-center justify-between text-xs gap-3 shadow-2xs"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <span className="w-5 h-5 rounded-full bg-zinc-100 text-zinc-700 font-bold flex items-center justify-center text-[10px] shrink-0">
+                        <span className="w-5 h-5 rounded-full bg-zinc-100 text-zinc-700 font-bold flex items-center justify-center text-xs shrink-0">
                           {stage.order}
                         </span>
                         <div className="min-w-0">
                           <div className="font-bold text-zinc-900 truncate">{stage.name}</div>
-                          <div className="text-[11px] text-zinc-500">
+                          <div className="text-xs text-zinc-500">
                             {stage.department} • {stage.estimatedHours} hrs {stage.requiresApproval ? '• Approval Required' : ''}
                           </div>
                         </div>

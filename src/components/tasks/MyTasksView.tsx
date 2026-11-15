@@ -124,7 +124,7 @@ export const MyTasksView: React.FC<MyTasksViewProps> = ({
                           {task.taskNumber}
                         </span>
                       )}
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                      <span className={`text-xs font-bold px-1.5 py-0.5 rounded uppercase ${
                         task.priority === 'Urgent' ? 'bg-rose-100 text-rose-800' :
                         task.priority === 'High' ? 'bg-amber-100 text-amber-800' :
                         'bg-zinc-100 text-zinc-600'
@@ -132,7 +132,7 @@ export const MyTasksView: React.FC<MyTasksViewProps> = ({
                         {task.priority}
                       </span>
                       {isBlocked.blocked && !isDone && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 flex items-center gap-1">
+                        <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 flex items-center gap-1">
                           <Lock className="w-2.5 h-2.5" /> Blocked
                         </span>
                       )}
@@ -154,7 +154,7 @@ export const MyTasksView: React.FC<MyTasksViewProps> = ({
                       <div className="font-semibold text-zinc-800 flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-zinc-400" /> Due: {task.dueDate}
                       </div>
-                      <div className="text-[10px] text-zinc-400">
+                      <div className="text-xs text-zinc-400">
                         {task.checklist?.length ? `${task.checklist.filter(c => c.completed).length}/${task.checklist.length} checklist items` : ''}
                       </div>
                     </div>

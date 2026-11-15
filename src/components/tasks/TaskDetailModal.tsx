@@ -129,14 +129,14 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                   <Layers className="w-3 h-3" /> {task.workflowStageName}
                 </span>
               )}
-              <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase ${
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full uppercase ${
                 task.priority === 'Urgent' ? 'bg-rose-100 text-rose-800' :
                 task.priority === 'High' ? 'bg-amber-100 text-amber-800' :
                 'bg-zinc-100 text-zinc-700'
               }`}>
                 {task.priority} Priority
               </span>
-              <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase ${
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full uppercase ${
                 task.status === 'Completed' || task.status === 'Done' ? 'bg-emerald-100 text-emerald-800' :
                 task.status === 'Under Review' ? 'bg-purple-100 text-purple-800' :
                 task.status === 'Revision Required' ? 'bg-rose-100 text-rose-800' :
@@ -330,7 +330,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                         </span>
                       </div>
                       {item.completedByName && (
-                        <span className="text-[10px] text-zinc-400">
+                        <span className="text-xs text-zinc-400">
                           by {item.completedByName}
                         </span>
                       )}
@@ -383,7 +383,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                             {isDepDone ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Lock className="w-4 h-4 text-rose-600" />}
                             <span className="font-semibold">{depTask?.title || depId}</span>
                           </div>
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
                             isDepDone ? 'bg-emerald-200 text-emerald-800' : 'bg-rose-200 text-rose-800'
                           }`}>
                             {depTask?.status || 'Unknown'}
@@ -408,7 +408,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                     {downstreamImpact.map(dt => (
                       <div key={dt.id} className="p-2.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs flex items-center justify-between">
                         <span className="font-medium text-zinc-800">{dt.title}</span>
-                        <span className="text-[10px] text-zinc-500">Due: {dt.dueDate}</span>
+                        <span className="text-xs text-zinc-500">Due: {dt.dueDate}</span>
                       </div>
                     ))}
                   </div>
@@ -453,7 +453,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                         <Paperclip className="w-4 h-4 text-zinc-400 shrink-0" />
                         <div>
                           <div className="font-semibold text-zinc-800">{att.name}</div>
-                          <div className="text-[10px] text-zinc-400">Uploaded on {new Date(att.uploadedAt).toLocaleDateString()}</div>
+                          <div className="text-xs text-zinc-400">Uploaded on {new Date(att.uploadedAt).toLocaleDateString()}</div>
                         </div>
                       </div>
                       <a
@@ -482,7 +482,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                     <div key={comm.id} className="p-3 rounded-xl bg-zinc-50 border border-zinc-200 text-xs space-y-1">
                       <div className="flex items-center justify-between text-zinc-500">
                         <span className="font-bold text-zinc-800">{comm.authorName}</span>
-                        <span className="text-[10px]">{new Date(comm.createdAt).toLocaleString()}</span>
+                        <span className="text-xs">{new Date(comm.createdAt).toLocaleString()}</span>
                       </div>
                       <p className="text-zinc-700">{comm.text}</p>
                     </div>

@@ -47,18 +47,18 @@ export const ProductionFunnelChart: React.FC<ProductionFunnelChartProps> = ({
             >
               <div className="flex items-center justify-between text-xs mb-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-[10px]">
+                  <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-xs">
                     {stage.order}
                   </span>
                   <span className="font-semibold text-slate-800">{stage.stageName}</span>
                   {isBottleneck && (
-                    <span className="text-[10px] font-bold bg-amber-200 text-amber-900 px-1.5 py-0.2 rounded">
+                    <span className="text-xs font-bold bg-amber-200 text-amber-900 px-1.5 py-0.2 rounded">
                       Bottleneck
                     </span>
                   )}
                 </div>
 
-                <div className="flex items-center gap-4 text-slate-500 text-[11px]">
+                <div className="flex items-center gap-4 text-slate-500 text-xs">
                   <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3 text-slate-400" />
                     ~{stage.avgDaysInStage}d avg

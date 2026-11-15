@@ -44,7 +44,7 @@ export const PlatformRoleSwitcherModal: React.FC = () => {
             <ShieldAlert className="w-5 h-5 text-indigo-400" />
             <div>
               <h3 className="text-sm font-bold">Platform Role Switcher (Dev Mode)</h3>
-              <p className="text-[11px] text-slate-300">Test platform RBAC and permission isolation</p>
+              <p className="text-xs text-slate-300">Test platform RBAC and permission isolation</p>
             </div>
           </div>
           <button
@@ -75,12 +75,12 @@ export const PlatformRoleSwitcherModal: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-slate-900">{r.label}</span>
                     {isSelected && (
-                      <span className="text-[10px] font-bold bg-indigo-600 text-white px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-bold bg-indigo-600 text-white px-2 py-0.5 rounded-full">
                         Active
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                     {r.description}
                   </p>
                 </div>
@@ -90,7 +90,7 @@ export const PlatformRoleSwitcherModal: React.FC = () => {
           })}
         </div>
 
-        <div className="p-3 bg-slate-50 border-t border-slate-100 text-center text-[11px] text-slate-500">
+        <div className="p-3 bg-slate-50 border-t border-slate-100 text-center text-xs text-slate-500">
           Studio owners cannot switch to Platform Super Admin in production.
         </div>
       </div>

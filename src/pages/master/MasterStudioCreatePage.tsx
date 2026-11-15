@@ -107,7 +107,7 @@ export const MasterStudioCreatePage: React.FC = () => {
         </button>
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
               Master Provisioning
             </span>
             <span className="text-xs text-zinc-500">Platform Owner Level 1 Authority</span>

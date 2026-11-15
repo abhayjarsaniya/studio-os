@@ -78,7 +78,7 @@ export const MasterPlansPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
               SaaS Billing Governance
             </span>
             <span className="text-xs text-zinc-500">Preserved ₹500/mo Standard Plan</span>
@@ -109,7 +109,7 @@ export const MasterPlansPage: React.FC = () => {
             }`}
           >
             {plan.isDefaultPreserved && (
-              <span className="absolute -top-3 left-4 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500 text-zinc-950">
+              <span className="absolute -top-3 left-4 px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500 text-zinc-950">
                 Core Standard (Preserved)
               </span>
             )}
@@ -130,7 +130,7 @@ export const MasterPlansPage: React.FC = () => {
                   <div className="text-2xl font-black text-amber-400">Custom Pricing</div>
                 )}
                 {plan.priceAnnual > 0 && (
-                  <div className="text-[11px] text-emerald-400 mt-0.5">
+                  <div className="text-xs text-emerald-400 mt-0.5">
                     ₹{plan.priceAnnual.toLocaleString('en-IN')} / year (Save 2 months)
                   </div>
                 )}
@@ -154,9 +154,9 @@ export const MasterPlansPage: React.FC = () => {
 
               {/* Features */}
               <div className="mt-4 space-y-2 text-xs">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Included Features</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-zinc-500">Included Features</div>
                 {plan.features.map(f => (
-                  <div key={f} className="flex items-center gap-2 text-zinc-700 text-[11px]">
+                  <div key={f} className="flex items-center gap-2 text-zinc-700 text-xs">
                     <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                     <span>{f}</span>
                   </div>
@@ -165,7 +165,7 @@ export const MasterPlansPage: React.FC = () => {
             </div>
 
             <div className="mt-6 pt-3 border-t border-zinc-200">
-              <div className="text-[10px] text-zinc-400 text-center">
+              <div className="text-xs text-zinc-400 text-center">
                 Support: {plan.support}
               </div>
             </div>

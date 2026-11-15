@@ -161,12 +161,12 @@ export const AdvancedPermissionMatrix: React.FC<AdvancedPermissionMatrixProps> =
                 {role.name} Permissions Matrix
               </h3>
               {role.isSystem && (
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-700 flex items-center gap-1">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-700 flex items-center gap-1">
                   <Lock className="w-3 h-3" /> System Role
                 </span>
               )}
               {isOwnerRole && (
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                   Full Authority
                 </span>
               )}
@@ -275,7 +275,7 @@ export const AdvancedPermissionMatrix: React.FC<AdvancedPermissionMatrixProps> =
 
                   {/* Scope Selector */}
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[11px] font-medium text-zinc-500">Record Scope:</span>
+                    <span className="text-xs font-medium text-zinc-500">Record Scope:</span>
                     <select
                       value={currentScope}
                       disabled={isOwnerRole}
@@ -293,7 +293,7 @@ export const AdvancedPermissionMatrix: React.FC<AdvancedPermissionMatrixProps> =
 
                 {/* Actions Grid */}
                 <div className="pt-3">
-                  <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                  <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
                     Action Permissions
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -340,7 +340,7 @@ export const AdvancedPermissionMatrix: React.FC<AdvancedPermissionMatrixProps> =
                     {/* Field Permissions Controls */}
                     {isFieldExpanded && (
                       <div className="mt-3 p-3 rounded-xl bg-zinc-50/80 border border-zinc-200 space-y-2">
-                        <div className="text-[11px] font-semibold text-zinc-500">
+                        <div className="text-xs font-semibold text-zinc-500">
                           Field Access Rules for {mod.label}:
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -353,7 +353,7 @@ export const AdvancedPermissionMatrix: React.FC<AdvancedPermissionMatrixProps> =
                                 key={field}
                                 className="flex items-center justify-between p-2 rounded-lg bg-white border border-zinc-200 text-xs"
                               >
-                                <span className="font-mono text-[11px] text-zinc-700">{field}</span>
+                                <span className="font-mono text-xs text-zinc-700">{field}</span>
                                 <div className="flex items-center gap-1">
                                   {(['visible', 'editable', 'hidden'] as FieldVisibility[]).map(vis => (
                                     <button
@@ -361,7 +361,7 @@ export const AdvancedPermissionMatrix: React.FC<AdvancedPermissionMatrixProps> =
                                       type="button"
                                       disabled={isOwnerRole}
                                       onClick={() => toggleFieldVisibility(mod.id, field, vis)}
-                                      className={`px-2 py-1 text-[10px] font-medium rounded capitalize cursor-pointer transition-colors ${
+                                      className={`px-2 py-1 text-xs font-medium rounded capitalize cursor-pointer transition-colors ${
                                         currentVisibility === vis
                                           ? vis === 'hidden'
                                             ? 'bg-rose-600 text-white'

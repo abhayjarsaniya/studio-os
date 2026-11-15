@@ -59,7 +59,7 @@ export const TeamWorkloadView: React.FC<TeamWorkloadViewProps> = ({
                   <p className="text-xs text-zinc-500">{item.designation} • {item.department}</p>
                 </div>
                 {item.isOverloaded && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 flex items-center gap-1 shrink-0">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 flex items-center gap-1 shrink-0">
                     <AlertTriangle className="w-3 h-3" /> Overloaded
                   </span>
                 )}
@@ -68,15 +68,15 @@ export const TeamWorkloadView: React.FC<TeamWorkloadViewProps> = ({
               <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-zinc-100 text-center text-xs">
                 <div className="p-2 rounded-lg bg-zinc-50 border border-zinc-100">
                   <div className="font-black text-zinc-900 text-base">{item.totalActiveTasks}</div>
-                  <div className="text-[10px] text-zinc-500 font-medium">Active</div>
+                  <div className="text-xs text-zinc-500 font-medium">Active</div>
                 </div>
                 <div className="p-2 rounded-lg bg-amber-50/50 border border-amber-100">
                   <div className="font-black text-amber-800 text-base">{item.inProgressTasks}</div>
-                  <div className="text-[10px] text-amber-700 font-medium">In Progress</div>
+                  <div className="text-xs text-amber-700 font-medium">In Progress</div>
                 </div>
                 <div className="p-2 rounded-lg bg-rose-50/50 border border-rose-100">
                   <div className="font-black text-rose-800 text-base">{item.overdueTasks}</div>
-                  <div className="text-[10px] text-rose-700 font-medium">Overdue</div>
+                  <div className="text-xs text-rose-700 font-medium">Overdue</div>
                 </div>
               </div>
             </div>

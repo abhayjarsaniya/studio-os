@@ -41,17 +41,17 @@ export const ApprovalQueueModal: React.FC<ApprovalQueueModalProps> = ({
   const getWorkflowBadge = (type: string) => {
     switch (type) {
       case 'event_cancellation':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Event Cancellation</span>;
+        return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Event Cancellation</span>;
       case 'expense_claims':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 flex items-center gap-1"><DollarSign className="w-3 h-3" /> Expense Claim</span>;
+        return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 flex items-center gap-1"><DollarSign className="w-3 h-3" /> Expense Claim</span>;
       case 'leave_requests':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 flex items-center gap-1"><Calendar className="w-3 h-3" /> Leave Request</span>;
+        return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 flex items-center gap-1"><Calendar className="w-3 h-3" /> Leave Request</span>;
       case 'invoice_approval':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 flex items-center gap-1"><FileText className="w-3 h-3" /> Invoice Approval</span>;
+        return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800 flex items-center gap-1"><FileText className="w-3 h-3" /> Invoice Approval</span>;
       case 'salary_payment_confirmation':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1"><UserCheck className="w-3 h-3" /> Salary Confirmation</span>;
+        return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1"><UserCheck className="w-3 h-3" /> Salary Confirmation</span>;
       default:
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 text-zinc-800">{type.replace('_', ' ')}</span>;
+        return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-100 text-zinc-800">{type.replace('_', ' ')}</span>;
     }
   };
 
@@ -124,7 +124,7 @@ export const ApprovalQueueModal: React.FC<ApprovalQueueModalProps> = ({
                     <div className="flex items-center gap-2 text-xs text-zinc-500">
                       <Clock className="w-3.5 h-3.5" />
                       <span>{new Date(req.createdAt).toLocaleDateString()}</span>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
                         req.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
                         req.status === 'rejected' ? 'bg-rose-100 text-rose-800' :
                         'bg-amber-100 text-amber-800'
@@ -173,7 +173,7 @@ export const ApprovalQueueModal: React.FC<ApprovalQueueModalProps> = ({
                         <span className="font-semibold">{req.status === 'approved' ? 'Approved by:' : 'Rejected by:'}</span> {req.reviewedByName || 'Admin'}
                         {req.remarks && <span className="italic ml-2 font-normal">"{req.remarks}"</span>}
                       </div>
-                      <span className="text-[10px]">{req.reviewedAt ? new Date(req.reviewedAt).toLocaleDateString() : ''}</span>
+                      <span className="text-xs">{req.reviewedAt ? new Date(req.reviewedAt).toLocaleDateString() : ''}</span>
                     </div>
                   )}
                 </div>

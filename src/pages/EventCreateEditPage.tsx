@@ -576,7 +576,7 @@ export const EventCreateEditPage: React.FC<EventCreateEditPageProps> = ({ eventI
                   <img src={u.avatar} alt={u.name} className="w-7 h-7 rounded-full object-cover border border-white" />
                   <div className="min-w-0">
                     <div className="font-bold truncate">{u.name}</div>
-                    <div className={`text-[10px] truncate ${isChecked ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                    <div className={`text-xs truncate ${isChecked ? 'text-zinc-300' : 'text-zinc-500'}`}>
                       {u.roleTitle}
                     </div>
                   </div>

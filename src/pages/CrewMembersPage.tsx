@@ -454,7 +454,7 @@ export const CrewMembersPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
               Operations Crew
             </span>
             <span className="text-xs text-zinc-500">{stats.active} of {stats.total} Active</span>
@@ -462,14 +462,14 @@ export const CrewMembersPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-zinc-900 tracking-tight mt-1 font-display">
             Crew Members & Collaborators
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">
             Full employee lifecycle: add, view, edit, password reset, event assignment, deactivation, and safe archival.
           </p>
         </div>
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
+          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
         >
           <Plus className="w-4 h-4 text-white" />
           <span>Add Employee</span>
@@ -480,47 +480,47 @@ export const CrewMembersPage: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <div className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-zinc-500 uppercase">Total Crew</span>
+            <span className="text-xs font-semibold text-zinc-500 uppercase">Total Crew</span>
             <Users className="w-4 h-4 text-zinc-400" />
           </div>
-          <div className="text-xl font-bold text-zinc-900 mt-1 font-display">{stats.total}</div>
-          <span className="text-[10px] text-zinc-400">All registered staff</span>
+          <div className="text-xl sm:text-2xl font-bold text-zinc-900 mt-1 font-display">{stats.total}</div>
+          <span className="text-xs text-zinc-400">All registered staff</span>
         </div>
 
         <div className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-zinc-500 uppercase">Permanent</span>
+            <span className="text-xs font-semibold text-zinc-500 uppercase">Permanent</span>
             <UserCheck className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-xl font-bold text-emerald-700 mt-1 font-display">{stats.permanent}</div>
-          <span className="text-[10px] text-emerald-600 font-medium">On monthly payroll</span>
+          <div className="text-xl sm:text-2xl font-bold text-emerald-700 mt-1 font-display">{stats.permanent}</div>
+          <span className="text-xs text-emerald-600 font-medium">On monthly payroll</span>
         </div>
 
         <div className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-zinc-500 uppercase">Freelancers</span>
+            <span className="text-xs font-semibold text-zinc-500 uppercase">Freelancers</span>
             <Camera className="w-4 h-4 text-indigo-600" />
           </div>
-          <div className="text-xl font-bold text-indigo-700 mt-1 font-display">{stats.freelance}</div>
-          <span className="text-[10px] text-indigo-600 font-medium">Per-event billing</span>
+          <div className="text-xl sm:text-2xl font-bold text-indigo-700 mt-1 font-display">{stats.freelance}</div>
+          <span className="text-xs text-indigo-600 font-medium">Per-event billing</span>
         </div>
 
         <div className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-zinc-500 uppercase">Suppliers</span>
+            <span className="text-xs font-semibold text-zinc-500 uppercase">Suppliers</span>
             <Truck className="w-4 h-4 text-amber-600" />
           </div>
-          <div className="text-xl font-bold text-amber-700 mt-1 font-display">{stats.suppliers}</div>
-          <span className="text-[10px] text-amber-600 font-medium">Gear, lab & drones</span>
+          <div className="text-xl sm:text-2xl font-bold text-amber-700 mt-1 font-display">{stats.suppliers}</div>
+          <span className="text-xs text-amber-600 font-medium">Gear, lab & drones</span>
         </div>
 
         <div className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-zinc-500 uppercase">Partner Studios</span>
+            <span className="text-xs font-semibold text-zinc-500 uppercase">Partner Studios</span>
             <Layers className="w-4 h-4 text-violet-600" />
           </div>
-          <div className="text-xl font-bold text-violet-700 mt-1 font-display">{stats.partner}</div>
-          <span className="text-[10px] text-violet-600 font-medium">Shared coverage</span>
+          <div className="text-xl sm:text-2xl font-bold text-violet-700 mt-1 font-display">{stats.partner}</div>
+          <span className="text-xs text-violet-600 font-medium">Shared coverage</span>
         </div>
       </div>
 
@@ -602,16 +602,16 @@ export const CrewMembersPage: React.FC = () => {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-bold text-sm text-zinc-900 truncate font-display">
+                      <h3 className="font-bold text-sm sm:text-base text-zinc-900 truncate font-display">
                         {emp.fullName}
                       </h3>
-                      <p className="text-[11px] text-zinc-500 font-mono">
+                      <p className="text-xs text-zinc-500 font-mono">
                         {emp.employeeNumber || 'ID Pending'}
                       </p>
                     </div>
                   </div>
 
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
                     isActive 
                       ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
                       : 'bg-zinc-100 text-zinc-500 border border-zinc-200'
@@ -622,28 +622,28 @@ export const CrewMembersPage: React.FC = () => {
 
                 {/* Badges */}
                 <div className="flex items-center gap-1.5 mt-3 flex-wrap">
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                  <span className="px-2.5 py-0.5 rounded-md text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
                     {empCrewType}
                   </span>
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-zinc-100 text-zinc-700">
+                  <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-zinc-100 text-zinc-700">
                     {emp.department}
                   </span>
-                  <span className="px-2 py-0.5 rounded-md text-[10px] text-zinc-500 border border-zinc-200">
+                  <span className="px-2.5 py-0.5 rounded-md text-xs text-zinc-600 border border-zinc-200">
                     {emp.designation}
                   </span>
                 </div>
 
                 {/* Contact Info */}
-                <div className="mt-3.5 space-y-1.5 text-xs text-zinc-600 border-t border-zinc-100 pt-3">
+                <div className="mt-3.5 space-y-1.5 text-xs sm:text-sm text-zinc-600 border-t border-zinc-100 pt-3">
                   <div className="flex items-center gap-2">
                     <Phone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                    <span className="font-mono text-[11px]">{emp.phone || 'Phone not set'}</span>
+                    <span className="font-mono text-xs">{emp.phone || 'Phone not set'}</span>
                     {emp.phone && (
                       <a
                         href={`https://wa.me/${emp.phone.replace(/[^0-9]/g, '')}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[10px] text-emerald-600 hover:underline font-semibold ml-auto"
+                        className="text-xs text-emerald-600 hover:underline font-semibold ml-auto"
                       >
                         WhatsApp
                       </a>
@@ -651,7 +651,7 @@ export const CrewMembersPage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Mail className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                    <span className="font-mono text-[11px] truncate">{emp.email}</span>
+                    <span className="font-mono text-xs truncate">{emp.email}</span>
                   </div>
                 </div>
               </div>
@@ -704,14 +704,14 @@ export const CrewMembersPage: React.FC = () => {
                     {isActive ? (
                       <button
                         onClick={() => setDeactivatingCrew(emp)}
-                        className="px-2.5 py-1 rounded-lg text-rose-600 hover:bg-rose-50 text-[11px] font-semibold border border-rose-200 cursor-pointer transition-colors"
+                        className="px-2.5 py-1 rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-semibold border border-rose-200 cursor-pointer transition-colors"
                       >
                         Deactivate
                       </button>
                     ) : (
                       <button
                         onClick={() => handleReactivate(emp)}
-                        className="px-2.5 py-1 rounded-lg text-emerald-600 hover:bg-emerald-50 text-[11px] font-semibold border border-emerald-200 cursor-pointer transition-colors"
+                        className="px-2.5 py-1 rounded-lg text-emerald-600 hover:bg-emerald-50 text-xs font-semibold border border-emerald-200 cursor-pointer transition-colors"
                       >
                         Reactivate
                       </button>
@@ -762,7 +762,7 @@ export const CrewMembersPage: React.FC = () => {
             <form onSubmit={handleSaveCrew} className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
               {/* Classification */}
               <div>
-                <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1.5">
+                <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1.5">
                   Crew Classification *
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -786,7 +786,7 @@ export const CrewMembersPage: React.FC = () => {
               {/* Personal Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                  <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                     Full Name *
                   </label>
                   <input
@@ -799,7 +799,7 @@ export const CrewMembersPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                  <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                     Employee ID
                   </label>
                   <input
@@ -815,7 +815,7 @@ export const CrewMembersPage: React.FC = () => {
               {/* Contacts */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                  <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                     Mobile Phone *
                   </label>
                   <input
@@ -828,7 +828,7 @@ export const CrewMembersPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                  <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                     WhatsApp Number
                   </label>
                   <input
@@ -842,7 +842,7 @@ export const CrewMembersPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                   Email Address *
                 </label>
                 <input
@@ -858,7 +858,7 @@ export const CrewMembersPage: React.FC = () => {
               {/* Role & Department */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                  <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                     Department
                   </label>
                   <select
@@ -876,7 +876,7 @@ export const CrewMembersPage: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                  <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                     Designation
                   </label>
                   <input
@@ -892,7 +892,7 @@ export const CrewMembersPage: React.FC = () => {
               {/* Approved Role (Master Admin RBAC restricted) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                  <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                     Approved System Role *
                   </label>
                   <select
@@ -906,12 +906,12 @@ export const CrewMembersPage: React.FC = () => {
                       </option>
                     ))}
                   </select>
-                  <span className="text-[10px] text-zinc-400 mt-0.5 block">
+                  <span className="text-xs text-zinc-500 mt-0.5 block">
                     Restricted to Master Admin approved roles
                   </span>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                  <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                     Assigned Branch
                   </label>
                   <select
@@ -932,7 +932,7 @@ export const CrewMembersPage: React.FC = () => {
               {/* Joining Date & Status */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                  <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                     Joining Date
                   </label>
                   <input
@@ -943,7 +943,7 @@ export const CrewMembersPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                  <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                     Initial Account Status
                   </label>
                   <select
@@ -960,7 +960,7 @@ export const CrewMembersPage: React.FC = () => {
 
               {/* Optional Profile Photo */}
               <div>
-                <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                   Profile Photo URL (Optional)
                 </label>
                 <input
@@ -968,7 +968,7 @@ export const CrewMembersPage: React.FC = () => {
                   value={formData.profilePhoto}
                   onChange={(e) => setFormData(prev => ({ ...prev, profilePhoto: e.target.value }))}
                   placeholder="https://example.com/photo.jpg"
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-900 text-xs"
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-900 text-xs sm:text-sm"
                 />
               </div>
 
@@ -989,27 +989,27 @@ export const CrewMembersPage: React.FC = () => {
 
                 {formData.generateLogin && (
                   <div className="space-y-2 pt-1 border-t border-zinc-200">
-                    <p className="text-[11px] text-zinc-500">
+                    <p className="text-xs sm:text-sm text-zinc-500">
                       Creates a secure independent authentication account. Passwords are encrypted and never stored in plaintext. Password change required on first login.
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <span className="text-[10px] text-zinc-400 font-semibold block mb-0.5">Username</span>
+                        <span className="text-xs text-zinc-500 font-semibold block mb-0.5">Username</span>
                         <input
                           type="text"
                           value={formData.username}
                           onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
                           placeholder={formData.email ? formData.email.split('@')[0] : 'username'}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-white font-mono text-[11px]"
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-white font-mono text-xs sm:text-sm"
                         />
                       </div>
                       <div>
-                        <span className="text-[10px] text-zinc-400 font-semibold block mb-0.5">Initial Temporary Password</span>
+                        <span className="text-xs text-zinc-500 font-semibold block mb-0.5">Initial Temporary Password</span>
                         <input
                           type="text"
                           value={formData.initialPassword}
                           onChange={(e) => setFormData(prev => ({ ...prev, initialPassword: e.target.value }))}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-white font-mono text-[11px]"
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-white font-mono text-xs sm:text-sm"
                         />
                       </div>
                     </div>
@@ -1055,13 +1055,13 @@ export const CrewMembersPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleSaveEdit} className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
-              <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-[11px] flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2">
                 <Shield className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>Security Notice: Employee authentication identity and global RBAC permissions cannot be altered via profile edits.</span>
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                   Full Name *
                 </label>
                 <input
@@ -1075,7 +1075,7 @@ export const CrewMembersPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                  <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                     Mobile Phone *
                   </label>
                   <input
@@ -1087,7 +1087,7 @@ export const CrewMembersPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                  <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                     WhatsApp Number
                   </label>
                   <input
@@ -1100,7 +1100,7 @@ export const CrewMembersPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                   Email Address *
                 </label>
                 <input
@@ -1114,7 +1114,7 @@ export const CrewMembersPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                  <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                     Department
                   </label>
                   <select
@@ -1132,7 +1132,7 @@ export const CrewMembersPage: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                  <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                     Designation
                   </label>
                   <input
@@ -1145,7 +1145,7 @@ export const CrewMembersPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                   Assigned Branch
                 </label>
                 <select
@@ -1163,7 +1163,7 @@ export const CrewMembersPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                   Profile Photo URL (Optional)
                 </label>
                 <input
@@ -1213,7 +1213,7 @@ export const CrewMembersPage: React.FC = () => {
               <p className="font-semibold">
                 Deactivating this employee will immediately revoke their login access and invalidate active sessions.
               </p>
-              <p className="text-[11px] text-rose-700">
+              <p className="text-xs text-rose-700">
                 All historical event assignments, attendance logs, and completed tasks will be safely preserved. You can reactivate their account anytime.
               </p>
             </div>
@@ -1255,7 +1255,7 @@ export const CrewMembersPage: React.FC = () => {
                 <p className="font-bold">
                   Historical Records Detected
                 </p>
-                <p className="text-[11px] text-amber-800">
+                <p className="text-xs text-amber-800">
                   This employee is linked to historical shoot assignments. Studio OS policy prohibits destructive deletion of business records. Their login account will be **Archived** instead of deleted, revoking all portal access while preserving your event data.
                 </p>
               </div>
@@ -1264,7 +1264,7 @@ export const CrewMembersPage: React.FC = () => {
                 <p className="font-semibold">
                   Are you sure you want to delete this employee?
                 </p>
-                <p className="text-[11px] text-zinc-500">
+                <p className="text-xs text-zinc-500">
                   This team member has no historical event records and will be removed from your studio roster.
                 </p>
               </div>
@@ -1321,14 +1321,14 @@ export const CrewMembersPage: React.FC = () => {
 
             <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2.5 text-xs font-mono">
               <div className="flex items-center justify-between pb-1.5 border-b border-zinc-200/60 font-sans">
-                <span className="text-zinc-400 text-[11px] uppercase font-bold">Crew Member</span>
+                <span className="text-zinc-400 text-xs uppercase font-bold">Crew Member</span>
                 <span className="font-bold text-zinc-900 text-xs">{generatedCreds.name}</span>
               </div>
 
               <div className="flex items-center justify-between py-0.5">
                 <span className="text-zinc-500 font-sans">Login Portal:</span>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-zinc-800 truncate max-w-[180px] text-[11px]">{generatedCreds.loginUrl}</span>
+                  <span className="text-zinc-800 truncate max-w-[180px] text-xs">{generatedCreds.loginUrl}</span>
                   <button
                     onClick={() => handleCopyCredentials('url')}
                     className="p-1 hover:bg-zinc-200 rounded text-zinc-600 cursor-pointer"
@@ -1370,7 +1370,7 @@ export const CrewMembersPage: React.FC = () => {
               </div>
             </div>
 
-            <p className="text-[11px] text-zinc-500 font-sans leading-relaxed">
+            <p className="text-xs text-zinc-500 font-sans leading-relaxed">
               <strong>Security note:</strong> The employee can sign in immediately and update their password from Security & Password in the portal, or request a password reset anytime.
             </p>
 
@@ -1402,7 +1402,7 @@ export const CrewMembersPage: React.FC = () => {
               )}
             </div>
 
-            <p className="text-[10px] text-zinc-400 text-center font-sans">
+            <p className="text-xs text-zinc-400 text-center font-sans">
               WhatsApp click-to-chat opens with prefilled text. Press Send in WhatsApp.
             </p>
           </div>
@@ -1428,7 +1428,7 @@ export const CrewMembersPage: React.FC = () => {
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                <label className="block text-xs sm:text-sm font-semibold uppercase tracking-wider text-zinc-600 mb-1">
                   Select Upcoming Event *
                 </label>
                 <select
@@ -1447,7 +1447,7 @@ export const CrewMembersPage: React.FC = () => {
                 </select>
               </div>
 
-              <p className="text-[11px] text-zinc-500">
+              <p className="text-xs text-zinc-500">
                 Assigned crew members can view this shoot's schedule, call timings, and upload delivery links in their Employee Portal.
               </p>
             </div>
@@ -1501,19 +1501,19 @@ export const CrewMembersPage: React.FC = () => {
               {/* Profile Details Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80">
                 <div>
-                  <span className="text-[10px] text-zinc-400 font-bold uppercase block">Employee ID</span>
+                  <span className="text-xs text-zinc-400 font-bold uppercase block">Employee ID</span>
                   <span className="font-mono font-semibold text-zinc-800">{selectedCrew.employeeNumber || 'Pending'}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-zinc-400 font-bold uppercase block">Department</span>
+                  <span className="text-xs text-zinc-400 font-bold uppercase block">Department</span>
                   <span className="font-semibold text-zinc-800">{selectedCrew.department}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-zinc-400 font-bold uppercase block">Status</span>
+                  <span className="text-xs text-zinc-400 font-bold uppercase block">Status</span>
                   <span className="capitalize font-semibold text-emerald-700">{selectedCrew.employmentStatus}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-zinc-400 font-bold uppercase block">Joining Date</span>
+                  <span className="text-xs text-zinc-400 font-bold uppercase block">Joining Date</span>
                   <span className="font-mono text-zinc-700">{selectedCrew.dateOfJoining || '2026-01-15'}</span>
                 </div>
               </div>
@@ -1529,7 +1529,7 @@ export const CrewMembersPage: React.FC = () => {
                       setIsDetailModalOpen(false);
                       setAssigningCrew(selectedCrew);
                     }}
-                    className="text-indigo-600 hover:underline font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                    className="text-indigo-600 hover:underline font-bold text-xs flex items-center gap-1 cursor-pointer"
                   >
                     <Plus className="w-3 h-3" />
                     <span>Assign to Shoot</span>
@@ -1558,7 +1558,7 @@ export const CrewMembersPage: React.FC = () => {
                             </span>
                           </div>
                         </div>
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-white border border-zinc-200 text-zinc-700">
+                        <span className="px-2.5 py-1 rounded-full text-xs font-bold uppercase bg-white border border-zinc-200 text-zinc-700">
                           {ev.status}
                         </span>
                       </div>

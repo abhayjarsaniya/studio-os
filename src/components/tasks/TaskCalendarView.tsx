@@ -106,7 +106,7 @@ export const TaskCalendarView: React.FC<TaskCalendarViewProps> = ({
                   {day}
                 </span>
                 {dayTasks.length > 0 && (
-                  <span className="text-[10px] font-semibold text-zinc-400">
+                  <span className="text-xs font-semibold text-zinc-400">
                     {dayTasks.length} tasks
                   </span>
                 )}
@@ -117,7 +117,7 @@ export const TaskCalendarView: React.FC<TaskCalendarViewProps> = ({
                   <div
                     key={t.id}
                     onClick={() => onSelectTask(t.id)}
-                    className="p-1.5 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[10px] font-medium truncate cursor-pointer transition-colors flex items-center justify-between gap-1"
+                    className="p-1.5 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-medium truncate cursor-pointer transition-colors flex items-center justify-between gap-1"
                     title={t.title}
                   >
                     <span className="truncate">{t.title}</span>

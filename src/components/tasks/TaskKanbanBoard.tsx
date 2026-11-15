@@ -75,7 +75,7 @@ export const TaskKanbanBoard: React.FC<TaskKanbanBoardProps> = ({
             <div className="p-3.5 border-b border-zinc-200/80 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-xs sm:text-sm text-zinc-900">{col.label}</span>
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-700">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-700">
                   {colTasks.length}
                 </span>
               </div>
@@ -103,7 +103,7 @@ export const TaskKanbanBoard: React.FC<TaskKanbanBoardProps> = ({
                       className="p-3 rounded-xl border border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-md transition-all cursor-pointer space-y-2 active:cursor-grabbing"
                     >
                       {/* Top Badges */}
-                      <div className="flex items-center justify-between gap-1 text-[10px]">
+                      <div className="flex items-center justify-between gap-1 text-xs">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {task.taskNumber && (
                             <span className="font-mono font-bold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-700">
@@ -138,7 +138,7 @@ export const TaskKanbanBoard: React.FC<TaskKanbanBoardProps> = ({
 
                       {/* Event / Sub-Event Reference */}
                       {(task.eventName || task.workflowStageName) && (
-                        <div className="text-[11px] text-zinc-500 line-clamp-1 flex items-center gap-1">
+                        <div className="text-xs text-zinc-500 line-clamp-1 flex items-center gap-1">
                           {task.workflowStageName && (
                             <span className="font-semibold text-indigo-700">
                               {task.workflowStageName}
@@ -149,7 +149,7 @@ export const TaskKanbanBoard: React.FC<TaskKanbanBoardProps> = ({
                       )}
 
                       {/* Meta Footer */}
-                      <div className="pt-2 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-500">
+                      <div className="pt-2 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
                         <div className="flex items-center gap-1 font-medium truncate max-w-[120px]">
                           <User className="w-3 h-3 text-zinc-400 shrink-0" />
                           <span className="truncate">{task.assignedToName}</span>
@@ -157,7 +157,7 @@ export const TaskKanbanBoard: React.FC<TaskKanbanBoardProps> = ({
 
                         <div className="flex items-center gap-2 shrink-0">
                           {checklistTotal > 0 && (
-                            <span className="flex items-center gap-0.5 text-zinc-600 font-mono text-[10px]">
+                            <span className="flex items-center gap-0.5 text-zinc-600 font-mono text-xs">
                               <CheckSquare className="w-3 h-3 text-zinc-400" />
                               {checklistDone}/{checklistTotal}
                             </span>

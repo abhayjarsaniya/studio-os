@@ -57,7 +57,7 @@ export const PlatformLayout: React.FC<{ children: React.ReactNode }> = ({ childr
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
+              <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
                 Platform Master Admin
               </span>
               <span className="text-xs text-slate-400 hidden sm:inline">•</span>

@@ -201,12 +201,12 @@ export const EmployeeDashboardPage: React.FC = () => {
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-zinc-900 truncate font-display">Employee Workspace</span>
-              <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-orange-800 border border-orange-200">
+              <span className="font-bold text-base text-zinc-900 truncate font-display">Employee Workspace</span>
+              <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full text-xs font-bold bg-orange-50 text-orange-800 border border-orange-200">
                 Authorized Crew
               </span>
             </div>
-            <div className="text-[11px] text-zinc-500 truncate">Studio: {studioId}</div>
+            <div className="text-xs text-zinc-500 truncate">Studio: {studioId}</div>
           </div>
         </div>
 
@@ -220,7 +220,7 @@ export const EmployeeDashboardPage: React.FC = () => {
 
           <button
             onClick={() => setIsSecurityModalOpen(true)}
-            className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-orange-50/50 hover:border-orange-300 text-zinc-700 border border-zinc-200 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+            className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-orange-50/50 hover:border-orange-300 text-zinc-700 border border-zinc-200 text-xs sm:text-sm font-bold transition-all shadow-2xs cursor-pointer"
           >
             <KeyRound className="w-4 h-4 text-amber-500" />
             <span className="hidden sm:inline">Security & Password</span>
@@ -228,7 +228,7 @@ export const EmployeeDashboardPage: React.FC = () => {
 
           <button
             onClick={handleLogout}
-            className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-rose-50 hover:text-rose-700 text-zinc-700 border border-zinc-200 hover:border-rose-200 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+            className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-rose-50 hover:text-rose-700 text-zinc-700 border border-zinc-200 hover:border-rose-200 text-xs sm:text-sm font-bold transition-all shadow-2xs cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
             <span className="hidden sm:inline">Sign Out</span>
@@ -240,7 +240,7 @@ export const EmployeeDashboardPage: React.FC = () => {
       <div className="bg-white border-b border-zinc-200 px-4 py-2.5 flex items-center gap-2 sticky top-[57px] z-30 overflow-x-auto">
         <button
           onClick={() => setMobileTab('overview')}
-          className={`flex-1 min-w-[90px] min-h-[48px] py-2 px-3 text-xs font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
+          className={`flex-1 min-w-[90px] min-h-[48px] py-2 px-3 text-xs sm:text-sm font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
             mobileTab === 'overview' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs' : 'text-zinc-600 hover:bg-orange-50/40'
           }`}
         >
@@ -248,7 +248,7 @@ export const EmployeeDashboardPage: React.FC = () => {
         </button>
         <button
           onClick={() => setMobileTab('events')}
-          className={`flex-1 min-w-[90px] min-h-[48px] py-2 px-3 text-xs font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
+          className={`flex-1 min-w-[90px] min-h-[48px] py-2 px-3 text-xs sm:text-sm font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
             mobileTab === 'events' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs' : 'text-zinc-600 hover:bg-orange-50/40'
           }`}
         >
@@ -256,7 +256,7 @@ export const EmployeeDashboardPage: React.FC = () => {
         </button>
         <button
           onClick={() => setMobileTab('calendar')}
-          className={`flex-1 min-w-[100px] min-h-[48px] py-2 px-3 text-xs font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
+          className={`flex-1 min-w-[100px] min-h-[48px] py-2 px-3 text-xs sm:text-sm font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
             mobileTab === 'calendar' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs' : 'text-zinc-600 hover:bg-orange-50/40'
           }`}
         >
@@ -264,7 +264,7 @@ export const EmployeeDashboardPage: React.FC = () => {
         </button>
         <button
           onClick={() => setMobileTab('tasks')}
-          className={`flex-1 min-w-[90px] min-h-[48px] py-2 px-3 text-xs font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
+          className={`flex-1 min-w-[90px] min-h-[48px] py-2 px-3 text-xs sm:text-sm font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
             mobileTab === 'tasks' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs' : 'text-zinc-600 hover:bg-orange-50/40'
           }`}
         >
@@ -277,7 +277,7 @@ export const EmployeeDashboardPage: React.FC = () => {
         {/* Welcome & Attendance Shift Card */}
         <div className="p-6 rounded-3xl bg-white border border-zinc-200/90 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm relative overflow-hidden">
           <div className="space-y-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
               Daily Shift Check-In
             </span>
             <h1 className="text-xl sm:text-2xl font-black text-zinc-900 tracking-tight font-display">
@@ -327,39 +327,39 @@ export const EmployeeDashboardPage: React.FC = () => {
         {/* 4 Stat Overview Tiles */}
         <div className={`grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 ${mobileTab !== 'overview' ? 'hidden sm:grid' : ''}`}>
           <div className="p-4 sm:p-5 rounded-2xl bg-white border border-zinc-200 shadow-2xs">
-            <div className="flex items-center justify-between text-zinc-500 text-xs font-semibold">
+            <div className="flex items-center justify-between text-zinc-500 text-xs sm:text-sm font-semibold">
               <span>Assigned Events</span>
               <Calendar className="w-4 h-4 text-emerald-600" />
             </div>
             <div className="text-2xl font-black text-zinc-900 mt-2 font-display">{metrics.assignedEvents.length}</div>
-            <div className="text-[11px] text-zinc-500 mt-1">Upcoming shoot assignments</div>
+            <div className="text-xs text-zinc-500 mt-1">Upcoming shoot assignments</div>
           </div>
 
           <div className="p-4 sm:p-5 rounded-2xl bg-white border border-zinc-200 shadow-2xs">
-            <div className="flex items-center justify-between text-zinc-500 text-xs font-semibold">
+            <div className="flex items-center justify-between text-zinc-500 text-xs sm:text-sm font-semibold">
               <span>Pending Tasks</span>
               <CheckSquare className="w-4 h-4 text-amber-600" />
             </div>
             <div className="text-2xl font-black text-zinc-900 mt-2 font-display">{metrics.pendingTasks.length}</div>
-            <div className="text-[11px] text-zinc-500 mt-1">{metrics.completedTasks.length} completed</div>
+            <div className="text-xs text-zinc-500 mt-1">{metrics.completedTasks.length} completed</div>
           </div>
 
           <div className="p-4 sm:p-5 rounded-2xl bg-white border border-zinc-200 shadow-2xs">
-            <div className="flex items-center justify-between text-zinc-500 text-xs font-semibold">
+            <div className="flex items-center justify-between text-zinc-500 text-xs sm:text-sm font-semibold">
               <span>Monthly Attendance</span>
               <Clock className="w-4 h-4 text-teal-600" />
             </div>
             <div className="text-2xl font-black text-zinc-900 mt-2 font-display">{metrics.monthlyAttendanceDays} Days</div>
-            <div className="text-[11px] text-zinc-500 mt-1">Present this month</div>
+            <div className="text-xs text-zinc-500 mt-1">Present this month</div>
           </div>
 
           <div className="p-4 sm:p-5 rounded-2xl bg-white border border-zinc-200 shadow-2xs">
-            <div className="flex items-center justify-between text-zinc-500 text-xs font-semibold">
+            <div className="flex items-center justify-between text-zinc-500 text-xs sm:text-sm font-semibold">
               <span>Leave Balance</span>
               <Plane className="w-4 h-4 text-indigo-600" />
             </div>
             <div className="text-2xl font-black text-zinc-900 mt-2 font-display">{metrics.leaveBalance.remaining} Days</div>
-            <div className="text-[11px] text-zinc-500 mt-1">{metrics.leaveBalance.pendingRequests} requests pending</div>
+            <div className="text-xs text-zinc-500 mt-1">{metrics.leaveBalance.pendingRequests} requests pending</div>
           </div>
         </div>
 
@@ -386,10 +386,10 @@ export const EmployeeDashboardPage: React.FC = () => {
             </div>
 
             {calendarEvents.length === 0 ? (
-              <div className="py-12 text-center text-zinc-400 text-xs bg-zinc-50 rounded-2xl border border-dashed border-zinc-200 space-y-2">
+              <div className="py-12 text-center text-zinc-400 text-xs sm:text-sm bg-zinc-50 rounded-2xl border border-dashed border-zinc-200 space-y-2">
                 <Calendar className="w-8 h-8 text-zinc-300 mx-auto" />
                 <p className="font-semibold text-zinc-600">No shoots currently scheduled or visible on your calendar.</p>
-                <p className="text-[11px] text-zinc-400">If you were recently assigned to a shoot, your studio owner may have hidden it until call times are finalized.</p>
+                <p className="text-xs text-zinc-500">If you were recently assigned to a shoot, your studio owner may have hidden it until call times are finalized.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -402,17 +402,17 @@ export const EmployeeDashboardPage: React.FC = () => {
                       <span className="font-mono text-xs font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
                         {evt.bookingNumber}
                       </span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                         {evt.status}
                       </span>
                     </div>
 
                     <div>
-                      <h4 className="text-sm font-bold text-zinc-900">{evt.eventName}</h4>
-                      <p className="text-xs text-zinc-500 mt-0.5">{evt.functionName} • {evt.category}</p>
+                      <h4 className="text-base font-bold text-zinc-900">{evt.eventName}</h4>
+                      <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">{evt.functionName} • {evt.category}</p>
                     </div>
 
-                    <div className="space-y-1.5 text-xs text-zinc-600 pt-1 border-t border-zinc-100">
+                    <div className="space-y-1.5 text-xs sm:text-sm text-zinc-600 pt-1 border-t border-zinc-100">
                       <div className="flex items-center gap-2">
                         <Clock className="w-3.5 h-3.5 text-orange-500" />
                         <span className="font-semibold">{evt.date} • {evt.startTime} - {evt.endTime}</span>
@@ -442,9 +442,9 @@ export const EmployeeDashboardPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-emerald-600" />
-                  <h2 className="font-bold text-sm text-zinc-900 font-display">Today's Schedule & Call Time</h2>
+                  <h2 className="font-bold text-base sm:text-lg text-zinc-900 font-display">Today's Schedule & Call Time</h2>
                 </div>
-                <span className="text-[11px] text-zinc-500 font-medium">
+                <span className="text-xs sm:text-sm text-zinc-500 font-medium">
                   {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                 </span>
               </div>
@@ -459,12 +459,12 @@ export const EmployeeDashboardPage: React.FC = () => {
                     <div key={s.id} className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/80 space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="font-mono text-xs font-bold text-emerald-700">{s.eventNumber}</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-200/80 text-zinc-700">
+                        <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-zinc-200/80 text-zinc-700">
                           {s.status}
                         </span>
                       </div>
-                      <div className="text-xs font-semibold text-zinc-900">{s.category} • {s.responsibility}</div>
-                      <div className="flex flex-wrap items-center gap-3 text-[11px] text-zinc-500">
+                      <div className="text-sm font-semibold text-zinc-900">{s.category} • {s.responsibility}</div>
+                      <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-zinc-600">
                         <span className="flex items-center gap-1 text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                           <Clock className="w-3 h-3 text-amber-600" /> Call Time: {s.reportingTime}
                         </span>
@@ -483,9 +483,9 @@ export const EmployeeDashboardPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-emerald-600" />
-                  <h2 className="font-bold text-sm text-zinc-900 font-display">Upcoming Assigned Events</h2>
+                  <h2 className="font-bold text-base sm:text-lg text-zinc-900 font-display">Upcoming Assigned Events</h2>
                 </div>
-                <span className="text-[10px] uppercase font-bold text-zinc-400">Privacy Protected</span>
+                <span className="text-xs uppercase font-bold text-zinc-500">Privacy Protected</span>
               </div>
 
               {metrics.assignedEvents.length === 0 ? (
@@ -499,15 +499,15 @@ export const EmployeeDashboardPage: React.FC = () => {
                       <div className="min-w-0 pr-2">
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-xs font-bold text-zinc-700">{evt.eventNumber}</span>
-                          <span className="text-xs font-semibold text-zinc-900 truncate">{evt.category}</span>
+                          <span className="text-sm font-semibold text-zinc-900 truncate">{evt.category}</span>
                         </div>
-                        <div className="text-[11px] text-zinc-500 mt-0.5 flex flex-wrap items-center gap-2">
+                        <div className="text-xs text-zinc-500 mt-0.5 flex flex-wrap items-center gap-2">
                           <span>{evt.startDate}</span>
                           <span>•</span>
                           <span className="flex items-center gap-1 truncate"><MapPin className="w-3 h-3 text-zinc-400" /> {evt.venue}</span>
                         </div>
                       </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-200/80 text-zinc-700 shrink-0">
+                      <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-zinc-200/80 text-zinc-700 shrink-0">
                         {evt.status}
                       </span>
                     </div>
@@ -524,7 +524,7 @@ export const EmployeeDashboardPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CheckSquare className="w-4 h-4 text-amber-600" />
-                  <h2 className="font-bold text-sm text-zinc-900 font-display">My Pending Tasks</h2>
+                  <h2 className="font-bold text-base sm:text-lg text-zinc-900 font-display">My Pending Tasks</h2>
                 </div>
                 <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
                   {metrics.pendingTasks.length} to do
@@ -540,9 +540,9 @@ export const EmployeeDashboardPage: React.FC = () => {
                   {metrics.pendingTasks.map(task => (
                     <div key={task.id} className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/80 flex items-center justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-bold text-zinc-900 truncate">{task.title}</div>
-                        <div className="flex items-center gap-2 text-[10px] text-zinc-500 mt-1">
-                          <span className={`px-1.5 py-0.5 rounded font-bold uppercase ${
+                        <div className="text-sm font-bold text-zinc-900 truncate">{task.title}</div>
+                        <div className="flex items-center gap-2 text-xs text-zinc-500 mt-1">
+                          <span className={`px-1.5 py-0.5 rounded font-bold uppercase text-xs ${
                             task.priority?.toLowerCase() === 'urgent' ? 'bg-rose-100 text-rose-700' : 'bg-zinc-200 text-zinc-700'
                           }`}>
                             {task.priority}
@@ -639,9 +639,9 @@ export const EmployeeDashboardPage: React.FC = () => {
               </div>
             )}
 
-            <form onSubmit={handlePasswordSubmit} className="space-y-4 text-xs">
+            <form onSubmit={handlePasswordSubmit} className="space-y-4 text-xs sm:text-sm">
               <div>
-                <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-zinc-700 uppercase mb-1">
                   Current Password *
                 </label>
                 <div className="relative">
@@ -664,7 +664,7 @@ export const EmployeeDashboardPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-zinc-700 uppercase mb-1">
                   New Password *
                 </label>
                 <div className="relative">
@@ -695,7 +695,7 @@ export const EmployeeDashboardPage: React.FC = () => {
                         }}
                       />
                     </div>
-                    <span className={`text-[10px] font-bold ${passwordStrength.text}`}>
+                    <span className={`text-xs font-bold ${passwordStrength.text}`}>
                       {passwordStrength.label}
                     </span>
                   </div>
@@ -703,7 +703,7 @@ export const EmployeeDashboardPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">
+                <label className="block text-xs sm:text-sm font-bold text-zinc-700 uppercase mb-1">
                   Confirm New Password *
                 </label>
                 <input
@@ -720,7 +720,7 @@ export const EmployeeDashboardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleSendResetEmail}
-                  className="text-amber-700 hover:underline text-[11px] font-semibold cursor-pointer"
+                  className="text-amber-700 hover:underline text-xs sm:text-sm font-semibold cursor-pointer"
                 >
                   Forgot your password?
                 </button>

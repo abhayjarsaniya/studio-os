@@ -284,7 +284,7 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl font-bold text-zinc-900 font-display">{activeBooking.eventName}</h1>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
                   {BOOKING_STATUS_LABELS[activeBooking.status] || activeBooking.status}
                 </span>
                 <span className="text-xs text-zinc-400 font-mono font-medium">#{activeBooking.bookingNumber}</span>
@@ -326,19 +326,19 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
         {/* Quick KPI Strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-100">
-            <span className="text-[10px] text-zinc-400 uppercase font-bold block">Agreed Amount</span>
+            <span className="text-xs text-zinc-400 uppercase font-bold block">Agreed Amount</span>
             <strong className="text-zinc-900 font-mono text-sm">₹{activeBooking.financials.finalAgreedAmount.toLocaleString('en-IN')}</strong>
           </div>
           <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100">
-            <span className="text-[10px] text-emerald-700 uppercase font-bold block">Collected Advance</span>
+            <span className="text-xs text-emerald-700 uppercase font-bold block">Collected Advance</span>
             <strong className="text-emerald-800 font-mono text-sm">₹{activeBooking.financials.verifiedPaymentsReceived.toLocaleString('en-IN')}</strong>
           </div>
           <div className="p-3 rounded-xl bg-amber-50 border border-amber-100">
-            <span className="text-[10px] text-amber-700 uppercase font-bold block">Remaining Due</span>
+            <span className="text-xs text-amber-700 uppercase font-bold block">Remaining Due</span>
             <strong className="text-amber-800 font-mono text-sm">₹{activeBooking.financials.remainingBalance.toLocaleString('en-IN')}</strong>
           </div>
           <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-100">
-            <span className="text-[10px] text-indigo-700 uppercase font-bold block">Delivery Progress</span>
+            <span className="text-xs text-indigo-700 uppercase font-bold block">Delivery Progress</span>
             <div className="flex items-center gap-2 mt-0.5">
               <div className="flex-1 bg-indigo-200 rounded-full h-2 overflow-hidden">
                 <div className="bg-indigo-600 h-full rounded-full" style={{ width: `${deliveryProgress}%` }} />
@@ -384,12 +384,12 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
                     </span>
                     <div>
                       <h4 className="font-bold text-zinc-900 text-sm">{fn.name}</h4>
-                      <p className="text-zinc-500 text-[11px] font-mono mt-0.5">
+                      <p className="text-zinc-500 text-xs font-mono mt-0.5">
                         {fn.date} ({fn.startTime}) • {fn.venue}
                       </p>
                     </div>
                   </div>
-                  <span className="text-[10px] font-bold text-zinc-600 bg-white px-2.5 py-1 rounded-lg border border-zinc-200">
+                  <span className="text-xs font-bold text-zinc-600 bg-white px-2.5 py-1 rounded-lg border border-zinc-200">
                     {fn.assignedCrew?.length || 0} Crew Assigned
                   </span>
                 </div>
@@ -397,7 +397,7 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
             </div>
 
             <div className="pt-2 border-t border-zinc-100">
-              <span className="text-[10px] font-bold uppercase text-zinc-400 block mb-1">Client Special Instructions</span>
+              <span className="text-xs font-bold uppercase text-zinc-400 block mb-1">Client Special Instructions</span>
               <p className="text-zinc-600 bg-zinc-50 p-3 rounded-xl border border-zinc-100">
                 {typeof activeBooking.notes === 'string' ? activeBooking.notes : 'No specific instructions recorded. Standard photography contract applies.'}
               </p>
@@ -409,23 +409,23 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
             <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400">Customer CRM Profile</h3>
             <div className="space-y-2.5">
               <div>
-                <span className="text-zinc-400 block text-[10px] uppercase font-bold">Client Name</span>
+                <span className="text-zinc-400 block text-xs uppercase font-bold">Client Name</span>
                 <strong className="text-zinc-900 text-sm">{activeBooking.customerName}</strong>
               </div>
               <div>
-                <span className="text-zinc-400 block text-[10px] uppercase font-bold">Mobile Phone</span>
+                <span className="text-zinc-400 block text-xs uppercase font-bold">Mobile Phone</span>
                 <span className="text-zinc-800 font-mono">{activeBooking.customerPhone}</span>
               </div>
               <div>
-                <span className="text-zinc-400 block text-[10px] uppercase font-bold">WhatsApp</span>
+                <span className="text-zinc-400 block text-xs uppercase font-bold">WhatsApp</span>
                 <span className="text-zinc-800 font-mono">{activeBooking.customerWhatsApp || activeBooking.customerPhone}</span>
               </div>
               <div>
-                <span className="text-zinc-400 block text-[10px] uppercase font-bold">Email Address</span>
+                <span className="text-zinc-400 block text-xs uppercase font-bold">Email Address</span>
                 <span className="text-zinc-600">{activeBooking.customerEmail || 'Not provided'}</span>
               </div>
               <div>
-                <span className="text-zinc-400 block text-[10px] uppercase font-bold">Primary Venue & City</span>
+                <span className="text-zinc-400 block text-xs uppercase font-bold">Primary Venue & City</span>
                 <span className="text-zinc-800">{activeBooking.venue}, {activeBooking.city}</span>
               </div>
             </div>
@@ -465,7 +465,7 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
                     </span>
                     <div>
                       <h4 className="font-bold text-zinc-900 text-sm">{fn.name}</h4>
-                      <p className="text-zinc-500 font-mono text-[11px]">{fn.date} • {fn.startTime} to {fn.endTime}</p>
+                      <p className="text-zinc-500 font-mono text-xs">{fn.date} • {fn.startTime} to {fn.endTime}</p>
                     </div>
                   </div>
 
@@ -483,11 +483,11 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
                   <div className="p-2.5 rounded-xl bg-white border border-zinc-200">
-                    <span className="text-[10px] text-zinc-400 font-bold uppercase block mb-0.5">Venue Address</span>
+                    <span className="text-xs text-zinc-400 font-bold uppercase block mb-0.5">Venue Address</span>
                     <span className="text-zinc-800">{fn.venue || activeBooking.venue}</span>
                   </div>
                   <div className="p-2.5 rounded-xl bg-white border border-zinc-200">
-                    <span className="text-[10px] text-zinc-400 font-bold uppercase block mb-0.5">Assigned Crew</span>
+                    <span className="text-xs text-zinc-400 font-bold uppercase block mb-0.5">Assigned Crew</span>
                     <span className="text-zinc-800">
                       {fn.assignedCrew && fn.assignedCrew.length > 0 
                         ? fn.assignedCrew.map(c => `${c.employeeName} (${c.role})`).join(', ')
@@ -533,28 +533,28 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
                       setSelectedFunctionForCrew(fn);
                       setCrewAssignModalOpen(true);
                     }}
-                    className="text-[11px] font-bold text-indigo-600 hover:underline"
+                    className="text-xs font-bold text-indigo-600 hover:underline"
                   >
                     + Add to this function
                   </button>
                 </div>
 
                 {(!fn.assignedCrew || fn.assignedCrew.length === 0) ? (
-                  <p className="text-zinc-400 italic text-[11px]">No crew members mapped to this shoot yet.</p>
+                  <p className="text-zinc-400 italic text-xs">No crew members mapped to this shoot yet.</p>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-1">
                     {fn.assignedCrew.map((c, i) => (
                       <div key={i} className="p-2.5 rounded-xl bg-white border border-zinc-200 flex items-center justify-between">
                         <div>
                           <strong className="text-zinc-900 block">{c.employeeName}</strong>
-                          <span className="text-[10px] text-zinc-500">{c.role}</span>
+                          <span className="text-xs text-zinc-500">{c.role}</span>
                         </div>
                         {c.contact && (
                           <a
                             href={`https://wa.me/${c.contact.replace(/[^0-9]/g, '')}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded"
+                            className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded"
                           >
                             WhatsApp
                           </a>
@@ -598,13 +598,13 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
                     <h4 className={`font-bold ${del.isDelivered ? 'line-through text-zinc-400' : 'text-zinc-900'}`}>
                       {del.name}
                     </h4>
-                    <p className="text-[11px] text-zinc-500 font-mono">
+                    <p className="text-xs text-zinc-500 font-mono">
                       Due: {del.calculatedDeadline} • Required: {del.requiredQty} {del.unit}
                     </p>
                   </div>
                 </div>
 
-                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
                   del.isDelivered ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                 }`}>
                   {del.isDelivered ? 'Done / Handed Over' : 'Pending Action'}
@@ -634,13 +634,13 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
                 <div>
                   <div className="flex items-center gap-2">
                     <strong className="text-zinc-900 text-sm">{del.name}</strong>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
                       del.isDelivered ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-100 text-zinc-700'
                     }`}>
                       {DELIVERY_STAGE_LABELS[del.stage] || del.stage}
                     </span>
                   </div>
-                  <p className="text-[11px] text-zinc-500 mt-0.5 font-mono">
+                  <p className="text-xs text-zinc-500 mt-0.5 font-mono">
                     Deadline: <strong>{del.calculatedDeadline}</strong> • Quantity: {del.completedQty} / {del.requiredQty} {del.unit}
                   </p>
                 </div>
@@ -679,19 +679,19 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200">
-              <span className="text-[10px] text-zinc-400 uppercase font-bold block">Quotation Value</span>
+              <span className="text-xs text-zinc-400 uppercase font-bold block">Quotation Value</span>
               <strong className="text-zinc-800 font-mono text-sm">₹{activeBooking.financials.originalQuotation.toLocaleString('en-IN')}</strong>
             </div>
             <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200">
-              <span className="text-[10px] text-rose-600 uppercase font-bold block">Discount</span>
+              <span className="text-xs text-rose-600 uppercase font-bold block">Discount</span>
               <strong className="text-rose-700 font-mono text-sm">-₹{activeBooking.financials.negotiatedDiscount.toLocaleString('en-IN')}</strong>
             </div>
             <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200">
-              <span className="text-[10px] text-emerald-700 uppercase font-bold block">Payments Received</span>
+              <span className="text-xs text-emerald-700 uppercase font-bold block">Payments Received</span>
               <strong className="text-emerald-800 font-mono text-sm">₹{activeBooking.financials.verifiedPaymentsReceived.toLocaleString('en-IN')}</strong>
             </div>
             <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200">
-              <span className="text-[10px] text-amber-700 uppercase font-bold block">Remaining Due</span>
+              <span className="text-xs text-amber-700 uppercase font-bold block">Remaining Due</span>
               <strong className="text-amber-800 font-mono text-sm">₹{activeBooking.financials.remainingBalance.toLocaleString('en-IN')}</strong>
             </div>
           </div>
@@ -703,11 +703,11 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
                 <div key={m.id} className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 flex items-center justify-between">
                   <div>
                     <strong className="text-zinc-900">{m.title}</strong>
-                    <span className="text-zinc-400 font-mono text-[11px] ml-2">(Target Due: {m.dueDate})</span>
+                    <span className="text-zinc-400 font-mono text-xs ml-2">(Target Due: {m.dueDate})</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-mono font-bold text-zinc-900">₹{m.amount.toLocaleString('en-IN')}</span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
                       m.status === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                     }`}>
                       {m.status}
@@ -741,7 +741,7 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
             {/* Customer Message */}
             <div className="p-5 rounded-2xl border border-zinc-200 bg-zinc-50/50 space-y-3">
               <span className="font-bold text-zinc-900 text-sm block">Customer Booking Confirmation</span>
-              <p className="text-[11px] text-zinc-500">
+              <p className="text-xs text-zinc-500">
                 Send booking summary, payment acknowledgement and event date confirmation to {activeBooking.customerName}.
               </p>
               <a
@@ -760,7 +760,7 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
             {/* Crew Dispatch (Masked PII & Zero Finances) */}
             <div className="p-5 rounded-2xl border border-zinc-200 bg-zinc-50/50 space-y-3">
               <span className="font-bold text-zinc-900 text-sm block">Crew Shift Dispatch</span>
-              <p className="text-[11px] text-zinc-500">
+              <p className="text-xs text-zinc-500">
                 Dispatch shoot call sheet with timings, venue map, and shoot instructions (customer phone and pricing strictly omitted).
               </p>
               <button
@@ -790,7 +790,7 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
 
             <form onSubmit={handleRecordPayment} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">Amount (₹) *</label>
+                <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Amount (₹) *</label>
                 <input
                   type="number"
                   required
@@ -801,7 +801,7 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">Payment Method</label>
+                <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Payment Method</label>
                 <select
                   value={paymentData.method}
                   onChange={(e) => setPaymentData(prev => ({ ...prev, method: e.target.value as any }))}
@@ -815,7 +815,7 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">Reference / Transaction ID</label>
+                <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Reference / Transaction ID</label>
                 <input
                   type="text"
                   value={paymentData.reference}
@@ -861,7 +861,7 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
 
             <form onSubmit={handleAssignCrew} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">Select Team Member *</label>
+                <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Select Team Member *</label>
                 <select
                   required
                   value={assignedEmployeeId}
@@ -878,7 +878,7 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">Role for this Shoot</label>
+                <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Role for this Shoot</label>
                 <input
                   type="text"
                   value={assignedRole}

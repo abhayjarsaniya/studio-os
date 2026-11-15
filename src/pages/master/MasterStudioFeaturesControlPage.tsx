@@ -179,33 +179,33 @@ export const MasterStudioFeaturesControlPage: React.FC<{ studioId: string }> = (
       {/* Studio Overview Summary Banner */}
       <div className="p-5 sm:p-6 rounded-3xl bg-white border border-zinc-200/90 shadow-sm grid grid-cols-2 sm:grid-cols-5 gap-4">
         <div className="space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Subscription Plan</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Subscription Plan</span>
           <p className="text-sm font-bold text-zinc-900 capitalize">{studio.subscription?.planName || studio.subscription?.planId || 'Studio OS Pro'}</p>
-          <span className="text-[11px] text-emerald-700 font-medium">Active Entitlement</span>
+          <span className="text-xs text-emerald-700 font-medium">Active Entitlement</span>
         </div>
 
         <div className="space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Active Features</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">Active Features</span>
           <p className="text-xl font-black text-zinc-900 font-display">{counts.enabled}</p>
-          <span className="text-[10px] text-zinc-500">Available to Studio Owner</span>
+          <span className="text-xs text-zinc-500">Available to Studio Owner</span>
         </div>
 
         <div className="space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700">Disabled Features</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-rose-700">Disabled Features</span>
           <p className="text-xl font-black text-zinc-900 font-display">{counts.disabled}</p>
-          <span className="text-[10px] text-zinc-500">Access Blocked</span>
+          <span className="text-xs text-zinc-500">Access Blocked</span>
         </div>
 
         <div className="space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Hidden from Nav</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-amber-700">Hidden from Nav</span>
           <p className="text-xl font-black text-zinc-900 font-display">{counts.hidden}</p>
-          <span className="text-[10px] text-zinc-500">Active but unlisted</span>
+          <span className="text-xs text-zinc-500">Active but unlisted</span>
         </div>
 
         <div className="col-span-2 sm:col-span-1 space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Registry</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Registry</span>
           <p className="text-xl font-black text-zinc-900 font-display">{featuresWithStatus.length}</p>
-          <span className="text-[10px] text-zinc-500">Modules Configured</span>
+          <span className="text-xs text-zinc-500">Modules Configured</span>
         </div>
       </div>
 
@@ -221,7 +221,7 @@ export const MasterStudioFeaturesControlPage: React.FC<{ studioId: string }> = (
         {/* Desktop Data Table */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-zinc-50/70 border-b border-zinc-200/80 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+            <thead className="bg-zinc-50/70 border-b border-zinc-200/80 text-xs font-bold text-zinc-500 uppercase tracking-wider">
               <tr>
                 <th className="py-3 px-5">Feature & Description</th>
                 <th className="py-3 px-4">Category</th>
@@ -241,11 +241,11 @@ export const MasterStudioFeaturesControlPage: React.FC<{ studioId: string }> = (
                   <tr key={f.id} className="hover:bg-zinc-50/50 transition-colors">
                     <td className="py-3.5 px-5">
                       <div className="font-bold text-zinc-900">{f.name}</div>
-                      <div className="text-[11px] text-zinc-500 max-w-sm line-clamp-1">{f.description}</div>
+                      <div className="text-xs text-zinc-500 max-w-sm line-clamp-1">{f.description}</div>
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-100 text-zinc-700">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700">
                         {f.category}
                       </span>
                     </td>
@@ -256,37 +256,37 @@ export const MasterStudioFeaturesControlPage: React.FC<{ studioId: string }> = (
 
                     <td className="py-3.5 px-4">
                       {f.dependencies.length > 0 ? (
-                        <span className="text-[11px] text-zinc-600 font-mono">
+                        <span className="text-xs text-zinc-600 font-mono">
                           {f.dependencies.join(', ')}
                         </span>
                       ) : (
-                        <span className="text-zinc-400 text-[11px]">None</span>
+                        <span className="text-zinc-400 text-xs">None</span>
                       )}
                     </td>
 
                     <td className="py-3.5 px-4">
                       {f.statusInfo.status === 'enabled' && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                           <Check className="w-3 h-3" /> Enabled
                         </span>
                       )}
                       {f.statusInfo.status === 'disabled' && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
                           <X className="w-3 h-3" /> Disabled
                         </span>
                       )}
                       {f.statusInfo.status === 'hidden' && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
                           <EyeOff className="w-3 h-3" /> Hidden
                         </span>
                       )}
                       {f.statusInfo.status === 'not_in_plan' && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-zinc-100 text-zinc-600 border border-zinc-200">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-100 text-zinc-600 border border-zinc-200">
                           <AlertTriangle className="w-3 h-3" /> Not in Plan
                         </span>
                       )}
                       {f.statusInfo.status === 'dependency_missing' && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
                           <AlertTriangle className="w-3 h-3" /> Dep Missing
                         </span>
                       )}
@@ -350,12 +350,12 @@ export const MasterStudioFeaturesControlPage: React.FC<{ studioId: string }> = (
                     <h3 className="font-bold text-sm text-zinc-900">{f.name}</h3>
                     <p className="text-xs text-zinc-500 mt-0.5">{f.description}</p>
                   </div>
-                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-100 text-zinc-700">
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700">
                     {f.category}
                   </span>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 text-[11px] text-zinc-600">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-600">
                   <span className="font-semibold text-zinc-700">Plan: {f.minPlan}</span>
                   {f.dependencies.length > 0 && (
                     <span>• Needs: {f.dependencies.join(', ')}</span>
@@ -365,17 +365,17 @@ export const MasterStudioFeaturesControlPage: React.FC<{ studioId: string }> = (
                 <div className="flex items-center justify-between pt-1">
                   <div>
                     {f.statusInfo.status === 'enabled' && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                         <Check className="w-3 h-3" /> Enabled
                       </span>
                     )}
                     {f.statusInfo.status === 'disabled' && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
                         <X className="w-3 h-3" /> Disabled
                       </span>
                     )}
                     {f.statusInfo.status === 'hidden' && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
                         <EyeOff className="w-3 h-3" /> Hidden
                       </span>
                     )}

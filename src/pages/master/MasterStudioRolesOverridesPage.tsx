@@ -192,7 +192,7 @@ export const MasterStudioRolesOverridesPage: React.FC = () => {
         <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs whitespace-nowrap">
-              <thead className="bg-zinc-50 text-zinc-500 text-[10px] uppercase font-bold border-b border-zinc-200">
+              <thead className="bg-zinc-50 text-zinc-500 text-xs uppercase font-bold border-b border-zinc-200">
                 <tr>
                   <th className="px-4 py-3 sticky left-0 bg-white z-10 w-60">Studio OS Module</th>
                   {MASTER_ACTIONS_CATALOG.map(act => (
@@ -265,7 +265,7 @@ export const MasterStudioRolesOverridesPage: React.FC = () => {
                   <div className="flex items-center gap-3">
                     <span className="text-zinc-400">Default: {d.defaultAllowed ? 'Allowed' : 'Denied'}</span>
                     <span className="text-zinc-500">→</span>
-                    <span className={`font-bold px-2 py-0.5 rounded text-[11px] ${
+                    <span className={`font-bold px-2 py-0.5 rounded text-xs ${
                       d.overrideAllowed ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
                     }`}>
                       Studio Override: {d.overrideAllowed ? 'Allowed' : 'Denied'}

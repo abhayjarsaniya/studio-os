@@ -133,7 +133,7 @@ export const AnalyticsPage: React.FC = () => {
               >
                 <div className="text-xs text-slate-500 font-medium">Total Events</div>
                 <div className="text-2xl font-black text-slate-900 mt-1">{kpis.totalEvents}</div>
-                <div className="text-[11px] text-slate-400 mt-1">Booked in range</div>
+                <div className="text-xs text-slate-400 mt-1">Booked in range</div>
               </div>
 
               <div 
@@ -142,7 +142,7 @@ export const AnalyticsPage: React.FC = () => {
               >
                 <div className="text-xs text-blue-600 font-medium">Upcoming Events</div>
                 <div className="text-2xl font-black text-blue-700 mt-1">{kpis.upcomingEvents}</div>
-                <div className="text-[11px] text-slate-400 mt-1">Scheduled ahead</div>
+                <div className="text-xs text-slate-400 mt-1">Scheduled ahead</div>
               </div>
 
               <div 
@@ -151,7 +151,7 @@ export const AnalyticsPage: React.FC = () => {
               >
                 <div className="text-xs text-emerald-600 font-medium">Completed Events</div>
                 <div className="text-2xl font-black text-emerald-700 mt-1">{kpis.completedEvents}</div>
-                <div className="text-[11px] text-slate-400 mt-1">Successfully delivered</div>
+                <div className="text-xs text-slate-400 mt-1">Successfully delivered</div>
               </div>
 
               <div 
@@ -160,7 +160,7 @@ export const AnalyticsPage: React.FC = () => {
               >
                 <div className="text-xs text-rose-600 font-medium">Cancelled Events</div>
                 <div className="text-2xl font-black text-rose-700 mt-1">{kpis.cancelledEvents}</div>
-                <div className="text-[11px] text-slate-400 mt-1">Cancelled bookings</div>
+                <div className="text-xs text-slate-400 mt-1">Cancelled bookings</div>
               </div>
 
               {/* Row 2: Customers & Conversion */}
@@ -170,7 +170,7 @@ export const AnalyticsPage: React.FC = () => {
               >
                 <div className="text-xs text-slate-500 font-medium">Total Customers</div>
                 <div className="text-2xl font-black text-slate-900 mt-1">{kpis.totalCustomers}</div>
-                <div className="text-[11px] text-slate-400 mt-1">All-time studio clients</div>
+                <div className="text-xs text-slate-400 mt-1">All-time studio clients</div>
               </div>
 
               <div 
@@ -179,7 +179,7 @@ export const AnalyticsPage: React.FC = () => {
               >
                 <div className="text-xs text-indigo-600 font-medium">New Customers</div>
                 <div className="text-2xl font-black text-indigo-700 mt-1">{kpis.newCustomers}</div>
-                <div className="text-[11px] text-slate-400 mt-1">Acquired in period</div>
+                <div className="text-xs text-slate-400 mt-1">Acquired in period</div>
               </div>
 
               <div 
@@ -188,7 +188,7 @@ export const AnalyticsPage: React.FC = () => {
               >
                 <div className="text-xs text-purple-600 font-medium">Lead Conversion</div>
                 <div className="text-2xl font-black text-purple-700 mt-1">{kpis.leadConversionRate}%</div>
-                <div className="text-[11px] text-slate-400 mt-1">Enquiries to bookings</div>
+                <div className="text-xs text-slate-400 mt-1">Enquiries to bookings</div>
               </div>
 
               <div 
@@ -197,7 +197,7 @@ export const AnalyticsPage: React.FC = () => {
               >
                 <div className="text-xs text-amber-600 font-medium">Invoiced Revenue</div>
                 <div className="text-2xl font-black text-amber-700 mt-1">₹{kpis.invoicedRevenue.toLocaleString('en-IN')}</div>
-                <div className="text-[11px] text-slate-400 mt-1">Issued invoice total</div>
+                <div className="text-xs text-slate-400 mt-1">Issued invoice total</div>
               </div>
 
               {/* Row 3: Finance */}
@@ -207,7 +207,7 @@ export const AnalyticsPage: React.FC = () => {
               >
                 <div className="text-xs text-emerald-600 font-medium">Cash Received</div>
                 <div className="text-2xl font-black text-emerald-700 mt-1">₹{kpis.revenueReceived.toLocaleString('en-IN')}</div>
-                <div className="text-[11px] text-slate-400 mt-1">Cleared payments</div>
+                <div className="text-xs text-slate-400 mt-1">Cleared payments</div>
               </div>
 
               <div 
@@ -216,7 +216,7 @@ export const AnalyticsPage: React.FC = () => {
               >
                 <div className="text-xs text-rose-600 font-medium">Outstanding Due</div>
                 <div className="text-2xl font-black text-rose-700 mt-1">₹{kpis.outstandingPayments.toLocaleString('en-IN')}</div>
-                <div className="text-[11px] text-slate-400 mt-1">Pending receivables</div>
+                <div className="text-xs text-slate-400 mt-1">Pending receivables</div>
               </div>
 
               <div 
@@ -225,7 +225,7 @@ export const AnalyticsPage: React.FC = () => {
               >
                 <div className="text-xs text-slate-500 font-medium">Total Expenses</div>
                 <div className="text-2xl font-black text-slate-900 mt-1">₹{kpis.totalExpenses.toLocaleString('en-IN')}</div>
-                <div className="text-[11px] text-slate-400 mt-1">Recognized costs</div>
+                <div className="text-xs text-slate-400 mt-1">Recognized costs</div>
               </div>
 
               <div 
@@ -238,7 +238,7 @@ export const AnalyticsPage: React.FC = () => {
                 <div className={`text-2xl font-black mt-1 ${kpis.netProfit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
                   ₹{kpis.netProfit.toLocaleString('en-IN')}
                 </div>
-                <div className="text-[11px] text-slate-400 mt-1">Cash basis</div>
+                <div className="text-xs text-slate-400 mt-1">Cash basis</div>
               </div>
 
               {/* Row 4: Tasks & Team */}
@@ -248,7 +248,7 @@ export const AnalyticsPage: React.FC = () => {
               >
                 <div className="text-xs text-indigo-600 font-medium">Active Workflows</div>
                 <div className="text-2xl font-black text-indigo-700 mt-1">{kpis.activeWorkflows}</div>
-                <div className="text-[11px] text-slate-400 mt-1">In progress pipelines</div>
+                <div className="text-xs text-slate-400 mt-1">In progress pipelines</div>
               </div>
 
               <div 
@@ -257,7 +257,7 @@ export const AnalyticsPage: React.FC = () => {
               >
                 <div className="text-xs text-emerald-600 font-medium">Completed Tasks</div>
                 <div className="text-2xl font-black text-emerald-700 mt-1">{kpis.completedTasks}</div>
-                <div className="text-[11px] text-slate-400 mt-1">Tasks finished</div>
+                <div className="text-xs text-slate-400 mt-1">Tasks finished</div>
               </div>
 
               <div 
@@ -266,7 +266,7 @@ export const AnalyticsPage: React.FC = () => {
               >
                 <div className="text-xs text-rose-600 font-medium">Overdue Tasks</div>
                 <div className="text-2xl font-black text-rose-700 mt-1">{kpis.overdueTasks}</div>
-                <div className="text-[11px] text-slate-400 mt-1">Requiring action</div>
+                <div className="text-xs text-slate-400 mt-1">Requiring action</div>
               </div>
 
               <div 
@@ -275,7 +275,7 @@ export const AnalyticsPage: React.FC = () => {
               >
                 <div className="text-xs text-blue-600 font-medium">Team Utilization</div>
                 <div className="text-2xl font-black text-blue-700 mt-1">{kpis.teamUtilization}%</div>
-                <div className="text-[11px] text-slate-400 mt-1">Active crew deployment</div>
+                <div className="text-xs text-slate-400 mt-1">Active crew deployment</div>
               </div>
             </div>
           </div>
@@ -383,7 +383,7 @@ export const AnalyticsPage: React.FC = () => {
                   <div key={c.employeeId} className="flex justify-between items-center py-1 border-b border-slate-50">
                     <div>
                       <span className="text-slate-800 font-medium block">{c.employeeName}</span>
-                      <span className="text-[10px] text-slate-400">{c.roleTitle}</span>
+                      <span className="text-xs text-slate-400">{c.roleTitle}</span>
                     </div>
                     <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">{c.count} shoots</span>
                   </div>
@@ -409,27 +409,27 @@ export const AnalyticsPage: React.FC = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             <div className="bg-white p-3.5 rounded-xl border border-slate-200 text-center shadow-2xs">
-              <div className="text-[11px] text-purple-600 font-semibold uppercase">VIP Clients</div>
+              <div className="text-xs text-purple-600 font-semibold uppercase">VIP Clients</div>
               <div className="text-xl font-black text-purple-700 mt-1">{customerAnalytics.segments.vip.count}</div>
             </div>
             <div className="bg-white p-3.5 rounded-xl border border-slate-200 text-center shadow-2xs">
-              <div className="text-[11px] text-indigo-600 font-semibold uppercase">Repeat Clients</div>
+              <div className="text-xs text-indigo-600 font-semibold uppercase">Repeat Clients</div>
               <div className="text-xl font-black text-indigo-700 mt-1">{customerAnalytics.segments.repeat.count}</div>
             </div>
             <div className="bg-white p-3.5 rounded-xl border border-slate-200 text-center shadow-2xs">
-              <div className="text-[11px] text-blue-600 font-semibold uppercase">New Clients</div>
+              <div className="text-xs text-blue-600 font-semibold uppercase">New Clients</div>
               <div className="text-xl font-black text-blue-700 mt-1">{customerAnalytics.segments.new.count}</div>
             </div>
             <div className="bg-white p-3.5 rounded-xl border border-slate-200 text-center shadow-2xs">
-              <div className="text-[11px] text-emerald-600 font-semibold uppercase">Upcoming Shoots</div>
+              <div className="text-xs text-emerald-600 font-semibold uppercase">Upcoming Shoots</div>
               <div className="text-xl font-black text-emerald-700 mt-1">{customerAnalytics.segments.upcomingEvents.count}</div>
             </div>
             <div className="bg-white p-3.5 rounded-xl border border-slate-200 text-center shadow-2xs">
-              <div className="text-[11px] text-rose-600 font-semibold uppercase">Outstanding Due</div>
+              <div className="text-xs text-rose-600 font-semibold uppercase">Outstanding Due</div>
               <div className="text-xl font-black text-rose-700 mt-1">{customerAnalytics.segments.outstandingDue.count}</div>
             </div>
             <div className="bg-white p-3.5 rounded-xl border border-slate-200 text-center shadow-2xs">
-              <div className="text-[11px] text-slate-500 font-semibold uppercase">Inactive Clients</div>
+              <div className="text-xs text-slate-500 font-semibold uppercase">Inactive Clients</div>
               <div className="text-xl font-black text-slate-700 mt-1">{customerAnalytics.segments.inactive.count}</div>
             </div>
           </div>
@@ -441,7 +441,7 @@ export const AnalyticsPage: React.FC = () => {
                 <div key={s.source} className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                   <div className="text-xs font-semibold text-slate-700">{s.source}</div>
                   <div className="text-lg font-black text-slate-900 mt-1">{s.count} clients</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">{s.percentage}% of total base</div>
+                  <div className="text-xs text-slate-500 mt-0.5">{s.percentage}% of total base</div>
                 </div>
               ))}
             </div>

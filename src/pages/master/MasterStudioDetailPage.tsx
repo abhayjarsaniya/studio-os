@@ -292,7 +292,7 @@ export const MasterStudioDetailPage: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono text-amber-500 font-bold uppercase">{studio.id}</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
                 {studio.subscription?.status || 'Active'}
               </span>
             </div>
@@ -381,27 +381,27 @@ export const MasterStudioDetailPage: React.FC = () => {
             <div className="bg-white p-4 rounded-2xl border border-zinc-200">
               <div className="text-xs text-zinc-500 font-medium">Total Shoots</div>
               <div className="text-2xl font-black text-zinc-900 font-display mt-1">{events.length || 5}</div>
-              <div className="text-[11px] text-emerald-400 mt-1">Confirmed shoots</div>
+              <div className="text-xs text-emerald-400 mt-1">Confirmed shoots</div>
             </div>
             <div className="bg-white p-4 rounded-2xl border border-zinc-200">
               <div className="text-xs text-zinc-500 font-medium">Total Invoiced</div>
               <div className="text-2xl font-black text-purple-300 mt-1">₹{totalInvoiced.toLocaleString('en-IN')}</div>
-              <div className="text-[11px] text-zinc-500 mt-1">Customer invoices</div>
+              <div className="text-xs text-zinc-500 mt-1">Customer invoices</div>
             </div>
             <div className="bg-white p-4 rounded-2xl border border-zinc-200">
               <div className="text-xs text-zinc-500 font-medium">Collected</div>
               <div className="text-2xl font-black text-emerald-400 mt-1">₹{paymentsReceived.toLocaleString('en-IN')}</div>
-              <div className="text-[11px] text-zinc-500 mt-1">Advance received</div>
+              <div className="text-xs text-zinc-500 mt-1">Advance received</div>
             </div>
             <div className="bg-white p-4 rounded-2xl border border-zinc-200">
               <div className="text-xs text-zinc-500 font-medium">Pending</div>
               <div className="text-2xl font-black text-amber-400 mt-1">₹{pendingBalance.toLocaleString('en-IN')}</div>
-              <div className="text-[11px] text-zinc-500 mt-1">Outstanding balance</div>
+              <div className="text-xs text-zinc-500 mt-1">Outstanding balance</div>
             </div>
             <div className="bg-white p-4 rounded-2xl border border-zinc-200">
               <div className="text-xs text-zinc-500 font-medium">Active Staff</div>
               <div className="text-2xl font-black text-cyan-300 mt-1">{employees.length || 4}</div>
-              <div className="text-[11px] text-zinc-500 mt-1">Team members</div>
+              <div className="text-xs text-zinc-500 mt-1">Team members</div>
             </div>
           </div>
 
@@ -472,7 +472,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                   <p className="text-xs text-zinc-500">Manage login credentials, set temporary passwords, dispatch reset emails, or share via WhatsApp.</p>
                 </div>
               </div>
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200 self-start sm:self-auto">
+              <span className="px-2.5 py-1 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200 self-start sm:self-auto">
                 No Repeated Reset Enforced
               </span>
             </div>
@@ -485,10 +485,10 @@ export const MasterStudioDetailPage: React.FC = () => {
               >
                 <div className="flex items-center justify-between mb-2">
                   <Key className="w-4 h-4 text-amber-600" />
-                  <span className="text-[10px] font-mono text-zinc-400 group-hover:text-amber-700">Auto-Gen</span>
+                  <span className="text-xs font-mono text-zinc-400 group-hover:text-amber-700">Auto-Gen</span>
                 </div>
                 <div className="text-xs font-bold text-zinc-900">Reset Owner Password</div>
-                <div className="text-[11px] text-zinc-500 mt-0.5">Generates secure temporary password & opens handover panel</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Generates secure temporary password & opens handover panel</div>
               </button>
 
               <button
@@ -498,10 +498,10 @@ export const MasterStudioDetailPage: React.FC = () => {
               >
                 <div className="flex items-center justify-between mb-2">
                   <Lock className="w-4 h-4 text-indigo-600" />
-                  <span className="text-[10px] font-mono text-zinc-400 group-hover:text-indigo-700">Custom</span>
+                  <span className="text-xs font-mono text-zinc-400 group-hover:text-indigo-700">Custom</span>
                 </div>
                 <div className="text-xs font-bold text-zinc-900">Set New Temp Password</div>
-                <div className="text-[11px] text-zinc-500 mt-0.5">Specify or randomize password with live preview</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Specify or randomize password with live preview</div>
               </button>
 
               <button
@@ -511,10 +511,10 @@ export const MasterStudioDetailPage: React.FC = () => {
               >
                 <div className="flex items-center justify-between mb-2">
                   <Mail className="w-4 h-4 text-emerald-600" />
-                  <span className="text-[10px] font-mono text-zinc-400 group-hover:text-emerald-700">Firebase</span>
+                  <span className="text-xs font-mono text-zinc-400 group-hover:text-emerald-700">Firebase</span>
                 </div>
                 <div className="text-xs font-bold text-zinc-900">Send Reset Email</div>
-                <div className="text-[11px] text-zinc-500 mt-0.5">Dispatches official Firebase reset link to {studio.email}</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Dispatches official Firebase reset link to {studio.email}</div>
               </button>
 
               <button
@@ -524,10 +524,10 @@ export const MasterStudioDetailPage: React.FC = () => {
               >
                 <div className="flex items-center justify-between mb-2">
                   <Share2 className="w-4 h-4 text-purple-600" />
-                  <span className="text-[10px] font-mono text-zinc-400 group-hover:text-purple-700">WhatsApp / Copy</span>
+                  <span className="text-xs font-mono text-zinc-400 group-hover:text-purple-700">WhatsApp / Copy</span>
                 </div>
                 <div className="text-xs font-bold text-zinc-900">Share Login Details</div>
-                <div className="text-[11px] text-zinc-500 mt-0.5">Clean handover panel with WhatsApp native click-to-chat</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Clean handover panel with WhatsApp native click-to-chat</div>
               </button>
             </div>
           </div>
@@ -545,7 +545,7 @@ export const MasterStudioDetailPage: React.FC = () => {
               </p>
             </div>
             {/* Note: STRICTLY NO CREATE BUTTON HERE */}
-            <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-zinc-100 text-zinc-500 border border-zinc-200">
+            <span className="text-xs font-mono px-3 py-1 rounded-full bg-zinc-100 text-zinc-500 border border-zinc-200">
               Operational Actions Restricted to Studio Owner
             </span>
           </div>
@@ -553,7 +553,7 @@ export const MasterStudioDetailPage: React.FC = () => {
           <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-lg">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs whitespace-nowrap">
-                <thead className="bg-zinc-50 text-zinc-500 text-[10px] uppercase font-semibold border-b border-zinc-200">
+                <thead className="bg-zinc-50 text-zinc-500 text-xs uppercase font-semibold border-b border-zinc-200">
                   <tr>
                     <th className="px-4 py-3">Shoot Code</th>
                     <th className="px-4 py-3">Shoot Name</th>
@@ -592,7 +592,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                           ₹{(Number(ev.advancePaid) || 40000).toLocaleString('en-IN')}
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
                             {ev.status || 'confirmed'}
                           </span>
                         </td>
@@ -617,7 +617,7 @@ export const MasterStudioDetailPage: React.FC = () => {
               </p>
             </div>
             {/* STRICTLY NO ADD EMPLOYEE BUTTON */}
-            <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-zinc-100 text-zinc-500 border border-zinc-200">
+            <span className="text-xs font-mono px-3 py-1 rounded-full bg-zinc-100 text-zinc-500 border border-zinc-200">
               Hiring Owned by Studio Owner
             </span>
           </div>
@@ -625,7 +625,7 @@ export const MasterStudioDetailPage: React.FC = () => {
           <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-lg">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs whitespace-nowrap">
-                <thead className="bg-zinc-50 text-zinc-500 text-[10px] uppercase font-semibold border-b border-zinc-200">
+                <thead className="bg-zinc-50 text-zinc-500 text-xs uppercase font-semibold border-b border-zinc-200">
                   <tr>
                     <th className="px-4 py-3">Employee Name</th>
                     <th className="px-4 py-3">Role / Designation</th>
@@ -641,18 +641,18 @@ export const MasterStudioDetailPage: React.FC = () => {
                     <tr key={emp.id} className="hover:bg-zinc-50">
                       <td className="px-4 py-3 font-bold text-zinc-800">{emp.name}</td>
                       <td className="px-4 py-3 text-amber-300 font-medium">{emp.designation || (emp as any).role}</td>
-                      <td className="px-4 py-3 font-mono text-zinc-500 text-[11px]">{emp.email}</td>
-                      <td className="px-4 py-3 font-mono text-zinc-500 text-[11px]">{emp.phone}</td>
+                      <td className="px-4 py-3 font-mono text-zinc-500 text-xs">{emp.email}</td>
+                      <td className="px-4 py-3 font-mono text-zinc-500 text-xs">{emp.phone}</td>
                       <td className="px-4 py-3 text-zinc-700">{(emp as any).assignedEventsCount || 3} shoots</td>
                       <td className="px-4 py-3 text-center">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
                           {(emp as any).status || (emp as any).employmentStatus || 'Active'}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center">
                         <button
                           onClick={() => showToast(`Password reset link dispatched to ${emp.email}`)}
-                          className="px-2 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-[11px] text-amber-400 font-semibold"
+                          className="px-2 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-xs text-amber-400 font-semibold"
                         >
                           Reset Login
                         </button>
@@ -720,7 +720,7 @@ export const MasterStudioDetailPage: React.FC = () => {
           <div className="bg-white p-6 rounded-2xl border border-amber-500/30 shadow-lg space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-50 text-amber-800 border border-amber-200">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase bg-amber-50 text-amber-800 border border-amber-200">
                   SaaS Subscription Plan
                 </span>
                 <h3 className="text-xl font-black text-zinc-900 font-display mt-1">
@@ -822,7 +822,7 @@ export const MasterStudioDetailPage: React.FC = () => {
               {['Photographer', 'Videographer', 'Cinematographer', 'Photo Editor', 'Video Editor', 'Accountant'].map(role => (
                 <div key={role} className="p-2.5 rounded-xl bg-white border border-zinc-200 flex items-center justify-between">
                   <span className="font-semibold text-zinc-800">{role}</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+                  <span className="text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
                     Platform Default
                   </span>
                 </div>
@@ -847,10 +847,10 @@ export const MasterStudioDetailPage: React.FC = () => {
               <div key={f.key} className="p-4 flex items-center justify-between">
                 <div>
                   <div className="text-xs font-bold text-zinc-800">{f.name}</div>
-                  <div className="text-[11px] text-zinc-500">Tier 1 Global: Enabled | Tier 2 Plan: Included</div>
+                  <div className="text-xs text-zinc-500">Tier 1 Global: Enabled | Tier 2 Plan: Included</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-300">
+                  <span className="px-2 py-0.5 rounded text-xs font-bold uppercase bg-emerald-500/20 text-emerald-300">
                     Active (Global)
                   </span>
                 </div>
@@ -880,9 +880,9 @@ export const MasterStudioDetailPage: React.FC = () => {
                 <div key={l.id} className="p-3.5 text-xs flex items-center justify-between">
                   <div>
                     <span className="font-semibold text-zinc-800">{l.action}</span>
-                    <span className="text-zinc-500 block text-[11px]">{l.details}</span>
+                    <span className="text-zinc-500 block text-xs">{l.details}</span>
                   </div>
-                  <div className="text-right text-[11px] text-zinc-500 font-mono">
+                  <div className="text-right text-xs text-zinc-500 font-mono">
                     <div>{l.adminName}</div>
                     <div>{new Date(l.timestamp).toLocaleTimeString('en-IN')}</div>
                   </div>
@@ -927,7 +927,7 @@ export const MasterStudioDetailPage: React.FC = () => {
             <form onSubmit={handleSaveEditStudio} className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">Studio Name *</label>
+                  <label className="block text-xs font-bold text-zinc-600 uppercase mb-1">Studio Name *</label>
                   <input
                     type="text"
                     required
@@ -937,7 +937,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">Phone / Mobile *</label>
+                  <label className="block text-xs font-bold text-zinc-600 uppercase mb-1">Phone / Mobile *</label>
                   <input
                     type="text"
                     required
@@ -950,7 +950,7 @@ export const MasterStudioDetailPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">Studio Contact Email *</label>
+                  <label className="block text-xs font-bold text-zinc-600 uppercase mb-1">Studio Contact Email *</label>
                   <input
                     type="email"
                     required
@@ -960,7 +960,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">Owner Login Email *</label>
+                  <label className="block text-xs font-bold text-zinc-600 uppercase mb-1">Owner Login Email *</label>
                   <input
                     type="email"
                     required
@@ -973,7 +973,7 @@ export const MasterStudioDetailPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">City</label>
+                  <label className="block text-xs font-bold text-zinc-600 uppercase mb-1">City</label>
                   <input
                     type="text"
                     value={editFormData.city}
@@ -982,7 +982,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">State</label>
+                  <label className="block text-xs font-bold text-zinc-600 uppercase mb-1">State</label>
                   <input
                     type="text"
                     value={editFormData.state}
@@ -991,7 +991,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">GST Number</label>
+                  <label className="block text-xs font-bold text-zinc-600 uppercase mb-1">GST Number</label>
                   <input
                     type="text"
                     value={editFormData.gstNumber}
@@ -1002,7 +1002,7 @@ export const MasterStudioDetailPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-zinc-600 uppercase mb-1">Studio Address</label>
+                <label className="block text-xs font-bold text-zinc-600 uppercase mb-1">Studio Address</label>
                 <input
                   type="text"
                   value={editFormData.address}
@@ -1012,12 +1012,12 @@ export const MasterStudioDetailPage: React.FC = () => {
               </div>
 
               <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-3">
-                <span className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider block">
+                <span className="text-xs font-bold text-zinc-700 uppercase tracking-wider block">
                   Subscription & Account Status
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-[10px] text-zinc-500 uppercase mb-1">Subscription Plan</label>
+                    <label className="block text-xs text-zinc-500 uppercase mb-1">Subscription Plan</label>
                     <select
                       value={editFormData.subscriptionPlan}
                       onChange={e => setEditFormData({ ...editFormData, subscriptionPlan: e.target.value })}
@@ -1029,7 +1029,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] text-zinc-500 uppercase mb-1">Subscription Status</label>
+                    <label className="block text-xs text-zinc-500 uppercase mb-1">Subscription Status</label>
                     <select
                       value={editFormData.subscriptionStatus}
                       onChange={e => setEditFormData({ ...editFormData, subscriptionStatus: e.target.value })}
@@ -1042,7 +1042,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] text-zinc-500 uppercase mb-1">Account Visibility</label>
+                    <label className="block text-xs text-zinc-500 uppercase mb-1">Account Visibility</label>
                     <select
                       value={editFormData.lifecycleStatus}
                       onChange={e => setEditFormData({ ...editFormData, lifecycleStatus: e.target.value as any })}
@@ -1101,11 +1101,11 @@ export const MasterStudioDetailPage: React.FC = () => {
             <form onSubmit={handleSaveCustomPassword} className="space-y-4 text-xs">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-[11px] font-bold text-zinc-600 uppercase">Temporary Password *</label>
+                  <label className="block text-xs font-bold text-zinc-600 uppercase">Temporary Password *</label>
                   <button
                     type="button"
                     onClick={handleGenerateSecurePassword}
-                    className="text-amber-700 hover:underline font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                    className="text-amber-700 hover:underline font-bold text-xs flex items-center gap-1 cursor-pointer"
                   >
                     <Sparkles className="w-3 h-3" />
                     <span>Generate Secure</span>
@@ -1120,7 +1120,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                 />
               </div>
 
-              <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-xl text-[11px] text-amber-900">
+              <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-xl text-xs text-amber-900">
                 Saving will set this temporary password and open the official handover panel to copy or share directly via WhatsApp.
               </div>
 

@@ -80,7 +80,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-zinc-900 truncate font-display">{customer.name}</h2>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                   {bookings.length} {bookings.length === 1 ? 'Booking' : 'Bookings'}
                 </span>
               </div>
@@ -131,21 +131,21 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         {/* Financial Quick Glance Ribbon */}
         <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-zinc-100 border-b border-zinc-200 bg-white text-center py-3">
           <div className="px-3">
-            <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Total Value</p>
+            <p className="text-xs uppercase font-bold text-zinc-400 tracking-wider">Total Value</p>
             <p className="text-sm font-bold text-zinc-900 mt-0.5">₹{totalBilled.toLocaleString('en-IN')}</p>
           </div>
           <div className="px-3">
-            <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Received</p>
+            <p className="text-xs uppercase font-bold text-zinc-400 tracking-wider">Received</p>
             <p className="text-sm font-bold text-emerald-600 mt-0.5">₹{totalPaid.toLocaleString('en-IN')}</p>
           </div>
           <div className="px-3">
-            <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Outstanding</p>
+            <p className="text-xs uppercase font-bold text-zinc-400 tracking-wider">Outstanding</p>
             <p className={`text-sm font-bold mt-0.5 ${outstandingBalance > 0 ? 'text-rose-600' : 'text-zinc-600'}`}>
               ₹{outstandingBalance.toLocaleString('en-IN')}
             </p>
           </div>
           <div className="px-3">
-            <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Deliverables</p>
+            <p className="text-xs uppercase font-bold text-zinc-400 tracking-wider">Deliverables</p>
             <p className="text-sm font-bold text-indigo-600 mt-0.5">
               {albumsSummary.deliveredAlbums}/{albumsSummary.totalAlbums} Albums
             </p>
@@ -238,7 +238,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                       }`}>
                         {step.active ? '✓' : idx + 1}
                       </div>
-                      <span className={`text-[10px] mt-1.5 font-semibold ${step.active ? 'text-zinc-900 font-bold' : 'text-zinc-400'}`}>
+                      <span className={`text-xs mt-1.5 font-semibold ${step.active ? 'text-zinc-900 font-bold' : 'text-zinc-400'}`}>
                         {step.label}
                       </span>
                     </div>
@@ -254,7 +254,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     <span className="text-xs font-bold">Stills & Photos</span>
                   </div>
                   <p className="text-xl font-bold text-zinc-900">{photosSummary.editedPhotosTotal.toLocaleString('en-IN')}</p>
-                  <p className="text-[11px] text-zinc-500 mt-0.5">{photosSummary.rawPhotosTotal.toLocaleString('en-IN')} Raw Stills Backed Up</p>
+                  <p className="text-xs text-zinc-500 mt-0.5">{photosSummary.rawPhotosTotal.toLocaleString('en-IN')} Raw Stills Backed Up</p>
                 </div>
 
                 <div className="p-3.5 rounded-xl border border-zinc-200 bg-white shadow-2xs">
@@ -263,7 +263,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     <span className="text-xs font-bold">Cinema & Reels</span>
                   </div>
                   <p className="text-xl font-bold text-zinc-900">{videosSummary.totalVideos} Films / {videosSummary.totalReels} Reels</p>
-                  <p className="text-[11px] text-zinc-500 mt-0.5">{videosSummary.completedVideos} Video Edits Delivered</p>
+                  <p className="text-xs text-zinc-500 mt-0.5">{videosSummary.completedVideos} Video Edits Delivered</p>
                 </div>
 
                 <div className="p-3.5 rounded-xl border border-zinc-200 bg-white shadow-2xs">
@@ -272,7 +272,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     <span className="text-xs font-bold">Luxury Albums</span>
                   </div>
                   <p className="text-xl font-bold text-zinc-900">{albumsSummary.deliveredAlbums} / {albumsSummary.totalAlbums}</p>
-                  <p className="text-[11px] text-zinc-500 mt-0.5">Canvera Ultra-HD Print Spec</p>
+                  <p className="text-xs text-zinc-500 mt-0.5">Canvera Ultra-HD Print Spec</p>
                 </div>
               </div>
 
@@ -285,7 +285,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-zinc-900">{b.eventName}</span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
                             {b.bookingNumber}
                           </span>
                         </div>
@@ -299,9 +299,9 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                       <div className="flex items-center gap-4 text-right">
                         <div>
                           <p className="text-xs font-bold text-zinc-900">₹{(b.financials?.finalAgreedAmount || 0).toLocaleString('en-IN')}</p>
-                          <p className="text-[10px] text-emerald-600 font-medium">₹{(b.financials?.verifiedPaymentsReceived || 0).toLocaleString('en-IN')} Paid</p>
+                          <p className="text-xs text-emerald-600 font-medium">₹{(b.financials?.verifiedPaymentsReceived || 0).toLocaleString('en-IN')} Paid</p>
                         </div>
-                        <span className="text-[10px] font-bold px-2 py-1 rounded-full uppercase bg-zinc-900 text-white">
+                        <span className="text-xs font-bold px-2 py-1 rounded-full uppercase bg-zinc-900 text-white">
                           {b.status.replace('_', ' ')}
                         </span>
                       </div>
@@ -329,19 +329,19 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-zinc-100 text-xs">
                     <div>
-                      <span className="text-zinc-400 block text-[10px] uppercase font-bold">Date</span>
+                      <span className="text-zinc-400 block text-xs uppercase font-bold">Date</span>
                       <span className="font-semibold text-zinc-800">{b.mainEventDate}</span>
                     </div>
                     <div>
-                      <span className="text-zinc-400 block text-[10px] uppercase font-bold">Venue</span>
+                      <span className="text-zinc-400 block text-xs uppercase font-bold">Venue</span>
                       <span className="font-semibold text-zinc-800 truncate block">{b.venue}</span>
                     </div>
                     <div>
-                      <span className="text-zinc-400 block text-[10px] uppercase font-bold">Agreed Value</span>
+                      <span className="text-zinc-400 block text-xs uppercase font-bold">Agreed Value</span>
                       <span className="font-bold text-zinc-900">₹{(b.financials?.finalAgreedAmount || 0).toLocaleString('en-IN')}</span>
                     </div>
                     <div>
-                      <span className="text-zinc-400 block text-[10px] uppercase font-bold">Balance</span>
+                      <span className="text-zinc-400 block text-xs uppercase font-bold">Balance</span>
                       <span className="font-bold text-rose-600">₹{(b.financials?.remainingBalance || 0).toLocaleString('en-IN')}</span>
                     </div>
                   </div>
@@ -349,7 +349,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   {/* Assigned Crew */}
                   {b.functions?.[0]?.assignedCrew && b.functions[0].assignedCrew.length > 0 && (
                     <div className="pt-2 border-t border-zinc-100">
-                      <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Assigned Photography Crew</span>
+                      <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider block mb-1.5">Assigned Photography Crew</span>
                       <div className="flex flex-wrap gap-2">
                         {b.functions[0].assignedCrew.map((c, i) => (
                           <span key={i} className="text-xs px-2.5 py-1 rounded-lg bg-zinc-50 border border-zinc-200 text-zinc-800 flex items-center gap-1.5">
@@ -375,7 +375,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   <div key={idx} className="p-4 rounded-xl border border-zinc-200 bg-white space-y-2 shadow-2xs">
                     <div className="flex items-center justify-between">
                       <h4 className="text-xs font-bold text-zinc-900">{item.eventName} ({item.bookingNumber})</h4>
-                      <span className="text-[11px] text-zinc-500">{item.date}</span>
+                      <span className="text-xs text-zinc-500">{item.date}</span>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-zinc-50 rounded-lg text-xs font-semibold">
                       <div className="text-zinc-500">
@@ -410,7 +410,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-zinc-900">₹{q.totalAmount.toLocaleString('en-IN')}</p>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
                       {q.status}
                     </span>
                   </div>
@@ -430,7 +430,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-zinc-900">₹{inv.totalAmount.toLocaleString('en-IN')}</p>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-zinc-100 text-zinc-800">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full uppercase bg-zinc-100 text-zinc-800">
                       {inv.status}
                     </span>
                   </div>
@@ -450,7 +450,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   </div>
                   <div className="text-right">
                     <p className="text-xs font-semibold text-zinc-600">{p.paymentDate}</p>
-                    <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1 justify-end">
+                    <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 justify-end">
                       <CheckCircle2 className="w-3 h-3" /> Verified
                     </span>
                   </div>
@@ -466,9 +466,9 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 <div key={del.id} className="p-3 rounded-xl border border-zinc-200 bg-white flex items-center justify-between text-xs shadow-2xs">
                   <div>
                     <span className="font-bold text-zinc-900">{del.name}</span>
-                    <p className="text-[11px] text-zinc-500">{del.deliveryMethod} • Target: {del.calculatedDeadline}</p>
+                    <p className="text-xs text-zinc-500">{del.deliveryMethod} • Target: {del.calculatedDeadline}</p>
                   </div>
-                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full uppercase ${
                     del.isDelivered ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
                   }`}>
                     {del.stage.replace('_', ' ')}
@@ -483,7 +483,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         {/* Modal Footer */}
         <div className="p-4 border-t border-zinc-200 bg-zinc-50/80 flex items-center justify-between">
           <p className="text-xs text-zinc-500">
-            Customer ID: <code className="bg-zinc-200/80 px-1.5 py-0.5 rounded text-[11px]">{customer.id}</code>
+            Customer ID: <code className="bg-zinc-200/80 px-1.5 py-0.5 rounded text-xs">{customer.id}</code>
           </p>
           <button
             onClick={onClose}

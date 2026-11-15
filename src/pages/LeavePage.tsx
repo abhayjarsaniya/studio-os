@@ -99,7 +99,7 @@ export const LeavePage: React.FC = () => {
               </p>
             </div>
           </div>
-          <span className="text-[11px] font-bold text-amber-700 bg-amber-100 px-2 py-1 rounded-lg shrink-0">
+          <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-1 rounded-lg shrink-0">
             Scheduling Restricted
           </span>
         </div>
@@ -129,7 +129,7 @@ export const LeavePage: React.FC = () => {
           >
             <span>Admin Approvals</span>
             {pendingRequests.length > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-white text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-white text-xs font-bold">
                 {pendingRequests.length}
               </span>
             )}
@@ -168,27 +168,27 @@ export const LeavePage: React.FC = () => {
           {myBalance && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-4 rounded-2xl bg-white border border-zinc-200 space-y-1">
-                <span className="text-[11px] font-bold text-zinc-400 uppercase">Annual Allowance</span>
+                <span className="text-xs font-bold text-zinc-400 uppercase">Annual Allowance</span>
                 <p className="text-xl font-bold font-mono text-zinc-900">{myBalance.totalAllowed} Days</p>
-                <p className="text-[10px] text-zinc-500">Allocated for 2026</p>
+                <p className="text-xs text-zinc-500">Allocated for 2026</p>
               </div>
 
               <div className="p-4 rounded-2xl bg-white border border-zinc-200 space-y-1">
-                <span className="text-[11px] font-bold text-zinc-400 uppercase">Approved Used</span>
+                <span className="text-xs font-bold text-zinc-400 uppercase">Approved Used</span>
                 <p className="text-xl font-bold font-mono text-zinc-700">{myBalance.totalUsed} Days</p>
-                <p className="text-[10px] text-zinc-500">Deducted from balance</p>
+                <p className="text-xs text-zinc-500">Deducted from balance</p>
               </div>
 
               <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-1">
-                <span className="text-[11px] font-bold text-emerald-800 uppercase">Remaining Paid</span>
+                <span className="text-xs font-bold text-emerald-800 uppercase">Remaining Paid</span>
                 <p className="text-xl font-bold font-mono text-emerald-700">{myBalance.totalRemaining} Days</p>
-                <p className="text-[10px] text-emerald-600">Available to take</p>
+                <p className="text-xs text-emerald-600">Available to take</p>
               </div>
 
               <div className="p-4 rounded-2xl bg-white border border-zinc-200 space-y-1">
-                <span className="text-[11px] font-bold text-zinc-400 uppercase">Categories</span>
+                <span className="text-xs font-bold text-zinc-400 uppercase">Categories</span>
                 <p className="text-xl font-bold font-mono text-zinc-900">{myBalance.balances.length} Types</p>
-                <p className="text-[10px] text-zinc-500">Casual, Sick, Emergency</p>
+                <p className="text-xs text-zinc-500">Casual, Sick, Emergency</p>
               </div>
             </div>
           )}
@@ -210,7 +210,7 @@ export const LeavePage: React.FC = () => {
                         <span className="font-bold text-zinc-900 text-sm">{req.leaveTypeName}</span>
                         <span className="text-zinc-400">•</span>
                         <span className="font-semibold text-zinc-700">{req.totalDays} {req.totalDays === 1 ? 'Day' : 'Days'}</span>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
                           req.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                           req.status === 'rejected' ? 'bg-rose-50 text-rose-700 border-rose-200' :
                           req.status === 'cancelled' ? 'bg-zinc-100 text-zinc-500 border-zinc-200' :
@@ -356,7 +356,7 @@ export const LeavePage: React.FC = () => {
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-zinc-800">{l.startDate} to {l.endDate}</p>
-                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                       APPROVED
                     </span>
                   </div>
@@ -376,7 +376,7 @@ export const LeavePage: React.FC = () => {
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 uppercase text-[10px]">
+              <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 uppercase text-xs">
                 <tr>
                   <th className="p-3">Employee</th>
                   <th className="p-3">Department</th>

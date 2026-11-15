@@ -153,22 +153,22 @@ export const LeadPipelineBoard: React.FC = () => {
                         <span className="font-bold text-zinc-900 block truncate max-w-[130px]">
                           {lead.customerName}
                         </span>
-                        <span className="text-[10px] text-zinc-400 font-mono">
+                        <span className="text-xs text-zinc-400 font-mono">
                           {lead.leadNumber} • {lead.source}
                         </span>
                       </div>
-                      <span className="text-[10px] bg-zinc-100 text-zinc-700 font-semibold px-1.5 py-0.5 rounded">
+                      <span className="text-xs bg-zinc-100 text-zinc-700 font-semibold px-1.5 py-0.5 rounded">
                         {lead.eventCategory}
                       </span>
                     </div>
 
-                    <div className="text-[11px] text-zinc-600 space-y-0.5">
+                    <div className="text-xs text-zinc-600 space-y-0.5">
                       <p className="font-mono">{lead.phone}</p>
                       {lead.expectedDate && (
-                        <p className="text-[10px] text-zinc-500">Exp: {formatDate(lead.expectedDate)}</p>
+                        <p className="text-xs text-zinc-500">Exp: {formatDate(lead.expectedDate)}</p>
                       )}
                       {canViewSalary && lead.estimatedBudget && (
-                        <p className="text-[10px] font-semibold text-emerald-700">
+                        <p className="text-xs font-semibold text-emerald-700">
                           Est: {formatCurrency(lead.estimatedBudget)}
                         </p>
                       )}
@@ -187,7 +187,7 @@ export const LeadPipelineBoard: React.FC = () => {
                       {lead.status !== 'Booked' && (
                         <button
                           onClick={() => setConvertingLead(lead)}
-                          className="px-2 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                          className="px-2 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
                           title="Convert to Client"
                         >
                           <UserPlus className="w-3 h-3" />
@@ -199,7 +199,7 @@ export const LeadPipelineBoard: React.FC = () => {
                       <select
                         value={lead.status}
                         onChange={e => handleStatusChange(lead.id, e.target.value as LeadStatus)}
-                        className="text-[10px] font-semibold bg-zinc-50 border border-zinc-200 rounded px-1.5 py-0.5 cursor-pointer"
+                        className="text-xs font-semibold bg-zinc-50 border border-zinc-200 rounded px-1.5 py-0.5 cursor-pointer"
                       >
                         {PIPELINE_COLUMNS.map(c => (
                           <option key={c.status} value={c.status}>{c.label}</option>

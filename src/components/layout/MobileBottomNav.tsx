@@ -23,11 +23,11 @@ export const MobileBottomNav: React.FC = () => {
           window.location.hash = '#/app/dashboard';
         }}
         className={`flex flex-col items-center justify-center flex-1 min-h-[52px] py-1 transition-transform active:scale-95 cursor-pointer touch-manipulation ${
-          activeTab === 'dashboard' ? 'text-orange-600 font-bold' : 'text-zinc-400 hover:text-zinc-600'
+          activeTab === 'dashboard' ? 'text-orange-600 font-bold' : 'text-zinc-500 hover:text-zinc-700'
         }`}
       >
-        <LayoutDashboard className="w-5 h-5 mb-1" />
-        <span className="text-[11px]">Dashboard</span>
+        <LayoutDashboard className="w-5 h-5 mb-0.5" />
+        <span className="text-xs font-semibold">Dashboard</span>
       </button>
 
       {/* 2. Calendar */}
@@ -37,11 +37,11 @@ export const MobileBottomNav: React.FC = () => {
           window.location.hash = '#/app/calendar';
         }}
         className={`flex flex-col items-center justify-center flex-1 min-h-[52px] py-1 transition-transform active:scale-95 cursor-pointer touch-manipulation ${
-          activeTab === 'calendar' ? 'text-orange-600 font-bold' : 'text-zinc-400 hover:text-zinc-600'
+          activeTab === 'calendar' ? 'text-orange-600 font-bold' : 'text-zinc-500 hover:text-zinc-700'
         }`}
       >
-        <Calendar className="w-5 h-5 mb-1" />
-        <span className="text-[11px]">Calendar</span>
+        <Calendar className="w-5 h-5 mb-0.5" />
+        <span className="text-xs font-semibold">Calendar</span>
       </button>
 
       {/* 3. + New Booking (Elevated Center Button) */}
@@ -55,7 +55,7 @@ export const MobileBottomNav: React.FC = () => {
         <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-orange-600 via-orange-500 to-amber-500 text-white flex items-center justify-center shadow-lg shadow-orange-500/30 group-hover:from-orange-500 group-hover:to-amber-600 transition-all -mt-5 border-2 border-white">
           <PlusCircle className="w-6 h-6 text-white" />
         </div>
-        <span className="text-[11px] text-orange-600 font-bold mt-1">New</span>
+        <span className="text-xs text-orange-600 font-bold mt-0.5">New</span>
       </button>
 
       {/* 4. Bookings */}
@@ -65,11 +65,11 @@ export const MobileBottomNav: React.FC = () => {
           window.location.hash = '#/app/bookings';
         }}
         className={`flex flex-col items-center justify-center flex-1 min-h-[52px] py-1 transition-transform active:scale-95 cursor-pointer touch-manipulation ${
-          activeTab === 'bookings' || activeTab === 'history' ? 'text-orange-600 font-bold' : 'text-zinc-400 hover:text-zinc-600'
+          activeTab === 'bookings' || activeTab === 'history' ? 'text-orange-600 font-bold' : 'text-zinc-500 hover:text-zinc-700'
         }`}
       >
-        <BookOpen className="w-5 h-5 mb-1" />
-        <span className="text-[11px]">Bookings</span>
+        <BookOpen className="w-5 h-5 mb-0.5" />
+        <span className="text-xs font-semibold">Bookings</span>
       </button>
 
       {/* 5. Crew */}
@@ -79,11 +79,11 @@ export const MobileBottomNav: React.FC = () => {
           window.location.hash = '#/app/crew';
         }}
         className={`flex flex-col items-center justify-center flex-1 min-h-[52px] py-1 transition-transform active:scale-95 cursor-pointer touch-manipulation ${
-          activeTab === 'crew' || activeTab === 'team' ? 'text-orange-600 font-bold' : 'text-zinc-400 hover:text-zinc-600'
+          activeTab === 'crew' || activeTab === 'team' ? 'text-orange-600 font-bold' : 'text-zinc-500 hover:text-zinc-700'
         }`}
       >
-        <Users className="w-5 h-5 mb-1" />
-        <span className="text-[11px]">Crew</span>
+        <Users className="w-5 h-5 mb-0.5" />
+        <span className="text-xs font-semibold">Crew</span>
       </button>
     </nav>
   );

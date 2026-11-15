@@ -93,7 +93,7 @@ export const StudioLoginPage: React.FC = () => {
           <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-white flex items-center justify-center shadow-md shadow-zinc-400/20 mb-4">
             <Camera className="w-8 h-8 text-amber-400" />
           </div>
-          <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200/80 mb-2">
+          <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200/80 mb-2">
             Studio Owner Portal
           </span>
           <h1 className="text-2xl font-black text-zinc-900 tracking-tight font-display">Studio Owner Login</h1>
@@ -151,7 +151,7 @@ export const StudioLoginPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowForgotPassword(true)}
-              className="text-[11px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
+              className="text-xs font-medium text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
             >
               Forgot Password?
             </button>
@@ -167,7 +167,7 @@ export const StudioLoginPage: React.FC = () => {
           </button>
         </form>
 
-        <div className="mt-6 pt-4 border-t border-zinc-100 text-center text-[11px] text-zinc-400">
+        <div className="mt-6 pt-4 border-t border-zinc-100 text-center text-xs text-zinc-400">
           Studio OS Multi-Tenant Photography ERP • Independent Studio Access
         </div>
       </div>

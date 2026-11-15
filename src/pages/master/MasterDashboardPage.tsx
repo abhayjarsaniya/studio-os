@@ -46,7 +46,7 @@ export const MasterDashboardPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
               Master Admin Control Center
             </span>
             <span className="text-xs text-zinc-500">Platform Owner Level 1 Authority</span>
@@ -85,7 +85,7 @@ export const MasterDashboardPage: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {/* Date Range */}
           <div>
-            <label className="block text-[10px] font-semibold text-zinc-500 uppercase mb-1">Date Range</label>
+            <label className="block text-xs font-semibold text-zinc-500 uppercase mb-1">Date Range</label>
             <select
               value={filterState.dateRange}
               onChange={e => setFilterState(prev => ({ ...prev, dateRange: e.target.value as any }))}
@@ -103,7 +103,7 @@ export const MasterDashboardPage: React.FC = () => {
 
           {/* Studio Filter */}
           <div>
-            <label className="block text-[10px] font-semibold text-zinc-500 uppercase mb-1">Studio</label>
+            <label className="block text-xs font-semibold text-zinc-500 uppercase mb-1">Studio</label>
             <select
               value={filterState.studioId || 'all'}
               onChange={e => setFilterState(prev => ({ ...prev, studioId: e.target.value }))}
@@ -118,7 +118,7 @@ export const MasterDashboardPage: React.FC = () => {
 
           {/* City / Location */}
           <div>
-            <label className="block text-[10px] font-semibold text-zinc-500 uppercase mb-1">City</label>
+            <label className="block text-xs font-semibold text-zinc-500 uppercase mb-1">City</label>
             <select
               value={filterState.city || 'all'}
               onChange={e => setFilterState(prev => ({ ...prev, city: e.target.value }))}
@@ -132,7 +132,7 @@ export const MasterDashboardPage: React.FC = () => {
 
           {/* Subscription Plan */}
           <div>
-            <label className="block text-[10px] font-semibold text-zinc-500 uppercase mb-1">Billing Plan</label>
+            <label className="block text-xs font-semibold text-zinc-500 uppercase mb-1">Billing Plan</label>
             <select
               value={filterState.planId || 'all'}
               onChange={e => setFilterState(prev => ({ ...prev, planId: e.target.value }))}
@@ -147,7 +147,7 @@ export const MasterDashboardPage: React.FC = () => {
 
           {/* Studio Status */}
           <div>
-            <label className="block text-[10px] font-semibold text-zinc-500 uppercase mb-1">Studio Status</label>
+            <label className="block text-xs font-semibold text-zinc-500 uppercase mb-1">Studio Status</label>
             <select
               value={filterState.studioStatus || 'all'}
               onChange={e => setFilterState(prev => ({ ...prev, studioStatus: e.target.value as any }))}
@@ -162,7 +162,7 @@ export const MasterDashboardPage: React.FC = () => {
 
           {/* Event Category */}
           <div>
-            <label className="block text-[10px] font-semibold text-zinc-500 uppercase mb-1">Event Category</label>
+            <label className="block text-xs font-semibold text-zinc-500 uppercase mb-1">Event Category</label>
             <select
               value={filterState.eventCategory || 'all'}
               onChange={e => setFilterState(prev => ({ ...prev, eventCategory: e.target.value }))}
@@ -196,7 +196,7 @@ export const MasterDashboardPage: React.FC = () => {
               <Building2 className="w-4 h-4 text-zinc-400 group-hover:text-amber-400 transition-colors" />
             </div>
             <div className="text-2xl font-black text-zinc-900 font-display">{kpis.totalStudios}</div>
-            <div className="text-[11px] text-emerald-400 font-semibold mt-1">
+            <div className="text-xs text-emerald-400 font-semibold mt-1">
               {kpis.trends.studiosGrowth}
             </div>
           </div>
@@ -211,7 +211,7 @@ export const MasterDashboardPage: React.FC = () => {
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-2xl font-black text-emerald-400">{kpis.activeStudios}</div>
-            <div className="text-[11px] text-zinc-500 mt-1">Operational studios</div>
+            <div className="text-xs text-zinc-500 mt-1">Operational studios</div>
           </div>
 
           {/* 3. Hidden Studios */}
@@ -224,7 +224,7 @@ export const MasterDashboardPage: React.FC = () => {
               <EyeOff className="w-4 h-4 text-amber-400" />
             </div>
             <div className="text-2xl font-black text-amber-400">{kpis.hiddenStudios}</div>
-            <div className="text-[11px] text-zinc-500 mt-1">Hidden from discovery</div>
+            <div className="text-xs text-zinc-500 mt-1">Hidden from discovery</div>
           </div>
 
           {/* 4. Suspended Studios */}
@@ -237,7 +237,7 @@ export const MasterDashboardPage: React.FC = () => {
               <PauseCircle className="w-4 h-4 text-rose-400" />
             </div>
             <div className="text-2xl font-black text-rose-400">{kpis.suspendedStudios}</div>
-            <div className="text-[11px] text-zinc-500 mt-1">Administrative lock</div>
+            <div className="text-xs text-zinc-500 mt-1">Administrative lock</div>
           </div>
 
           {/* 5. Active Subscriptions */}
@@ -250,7 +250,7 @@ export const MasterDashboardPage: React.FC = () => {
               <CreditCard className="w-4 h-4 text-indigo-400" />
             </div>
             <div className="text-2xl font-black text-indigo-300">{kpis.activeSubscriptions}</div>
-            <div className="text-[11px] text-indigo-400/80 font-medium mt-1">Billed ₹500/mo</div>
+            <div className="text-xs text-indigo-400/80 font-medium mt-1">Billed ₹500/mo</div>
           </div>
 
           {/* 6. Expired / Past Due */}
@@ -263,7 +263,7 @@ export const MasterDashboardPage: React.FC = () => {
               <AlertTriangle className="w-4 h-4 text-rose-400" />
             </div>
             <div className="text-2xl font-black text-rose-300">{kpis.expiredPastDueSubscriptions}</div>
-            <div className="text-[11px] text-zinc-500 mt-1">Action required</div>
+            <div className="text-xs text-zinc-500 mt-1">Action required</div>
           </div>
 
           {/* 7. Total Studio Employees */}
@@ -276,7 +276,7 @@ export const MasterDashboardPage: React.FC = () => {
               <Users className="w-4 h-4 text-cyan-400" />
             </div>
             <div className="text-2xl font-black text-cyan-300">{kpis.totalStudioEmployees}</div>
-            <div className="text-[11px] text-zinc-500 mt-1">Across all studios</div>
+            <div className="text-xs text-zinc-500 mt-1">Across all studios</div>
           </div>
 
           {/* 8. Total Events */}
@@ -289,7 +289,7 @@ export const MasterDashboardPage: React.FC = () => {
               <Calendar className="w-4 h-4 text-zinc-400" />
             </div>
             <div className="text-2xl font-black text-zinc-900 font-display">{kpis.totalEvents}</div>
-            <div className="text-[11px] text-emerald-400 font-medium mt-1">{kpis.trends.eventsGrowth}</div>
+            <div className="text-xs text-emerald-400 font-medium mt-1">{kpis.trends.eventsGrowth}</div>
           </div>
 
           {/* 9. Completed Events */}
@@ -302,7 +302,7 @@ export const MasterDashboardPage: React.FC = () => {
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-2xl font-black text-emerald-400">{kpis.completedEvents}</div>
-            <div className="text-[11px] text-zinc-500 mt-1">Delivered to clients</div>
+            <div className="text-xs text-zinc-500 mt-1">Delivered to clients</div>
           </div>
 
           {/* 10. Upcoming Events */}
@@ -315,7 +315,7 @@ export const MasterDashboardPage: React.FC = () => {
               <Clock className="w-4 h-4 text-indigo-400" />
             </div>
             <div className="text-2xl font-black text-indigo-300">{kpis.upcomingEvents}</div>
-            <div className="text-[11px] text-zinc-500 mt-1">In schedule queue</div>
+            <div className="text-xs text-zinc-500 mt-1">In schedule queue</div>
           </div>
 
           {/* 11. Confirmed Bookings */}
@@ -328,7 +328,7 @@ export const MasterDashboardPage: React.FC = () => {
               <ShieldCheck className="w-4 h-4 text-amber-400" />
             </div>
             <div className="text-2xl font-black text-amber-300">{kpis.confirmedBookings}</div>
-            <div className="text-[11px] text-zinc-500 mt-1">Advance received</div>
+            <div className="text-xs text-zinc-500 mt-1">Advance received</div>
           </div>
 
           {/* 12. Invoiced Revenue */}
@@ -341,7 +341,7 @@ export const MasterDashboardPage: React.FC = () => {
               <IndianRupee className="w-4 h-4 text-purple-400" />
             </div>
             <div className="text-2xl font-black text-purple-300">₹{kpis.invoicedRevenue.toLocaleString('en-IN')}</div>
-            <div className="text-[11px] text-purple-400/80 font-medium mt-1">{kpis.trends.revenueGrowth}</div>
+            <div className="text-xs text-purple-400/80 font-medium mt-1">{kpis.trends.revenueGrowth}</div>
           </div>
 
           {/* 13. Payments Received */}
@@ -354,7 +354,7 @@ export const MasterDashboardPage: React.FC = () => {
               <IndianRupee className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-2xl font-black text-emerald-400">₹{kpis.paymentsReceived.toLocaleString('en-IN')}</div>
-            <div className="text-[11px] text-emerald-400/80 font-medium mt-1">All studios total</div>
+            <div className="text-xs text-emerald-400/80 font-medium mt-1">All studios total</div>
           </div>
 
           {/* 14. Outstanding Balance */}
@@ -367,7 +367,7 @@ export const MasterDashboardPage: React.FC = () => {
               <IndianRupee className="w-4 h-4 text-amber-400" />
             </div>
             <div className="text-2xl font-black text-amber-300">₹{kpis.outstandingBalance.toLocaleString('en-IN')}</div>
-            <div className="text-[11px] text-zinc-500 mt-1">Pending studio collections</div>
+            <div className="text-xs text-zinc-500 mt-1">Pending studio collections</div>
           </div>
 
           {/* 15. Platform MRR */}
@@ -380,7 +380,7 @@ export const MasterDashboardPage: React.FC = () => {
               <Sparkles className="w-4 h-4 text-amber-400 animate-spin-slow" />
             </div>
             <div className="text-2xl font-black text-zinc-900 font-display">₹{kpis.platformMrr.toLocaleString('en-IN')}</div>
-            <div className="text-[11px] text-amber-400 font-semibold mt-1">
+            <div className="text-xs text-amber-400 font-semibold mt-1">
               ARR: ₹{(kpis.platformMrr * 12).toLocaleString('en-IN')}
             </div>
           </div>
@@ -395,7 +395,7 @@ export const MasterDashboardPage: React.FC = () => {
               <Clock className="w-4 h-4 text-sky-400" />
             </div>
             <div className="text-2xl font-black text-sky-300">{kpis.renewalsDueNext30Days}</div>
-            <div className="text-[11px] text-zinc-500 mt-1">Upcoming billing cycles</div>
+            <div className="text-xs text-zinc-500 mt-1">Upcoming billing cycles</div>
           </div>
         </div>
       </div>
@@ -406,18 +406,18 @@ export const MasterDashboardPage: React.FC = () => {
           <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
             Consolidated Platform Intelligence (9 Visualizations)
           </h2>
-          <span className="text-[11px] text-zinc-400 font-mono">Live aggregated records</span>
+          <span className="text-xs text-zinc-400 font-mono">Live aggregated records</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Chart 1: Studio Registration Growth */}
           <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-md">
             <div className="text-xs font-bold text-zinc-800 mb-1">1. Studio Registration Growth</div>
-            <div className="text-[11px] text-zinc-500 mb-4">Monthly studio onboardings</div>
+            <div className="text-xs text-zinc-500 mb-4">Monthly studio onboardings</div>
             <div className="space-y-2">
               {charts.studioRegistrationGrowth.map(item => (
                 <div key={item.month} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-xs">
                     <span className="text-zinc-500">{item.month}</span>
                     <span className="font-semibold text-amber-400">{item.count} studios ({item.cumulative} total)</span>
                   </div>
@@ -435,11 +435,11 @@ export const MasterDashboardPage: React.FC = () => {
           {/* Chart 2: Revenue Across Studios */}
           <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-md">
             <div className="text-xs font-bold text-zinc-800 mb-1">2. Revenue Across Studios</div>
-            <div className="text-[11px] text-zinc-500 mb-4">Invoiced vs Received (₹)</div>
+            <div className="text-xs text-zinc-500 mb-4">Invoiced vs Received (₹)</div>
             <div className="space-y-2.5">
               {charts.revenueAcrossStudios.slice(-4).map(item => (
                 <div key={item.month} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-xs">
                     <span className="text-zinc-500">{item.month}</span>
                     <span className="font-mono text-emerald-400">₹{item.received.toLocaleString('en-IN')} / ₹{item.invoiced.toLocaleString('en-IN')}</span>
                   </div>
@@ -461,11 +461,11 @@ export const MasterDashboardPage: React.FC = () => {
           {/* Chart 3: Platform Subscription Growth */}
           <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-md">
             <div className="text-xs font-bold text-zinc-800 mb-1">3. Platform Subscription MRR Trend</div>
-            <div className="text-[11px] text-zinc-500 mb-4">Recurring revenue growth (@ ₹500/mo)</div>
+            <div className="text-xs text-zinc-500 mb-4">Recurring revenue growth (@ ₹500/mo)</div>
             <div className="space-y-2">
               {charts.platformSubscriptionGrowth.map(item => (
                 <div key={item.month} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-xs">
                     <span className="text-zinc-500">{item.month}</span>
                     <span className="font-mono font-bold text-amber-400">₹{item.mrr.toLocaleString('en-IN')}</span>
                   </div>
@@ -483,11 +483,11 @@ export const MasterDashboardPage: React.FC = () => {
           {/* Chart 4: Events Completed by Month */}
           <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-md">
             <div className="text-xs font-bold text-zinc-800 mb-1">4. Events Completed by Month</div>
-            <div className="text-[11px] text-zinc-500 mb-4">Shoot delivery throughput</div>
+            <div className="text-xs text-zinc-500 mb-4">Shoot delivery throughput</div>
             <div className="space-y-2">
               {charts.eventsCompletedByMonth.slice(-4).map(item => (
                 <div key={item.month} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-xs">
                     <span className="text-zinc-500">{item.month}</span>
                     <span className="text-indigo-300 font-semibold">{item.completed} completed of {item.total}</span>
                   </div>
@@ -505,11 +505,11 @@ export const MasterDashboardPage: React.FC = () => {
           {/* Chart 5: Bookings by Studio */}
           <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-md">
             <div className="text-xs font-bold text-zinc-800 mb-1">5. Bookings by Studio (Ranking)</div>
-            <div className="text-[11px] text-zinc-500 mb-4">Confirmed booking distribution</div>
+            <div className="text-xs text-zinc-500 mb-4">Confirmed booking distribution</div>
             <div className="space-y-2">
               {charts.bookingsByStudio.slice(0, 5).map((item, idx) => (
                 <div key={item.studioId} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-xs">
                     <span className="text-zinc-700 truncate max-w-[170px]">#{idx + 1} {item.studioName}</span>
                     <span className="font-bold text-cyan-400">{item.bookingsCount} shoots</span>
                   </div>
@@ -527,11 +527,11 @@ export const MasterDashboardPage: React.FC = () => {
           {/* Chart 6: Revenue by Studio */}
           <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-md">
             <div className="text-xs font-bold text-zinc-800 mb-1">6. Revenue by Studio (Top Earners)</div>
-            <div className="text-[11px] text-zinc-500 mb-4">Gross invoicing share</div>
+            <div className="text-xs text-zinc-500 mb-4">Gross invoicing share</div>
             <div className="space-y-2">
               {charts.revenueByStudio.slice(0, 5).map(item => (
                 <div key={item.studioId} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-xs">
                     <span className="text-zinc-700 truncate max-w-[170px]">{item.studioName}</span>
                     <span className="font-mono text-emerald-400">₹{item.revenue.toLocaleString('en-IN')} ({item.percentage}%)</span>
                   </div>
@@ -549,11 +549,11 @@ export const MasterDashboardPage: React.FC = () => {
           {/* Chart 7: Employee Growth Across Studios */}
           <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-md">
             <div className="text-xs font-bold text-zinc-800 mb-1">7. Employee Growth Across Studios</div>
-            <div className="text-[11px] text-zinc-500 mb-4">Total workforce size</div>
+            <div className="text-xs text-zinc-500 mb-4">Total workforce size</div>
             <div className="space-y-2">
               {charts.employeeGrowthAcrossStudios.slice(-4).map(item => (
                 <div key={item.month} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-xs">
                     <span className="text-zinc-500">{item.month}</span>
                     <span className="font-bold text-zinc-800">{item.count} staff</span>
                   </div>
@@ -571,11 +571,11 @@ export const MasterDashboardPage: React.FC = () => {
           {/* Chart 8: Subscription Plan Distribution */}
           <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-md">
             <div className="text-xs font-bold text-zinc-800 mb-1">8. Subscription Plan Distribution</div>
-            <div className="text-[11px] text-zinc-500 mb-4">Active plan tier breakdown</div>
+            <div className="text-xs text-zinc-500 mb-4">Active plan tier breakdown</div>
             <div className="space-y-2.5">
               {charts.subscriptionPlanDistribution.map(item => (
                 <div key={item.planId} className="space-y-1">
-                  <div className="flex justify-between text-[11px]">
+                  <div className="flex justify-between text-xs">
                     <span className="text-zinc-700">{item.planName}</span>
                     <span className="font-bold text-amber-400">{item.count} studios ({item.percentage}%)</span>
                   </div>
@@ -593,10 +593,10 @@ export const MasterDashboardPage: React.FC = () => {
           {/* Chart 9: Studio Activity Comparison */}
           <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-md">
             <div className="text-xs font-bold text-zinc-800 mb-1">9. Studio Activity Comparison</div>
-            <div className="text-[11px] text-zinc-500 mb-4">Events vs Tasks vs Revenue</div>
+            <div className="text-xs text-zinc-500 mb-4">Events vs Tasks vs Revenue</div>
             <div className="space-y-2">
               {charts.studioActivityComparison.slice(0, 4).map(item => (
-                <div key={item.studioId} className="p-2 rounded-xl bg-zinc-50 border border-zinc-200 text-[11px]">
+                <div key={item.studioId} className="p-2 rounded-xl bg-zinc-50 border border-zinc-200 text-xs">
                   <div className="font-bold text-zinc-800 truncate">{item.studioName}</div>
                   <div className="flex items-center justify-between text-zinc-500 mt-1">
                     <span>Events: <strong className="text-zinc-800">{item.events}</strong></span>

@@ -169,8 +169,8 @@ export const PlatformEventsPage: React.FC = () => {
                     <td className="px-4 py-3.5">
                       <div className="font-bold text-slate-900 text-sm">{ev.name}</div>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] font-mono text-slate-400">{ev.id}</span>
-                        <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium">
+                        <span className="text-xs font-mono text-slate-400">{ev.id}</span>
+                        <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-xs font-medium">
                           {ev.category}
                         </span>
                       </div>
@@ -181,7 +181,7 @@ export const PlatformEventsPage: React.FC = () => {
                         <Building2 className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
                         {ev.studioName}
                       </div>
-                      <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                      <div className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
                         <MapPin className="w-3 h-3 text-slate-400" />
                         {ev.studioCity}
                       </div>
@@ -192,7 +192,7 @@ export const PlatformEventsPage: React.FC = () => {
                         <Calendar className="w-3 h-3 text-slate-400" />
                         {ev.totalStartDate} → {ev.totalEndDate}
                       </div>
-                      <div className="text-[10px] text-slate-500 truncate max-w-xs mt-0.5">
+                      <div className="text-xs text-slate-500 truncate max-w-xs mt-0.5">
                         {ev.overallVenue}
                       </div>
                     </td>
@@ -206,11 +206,11 @@ export const PlatformEventsPage: React.FC = () => {
 
                     <td className="px-4 py-3.5 text-center">
                       <div className="flex items-center justify-center gap-2">
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700" title="Assigned Studio Crew">
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-700" title="Assigned Studio Crew">
                           <Users className="w-3 h-3 text-slate-400" />
                           {ev.assignedTeamCount}
                         </span>
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700" title="External Suppliers">
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700" title="External Suppliers">
                           <Truck className="w-3 h-3 text-amber-500" />
                           {ev.assignedSuppliersCount}
                         </span>
@@ -218,7 +218,7 @@ export const PlatformEventsPage: React.FC = () => {
                     </td>
 
                     <td className="px-4 py-3.5">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1 ${
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1 ${
                         isCompleted
                           ? 'bg-emerald-100 text-emerald-800'
                           : isInProgress
@@ -284,21 +284,21 @@ export const PlatformEventsPage: React.FC = () => {
               {/* Event Metadata Banner */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Category</span>
+                  <span className="text-xs uppercase font-bold text-slate-400 block">Category</span>
                   <span className="text-xs font-bold text-slate-800">{inspectionData.event.category}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Dates</span>
+                  <span className="text-xs uppercase font-bold text-slate-400 block">Dates</span>
                   <span className="text-xs font-bold text-slate-800">
                     {inspectionData.event.totalStartDate || inspectionData.event.startDate} to {inspectionData.event.totalEndDate || inspectionData.event.endDate}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Status</span>
+                  <span className="text-xs uppercase font-bold text-slate-400 block">Status</span>
                   <span className="text-xs font-bold text-indigo-600 uppercase">{inspectionData.event.status}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Venue</span>
+                  <span className="text-xs uppercase font-bold text-slate-400 block">Venue</span>
                   <span className="text-xs font-bold text-slate-800 truncate block">
                     {inspectionData.event.overallVenue || inspectionData.event.venue}
                   </span>
@@ -316,11 +316,11 @@ export const PlatformEventsPage: React.FC = () => {
                     <div key={se.id} className="p-3 bg-white rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
                         <div className="font-bold text-slate-800 text-xs">{se.name}</div>
-                        <div className="text-[10px] text-slate-500">
+                        <div className="text-xs text-slate-500">
                           {se.date} • {se.startTime} - {se.endTime} • {se.venue}
                         </div>
                       </div>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 self-start sm:self-auto">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 self-start sm:self-auto">
                         {se.status}
                       </span>
                     </div>
@@ -345,7 +345,7 @@ export const PlatformEventsPage: React.FC = () => {
                       </div>
                       <div>
                         <div className="font-bold text-slate-800 text-xs">{t.name}</div>
-                        <div className="text-[10px] text-slate-400">{t.role}</div>
+                        <div className="text-xs text-slate-400">{t.role}</div>
                       </div>
                     </div>
                   ))}
@@ -364,17 +364,17 @@ export const PlatformEventsPage: React.FC = () => {
                       <div>
                         <div className="font-bold text-slate-800 text-xs flex items-center gap-2">
                           {sup.supplierName}
-                          <span className="text-[10px] font-normal text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
+                          <span className="text-xs font-normal text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
                             {sup.category.replace(/_/g, ' ')}
                           </span>
                         </div>
-                        <div className="text-[10px] text-slate-500 mt-0.5">
+                        <div className="text-xs text-slate-500 mt-0.5">
                           Call Time: <strong>{sup.callTime}</strong> • Venue: {sup.venue}
                         </div>
                       </div>
                       <div className="text-right">
                         <span className="text-xs font-bold text-slate-800">Fee: ₹{sup.agreedFee.toLocaleString()}</span>
-                        <span className="block text-[10px] text-slate-400 capitalize">Payment: {sup.paymentStatus}</span>
+                        <span className="block text-xs text-slate-400 capitalize">Payment: {sup.paymentStatus}</span>
                       </div>
                     </div>
                   ))}

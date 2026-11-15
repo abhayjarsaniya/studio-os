@@ -162,7 +162,7 @@ export const WhatsAppMessagePreviewModal: React.FC = () => {
             <span className="font-semibold text-zinc-900">{clientName}</span>
             <span className="text-zinc-500 ml-2 font-mono">{phone}</span>
           </div>
-          <span className="text-[10px] bg-emerald-100 text-emerald-800 font-medium px-2 py-0.5 rounded-full">
+          <span className="text-xs bg-emerald-100 text-emerald-800 font-medium px-2 py-0.5 rounded-full">
             Official wa.me Native Link
           </span>
         </div>
@@ -192,7 +192,7 @@ export const WhatsAppMessagePreviewModal: React.FC = () => {
             <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold">Unresolved Dynamic Placeholders Detected</p>
-              <p className="text-[11px] text-amber-700 mt-0.5">
+              <p className="text-xs text-amber-700 mt-0.5">
                 The following placeholder variables had no value and should be filled manually before sending:{' '}
                 <span className="font-mono font-bold">{missingKeys.map(k => `{{${k}}}`).join(', ')}</span>
               </p>
@@ -222,7 +222,7 @@ export const WhatsAppMessagePreviewModal: React.FC = () => {
             className="w-full p-3 rounded-xl border border-zinc-200 bg-white text-xs text-zinc-900 font-sans focus:outline-none focus:ring-2 focus:ring-zinc-900/10 leading-relaxed resize-y"
             placeholder="Type your WhatsApp message..."
           />
-          <p className="text-[10px] text-zinc-400 italic">
+          <p className="text-xs text-zinc-400 italic">
             You can edit this message freely before opening WhatsApp. Studio OS will never send messages automatically.
           </p>
         </div>
@@ -234,7 +234,7 @@ export const WhatsAppMessagePreviewModal: React.FC = () => {
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               <span>WhatsApp Link Opened Successfully!</span>
             </div>
-            <p className="text-[11px] text-emerald-800">
+            <p className="text-xs text-emerald-800">
               Did you review and press <strong>Send</strong> in WhatsApp?
             </p>
             <div className="flex items-center gap-2 pt-1">

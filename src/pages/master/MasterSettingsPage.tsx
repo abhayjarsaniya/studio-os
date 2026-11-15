@@ -37,7 +37,7 @@ export const MasterSettingsPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-zinc-100 text-zinc-700 border border-zinc-200">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-zinc-100 text-zinc-700 border border-zinc-200">
               Platform Configuration
             </span>
           </div>
@@ -107,7 +107,7 @@ export const MasterSettingsPage: React.FC = () => {
           <div className="flex items-center justify-between py-2 border-b border-zinc-200">
             <div>
               <div className="text-xs font-bold text-zinc-800">Enforce Client Privacy Masking by Default</div>
-              <div className="text-[11px] text-zinc-500">Masks client names (Client #001) and contact details for all non-owner roles</div>
+              <div className="text-xs text-zinc-500">Masks client names (Client #001) and contact details for all non-owner roles</div>
             </div>
             <input
               type="checkbox"
@@ -120,7 +120,7 @@ export const MasterSettingsPage: React.FC = () => {
           <div className="flex items-center justify-between py-2">
             <div>
               <div className="text-xs font-bold text-zinc-800">Automated SaaS Invoice Issuance</div>
-              <div className="text-[11px] text-zinc-500">Automatically creates platform subscription invoices for ₹500/mo on renewal</div>
+              <div className="text-xs text-zinc-500">Automatically creates platform subscription invoices for ₹500/mo on renewal</div>
             </div>
             <input
               type="checkbox"

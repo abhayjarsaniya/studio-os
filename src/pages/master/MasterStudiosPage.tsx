@@ -138,15 +138,15 @@ export const MasterStudiosPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
               Multi-Studio Directory
             </span>
             <span className="text-xs text-zinc-500">Master Governance Console</span>
           </div>
-          <h1 className="text-2xl font-black text-zinc-900 font-display tracking-tight mt-1">
+          <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 font-display tracking-tight mt-1">
             Global Studio Directory ({studios.length})
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-sm text-zinc-600 mt-1">
             Inspect studio subscriptions, team headcounts, booking activity, and manage individual studio access.
           </p>
         </div>
@@ -221,12 +221,12 @@ export const MasterStudiosPage: React.FC = () => {
                     )}
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-zinc-900 font-display">{studio.name}</h3>
-                    <p className="text-[11px] font-mono text-amber-700 font-semibold">{studio.studioCode}</p>
+                    <h3 className="text-base font-bold text-zinc-900 font-display">{studio.name}</h3>
+                    <p className="text-xs font-mono text-orange-600 font-semibold">{studio.studioCode}</p>
                   </div>
                 </div>
 
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
                   studio.status === 'active'
                     ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                     : studio.status === 'hidden'
@@ -239,20 +239,20 @@ export const MasterStudiosPage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2 text-xs bg-zinc-50/80 p-3 rounded-xl border border-zinc-100">
                 <div>
-                  <span className="text-[10px] text-zinc-400 uppercase font-bold block">Owner</span>
-                  <span className="font-semibold text-zinc-800">{studio.ownerName}</span>
+                  <span className="text-xs text-zinc-500 uppercase font-bold block">Owner</span>
+                  <span className="font-semibold text-zinc-900 text-sm">{studio.ownerName}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-zinc-400 uppercase font-bold block">City</span>
-                  <span className="font-semibold text-zinc-800">{studio.city}</span>
+                  <span className="text-xs text-zinc-500 uppercase font-bold block">City</span>
+                  <span className="font-semibold text-zinc-900 text-sm">{studio.city}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-zinc-400 uppercase font-bold block">Plan</span>
-                  <span className="font-semibold text-indigo-700">{studio.subscriptionPlan}</span>
+                  <span className="text-xs text-zinc-500 uppercase font-bold block">Plan</span>
+                  <span className="font-semibold text-orange-700 text-sm">{studio.subscriptionPlan}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-zinc-400 uppercase font-bold block">Total Revenue</span>
-                  <span className="font-bold text-emerald-700 font-mono">₹{studio.totalRevenue.toLocaleString('en-IN')}</span>
+                  <span className="text-xs text-zinc-500 uppercase font-bold block">Total Revenue</span>
+                  <span className="font-bold text-emerald-700 font-mono text-sm">₹{studio.totalRevenue.toLocaleString('en-IN')}</span>
                 </div>
               </div>
 
@@ -280,8 +280,8 @@ export const MasterStudiosPage: React.FC = () => {
       {/* 4.1. All Studios Comprehensive Table (14 Columns) - Desktop view */}
       <div className="hidden sm:block bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs whitespace-nowrap">
-            <thead className="bg-zinc-50 text-zinc-500 font-semibold uppercase text-[10px] tracking-wider border-b border-zinc-200">
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead className="bg-zinc-50 text-zinc-500 font-semibold uppercase text-xs tracking-wider border-b border-zinc-200">
               <tr>
                 <th className="px-4 py-3">1. Studio ID / Code</th>
                 <th className="px-4 py-3">2. Studio Name</th>
@@ -314,7 +314,7 @@ export const MasterStudiosPage: React.FC = () => {
                   return (
                     <tr key={studio.studioId} className="hover:bg-zinc-50 transition-colors">
                       {/* 1. Studio Code */}
-                      <td className="px-4 py-3 font-mono text-[11px] text-amber-400 font-bold">
+                      <td className="px-4 py-3 font-mono text-xs text-amber-400 font-bold">
                         {studio.studioCode}
                       </td>
 
@@ -341,12 +341,12 @@ export const MasterStudiosPage: React.FC = () => {
                       </td>
 
                       {/* 4. Owner Email */}
-                      <td className="px-4 py-3 text-zinc-500 font-mono text-[11px]">
+                      <td className="px-4 py-3 text-zinc-500 font-mono text-xs">
                         {studio.ownerEmail}
                       </td>
 
                       {/* 5. Owner Phone */}
-                      <td className="px-4 py-3 text-zinc-700 font-mono text-[11px]">
+                      <td className="px-4 py-3 text-zinc-700 font-mono text-xs">
                         {studio.ownerPhone}
                       </td>
 
@@ -362,7 +362,7 @@ export const MasterStudiosPage: React.FC = () => {
 
                       {/* 8. Subscription Status */}
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
                           studio.subscriptionStatus === 'active'
                             ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                             : studio.subscriptionStatus === 'trial'
@@ -374,7 +374,7 @@ export const MasterStudiosPage: React.FC = () => {
                       </td>
 
                       {/* 9. Renewal Date */}
-                      <td className="px-4 py-3 text-zinc-500 font-mono text-[11px]">
+                      <td className="px-4 py-3 text-zinc-500 font-mono text-xs">
                         {studio.renewalDate}
                       </td>
 
@@ -395,7 +395,7 @@ export const MasterStudiosPage: React.FC = () => {
 
                       {/* 13. Status */}
                       <td className="px-4 py-3 text-center">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
                           studio.status === 'active'
                             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                             : studio.status === 'hidden'
@@ -407,7 +407,7 @@ export const MasterStudiosPage: React.FC = () => {
                       </td>
 
                       {/* 14. Created Date */}
-                      <td className="px-4 py-3 text-zinc-500 font-mono text-[11px]">
+                      <td className="px-4 py-3 text-zinc-500 font-mono text-xs">
                         {studio.createdAt}
                       </td>
 

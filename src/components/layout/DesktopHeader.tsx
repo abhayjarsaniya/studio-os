@@ -56,7 +56,7 @@ export const DesktopHeader: React.FC = () => {
         >
           <Building2 className="w-3.5 h-3.5 text-zinc-600" />
           <span className="truncate max-w-[130px] font-semibold text-zinc-900">{currentStudio.name}</span>
-          <span className="text-[10px] bg-zinc-200/80 px-1.5 py-0.5 rounded text-zinc-600 font-mono">
+          <span className="text-xs bg-zinc-200/80 px-1.5 py-0.5 rounded text-zinc-600 font-mono">
             {currentStudio.id}
           </span>
         </div>

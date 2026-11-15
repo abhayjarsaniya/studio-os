@@ -34,10 +34,10 @@ export const EventCardMobile: React.FC<EventCardMobileProps> = ({ event, onSelec
     >
       {/* Top Header: Category & Status */}
       <div className="flex items-center justify-between gap-2">
-        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${getCategoryBadgeColor(event.category)}`}>
+        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${getCategoryBadgeColor(event.category)}`}>
           {event.category}
         </span>
-        <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${getStatusBadgeColor(event.status)}`}>
+        <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full border ${getStatusBadgeColor(event.status)}`}>
           {event.status}
         </span>
       </div>
@@ -49,7 +49,7 @@ export const EventCardMobile: React.FC<EventCardMobileProps> = ({ event, onSelec
         </h4>
         <div className="text-xs text-zinc-500 mt-0.5 flex items-center justify-between">
           <span className="truncate">{event.customerName}</span>
-          <span className="font-mono text-[10px] text-zinc-400 shrink-0">{event.eventNumber}</span>
+          <span className="font-mono text-xs text-zinc-400 shrink-0">{event.eventNumber}</span>
         </div>
       </div>
 
@@ -81,10 +81,10 @@ export const EventCardMobile: React.FC<EventCardMobileProps> = ({ event, onSelec
                 alt={leadUser.name}
                 className="w-5 h-5 rounded-full object-cover border border-zinc-200"
               />
-              <span className="text-[11px] font-medium text-zinc-600">{leadUser.name.split(' ')[0]} (Lead)</span>
+              <span className="text-xs font-medium text-zinc-600">{leadUser.name.split(' ')[0]} (Lead)</span>
             </div>
           ) : (
-            <span className="text-[11px] text-zinc-400 flex items-center gap-1">
+            <span className="text-xs text-zinc-400 flex items-center gap-1">
               <User className="w-3.5 h-3.5" /> Unassigned
             </span>
           )}

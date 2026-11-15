@@ -225,13 +225,13 @@ export const CustomersPage: React.FC = () => {
           className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-zinc-500">Total Clients</span>
+            <span className="text-xs font-medium text-zinc-500">Total Clients</span>
             <Users className="w-3.5 h-3.5 text-zinc-400" />
           </div>
           <p className="text-xl font-bold font-display mt-1.5 text-zinc-900">
             {crmDashboardMetrics?.totalCustomers || customers.length}
           </p>
-          <span className="text-[10px] text-zinc-400">All registered profiles</span>
+          <span className="text-xs text-zinc-400">All registered profiles</span>
         </button>
 
         {/* New This Month */}
@@ -242,13 +242,13 @@ export const CustomersPage: React.FC = () => {
           className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-zinc-500">New This Month</span>
+            <span className="text-xs font-medium text-zinc-500">New This Month</span>
             <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
           </div>
           <p className="text-xl font-bold font-display mt-1.5 text-emerald-600">
             {crmDashboardMetrics?.newCustomersThisMonth || 0}
           </p>
-          <span className="text-[10px] text-zinc-400">Added this calendar month</span>
+          <span className="text-xs text-zinc-400">Added this calendar month</span>
         </button>
 
         {/* Active Customers */}
@@ -260,13 +260,13 @@ export const CustomersPage: React.FC = () => {
           className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-zinc-500">Active Clients</span>
+            <span className="text-xs font-medium text-zinc-500">Active Clients</span>
             <UserCheck className="w-3.5 h-3.5 text-blue-500" />
           </div>
           <p className="text-xl font-bold font-display mt-1.5 text-blue-600">
             {crmDashboardMetrics?.activeCustomers || 0}
           </p>
-          <span className="text-[10px] text-zinc-400">Ongoing engagements</span>
+          <span className="text-xs text-zinc-400">Ongoing engagements</span>
         </button>
 
         {/* Potential Leads */}
@@ -275,13 +275,13 @@ export const CustomersPage: React.FC = () => {
           className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-zinc-500">Inquiry Leads</span>
+            <span className="text-xs font-medium text-zinc-500">Inquiry Leads</span>
             <Briefcase className="w-3.5 h-3.5 text-purple-500" />
           </div>
           <p className="text-xl font-bold font-display mt-1.5 text-purple-600">
             {crmDashboardMetrics?.potentialLeads || 0}
           </p>
-          <span className="text-[10px] text-zinc-400">Pre-booking stage</span>
+          <span className="text-xs text-zinc-400">Pre-booking stage</span>
         </button>
 
         {/* Awaiting Follow-Up */}
@@ -290,13 +290,13 @@ export const CustomersPage: React.FC = () => {
           className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-zinc-500">Awaiting Follow-Up</span>
+            <span className="text-xs font-medium text-zinc-500">Awaiting Follow-Up</span>
             <Clock className="w-3.5 h-3.5 text-amber-500" />
           </div>
           <p className="text-xl font-bold font-display mt-1.5 text-amber-600">
             {crmDashboardMetrics?.awaitingFollowUp || 0}
           </p>
-          <span className="text-[10px] text-zinc-400">Action items scheduled</span>
+          <span className="text-xs text-zinc-400">Action items scheduled</span>
         </button>
 
         {/* Booked Customers */}
@@ -308,13 +308,13 @@ export const CustomersPage: React.FC = () => {
           className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-zinc-500">Booked Clients</span>
+            <span className="text-xs font-medium text-zinc-500">Booked Clients</span>
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
           </div>
           <p className="text-xl font-bold font-display mt-1.5 text-zinc-900">
             {crmDashboardMetrics?.bookedCustomers || 0}
           </p>
-          <span className="text-[10px] text-zinc-400">Locked confirmed bookings</span>
+          <span className="text-xs text-zinc-400">Locked confirmed bookings</span>
         </button>
 
         {/* Upcoming Events */}
@@ -323,13 +323,13 @@ export const CustomersPage: React.FC = () => {
           className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-zinc-500">Upcoming Shoots</span>
+            <span className="text-xs font-medium text-zinc-500">Upcoming Shoots</span>
             <Calendar className="w-3.5 h-3.5 text-indigo-500" />
           </div>
           <p className="text-xl font-bold font-display mt-1.5 text-zinc-900">
             {crmDashboardMetrics?.upcomingEventCustomers || 0}
           </p>
-          <span className="text-[10px] text-zinc-400">Clients with events ahead</span>
+          <span className="text-xs text-zinc-400">Clients with events ahead</span>
         </button>
 
         {/* Pending Payments */}
@@ -341,13 +341,13 @@ export const CustomersPage: React.FC = () => {
           className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-zinc-500">Pending Dues</span>
+            <span className="text-xs font-medium text-zinc-500">Pending Dues</span>
             <AlertCircle className="w-3.5 h-3.5 text-rose-500" />
           </div>
           <p className="text-xl font-bold font-display mt-1.5 text-rose-600">
             {crmDashboardMetrics?.pendingPaymentCustomers || 0}
           </p>
-          <span className="text-[10px] text-zinc-400">Uncollected balances</span>
+          <span className="text-xs text-zinc-400">Uncollected balances</span>
         </button>
 
         {/* Recently Contacted */}
@@ -356,13 +356,13 @@ export const CustomersPage: React.FC = () => {
           className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-zinc-500">Recently Contacted</span>
+            <span className="text-xs font-medium text-zinc-500">Recently Contacted</span>
             <MessageCircle className="w-3.5 h-3.5 text-teal-500" />
           </div>
           <p className="text-xl font-bold font-display mt-1.5 text-zinc-900">
             {crmDashboardMetrics?.recentlyContactedCustomers || 0}
           </p>
-          <span className="text-[10px] text-zinc-400">Touched in last 7 days</span>
+          <span className="text-xs text-zinc-400">Touched in last 7 days</span>
         </button>
 
         {/* Completed Events */}
@@ -374,13 +374,13 @@ export const CustomersPage: React.FC = () => {
           className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-zinc-500">Completed</span>
+            <span className="text-xs font-medium text-zinc-500">Completed</span>
             <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
           </div>
           <p className="text-xl font-bold font-display mt-1.5 text-zinc-900">
             {crmDashboardMetrics?.completedEventCustomers || 0}
           </p>
-          <span className="text-[10px] text-zinc-400">All deliverables closed</span>
+          <span className="text-xs text-zinc-400">All deliverables closed</span>
         </button>
       </div>
 
@@ -564,7 +564,7 @@ export const CustomersPage: React.FC = () => {
                               {customer.name}
                             </h3>
                             {customer.mergedIntoId && (
-                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+                              <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
                                 Merged
                               </span>
                             )}
@@ -579,7 +579,7 @@ export const CustomersPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${getStatusBadge(customer.status)}`}>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${getStatusBadge(customer.status)}`}>
                         {customer.status || 'Active'}
                       </span>
                     </div>
@@ -590,7 +590,7 @@ export const CustomersPage: React.FC = () => {
                         <Phone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                         <span>{customer.phone}</span>
                         {customer.alternatePhone && (
-                          <span className="text-zinc-400 text-[11px]">/ {customer.alternatePhone}</span>
+                          <span className="text-zinc-400 text-xs">/ {customer.alternatePhone}</span>
                         )}
                       </div>
                       {customer.email && (
@@ -605,7 +605,7 @@ export const CustomersPage: React.FC = () => {
                     {customer.tags && customer.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 pt-1">
                         {customer.tags.slice(0, 3).map(tag => (
-                          <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">
+                          <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600">
                             #{tag}
                           </span>
                         ))}
@@ -616,26 +616,26 @@ export const CustomersPage: React.FC = () => {
                   {/* Financials & Bookings row */}
                   <div className="pt-3 border-t border-zinc-100 flex items-center justify-between text-xs">
                     <div>
-                      <span className="text-[10px] text-zinc-400 uppercase font-semibold">Bookings</span>
+                      <span className="text-xs text-zinc-400 uppercase font-semibold">Bookings</span>
                       <div className="font-bold text-zinc-900">{customer.totalBookings || 0} Shoots</div>
                     </div>
 
                     {canViewFinancials ? (
                       <>
                         <div>
-                          <span className="text-[10px] text-zinc-400 uppercase font-semibold">Total Spent</span>
+                          <span className="text-xs text-zinc-400 uppercase font-semibold">Total Spent</span>
                           <div className="font-bold text-zinc-900">{formatCurrency(customer.totalSpent || 0)}</div>
                         </div>
 
                         <div className="text-right">
-                          <span className="text-[10px] text-zinc-400 uppercase font-semibold">Pending</span>
+                          <span className="text-xs text-zinc-400 uppercase font-semibold">Pending</span>
                           <div className={`font-bold ${(customer.pendingBalance || 0) > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                             {formatCurrency(customer.pendingBalance || 0)}
                           </div>
                         </div>
                       </>
                     ) : (
-                      <div className="text-right text-[11px] text-zinc-400 italic">
+                      <div className="text-right text-xs text-zinc-400 italic">
                         Financials restricted
                       </div>
                     )}
@@ -697,17 +697,17 @@ export const CustomersPage: React.FC = () => {
                             </div>
                             <div>
                               <div className="font-bold text-zinc-900">{c.name}</div>
-                              {c.companyName && <div className="text-[11px] text-zinc-400">{c.companyName}</div>}
+                              {c.companyName && <div className="text-xs text-zinc-400">{c.companyName}</div>}
                             </div>
                           </div>
                         </td>
                         <td className="py-3 px-4 text-zinc-700">
                           <div>{c.phone}</div>
-                          {c.email && <div className="text-[11px] text-zinc-400">{c.email}</div>}
+                          {c.email && <div className="text-xs text-zinc-400">{c.email}</div>}
                         </td>
                         <td className="py-3 px-4 text-zinc-600">{c.city || '—'}</td>
                         <td className="py-3 px-4">
-                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getStatusBadge(c.status)}`}>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${getStatusBadge(c.status)}`}>
                             {c.status || 'Active'}
                           </span>
                         </td>

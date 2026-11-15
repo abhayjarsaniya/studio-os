@@ -87,7 +87,7 @@ export const TaskListTable: React.FC<TaskListTableProps> = ({
       {/* Table Body */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
-          <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 uppercase tracking-wider font-semibold text-[11px] select-none">
+          <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 uppercase tracking-wider font-semibold text-xs select-none">
             <tr>
               <th className="py-3 px-4">Task Number</th>
               <th className="py-3 px-4 cursor-pointer" onClick={() => toggleSort('title')}>
@@ -134,7 +134,7 @@ export const TaskListTable: React.FC<TaskListTableProps> = ({
                     <td className="py-3 px-4">
                       <div className="font-bold text-zinc-900 line-clamp-1">{task.title}</div>
                       {isBlocked.blocked && (
-                        <span className="text-[10px] text-rose-600 font-bold flex items-center gap-1 mt-0.5">
+                        <span className="text-xs text-rose-600 font-bold flex items-center gap-1 mt-0.5">
                           <Lock className="w-2.5 h-2.5" /> Blocked by prerequisites
                         </span>
                       )}
@@ -142,7 +142,7 @@ export const TaskListTable: React.FC<TaskListTableProps> = ({
                     <td className="py-3 px-4 text-zinc-600">
                       <div className="line-clamp-1 font-medium">{task.eventName || 'Studio Internal'}</div>
                       {task.workflowStageName && (
-                        <div className="text-[10px] text-indigo-700 font-semibold">{task.workflowStageName}</div>
+                        <div className="text-xs text-indigo-700 font-semibold">{task.workflowStageName}</div>
                       )}
                     </td>
                     <td className="py-3 px-4 text-zinc-800 font-medium">
@@ -152,7 +152,7 @@ export const TaskListTable: React.FC<TaskListTableProps> = ({
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
                         task.priority === 'Urgent' ? 'bg-rose-100 text-rose-800' :
                         task.priority === 'High' ? 'bg-amber-100 text-amber-800' :
                         'bg-zinc-100 text-zinc-700'
@@ -161,7 +161,7 @@ export const TaskListTable: React.FC<TaskListTableProps> = ({
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
                         task.status === 'Completed' || task.status === 'Done' ? 'bg-emerald-100 text-emerald-800' :
                         task.status === 'Under Review' ? 'bg-purple-100 text-purple-800' :
                         task.status === 'Revision Required' ? 'bg-rose-100 text-rose-800' :
@@ -182,10 +182,10 @@ export const TaskListTable: React.FC<TaskListTableProps> = ({
                           <div className="w-16 bg-zinc-200 rounded-full h-1.5 overflow-hidden">
                             <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: `${checklistPercent}%` }} />
                           </div>
-                          <span className="font-mono text-[10px] text-zinc-500">{checklistDone}/{checklistTotal}</span>
+                          <span className="font-mono text-xs text-zinc-500">{checklistDone}/{checklistTotal}</span>
                         </div>
                       ) : (
-                        <span className="text-zinc-400 text-[11px]">—</span>
+                        <span className="text-zinc-400 text-xs">—</span>
                       )}
                     </td>
                   </tr>

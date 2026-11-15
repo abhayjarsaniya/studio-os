@@ -20,10 +20,10 @@ export const Button: React.FC<ButtonProps> = ({
   const baseClasses = 'inline-flex items-center justify-center font-medium transition-all duration-150 active:scale-[0.98] select-none cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100';
 
   const sizeClasses = {
-    xs: 'text-[11px] min-h-[44px] sm:min-h-[28px] px-3 sm:px-2.5 rounded-lg gap-1',
-    sm: 'text-xs min-h-[48px] sm:min-h-[36px] px-4 sm:px-3 rounded-xl gap-1.5 font-medium',
-    md: 'text-sm min-h-[48px] sm:min-h-[44px] px-5 sm:px-4 rounded-xl gap-2 font-semibold',
-    lg: 'text-base min-h-[52px] sm:min-h-[48px] px-6 sm:px-6 rounded-xl gap-2.5 font-bold'
+    xs: 'text-xs sm:text-[13px] min-h-[44px] sm:min-h-[32px] px-3.5 sm:px-3 rounded-lg gap-1.5 font-semibold',
+    sm: 'text-xs sm:text-sm min-h-[48px] sm:min-h-[38px] px-4 sm:px-3.5 rounded-xl gap-1.5 font-semibold',
+    md: 'text-[15px] sm:text-base min-h-[50px] sm:min-h-[46px] px-5 sm:px-4.5 rounded-xl gap-2 font-bold',
+    lg: 'text-base min-h-[54px] sm:min-h-[50px] px-6 sm:px-6 rounded-xl gap-2.5 font-bold'
   }[size];
 
   const variantClasses = {

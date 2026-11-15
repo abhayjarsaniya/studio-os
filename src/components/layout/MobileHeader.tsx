@@ -72,11 +72,11 @@ export const MobileHeader: React.FC = () => {
               )}
             </div>
             <div className="min-w-0">
-              <h1 className="text-xs font-bold text-zinc-900 truncate font-display">
+              <h1 className="text-sm font-bold text-zinc-900 truncate font-display">
                 {currentStudio.name}
               </h1>
-              <div className="flex items-center gap-1 text-[10px] text-zinc-500 font-medium">
-                <Shield className="w-2.5 h-2.5 text-emerald-600 inline shrink-0" />
+              <div className="flex items-center gap-1 text-xs text-zinc-500 font-medium">
+                <Shield className="w-3 h-3 text-emerald-600 inline shrink-0" />
                 <span className="capitalize truncate">{currentUser.role === 'owner' ? 'Studio Owner' : currentUser.role.replace('_', ' ')}</span>
               </div>
             </div>
@@ -110,8 +110,8 @@ export const MobileHeader: React.FC = () => {
             {/* Drawer Header */}
             <div className="p-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/60">
               <div>
-                <h3 className="font-bold text-sm text-zinc-900 font-display">{currentStudio.name}</h3>
-                <p className="text-[10px] text-zinc-500">Navigation & Additional Features</p>
+                <h3 className="font-bold text-base text-zinc-900 font-display">{currentStudio.name}</h3>
+                <p className="text-xs text-zinc-500">Navigation & Additional Features</p>
               </div>
               <button
                 onClick={() => setMobileDrawerOpen(false)}
@@ -124,7 +124,7 @@ export const MobileHeader: React.FC = () => {
 
             {/* Nav list */}
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5 touch-scroll">
-              <div className="text-[10px] font-bold text-zinc-400 uppercase px-3 py-1">Core Modules</div>
+              <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider px-3 py-1">Core Modules</div>
               
               <button
                 onClick={() => {
@@ -132,7 +132,7 @@ export const MobileHeader: React.FC = () => {
                   setMobileDrawerOpen(false);
                   window.location.hash = '#/app/dashboard';
                 }}
-                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 touch-manipulation ${
+                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 touch-manipulation ${
                   activeTab === 'dashboard' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
                 }`}
               >
@@ -146,7 +146,7 @@ export const MobileHeader: React.FC = () => {
                   setMobileDrawerOpen(false);
                   window.location.hash = '#/app/calendar';
                 }}
-                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 touch-manipulation ${
+                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 touch-manipulation ${
                   activeTab === 'calendar' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
                 }`}
               >
@@ -160,7 +160,7 @@ export const MobileHeader: React.FC = () => {
                   setMobileDrawerOpen(false);
                   window.location.hash = '#/app/history';
                 }}
-                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 touch-manipulation ${
+                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 touch-manipulation ${
                   activeTab === 'history' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
                 }`}
               >
@@ -174,7 +174,7 @@ export const MobileHeader: React.FC = () => {
                   setMobileDrawerOpen(false);
                   window.location.hash = '#/app/bookings/new';
                 }}
-                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 touch-manipulation ${
+                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 touch-manipulation ${
                   activeTab === 'create-booking' || activeTab === 'new-booking' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
                 }`}
               >
@@ -188,7 +188,7 @@ export const MobileHeader: React.FC = () => {
                   setMobileDrawerOpen(false);
                   window.location.hash = '#/app/crew';
                 }}
-                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-xs font-semibold flex items-center gap-3 touch-manipulation ${
+                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 touch-manipulation ${
                   activeTab === 'crew' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
                 }`}
               >
@@ -205,7 +205,7 @@ export const MobileHeader: React.FC = () => {
                     setMobileDrawerOpen(false);
                     window.location.hash = `#/app/${feat.route}`;
                   }}
-                  className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-xs font-semibold flex items-center justify-between touch-manipulation ${
+                  className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center justify-between touch-manipulation ${
                     activeTab === feat.route ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
                   }`}
                 >
@@ -219,7 +219,7 @@ export const MobileHeader: React.FC = () => {
             <div className="p-3 border-t border-zinc-100 bg-zinc-50/50">
               <button
                 onClick={handleLogout}
-                className="w-full min-h-[48px] flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold rounded-xl bg-white hover:bg-rose-50 text-rose-700 border border-zinc-200 touch-manipulation active:scale-98 transition-transform"
+                className="w-full min-h-[48px] flex items-center justify-center gap-2 px-3 py-2 text-sm font-bold rounded-xl bg-white hover:bg-rose-50 text-rose-700 border border-zinc-200 touch-manipulation active:scale-98 transition-transform"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Sign Out of Studio</span>

@@ -20,7 +20,7 @@ export const OperationalAlertsBanner: React.FC<OperationalAlertsBannerProps> = (
           <AlertCircle className="w-4 h-4 text-amber-500" />
           Operational Action Items ({alerts.length})
         </h3>
-        <span className="text-[11px] text-slate-500">Real-time studio bottlenecks & risks</span>
+        <span className="text-xs text-slate-500">Real-time studio bottlenecks & risks</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -58,7 +58,7 @@ export const OperationalAlertsBanner: React.FC<OperationalAlertsBannerProps> = (
                   {icon}
                   <div className="flex-1 min-w-0">
                     <h4 className="text-xs font-bold leading-snug">{alert.title}</h4>
-                    <p className="text-[11px] opacity-90 mt-1 line-clamp-2 leading-relaxed">
+                    <p className="text-xs opacity-90 mt-1 line-clamp-2 leading-relaxed">
                       {alert.description}
                     </p>
                   </div>
@@ -74,7 +74,7 @@ export const OperationalAlertsBanner: React.FC<OperationalAlertsBannerProps> = (
                       onActionClick(alert);
                     }
                   }}
-                  className={`text-[11px] font-semibold px-2.5 py-1 rounded-md inline-flex items-center gap-1 transition-colors ${btnClass}`}
+                  className={`text-xs font-semibold px-2.5 py-1 rounded-md inline-flex items-center gap-1 transition-colors ${btnClass}`}
                 >
                   {alert.actionLabel}
                   <ArrowRight className="w-3 h-3" />

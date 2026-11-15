@@ -316,7 +316,7 @@ export const CreateQuotationPage: React.FC = () => {
                     <span className="font-bold text-zinc-900">{mc.name}</span>
                     <span className="text-zinc-500 font-mono ml-2">{mc.phone}</span>
                   </div>
-                  <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">
+                  <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">
                     Select
                   </span>
                 </button>
@@ -444,7 +444,7 @@ export const CreateQuotationPage: React.FC = () => {
 
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-zinc-400">Qty:</span>
+                  <span className="text-xs text-zinc-400">Qty:</span>
                   <input
                     type="number"
                     min={1}
@@ -458,7 +458,7 @@ export const CreateQuotationPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-zinc-400">Rate: ₹</span>
+                  <span className="text-xs text-zinc-400">Rate: ₹</span>
                   <input
                     type="number"
                     value={item.unitPrice}

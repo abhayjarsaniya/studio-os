@@ -74,7 +74,7 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
             {/* Accent Color Selector */}
             <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-xl border border-zinc-200">
               <Palette className="w-3.5 h-3.5 text-zinc-400" />
-              <span className="text-[10px] font-semibold text-zinc-500 uppercase mr-1">Accent</span>
+              <span className="text-xs font-semibold text-zinc-500 uppercase mr-1">Accent</span>
               {PDF_ACCENT_COLORS.map(c => (
                 <button
                   key={c.id}

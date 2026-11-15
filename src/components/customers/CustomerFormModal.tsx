@@ -188,7 +188,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
               <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
               <span>Potential Duplicate Client Detected!</span>
             </div>
-            <p className="text-[11px] text-rose-800">
+            <p className="text-xs text-rose-800">
               An existing record with matching contact details already exists:{' '}
               <strong>"{duplicateResult.duplicates[0]?.name}"</strong> ({duplicateResult.duplicates[0]?.phone}).
             </p>

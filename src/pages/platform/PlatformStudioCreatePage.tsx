@@ -78,7 +78,7 @@ export const PlatformStudioCreatePage: React.FC = () => {
           Back to Photography Studios
         </button>
 
-        <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full border border-indigo-200">
+        <span className="text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full border border-indigo-200">
           Master Admin Console
         </span>
       </div>
@@ -214,7 +214,7 @@ export const PlatformStudioCreatePage: React.FC = () => {
               />
             </div>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-xs text-slate-400">
             A temporary password will be generated automatically. The Studio Owner handles all employee accounts and daily operations inside this studio.
           </p>
         </div>
@@ -312,7 +312,7 @@ export const PlatformStudioCreatePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-900 leading-relaxed">
+            <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 leading-relaxed">
               ⚠️ <strong>Mandatory First-Login Action:</strong> The Studio Owner will be prompted to change this temporary password immediately upon their first login. This password is never displayed again.
             </div>
 

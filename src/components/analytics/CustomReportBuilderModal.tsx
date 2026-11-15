@@ -208,7 +208,7 @@ export const CustomReportBuilderModal: React.FC<CustomReportBuilderModalProps> =
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-semibold text-slate-700">Select Fields to Display</label>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-xs text-slate-400">
                 {selectedFields.length} of {availableFields.length} selected
               </span>
             </div>

@@ -216,7 +216,7 @@ export const ReportCenterPage: React.FC = () => {
                     <p className="text-xs text-slate-500 mt-1">{template.description}</p>
                   </div>
                   <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-slate-400">Default columns included</span>
+                    <span className="text-xs font-medium text-slate-400">Default columns included</span>
                     <button
                       onClick={() => handleRunTemplate(template)}
                       className="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-bold inline-flex items-center gap-1 transition-colors"
@@ -249,14 +249,14 @@ export const ReportCenterPage: React.FC = () => {
                     <div>
                       <div className="flex items-center justify-between">
                         <h3 className="text-sm font-bold text-slate-900">{rep.name}</h3>
-                        <span className="text-[10px] font-bold uppercase bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                        <span className="text-xs font-bold uppercase bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
                           {rep.category}
                         </span>
                       </div>
                       {rep.description && (
                         <p className="text-xs text-slate-500 mt-1">{rep.description}</p>
                       )}
-                      <div className="text-[11px] text-slate-400 mt-2">
+                      <div className="text-xs text-slate-400 mt-2">
                         Fields: {rep.selectedFields.join(', ')}
                       </div>
                     </div>

@@ -44,7 +44,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ id, icon, label, active, onCl
       <span>{label}</span>
     </div>
     {badge !== undefined && (
-      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+      <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${
         active ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-300'
       }`}>
         {badge}
@@ -72,11 +72,11 @@ export const PlatformSidebar: React.FC = () => {
         <div>
           <div className="font-extrabold text-sm tracking-tight text-white flex items-center gap-1.5">
             Studio OS
-            <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+            <span className="text-xs font-black uppercase px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
               SaaS Admin
             </span>
           </div>
-          <p className="text-[10px] text-slate-400">Multi-Tenant Platform Console</p>
+          <p className="text-xs text-slate-400">Multi-Tenant Platform Console</p>
         </div>
       </div>
 
@@ -84,7 +84,7 @@ export const PlatformSidebar: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-3 space-y-4">
         {/* Core SaaS */}
         <div className="space-y-1">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 pb-1">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-500 px-3 pb-1">
             Core Platform
           </div>
           <SidebarItem
@@ -134,7 +134,7 @@ export const PlatformSidebar: React.FC = () => {
 
         {/* Finance & Revenue */}
         <div className="space-y-1">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 pb-1">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-500 px-3 pb-1">
             Finance & Billing
           </div>
           {canAdmin('view_revenue') && (
@@ -168,7 +168,7 @@ export const PlatformSidebar: React.FC = () => {
 
         {/* Governance & Support */}
         <div className="space-y-1">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 pb-1">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-500 px-3 pb-1">
             Platform Operations
           </div>
           {canAdmin('manage_settings') && (
@@ -251,12 +251,12 @@ export const PlatformSidebar: React.FC = () => {
             </div>
             <div className="min-w-0">
               <div className="text-xs font-bold text-white truncate">{currentAdmin.name}</div>
-              <div className="text-[10px] text-indigo-300 truncate capitalize">
+              <div className="text-xs text-indigo-300 truncate capitalize">
                 {currentAdmin.role.replace('_', ' ')}
               </div>
             </div>
           </div>
-          <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/20 px-1.5 py-0.5 rounded">
+          <span className="text-xs font-bold text-emerald-400 bg-emerald-500/20 px-1.5 py-0.5 rounded">
             Auth
           </span>
         </div>

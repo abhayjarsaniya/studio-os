@@ -356,7 +356,7 @@ export const QuotationFormModal: React.FC<QuotationFormModalProps> = ({
                   />
                   <div className="flex items-center gap-2 w-full sm:w-auto">
                     <div className="w-16">
-                      <span className="text-[10px] text-zinc-400 block sm:hidden">Qty</span>
+                      <span className="text-xs text-zinc-400 block sm:hidden">Qty</span>
                       <input
                         type="number"
                         min="1"
@@ -366,7 +366,7 @@ export const QuotationFormModal: React.FC<QuotationFormModalProps> = ({
                       />
                     </div>
                     <div className="w-24">
-                      <span className="text-[10px] text-zinc-400 block sm:hidden">Rate (₹)</span>
+                      <span className="text-xs text-zinc-400 block sm:hidden">Rate (₹)</span>
                       <input
                         type="number"
                         min="0"

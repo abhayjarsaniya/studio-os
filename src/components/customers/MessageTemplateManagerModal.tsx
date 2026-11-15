@@ -186,16 +186,16 @@ export const MessageTemplateManager: React.FC<MessageTemplateManagerProps> = ({
                     {t.title}
                   </h4>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700">
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700">
                       {t.category}
                     </span>
                     {t.isDefault && (
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
                         Default
                       </span>
                     )}
                     {!t.isActive && (
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700">
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700">
                         Inactive
                       </span>
                     )}
@@ -242,11 +242,11 @@ export const MessageTemplateManager: React.FC<MessageTemplateManagerProps> = ({
             {/* Placeholders chips */}
             {t.placeholders && t.placeholders.length > 0 && (
               <div className="flex flex-wrap items-center gap-1 pt-2 border-t border-zinc-100">
-                <span className="text-[10px] font-medium text-zinc-400 mr-1">Variables:</span>
+                <span className="text-xs font-medium text-zinc-400 mr-1">Variables:</span>
                 {t.placeholders.map(p => (
                   <span
                     key={p}
-                    className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 font-mono"
+                    className="text-xs px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 font-mono"
                   >
                     {`{{${p}}}`}
                   </span>
@@ -313,7 +313,7 @@ export const MessageTemplateManager: React.FC<MessageTemplateManagerProps> = ({
               <label className="block text-xs font-semibold text-zinc-700">
                 Message Content <span className="text-rose-500">*</span>
               </label>
-              <span className="text-[11px] text-zinc-400">Click a variable below to insert</span>
+              <span className="text-xs text-zinc-400">Click a variable below to insert</span>
             </div>
             <textarea
               required
@@ -327,7 +327,7 @@ export const MessageTemplateManager: React.FC<MessageTemplateManagerProps> = ({
 
           {/* Placeholders Cheat-Sheet */}
           <div className="space-y-1.5 p-3 rounded-xl bg-zinc-50 border border-zinc-200/80">
-            <span className="text-[11px] font-bold text-zinc-600 block">Available Dynamic Variables:</span>
+            <span className="text-xs font-bold text-zinc-600 block">Available Dynamic Variables:</span>
             <div className="flex flex-wrap gap-1.5">
               {COMMON_PLACEHOLDERS.map(p => (
                 <button
@@ -335,7 +335,7 @@ export const MessageTemplateManager: React.FC<MessageTemplateManagerProps> = ({
                   key={p.tag}
                   onClick={() => handleInsertPlaceholder(p.tag)}
                   title={p.desc}
-                  className="px-2 py-1 rounded-lg bg-white border border-zinc-200 hover:border-emerald-500 hover:text-emerald-700 text-[10px] font-mono text-zinc-700 transition-colors cursor-pointer flex items-center gap-1"
+                  className="px-2 py-1 rounded-lg bg-white border border-zinc-200 hover:border-emerald-500 hover:text-emerald-700 text-xs font-mono text-zinc-700 transition-colors cursor-pointer flex items-center gap-1"
                 >
                   <span>{p.tag}</span>
                   {copiedTag === p.tag ? <Check className="w-2.5 h-2.5 text-emerald-600" /> : null}

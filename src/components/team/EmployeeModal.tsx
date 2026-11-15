@@ -419,7 +419,7 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
                 Admin-Controlled Login Credentials
               </h4>
-              <span className="text-[10px] text-zinc-400">Zero plain-text password storage</span>
+              <span className="text-xs text-zinc-400">Zero plain-text password storage</span>
             </div>
 
             {!initialEmployee ? (
@@ -461,7 +461,7 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
                     </div>
                   </div>
                 </div>
-                <p className="text-[11px] text-zinc-500">
+                <p className="text-xs text-zinc-500">
                   Password is cryptographically hashed with unique salt prior to persistence. Employees can sign in using this login ID and initial password.
                 </p>
               </div>
@@ -474,7 +474,7 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
                       <p className="text-xs font-bold text-zinc-800">
                         Login ID: <span className="font-mono">{initialEmployee.loginCredentials?.loginId || initialEmployee.email}</span>
                       </p>
-                      <p className="text-[10px] text-zinc-500">
+                      <p className="text-xs text-zinc-500">
                         Status: {initialEmployee.loginCredentials?.hasAccess ? 'Active Access' : 'Access Suspended'}
                       </p>
                     </div>

@@ -14,8 +14,8 @@ export const Badge: React.FC<BadgeProps> = ({
   className = ''
 }) => {
   const sizeClasses = size === 'sm' 
-    ? 'text-[11px] font-medium px-2 py-0.5' 
-    : 'text-xs font-medium px-2.5 py-1';
+    ? 'text-xs font-semibold px-2 py-0.5' 
+    : 'text-xs sm:text-[13px] font-semibold px-2.5 py-1';
 
   const variantClasses = {
     default: 'bg-zinc-100 text-zinc-700 border border-zinc-200/80',

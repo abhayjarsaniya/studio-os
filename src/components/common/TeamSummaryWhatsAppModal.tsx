@@ -128,7 +128,7 @@ export const TeamSummaryWhatsAppModal: React.FC<TeamSummaryWhatsAppModalProps> =
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-slate-700 block flex items-center justify-between">
             <span>WhatsApp Message Preview</span>
-            <span className="text-[11px] text-slate-400 font-normal">Formatted for WhatsApp monospace / bold</span>
+            <span className="text-xs text-slate-400 font-normal">Formatted for WhatsApp monospace / bold</span>
           </label>
           <div className="bg-slate-900 text-slate-100 p-4 rounded-2xl font-mono text-xs whitespace-pre-wrap max-h-60 overflow-y-auto border border-slate-800 leading-relaxed">
             {generatedMessage}

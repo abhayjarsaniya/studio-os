@@ -244,13 +244,13 @@ export const EmployeeOverrideModal: React.FC<EmployeeOverrideModalProps> = ({
                           <div className="font-semibold capitalize">
                             {ovr.granted ? 'Grant: ' : 'Explicit Deny: '}
                             <span className="font-mono">{ovr.module}.{ovr.action}</span>
-                            {ovr.scope && <span className="text-[10px] text-zinc-500 ml-1.5">({ovr.scope} scope)</span>}
+                            {ovr.scope && <span className="text-xs text-zinc-500 ml-1.5">({ovr.scope} scope)</span>}
                           </div>
                           {ovr.reason && (
-                            <p className="text-[11px] text-zinc-600 mt-0.5">{ovr.reason}</p>
+                            <p className="text-xs text-zinc-600 mt-0.5">{ovr.reason}</p>
                           )}
                           {ovr.expiresAt && (
-                            <div className="flex items-center gap-1 text-[10px] text-zinc-500 mt-0.5">
+                            <div className="flex items-center gap-1 text-xs text-zinc-500 mt-0.5">
                               <Clock className="w-3 h-3" />
                               <span>{isExpired ? 'Expired' : 'Expires'}: {new Date(ovr.expiresAt).toLocaleString()}</span>
                             </div>

@@ -67,10 +67,10 @@ export const EventKanbanView: React.FC<EventKanbanViewProps> = ({
                   className="p-3.5 rounded-xl bg-white border border-zinc-200 shadow-xs hover:border-zinc-300 hover:shadow-sm transition-all cursor-pointer space-y-2.5 group"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getCategoryBadgeColor(event.category)}`}>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${getCategoryBadgeColor(event.category)}`}>
                       {event.category}
                     </span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${getPriorityBadgeColor(event.priority)}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${getPriorityBadgeColor(event.priority)}`}>
                       {event.priority}
                     </span>
                   </div>
@@ -79,13 +79,13 @@ export const EventKanbanView: React.FC<EventKanbanViewProps> = ({
                     <h5 className="font-bold text-xs text-zinc-900 group-hover:text-zinc-950 line-clamp-2 font-display">
                       {event.name}
                     </h5>
-                    <div className="text-[11px] text-zinc-500 mt-0.5 flex items-center justify-between">
+                    <div className="text-xs text-zinc-500 mt-0.5 flex items-center justify-between">
                       <span className="truncate">{event.customerName}</span>
-                      <span className="font-mono text-[9px] text-zinc-400 shrink-0">{event.eventNumber}</span>
+                      <span className="font-mono text-xs text-zinc-400 shrink-0">{event.eventNumber}</span>
                     </div>
                   </div>
 
-                  <div className="space-y-1 text-[11px] text-zinc-500 pt-1 border-t border-zinc-100">
+                  <div className="space-y-1 text-xs text-zinc-500 pt-1 border-t border-zinc-100">
                     <div className="flex items-center gap-1.5">
                       <Calendar className="w-3 h-3 text-zinc-400" />
                       <span>{formatDate(event.startDate)}</span>
@@ -98,11 +98,11 @@ export const EventKanbanView: React.FC<EventKanbanViewProps> = ({
 
                   {/* Quick Move Status Dropdown */}
                   <div className="pt-2 border-t border-zinc-100 flex items-center justify-between gap-2" onClick={e => e.stopPropagation()}>
-                    <span className="text-[10px] text-zinc-400">Move to:</span>
+                    <span className="text-xs text-zinc-400">Move to:</span>
                     <select
                       value={event.status}
                       onChange={e => onUpdateStatus(event.id, e.target.value as EventStatus)}
-                      className="text-[10px] font-semibold px-2 py-1 rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-800 focus:outline-none cursor-pointer"
+                      className="text-xs font-semibold px-2 py-1 rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-800 focus:outline-none cursor-pointer"
                     >
                       {KANBAN_COLUMNS.map(c => (
                         <option key={c.status} value={c.status}>{c.label}</option>

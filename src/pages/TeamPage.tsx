@@ -290,13 +290,13 @@ export const TeamPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <span className="font-mono text-[10px] text-zinc-500 bg-zinc-100 px-1.5 py-0.5 rounded shrink-0">
+                      <span className="font-mono text-xs text-zinc-500 bg-zinc-100 px-1.5 py-0.5 rounded shrink-0">
                         {emp.employeeNumber}
                       </span>
                     </div>
 
                     {/* Department & Role badges */}
-                    <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs">
                       <span className="font-semibold text-zinc-700 bg-zinc-100 px-2 py-0.5 rounded-full">
                         {emp.department}
                       </span>
@@ -330,7 +330,7 @@ export const TeamPage: React.FC = () => {
                   >
                     <button
                       onClick={() => handleToggleStatus(emp)}
-                      className={`text-[11px] font-semibold transition-colors ${
+                      className={`text-xs font-semibold transition-colors ${
                         isActive ? 'text-zinc-500 hover:text-rose-600' : 'text-emerald-600 hover:text-emerald-700'
                       }`}
                     >
@@ -400,7 +400,7 @@ export const TeamPage: React.FC = () => {
                 <div key={emp.id} className="py-3 flex items-center justify-between text-xs">
                   <div>
                     <p className="font-bold text-zinc-900">{emp.fullName}</p>
-                    <p className="text-[10px] text-zinc-400">{emp.designation}</p>
+                    <p className="text-xs text-zinc-400">{emp.designation}</p>
                   </div>
 
                   <div className="flex items-center gap-3">

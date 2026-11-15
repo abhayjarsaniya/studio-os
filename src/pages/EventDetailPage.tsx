@@ -241,7 +241,7 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
                 <>
                   <span className="text-zinc-400">to</span>
                   <span>{formatDate(event.endDate)}</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">
                     Multi-Day Shoot
                   </span>
                 </>
@@ -371,7 +371,7 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
                 />
                 <div className="min-w-0">
                   <div className="font-bold text-xs text-zinc-900 truncate">{user.name}</div>
-                  <div className="text-[10px] text-zinc-500 truncate">{user.roleTitle}</div>
+                  <div className="text-xs text-zinc-500 truncate">{user.roleTitle}</div>
                 </div>
               </div>
 
@@ -475,7 +475,7 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
                 onClick={() => setPreviewAttachmentUrl(att.url)}
               />
               <div className="p-2 bg-white flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-zinc-900 truncate" title={att.name}>{att.name}</span>
+                <span className="text-xs font-semibold text-zinc-900 truncate" title={att.name}>{att.name}</span>
                 <button
                   onClick={() => removeEventAttachment(event.id, att.id)}
                   className="p-1 text-zinc-400 hover:text-rose-600 rounded transition-colors"
@@ -511,7 +511,7 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
             <div key={sh.id} className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80 flex items-start justify-between gap-3 text-xs">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getStatusBadgeColor(sh.toStatus)}`}>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${getStatusBadgeColor(sh.toStatus)}`}>
                     {sh.toStatus}
                   </span>
                   <span className="text-zinc-500 font-medium">Changed by {sh.changedByName}</span>
@@ -520,7 +520,7 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
                   <p className="text-zinc-600 italic">"{sh.remarks}"</p>
                 )}
               </div>
-              <span className="text-[10px] text-zinc-400 shrink-0">{formatDate(sh.timestamp.split('T')[0])}</span>
+              <span className="text-xs text-zinc-400 shrink-0">{formatDate(sh.timestamp.split('T')[0])}</span>
             </div>
           ))}
 

@@ -191,7 +191,7 @@ export const RolesManager: React.FC = () => {
                     <div className="flex items-center gap-1.5">
                       <p className="text-xs font-bold truncate">{r.name}</p>
                       {r.isSystem && (
-                        <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${
+                        <span className={`text-xs font-bold px-1.5 py-0.2 rounded ${
                           isSelected ? 'bg-white/20 text-white' : 'bg-zinc-100 text-zinc-600'
                         }`}>
                           System
@@ -199,7 +199,7 @@ export const RolesManager: React.FC = () => {
                       )}
                     </div>
                     {r.description && (
-                      <p className={`text-[10px] truncate ${isSelected ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                      <p className={`text-xs truncate ${isSelected ? 'text-zinc-300' : 'text-zinc-500'}`}>
                         {r.description}
                       </p>
                     )}
@@ -305,7 +305,7 @@ export const RolesManager: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <h4 className="font-bold text-base text-zinc-900">{selectedRole.name}</h4>
                       {selectedRole.isSystem && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700">
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700">
                           System Role
                         </span>
                       )}
@@ -336,7 +336,7 @@ export const RolesManager: React.FC = () => {
                             return (
                               <span
                                 key={act}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 ${
+                                className={`px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1 ${
                                   isGranted
                                     ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                     : 'bg-zinc-100 text-zinc-400'

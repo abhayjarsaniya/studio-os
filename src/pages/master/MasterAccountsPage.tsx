@@ -91,28 +91,28 @@ export const MasterAccountsPage: React.FC = () => {
     switch (type) {
       case 'MASTER_ADMIN':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
             <Crown className="w-3 h-3 text-amber-400" />
             Master Admin
           </span>
         );
       case 'STUDIO_OWNER':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200">
             <Building2 className="w-3 h-3 text-indigo-400" />
             Studio Owner
           </span>
         );
       case 'EMPLOYEE':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
             <Briefcase className="w-3 h-3 text-emerald-400" />
             Employee
           </span>
         );
       case 'EXTERNAL_SUPPLIER':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 text-purple-800 border border-purple-200">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-purple-800 border border-purple-200">
             <Truck className="w-3 h-3 text-purple-400" />
             Supplier
           </span>
@@ -126,13 +126,13 @@ export const MasterAccountsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
               Identity & Access Management
             </span>
             <span className="text-xs text-zinc-500">Global Account Directory</span>
           </div>
-          <h1 className="text-2xl font-black text-zinc-900 font-display tracking-tight mt-1">Platform Account Directory</h1>
-          <p className="text-xs text-zinc-500 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 font-display tracking-tight mt-1">Platform Account Directory</h1>
+          <p className="text-sm text-zinc-600 mt-1">
             Centralized directory of all Master Admins, Studio Owners, Employees, and External Suppliers across the platform.
           </p>
         </div>
@@ -149,27 +149,27 @@ export const MasterAccountsPage: React.FC = () => {
       {/* KPI Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
         <div className="p-4 rounded-2xl bg-white border border-zinc-200">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Total Accounts</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">Total Accounts</span>
           <div className="text-2xl font-black text-zinc-900 font-display mt-1">{stats.total}</div>
         </div>
         <div className="p-4 rounded-2xl bg-white border border-zinc-200">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Master Admins</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-amber-400">Master Admins</span>
           <div className="text-2xl font-black text-amber-300 mt-1">{stats.masterAdmin}</div>
         </div>
         <div className="p-4 rounded-2xl bg-white border border-zinc-200">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Studio Owners</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">Studio Owners</span>
           <div className="text-2xl font-black text-indigo-300 mt-1">{stats.owners}</div>
         </div>
         <div className="p-4 rounded-2xl bg-white border border-zinc-200">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Employees</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Employees</span>
           <div className="text-2xl font-black text-emerald-300 mt-1">{stats.employees}</div>
         </div>
         <div className="p-4 rounded-2xl bg-white border border-zinc-200">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">Suppliers</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-purple-400">Suppliers</span>
           <div className="text-2xl font-black text-purple-300 mt-1">{stats.suppliers}</div>
         </div>
         <div className="p-4 rounded-2xl bg-white border border-zinc-200">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">Deactivated</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-rose-400">Deactivated</span>
           <div className="text-2xl font-black text-rose-400 mt-1">{stats.deactivated}</div>
         </div>
       </div>
@@ -195,13 +195,13 @@ export const MasterAccountsPage: React.FC = () => {
 
         {/* Search */}
         <div className="relative min-w-[240px]">
-          <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-3" />
           <input
             type="text"
             placeholder="Search by name, login ID, email..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 bg-white border border-zinc-200 rounded-xl text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-amber-400"
+            className="w-full pl-9 pr-3 py-2 bg-white border border-zinc-200 rounded-xl text-base sm:text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-amber-400 min-h-[44px]"
           />
         </div>
       </div>
@@ -209,8 +209,8 @@ export const MasterAccountsPage: React.FC = () => {
       {/* Accounts Table */}
       <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-zinc-700">
-            <thead className="bg-white border-b border-zinc-200 text-[10px] font-black uppercase tracking-wider text-zinc-500">
+          <table className="w-full text-left text-sm text-zinc-700">
+            <thead className="bg-white border-b border-zinc-200 text-xs font-black uppercase tracking-wider text-zinc-500">
               <tr>
                 <th className="py-3 px-4">User Details</th>
                 <th className="py-3 px-4">Login ID / Email</th>
@@ -233,23 +233,23 @@ export const MasterAccountsPage: React.FC = () => {
                   <tr key={acc.id} className="hover:bg-zinc-50 transition-colors">
                     <td className="py-3 px-4">
                       <div className="font-bold text-zinc-900 font-display">{acc.displayName}</div>
-                      <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{acc.id}</div>
+                      <div className="text-xs text-zinc-500 font-mono mt-0.5">{acc.id}</div>
                     </td>
                     <td className="py-3 px-4">
                       <div className="font-medium text-zinc-800">{acc.loginId}</div>
-                      <div className="text-[11px] text-zinc-500">{acc.email}</div>
+                      <div className="text-xs text-zinc-500">{acc.email}</div>
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex flex-col gap-1 items-start">
                         {getAccountBadge(acc.accountType)}
-                        <span className="text-[11px] text-zinc-500">{acc.roleTitle}</span>
+                        <span className="text-xs text-zinc-500">{acc.roleTitle}</span>
                       </div>
                     </td>
                     <td className="py-3 px-4">
                       {acc.studioName ? (
                         <div>
                           <div className="font-semibold text-zinc-800">{acc.studioName}</div>
-                          <div className="text-[10px] font-mono text-zinc-400">{acc.studioId}</div>
+                          <div className="text-xs font-mono text-zinc-400">{acc.studioId}</div>
                         </div>
                       ) : (
                         <span className="text-zinc-400 italic">Platform Level</span>
@@ -257,11 +257,11 @@ export const MasterAccountsPage: React.FC = () => {
                     </td>
                     <td className="py-3 px-4">
                       {acc.status === 'active' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                           Active
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
                           Deactivated
                         </span>
                       )}

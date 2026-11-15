@@ -69,7 +69,7 @@ export const MasterFeaturesPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
               5-Tier Visibility Engine
             </span>
             <span className="text-xs text-zinc-500">Platform-Wide Feature Governance</span>
@@ -105,8 +105,8 @@ export const MasterFeaturesPage: React.FC = () => {
 
       {/* 5-Tier Hierarchy Infographic Card */}
       <div className="bg-white p-5 rounded-3xl border border-zinc-200/90 text-xs shadow-2xs">
-        <div className="font-bold text-amber-700 uppercase tracking-wider text-[10px] mb-2 font-display">5-Tier Resolution Cascade</div>
-        <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5 text-center text-[11px]">
+        <div className="font-bold text-amber-700 uppercase tracking-wider text-xs mb-2 font-display">5-Tier Resolution Cascade</div>
+        <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5 text-center text-xs">
           <div className="p-3 rounded-2xl bg-zinc-50 border border-zinc-200">
             <strong className="text-zinc-900 block font-bold">Tier 1</strong> Global Platform Switch
           </div>
@@ -145,7 +145,7 @@ export const MasterFeaturesPage: React.FC = () => {
           <div className="bg-white border border-zinc-200 rounded-3xl overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs whitespace-nowrap">
-                <thead className="bg-zinc-50 text-zinc-500 text-[10px] uppercase font-bold border-b border-zinc-200">
+                <thead className="bg-zinc-50 text-zinc-500 text-xs uppercase font-bold border-b border-zinc-200">
                   <tr>
                     <th className="px-5 py-3.5">Feature Name & Key</th>
                     <th className="px-4 py-3.5">Category</th>
@@ -160,11 +160,11 @@ export const MasterFeaturesPage: React.FC = () => {
                     <tr key={f.id} className="hover:bg-zinc-50/70 transition-colors">
                       <td className="px-5 py-3.5">
                         <div className="font-bold text-zinc-900">{f.name}</div>
-                        <div className="text-[11px] text-zinc-500 font-mono">{f.id}</div>
+                        <div className="text-xs text-zinc-500 font-mono">{f.id}</div>
                       </td>
 
                       <td className="px-4 py-3.5">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-100 text-zinc-700">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700">
                           {f.category}
                         </span>
                       </td>
@@ -172,7 +172,7 @@ export const MasterFeaturesPage: React.FC = () => {
                       <td className="px-4 py-3.5 text-center">
                         <button
                           onClick={() => handleToggleGlobal(f.key, true)}
-                          className="min-h-[44px] inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase transition-all bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-pointer"
+                          className="min-h-[44px] inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase transition-all bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-pointer"
                         >
                           <Check className="w-3.5 h-3.5" />
                           <span>Global Active</span>
@@ -183,7 +183,7 @@ export const MasterFeaturesPage: React.FC = () => {
                         {f.minPlan}
                       </td>
 
-                      <td className="px-4 py-3.5 text-zinc-600 font-mono text-[11px]">
+                      <td className="px-4 py-3.5 text-zinc-600 font-mono text-xs">
                         {f.dependencies.length > 0 ? f.dependencies.join(', ') : 'None'}
                       </td>
 
@@ -214,7 +214,7 @@ export const MasterFeaturesPage: React.FC = () => {
               <Building2 className="w-5 h-5 text-amber-500 shrink-0" />
               <div>
                 <label className="block text-xs font-bold text-zinc-800">Select Studio to Configure</label>
-                <p className="text-[11px] text-zinc-500">Pick any registered studio to audit or toggle its features</p>
+                <p className="text-xs text-zinc-500">Pick any registered studio to audit or toggle its features</p>
               </div>
             </div>
 
@@ -271,14 +271,14 @@ export const MasterFeaturesPage: React.FC = () => {
                   <div key={f.id} className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-xs text-zinc-900">{f.name}</span>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                         isEnabled ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
                       }`}>
                         {statusInfo.status}
                       </span>
                     </div>
-                    <p className="text-[11px] text-zinc-500 line-clamp-1">{f.description}</p>
-                    <div className="flex items-center justify-between pt-1 text-[10px]">
+                    <p className="text-xs text-zinc-500 line-clamp-1">{f.description}</p>
+                    <div className="flex items-center justify-between pt-1 text-xs">
                       <span className="text-zinc-400 font-mono">Plan: {f.minPlan}</span>
                       {isHidden && <span className="text-amber-700 font-bold">Hidden in Nav</span>}
                     </div>

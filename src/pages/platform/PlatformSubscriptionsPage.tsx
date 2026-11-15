@@ -115,12 +115,12 @@ export const PlatformSubscriptionsPage: React.FC = () => {
                   <tr key={sub.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3.5">
                       <div className="font-bold text-slate-900 text-sm">{sub.studioName}</div>
-                      <div className="text-[11px] text-slate-400 font-mono mt-0.5">{sub.studioId}</div>
+                      <div className="text-xs text-slate-400 font-mono mt-0.5">{sub.studioId}</div>
                     </td>
 
                     <td className="px-4 py-3.5">
                       <div className="font-bold text-slate-900">{sub.planName} (v{sub.planVersion})</div>
-                      <div className="text-[11px] text-indigo-600 font-semibold">
+                      <div className="text-xs text-indigo-600 font-semibold">
                         ₹{sub.agreedPrice} / {sub.billingCycle}
                       </div>
                     </td>
@@ -131,13 +131,13 @@ export const PlatformSubscriptionsPage: React.FC = () => {
 
                     <td className="px-4 py-3.5">
                       <span className="font-medium text-slate-800">{sub.nextBillingDate}</span>
-                      <span className="text-[10px] text-slate-400 block">
+                      <span className="text-xs text-slate-400 block">
                         Auto-Renew: {sub.autoRenew ? 'Yes' : 'No'}
                       </span>
                     </td>
 
                     <td className="px-4 py-3.5">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1 ${
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1 ${
                         isActive
                           ? 'bg-emerald-100 text-emerald-800'
                           : isTrial
@@ -158,21 +158,21 @@ export const PlatformSubscriptionsPage: React.FC = () => {
                           <>
                             <button
                               onClick={() => handleOpenAction(sub, 'transition')}
-                              className="px-2 py-1 text-[11px] font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg"
+                              className="px-2 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg"
                               title="Transition Subscription Status"
                             >
                               Transition
                             </button>
                             <button
                               onClick={() => handleOpenAction(sub, 'change_plan')}
-                              className="px-2 py-1 text-[11px] font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg"
+                              className="px-2 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg"
                               title="Change Plan"
                             >
                               Plan
                             </button>
                             <button
                               onClick={() => handleOpenAction(sub, 'extend')}
-                              className="px-2 py-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg"
+                              className="px-2 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg"
                               title="Extend Expiry Date"
                             >
                               +Days
@@ -261,7 +261,7 @@ export const PlatformSubscriptionsPage: React.FC = () => {
                     ))}
                   </select>
                 </div>
-                <div className="p-3 bg-slate-50 rounded-xl text-[11px] text-slate-500 border border-slate-100">
+                <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-500 border border-slate-100">
                   Changing plan updates the studio's plan tier, limits, and agreed pricing to the new version.
                 </div>
               </div>
@@ -301,12 +301,12 @@ export const PlatformSubscriptionsPage: React.FC = () => {
                   <div key={tr.id} className="p-2.5 bg-slate-50 rounded-xl text-xs border border-slate-100">
                     <div className="flex justify-between items-center font-bold text-slate-900">
                       <span>[{tr.fromStatus}] → [{tr.toStatus}]</span>
-                      <span className="text-[10px] text-slate-400 font-normal">
+                      <span className="text-xs text-slate-400 font-normal">
                         {new Date(tr.timestamp).toLocaleString('en-IN')}
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-600 mt-1">{tr.reason}</p>
-                    <div className="text-[10px] text-slate-400 mt-1">By: {tr.changedByName}</div>
+                    <p className="text-xs text-slate-600 mt-1">{tr.reason}</p>
+                    <div className="text-xs text-slate-400 mt-1">By: {tr.changedByName}</div>
                   </div>
                 ))}
               </div>

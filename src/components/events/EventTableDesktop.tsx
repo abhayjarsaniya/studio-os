@@ -51,7 +51,7 @@ export const EventTableDesktop: React.FC<EventTableDesktopProps> = ({
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
-            <tr className="border-b border-zinc-100 bg-zinc-50/70 text-zinc-500 font-semibold uppercase tracking-wider text-[10px]">
+            <tr className="border-b border-zinc-100 bg-zinc-50/70 text-zinc-500 font-semibold uppercase tracking-wider text-xs">
               <th className="py-3.5 px-4">Event & Category</th>
               <th className="py-3.5 px-4">Customer</th>
               <th className="py-3.5 px-4">Shoot Schedule & Venue</th>
@@ -77,10 +77,10 @@ export const EventTableDesktop: React.FC<EventTableDesktopProps> = ({
                       {event.name}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getCategoryBadgeColor(event.category)}`}>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${getCategoryBadgeColor(event.category)}`}>
                         {event.category}
                       </span>
-                      <span className="font-mono text-[10px] text-zinc-400">{event.eventNumber}</span>
+                      <span className="font-mono text-xs text-zinc-400">{event.eventNumber}</span>
                     </div>
                   </td>
 
@@ -88,7 +88,7 @@ export const EventTableDesktop: React.FC<EventTableDesktopProps> = ({
                   <td className="py-3.5 px-4">
                     <div className="font-medium text-zinc-800">{event.customerName}</div>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-[11px] text-zinc-500">{event.customerPhone}</span>
+                      <span className="text-xs text-zinc-500">{event.customerPhone}</span>
                       <button
                         onClick={(e) => handleWhatsApp(e, event)}
                         className="p-1 rounded-md text-emerald-600 hover:bg-emerald-50 transition-colors"
@@ -106,7 +106,7 @@ export const EventTableDesktop: React.FC<EventTableDesktopProps> = ({
                       <span className="text-zinc-400">•</span>
                       <span className="text-zinc-500 font-normal">{formatTime(event.startTime)}</span>
                     </div>
-                    <div className="text-[11px] text-zinc-500 flex items-center gap-1 mt-0.5 truncate max-w-[200px]">
+                    <div className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5 truncate max-w-[200px]">
                       <MapPin className="w-3 h-3 text-zinc-400 shrink-0" />
                       <span className="truncate">{event.venue}, {event.venueCity}</span>
                     </div>
@@ -125,26 +125,26 @@ export const EventTableDesktop: React.FC<EventTableDesktopProps> = ({
                         />
                       ))}
                       {assignedUsers.length > 3 && (
-                        <div className="w-6 h-6 rounded-full bg-zinc-100 border-2 border-white flex items-center justify-center text-[9px] font-bold text-zinc-600">
+                        <div className="w-6 h-6 rounded-full bg-zinc-100 border-2 border-white flex items-center justify-center text-xs font-bold text-zinc-600">
                           +{assignedUsers.length - 3}
                         </div>
                       )}
                       {assignedUsers.length === 0 && (
-                        <span className="text-zinc-400 text-[11px]">No crew assigned</span>
+                        <span className="text-zinc-400 text-xs">No crew assigned</span>
                       )}
                     </div>
                   </td>
 
                   {/* Priority */}
                   <td className="py-3.5 px-4">
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${getPriorityBadgeColor(event.priority)}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${getPriorityBadgeColor(event.priority)}`}>
                       {event.priority}
                     </span>
                   </td>
 
                   {/* Status */}
                   <td className="py-3.5 px-4">
-                    <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${getStatusBadgeColor(event.status)}`}>
+                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full border ${getStatusBadgeColor(event.status)}`}>
                       {event.status}
                     </span>
                   </td>

@@ -56,7 +56,7 @@ export const CustomerMergeModal: React.FC = () => {
           <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <p className="font-bold text-amber-950">Non-Destructive Merge Architecture</p>
-            <p className="text-[11px] text-amber-800 leading-relaxed">
+            <p className="text-xs text-amber-800 leading-relaxed">
               All <strong>{secondaryEventsCount} linked events</strong>, communication logs, follow-ups, and notes from{' '}
               <span className="font-semibold text-amber-950">"{secondaryCustomer.name}"</span> will be automatically preserved and re-linked to{' '}
               <span className="font-semibold text-amber-950">"{primaryCustomer.name}"</span>. The secondary profile will be archived and marked as merged.

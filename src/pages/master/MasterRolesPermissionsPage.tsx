@@ -130,7 +130,7 @@ export const MasterRolesPermissionsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-50 text-rose-800 border border-rose-200">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-rose-50 text-rose-800 border border-rose-200">
               Platform Master RBAC
             </span>
             <span className="text-xs text-zinc-500">14 Roles • 28 Modules • 12 Granular Actions</span>
@@ -156,7 +156,7 @@ export const MasterRolesPermissionsPage: React.FC = () => {
 
       {/* 6.1. 14 Default Roles Horizontal Selector */}
       <div className="bg-white border border-zinc-200 rounded-2xl p-3">
-        <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
+        <div className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">
           Select Role to Configure (14 Default System Roles)
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
@@ -211,7 +211,7 @@ export const MasterRolesPermissionsPage: React.FC = () => {
 
         {activeSubTab === 'matrix' && (
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-zinc-400 text-[11px]">Filter Module Category:</span>
+            <span className="text-zinc-400 text-xs">Filter Module Category:</span>
             <select
               value={filterModuleCategory}
               onChange={e => setFilterModuleCategory(e.target.value)}
@@ -230,7 +230,7 @@ export const MasterRolesPermissionsPage: React.FC = () => {
         <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs whitespace-nowrap">
-              <thead className="bg-zinc-50 text-zinc-500 text-[10px] uppercase font-bold border-b border-zinc-200">
+              <thead className="bg-zinc-50 text-zinc-500 text-xs uppercase font-bold border-b border-zinc-200">
                 <tr>
                   <th className="px-4 py-3 sticky left-0 bg-white z-10 w-60">Studio OS Module (28)</th>
                   {MASTER_ACTIONS_CATALOG.map(act => (
@@ -252,7 +252,7 @@ export const MasterRolesPermissionsPage: React.FC = () => {
                       {/* Module Name */}
                       <td className="px-4 py-3 sticky left-0 bg-white font-semibold text-zinc-800 border-r border-zinc-200">
                         <div>{mod.label}</div>
-                        <div className="text-[10px] text-zinc-400 font-normal">{mod.category}</div>
+                        <div className="text-xs text-zinc-400 font-normal">{mod.category}</div>
                       </td>
 
                       {/* 12 Actions Checkboxes */}
@@ -318,7 +318,7 @@ export const MasterRolesPermissionsPage: React.FC = () => {
                 <div key={mod.id} className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-between gap-3">
                   <div>
                     <div className="text-xs font-bold text-zinc-800">{mod.label}</div>
-                    <div className="text-[10px] text-zinc-400">{mod.category}</div>
+                    <div className="text-xs text-zinc-400">{mod.category}</div>
                   </div>
 
                   <select
@@ -358,19 +358,19 @@ export const MasterRolesPermissionsPage: React.FC = () => {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-zinc-800">{policy.fieldLabel}</span>
-                      <span className="font-mono text-[10px] text-zinc-500">({policy.module}.{policy.fieldName})</span>
+                      <span className="font-mono text-xs text-zinc-500">({policy.module}.{policy.fieldName})</span>
                       {policy.isPii && (
-                        <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-rose-50 text-rose-800 border border-rose-200">
+                        <span className="px-2 py-0.5 rounded text-xs font-bold uppercase bg-rose-50 text-rose-800 border border-rose-200">
                           Client PII
                         </span>
                       )}
                       {policy.isFinancial && (
-                        <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-amber-50 text-amber-800 border border-amber-200">
+                        <span className="px-2 py-0.5 rounded text-xs font-bold uppercase bg-amber-50 text-amber-800 border border-amber-200">
                           Monetary Value
                         </span>
                       )}
                     </div>
-                    <div className="text-[11px] text-zinc-400 mt-0.5">
+                    <div className="text-xs text-zinc-400 mt-0.5">
                       Requires permission: <code>{policy.requiredAction || 'view'}</code>
                     </div>
                   </div>

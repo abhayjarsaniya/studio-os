@@ -26,7 +26,7 @@ export const SaveIndicator: React.FC<{ className?: string }> = ({ className = ''
     <div 
       onClick={status === 'error' || status === 'offline' ? handleRetry : undefined}
       title={status === 'error' || status === 'offline' ? 'Click to retry cloud synchronization' : message}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all animate-in fade-in duration-200 select-none ${
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all animate-in fade-in duration-200 select-none ${
         status === 'saving' 
           ? 'bg-amber-50 text-amber-800 border border-amber-200'
           : status === 'saved'

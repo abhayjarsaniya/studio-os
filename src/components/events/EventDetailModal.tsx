@@ -281,7 +281,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
         <div className="p-4 rounded-2xl border border-zinc-200/80 bg-zinc-50/50 space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Client Details</span>
+              <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Client Details</span>
               <h4 className="text-sm font-bold text-zinc-900 mt-0.5">{event.customerName}</h4>
               <p className="text-xs text-zinc-500">{event.customerPhone}</p>
             </div>
@@ -309,7 +309,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
           <div className="pt-3 border-t border-zinc-200/60">
             <div className="text-xs font-medium text-zinc-700 mb-2 flex items-center justify-between">
               <span>Send WhatsApp Notification:</span>
-              <span className="text-[10px] text-zinc-400 font-normal">Prefilled instant chat</span>
+              <span className="text-xs text-zinc-400 font-normal">Prefilled instant chat</span>
             </div>
             <div className="flex flex-wrap gap-2">
               <button
@@ -379,24 +379,24 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
           {/* KPI Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200">
-              <div className="text-[10px] text-zinc-400 uppercase font-semibold">Total Booking</div>
+              <div className="text-xs text-zinc-400 uppercase font-semibold">Total Booking</div>
               <div className="text-sm font-bold text-zinc-900 mt-0.5">{formatCurrency(totalBudget)}</div>
             </div>
 
             <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100">
-              <div className="text-[10px] text-emerald-600 uppercase font-semibold">Received to Date</div>
+              <div className="text-xs text-emerald-600 uppercase font-semibold">Received to Date</div>
               <div className="text-sm font-bold text-emerald-700 mt-0.5">{formatCurrency(totalReceived)}</div>
             </div>
 
             <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200">
-              <div className="text-[10px] text-zinc-400 uppercase font-semibold">Remaining Balance</div>
+              <div className="text-xs text-zinc-400 uppercase font-semibold">Remaining Balance</div>
               <div className={`text-sm font-bold mt-0.5 ${pendingAmount > 0 ? 'text-amber-600' : 'text-zinc-600'}`}>
                 {formatCurrency(pendingAmount)}
               </div>
             </div>
 
             <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200">
-              <div className="text-[10px] text-zinc-400 uppercase font-semibold">Final Due Date</div>
+              <div className="text-xs text-zinc-400 uppercase font-semibold">Final Due Date</div>
               <div className="text-xs font-bold text-zinc-800 mt-1">
                 {event.endDate ? formatDate(event.endDate) : formatDate(event.startDate)}
               </div>
@@ -406,7 +406,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
           {/* Payment History Table */}
           {eventPayments.length > 0 && (
             <div className="pt-2">
-              <div className="text-[11px] font-bold text-zinc-700 uppercase tracking-wider mb-2">
+              <div className="text-xs font-bold text-zinc-700 uppercase tracking-wider mb-2">
                 Recorded Payments ({eventPayments.length})
               </div>
               <div className="border border-zinc-200 rounded-xl overflow-hidden">
@@ -431,7 +431,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                           <button
                             type="button"
                             onClick={() => handleViewReceipt(p.receiptNumber)}
-                            className="px-2 py-0.5 text-[10px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 rounded"
+                            className="px-2 py-0.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 rounded"
                           >
                             Receipt PDF
                           </button>
@@ -452,7 +452,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               Deliverables & Production Milestones Checklist
             </h4>
-            <span className="text-[11px] text-zinc-400">One-click stage confirmation</span>
+            <span className="text-xs text-zinc-400">One-click stage confirmation</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -476,7 +476,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                   </div>
                   <div>
                     <div className="text-xs font-semibold leading-tight">{milestone}</div>
-                    <div className="text-[10px] text-zinc-400 mt-0.5">
+                    <div className="text-xs text-zinc-400 mt-0.5">
                       {isDone ? 'Confirmed' : 'Pending action'}
                     </div>
                   </div>
@@ -499,11 +499,11 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 <div key={se.id} className="p-3 rounded-xl border border-zinc-200 bg-zinc-50/60 flex items-center justify-between text-xs">
                   <div>
                     <div className="font-bold text-zinc-900">{se.name}</div>
-                    <div className="text-zinc-500 text-[11px]">
+                    <div className="text-zinc-500 text-xs">
                       {se.date} • {se.startTime} - {se.endTime} • {se.venue}
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-200 text-zinc-700">
+                  <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-200 text-zinc-700">
                     {se.status}
                   </span>
                 </div>
@@ -530,7 +530,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 />
                 <div className="min-w-0">
                   <div className="text-xs font-bold text-zinc-900 truncate">{user.name}</div>
-                  <div className="text-[11px] text-zinc-500 truncate">{user.roleTitle}</div>
+                  <div className="text-xs text-zinc-500 truncate">{user.roleTitle}</div>
                 </div>
               </div>
             ))}

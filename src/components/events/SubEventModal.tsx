@@ -403,7 +403,7 @@ export const SubEventModal: React.FC<SubEventModalProps> = ({
                 <Users className="w-3.5 h-3.5 text-zinc-400" />
                 Assign Crew for This Sub-Event
               </span>
-              <span className="text-[11px] text-zinc-400">
+              <span className="text-xs text-zinc-400">
                 {selectedMemberIds.length} assigned / {requiredTeamSize} required
               </span>
             </label>
@@ -430,7 +430,7 @@ export const SubEventModal: React.FC<SubEventModalProps> = ({
                         </div>
                         <div className="min-w-0">
                           <p className="text-xs font-medium truncate leading-tight">{emp.fullName}</p>
-                          <p className={`text-[10px] truncate ${isSelected ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                          <p className={`text-xs truncate ${isSelected ? 'text-zinc-300' : 'text-zinc-500'}`}>
                             {emp.designation}
                           </p>
                         </div>
@@ -459,7 +459,7 @@ export const SubEventModal: React.FC<SubEventModalProps> = ({
                         </div>
                         <div className="min-w-0">
                           <p className="text-xs font-medium truncate">{usr.name}</p>
-                          <p className="text-[10px] text-zinc-500 truncate">{usr.roleTitle}</p>
+                          <p className="text-xs text-zinc-500 truncate">{usr.roleTitle}</p>
                         </div>
                       </div>
                       {isSelected && <Check className="w-4 h-4 text-emerald-400" />}

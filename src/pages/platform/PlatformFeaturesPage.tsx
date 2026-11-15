@@ -46,16 +46,16 @@ export const PlatformFeaturesPage: React.FC = () => {
                 <tr key={f.key} className="hover:bg-slate-50">
                   <td className="px-4 py-3.5">
                     <div className="font-bold text-slate-900 text-sm">{f.name}</div>
-                    <div className="text-[10px] text-slate-400 font-mono mt-0.5">{f.key}</div>
+                    <div className="text-xs text-slate-400 font-mono mt-0.5">{f.key}</div>
                   </td>
                   <td className="px-4 py-3.5">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
                       {f.category}
                     </span>
                   </td>
                   <td className="px-4 py-3.5 text-slate-600 max-w-md">{f.description}</td>
                   <td className="px-4 py-3.5">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase inline-flex items-center gap-1 ${
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase inline-flex items-center gap-1 ${
                       f.isGlobalEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
                     }`}>
                       {f.isGlobalEnabled ? <CheckCircle className="w-3 h-3 text-emerald-600" /> : <XCircle className="w-3 h-3 text-rose-600" />}
@@ -66,7 +66,7 @@ export const PlatformFeaturesPage: React.FC = () => {
                     {canAdmin('manage_settings') && (
                       <button
                         onClick={() => handleToggle(f)}
-                        className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-colors ${
+                        className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors ${
                           f.isGlobalEnabled 
                             ? 'text-rose-700 bg-rose-50 hover:bg-rose-100' 
                             : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'

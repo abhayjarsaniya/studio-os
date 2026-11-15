@@ -212,11 +212,11 @@ export const SuppliersPage: React.FC = () => {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm leading-tight">{sup.businessName}</h3>
-                    <p className="text-[11px] font-semibold text-indigo-600 mt-0.5">
+                    <p className="text-xs font-semibold text-indigo-600 mt-0.5">
                       {SUPPLIER_CATEGORY_LABELS[sup.category] || sup.category}
                     </p>
                   </div>
-                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 text-[11px] font-bold">
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 text-xs font-bold">
                     <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                     {sup.rating.toFixed(1)}
                   </span>
@@ -247,7 +247,7 @@ export const SuppliersPage: React.FC = () => {
               {/* Footer / Rates (Protected) */}
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
                 <div>
-                  <span className="text-[10px] text-slate-400 block uppercase font-bold">Base Day Rate</span>
+                  <span className="text-xs text-slate-400 block uppercase font-bold">Base Day Rate</span>
                   <span className="font-bold text-slate-900">
                     {canSeeFinances ? `₹${sup.baseDayRate.toLocaleString()}` : '[Owner Confidential]'}
                   </span>
@@ -291,14 +291,14 @@ export const SuppliersPage: React.FC = () => {
                   <tr key={asgn.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="px-4 py-3.5">
                       <div className="font-bold text-slate-900">{asgn.supplierName}</div>
-                      <div className="text-[10px] text-indigo-600 font-medium">
+                      <div className="text-xs text-indigo-600 font-medium">
                         {SUPPLIER_CATEGORY_LABELS[asgn.category] || asgn.category}
                       </div>
                     </td>
 
                     <td className="px-4 py-3.5">
                       <div className="font-semibold text-slate-800">{asgn.eventTitle}</div>
-                      <div className="text-[10px] text-slate-500">{asgn.subEventTitle || 'Full Day Assignment'}</div>
+                      <div className="text-xs text-slate-500">{asgn.subEventTitle || 'Full Day Assignment'}</div>
                     </td>
 
                     <td className="px-4 py-3.5">
@@ -306,11 +306,11 @@ export const SuppliersPage: React.FC = () => {
                         <Clock className="w-3 h-3 text-slate-400" />
                         {asgn.date} • {asgn.callTime}
                       </div>
-                      <div className="text-[10px] text-slate-500 truncate max-w-xs">{asgn.venue}</div>
+                      <div className="text-xs text-slate-500 truncate max-w-xs">{asgn.venue}</div>
                     </td>
 
                     <td className="px-4 py-3.5">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-50 text-blue-700">
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-blue-50 text-blue-700">
                         {asgn.status}
                       </span>
                     </td>
@@ -323,7 +323,7 @@ export const SuppliersPage: React.FC = () => {
 
                     {canSeeFinances && (
                       <td className="px-4 py-3.5 text-right">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
                           asgn.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                         }`}>
                           {asgn.paymentStatus}
@@ -483,7 +483,7 @@ export const SuppliersPage: React.FC = () => {
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
                 <h3 className="font-bold text-slate-900 text-sm">{selectedSupplierForDetail.businessName}</h3>
-                <p className="text-[11px] text-indigo-600">{SUPPLIER_CATEGORY_LABELS[selectedSupplierForDetail.category]}</p>
+                <p className="text-xs text-indigo-600">{SUPPLIER_CATEGORY_LABELS[selectedSupplierForDetail.category]}</p>
               </div>
               <button onClick={() => setSelectedSupplierForDetail(null)} className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400">
                 <X className="w-5 h-5" />
@@ -493,33 +493,33 @@ export const SuppliersPage: React.FC = () => {
             <div className="space-y-3 text-xs">
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 grid grid-cols-2 gap-2">
                 <div>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Contact Person</span>
+                  <span className="text-xs text-slate-400 font-bold uppercase block">Contact Person</span>
                   <span className="font-semibold text-slate-800">{selectedSupplierForDetail.contactPerson}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Phone</span>
+                  <span className="text-xs text-slate-400 font-bold uppercase block">Phone</span>
                   <span className="font-semibold text-slate-800">{selectedSupplierForDetail.phone}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Base Day Rate</span>
+                  <span className="text-xs text-slate-400 font-bold uppercase block">Base Day Rate</span>
                   <span className="font-semibold text-slate-800">
                     {canSeeFinances ? `₹${selectedSupplierForDetail.baseDayRate.toLocaleString()}` : '[Restricted]'}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase block">City</span>
+                  <span className="text-xs text-slate-400 font-bold uppercase block">City</span>
                   <span className="font-semibold text-slate-800">{selectedSupplierForDetail.city}</span>
                 </div>
               </div>
 
               <div>
-                <span className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Payment Terms</span>
+                <span className="text-xs text-slate-400 font-bold uppercase block mb-1">Payment Terms</span>
                 <p className="text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                   {selectedSupplierForDetail.paymentTerms || 'Standard studio invoicing terms'}
                 </p>
               </div>
 
-              <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 text-[11px] text-indigo-900">
+              <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 text-xs text-indigo-900">
                 🔒 <strong>Privacy Protection Active:</strong> External suppliers with portal access only view their assigned call times, venues, and shooting requirements. Customer personal phone numbers and studio billing margins are strictly shielded.
               </div>
             </div>

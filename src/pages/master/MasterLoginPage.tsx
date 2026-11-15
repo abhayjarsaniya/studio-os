@@ -87,7 +87,7 @@ export const MasterLoginPage: React.FC = () => {
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-rose-500/20 mb-4">
             <Crown className="w-8 h-8" />
           </div>
-          <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200/80 mb-2">
+          <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200/80 mb-2">
             Level 1 Master Authority
           </span>
           <h1 className="text-2xl font-black text-zinc-900 tracking-tight font-display">Studio OS Master Console</h1>
@@ -143,7 +143,7 @@ export const MasterLoginPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowForgotPassword(true)}
-              className="text-[11px] font-medium text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
+              className="text-xs font-medium text-zinc-500 hover:text-zinc-900 transition-colors cursor-pointer"
             >
               Forgot Password?
             </button>
@@ -158,7 +158,7 @@ export const MasterLoginPage: React.FC = () => {
           </button>
         </form>
 
-        <div className="mt-6 pt-4 border-t border-zinc-100 text-center text-[11px] text-zinc-400">
+        <div className="mt-6 pt-4 border-t border-zinc-100 text-center text-xs text-zinc-400">
           Studio OS Multi-Studio Master Platform • Level 1 Access Only
         </div>
       </div>
@@ -177,7 +177,7 @@ export const MasterLoginPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-3 bg-amber-50/80 border border-amber-200/60 rounded-xl text-[11px] text-amber-800 leading-relaxed">
+            <div className="p-3 bg-amber-50/80 border border-amber-200/60 rounded-xl text-xs text-amber-800 leading-relaxed">
               <strong>Requirement:</strong> At least 12 characters, including uppercase, lowercase, numbers, and symbols (!@#$%&*).
             </div>
 

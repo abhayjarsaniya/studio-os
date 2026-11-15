@@ -60,14 +60,14 @@ export const PlatformAuditLogsPage: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {logs.map(log => (
                 <tr key={log.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 text-slate-500 font-mono text-[11px] whitespace-nowrap">
+                  <td className="px-4 py-3 text-slate-500 font-mono text-xs whitespace-nowrap">
                     {new Date(log.timestamp).toLocaleString('en-IN')}
                   </td>
                   <td className="px-4 py-3 font-semibold text-slate-900 whitespace-nowrap">
                     {log.adminName}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
-                    <span className="font-mono text-[10px] font-bold uppercase bg-slate-100 text-slate-800 px-2 py-0.5 rounded">
+                    <span className="font-mono text-xs font-bold uppercase bg-slate-100 text-slate-800 px-2 py-0.5 rounded">
                       {log.action}
                     </span>
                   </td>

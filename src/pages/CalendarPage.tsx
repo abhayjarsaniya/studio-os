@@ -366,14 +366,14 @@ export const CalendarPage: React.FC = () => {
           {/* Navigator Bar */}
           <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
             <div className="flex items-center gap-3">
-              <h3 className="text-base sm:text-lg font-bold text-zinc-900 font-display">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-zinc-900 font-display tracking-tight">
                 {viewMode === 'month' && `${monthNames[currentMonth]} ${currentYear}`}
                 {viewMode === 'week' && `Week of ${formatDate(weekDays[0].toISOString().split('T')[0])}`}
                 {viewMode === 'day' && `${monthNames[currentMonth]} ${selectedDay}, ${currentYear}`}
               </h3>
               <button
                 onClick={handleToday}
-                className="text-xs min-h-[40px] px-3 py-1.5 rounded-xl border border-orange-200 bg-orange-50/70 hover:bg-orange-100 text-orange-800 font-bold cursor-pointer transition-all active:scale-95"
+                className="text-xs sm:text-sm min-h-[40px] px-3.5 py-1.5 rounded-xl border border-orange-200 bg-orange-50/70 hover:bg-orange-100 text-orange-800 font-bold cursor-pointer transition-all active:scale-95"
               >
                 Today
               </button>
@@ -404,7 +404,7 @@ export const CalendarPage: React.FC = () => {
           {viewMode === 'month' && (
             <div className="space-y-1.5">
               {/* Weekday headers */}
-              <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-zinc-400 uppercase tracking-wider py-1">
+              <div className="grid grid-cols-7 gap-1 text-center text-xs sm:text-sm font-bold text-zinc-500 uppercase tracking-wider py-1.5">
                 <span>Sun</span>
                 <span>Mon</span>
                 <span>Tue</span>
@@ -440,18 +440,18 @@ export const CalendarPage: React.FC = () => {
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className={`text-xs ${
-                          isSelected ? 'text-orange-950 font-black' : isToday ? 'text-orange-800 font-bold' : 'text-zinc-700 font-semibold'
+                        <span className={`text-[15px] sm:text-base md:text-[17px] ${
+                          isSelected ? 'text-orange-950 font-black' : isToday ? 'text-orange-800 font-bold' : 'text-zinc-800 font-bold'
                         }`}>
                           {day}
                         </span>
                         {isToday && (
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-200 text-orange-900 hidden sm:inline">
+                          <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-orange-200 text-orange-900 hidden sm:inline">
                             Today
                           </span>
                         )}
                         {hasMultiple && (
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-800 border border-orange-200">
+                          <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-800 border border-orange-200">
                             {eventsOnDay.length} shoots
                           </span>
                         )}
@@ -462,14 +462,14 @@ export const CalendarPage: React.FC = () => {
                         {eventsOnDay.slice(0, 2).map(ev => (
                           <div
                             key={ev.id}
-                            className={`text-[9px] sm:text-[10px] font-medium px-1 sm:px-1.5 py-0.5 rounded truncate border ${getCategoryBadgeColor(ev.category)}`}
+                            className={`text-xs sm:text-[13px] font-semibold px-1 sm:px-1.5 py-0.5 rounded truncate border ${getCategoryBadgeColor(ev.category)}`}
                             title={`${ev.name} (${ev.category})`}
                           >
                             {ev.name || ev.category}
                           </div>
                         ))}
                         {eventsOnDay.length > 2 && (
-                          <div className="text-[9px] text-orange-700 font-bold px-1">
+                          <div className="text-xs text-orange-700 font-bold px-1">
                             +{eventsOnDay.length - 2} more
                           </div>
                         )}
@@ -479,7 +479,7 @@ export const CalendarPage: React.FC = () => {
                 })}
               </div>
 
-              <div className="pt-2 text-[11px] text-zinc-400 flex items-center justify-between">
+              <div className="pt-2 text-xs sm:text-sm text-zinc-500 flex items-center justify-between">
                 <span>💡 Tap empty date to create new booking instantly. Tap date with bookings to manage schedule.</span>
               </div>
             </div>
@@ -510,26 +510,26 @@ export const CalendarPage: React.FC = () => {
                     }`}
                   >
                     <div>
-                      <div className="text-[11px] font-bold text-zinc-400 uppercase">
+                      <div className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
                         {d.toLocaleDateString('en-US', { weekday: 'short' })}
                       </div>
-                      <div className={`text-sm font-bold ${isSelected ? 'text-orange-950 font-black' : 'text-zinc-900'}`}>{dayNum}</div>
+                      <div className={`text-[15px] sm:text-base font-bold ${isSelected ? 'text-orange-950 font-black' : 'text-zinc-900'}`}>{dayNum}</div>
 
                       <div className="space-y-1.5 mt-2">
                         {dayEventsForWeek.map(ev => (
                           <div
                             key={ev.id}
-                            className={`p-1.5 rounded-lg border text-[10px] font-semibold ${getCategoryBadgeColor(ev.category)}`}
+                            className={`p-1.5 rounded-lg border text-xs sm:text-[13px] font-semibold ${getCategoryBadgeColor(ev.category)}`}
                           >
                             <div className="truncate font-bold">{ev.name}</div>
-                            <div className="text-[9px] opacity-80">{ev.startTime}</div>
+                            <div className="text-xs opacity-85">{ev.startTime}</div>
                           </div>
                         ))}
                       </div>
                     </div>
 
                     {dayEventsForWeek.length === 0 && (
-                      <span className="text-[10px] text-orange-600 font-semibold text-center py-2">+ Add</span>
+                      <span className="text-xs text-orange-600 font-bold text-center py-2">+ Add</span>
                     )}
                   </div>
                 );
@@ -541,12 +541,12 @@ export const CalendarPage: React.FC = () => {
           {viewMode === 'day' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3.5 rounded-xl bg-orange-50/50 border border-orange-200/80">
-                <span className="text-xs font-bold text-orange-950">
+                <span className="text-sm font-bold text-orange-950">
                   Detailed Hourly Schedule for {formatDate(formattedSelectedDayStr)}
                 </span>
                 <button
                   onClick={handleCreateBookingForDay}
-                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-bold shadow-2xs cursor-pointer active:scale-95 transition-all"
+                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs sm:text-sm font-bold shadow-2xs cursor-pointer active:scale-95 transition-all"
                 >
                   + Add Shoot on this Day
                 </button>
@@ -558,17 +558,17 @@ export const CalendarPage: React.FC = () => {
                   className="p-4 rounded-xl border border-zinc-200 bg-white shadow-2xs space-y-2.5"
                 >
                   <div className="flex items-center justify-between">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getCategoryBadgeColor(ev.category)}`}>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${getCategoryBadgeColor(ev.category)}`}>
                       {ev.category}
                     </span>
-                    <span className="text-xs font-semibold text-zinc-500 flex items-center gap-1">
+                    <span className="text-xs sm:text-sm font-semibold text-zinc-500 flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5" /> {ev.startTime} - {ev.endTime}
                     </span>
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-bold text-zinc-900">{ev.name}</h4>
-                    <p className="text-xs text-zinc-500 mt-0.5">{ev.customerName} ({ev.customerPhone})</p>
+                    <h4 className="text-base font-bold text-zinc-900">{ev.name}</h4>
+                    <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">{ev.customerName} ({ev.customerPhone})</p>
                   </div>
 
                   <div className="flex items-center gap-2 text-xs text-zinc-600">
@@ -603,13 +603,13 @@ export const CalendarPage: React.FC = () => {
 
           {/* Crew Conflict Warning Banner if multiple events share crew */}
           {crewConflictsOnSelectedDay.length > 0 && (
-            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1.5 shadow-2xs">
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm space-y-1.5 shadow-2xs">
               <div className="font-bold flex items-center gap-1.5 text-amber-800">
                 <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>Crew Scheduling Conflict Detected</span>
               </div>
               {crewConflictsOnSelectedDay.map((msg, i) => (
-                <p key={i} className="text-[11px] leading-relaxed text-amber-900/90">{msg}</p>
+                <p key={i} className="text-xs sm:text-[13px] leading-relaxed text-amber-900/90">{msg}</p>
               ))}
             </div>
           )}
@@ -622,34 +622,34 @@ export const CalendarPage: React.FC = () => {
                 className="p-3.5 rounded-xl border border-zinc-200 hover:border-orange-200 transition-all space-y-2.5 bg-zinc-50/50 hover:bg-orange-50/10"
               >
                 <div className="flex items-center justify-between">
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getCategoryBadgeColor(ev.category)}`}>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${getCategoryBadgeColor(ev.category)}`}>
                     {ev.category}
                   </span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full border ${getStatusBadgeColor(ev.status)}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded-full border ${getStatusBadgeColor(ev.status)}`}>
                     {ev.status}
                   </span>
                 </div>
 
                 <div>
-                  <h4 className="text-xs font-bold text-zinc-900">{ev.name}</h4>
-                  <p className="text-[11px] text-zinc-500 mt-0.5">{ev.customerName} • {ev.customerPhone}</p>
+                  <h4 className="text-sm sm:text-base font-bold text-zinc-900">{ev.name}</h4>
+                  <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">{ev.customerName} • {ev.customerPhone}</p>
                 </div>
 
-                <div className="text-[11px] text-zinc-600 space-y-1 pt-1 border-t border-zinc-200/60">
+                <div className="text-xs sm:text-sm text-zinc-600 space-y-1 pt-1 border-t border-zinc-200/60">
                   <div className="flex items-center gap-1.5">
-                    <Clock className="w-3 h-3 text-zinc-400" />
+                    <Clock className="w-3.5 h-3.5 text-zinc-400" />
                     <span>{formatTime(ev.startTime)} - {formatTime(ev.endTime)}</span>
                   </div>
                   <div className="flex items-center gap-1.5 truncate">
-                    <MapPin className="w-3 h-3 text-zinc-400 shrink-0" />
+                    <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                     <span className="truncate">{ev.venue}, {ev.venueCity}</span>
                   </div>
                 </div>
 
                 {/* Assigned Crew Indicators */}
                 {ev.assignedTeamIds && ev.assignedTeamIds.length > 0 && (
-                  <div className="flex items-center gap-1 text-[10px] text-zinc-500">
-                    <Users className="w-3 h-3 text-orange-500" />
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+                    <Users className="w-3.5 h-3.5 text-orange-500" />
                     <span>{ev.assignedTeamIds.length} team members assigned</span>
                   </div>
                 )}
@@ -660,9 +660,9 @@ export const CalendarPage: React.FC = () => {
                     onClick={() => {
                       window.location.hash = `#/app/bookings/${ev.id}`;
                     }}
-                    className="flex-1 min-h-[38px] py-1.5 px-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 transition-all"
+                    className="flex-1 min-h-[42px] py-2 px-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 transition-all"
                   >
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <ExternalLink className="w-4 h-4" />
                     <span>Workspace</span>
                   </button>
 
@@ -671,10 +671,10 @@ export const CalendarPage: React.FC = () => {
                       setEditingEvent(ev as unknown as StudioEvent);
                       setIsEventFormOpen(true);
                     }}
-                    className="min-h-[38px] py-1.5 px-3 rounded-xl border border-zinc-200 hover:border-orange-300 hover:bg-orange-50/40 text-zinc-700 text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                    className="min-h-[42px] py-2 px-3.5 rounded-xl border border-zinc-200 hover:border-orange-300 hover:bg-orange-50/40 text-zinc-700 text-xs sm:text-sm font-semibold flex items-center gap-1 cursor-pointer transition-colors"
                     title="Edit Event Details"
                   >
-                    <Edit3 className="w-3.5 h-3.5" />
+                    <Edit3 className="w-4 h-4" />
                     <span>Edit</span>
                   </button>
                 </div>

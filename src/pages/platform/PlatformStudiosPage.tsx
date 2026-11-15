@@ -195,22 +195,22 @@ export const PlatformStudiosPage: React.FC = () => {
                     {/* Studio Name & ID */}
                     <td className="px-4 py-3.5">
                       <div className="font-bold text-slate-900 text-sm">{s.name}</div>
-                      <div className="text-[11px] text-slate-400 font-mono mt-0.5">{s.id}</div>
-                      <div className="text-[10px] text-slate-500">{s.city} • Reg {s.registeredAt}</div>
+                      <div className="text-xs text-slate-400 font-mono mt-0.5">{s.id}</div>
+                      <div className="text-xs text-slate-500">{s.city} • Reg {s.registeredAt}</div>
                     </td>
 
                     {/* Owner Contact */}
                     <td className="px-4 py-3.5">
                       <div className="font-semibold text-slate-800">{s.ownerName}</div>
-                      <div className="text-[11px] text-slate-500">{s.ownerEmail}</div>
-                      <div className="text-[10px] text-slate-600 font-mono">{s.ownerPhone || s.phone || 'N/A'}</div>
+                      <div className="text-xs text-slate-500">{s.ownerEmail}</div>
+                      <div className="text-xs text-slate-600 font-mono">{s.ownerPhone || s.phone || 'N/A'}</div>
                     </td>
 
                     {/* Subscription */}
                     <td className="px-4 py-3.5">
                       <span className="font-bold text-slate-900">{s.planName}</span>
-                      <span className="text-[11px] text-indigo-600 block font-medium">₹{s.planPrice}/mo</span>
-                      <span className={`block text-[10px] font-bold uppercase ${
+                      <span className="text-xs text-indigo-600 block font-medium">₹{s.planPrice}/mo</span>
+                      <span className={`block text-xs font-bold uppercase ${
                         s.subscriptionStatus === 'active' ? 'text-emerald-600' : 'text-amber-600'
                       }`}>
                         {s.subscriptionStatus}
@@ -220,20 +220,20 @@ export const PlatformStudiosPage: React.FC = () => {
                     {/* Events & Bookings count */}
                     <td className="px-4 py-3.5 text-center">
                       <div className="font-bold text-slate-900">{s.eventsCount ?? 0} Events</div>
-                      <div className="text-[10px] text-slate-500 font-medium">{s.bookingsCount ?? 0} Bookings</div>
+                      <div className="text-xs text-slate-500 font-medium">{s.bookingsCount ?? 0} Bookings</div>
                     </td>
 
                     {/* Received & Outstanding */}
                     <td className="px-4 py-3.5 text-right">
                       <div className="font-bold text-emerald-700">₹{(s.totalReceivedAmount ?? 0).toLocaleString('en-IN')}</div>
-                      <div className="text-[10px] text-rose-600 font-semibold">
+                      <div className="text-xs text-rose-600 font-semibold">
                         Out: ₹{(s.outstandingAmount ?? 0).toLocaleString('en-IN')}
                       </div>
                     </td>
 
                     {/* Visibility */}
                     <td className="px-4 py-3.5 text-center">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1 ${
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1 ${
                         isHidden
                           ? 'bg-purple-100 text-purple-800'
                           : 'bg-emerald-100 text-emerald-800'
@@ -245,7 +245,7 @@ export const PlatformStudiosPage: React.FC = () => {
 
                     {/* Status */}
                     <td className="px-4 py-3.5 text-center">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1 ${
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1 ${
                         isActive
                           ? 'bg-emerald-100 text-emerald-800'
                           : isHidden
@@ -279,7 +279,7 @@ export const PlatformStudiosPage: React.FC = () => {
                             setSelectedStudioId(s.id);
                             setPlatformRoute('events');
                           }}
-                          className="px-2 py-1 text-[11px] font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                          className="px-2 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
                           title="View Studio Events"
                         >
                           Events
@@ -293,7 +293,7 @@ export const PlatformStudiosPage: React.FC = () => {
                                   setActiveActionStudio(s);
                                   setActionType('unhide');
                                 }}
-                                className="px-2 py-1 text-[11px] font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg"
+                                className="px-2 py-1 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg"
                                 title="Unhide Studio (Restore to directory)"
                               >
                                 Unhide
@@ -304,7 +304,7 @@ export const PlatformStudiosPage: React.FC = () => {
                                   setActiveActionStudio(s);
                                   setActionType('hide');
                                 }}
-                                className="px-2 py-1 text-[11px] font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg"
+                                className="px-2 py-1 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg"
                                 title="Hide Studio from directory"
                               >
                                 Hide
@@ -317,7 +317,7 @@ export const PlatformStudiosPage: React.FC = () => {
                                   setActiveActionStudio(s);
                                   setActionType('suspend');
                                 }}
-                                className="px-2 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg"
+                                className="px-2 py-1 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg"
                                 title="Suspend Studio"
                               >
                                 Suspend
@@ -328,7 +328,7 @@ export const PlatformStudiosPage: React.FC = () => {
                                   setActiveActionStudio(s);
                                   setActionType('activate');
                                 }}
-                                className="px-2 py-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg"
+                                className="px-2 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg"
                                 title="Reactivate Studio"
                               >
                                 Reactivate
@@ -337,7 +337,7 @@ export const PlatformStudiosPage: React.FC = () => {
 
                             <button
                               onClick={() => handleResetOwnerPassword(s)}
-                              className="px-2 py-1 text-[11px] font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg"
+                              className="px-2 py-1 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg"
                               title="Reset Studio Owner temporary credentials"
                             >
                               <KeyRound className="w-3.5 h-3.5 inline mr-1" />

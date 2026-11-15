@@ -52,7 +52,7 @@ export const PlatformSettingsPage: React.FC = () => {
                 onChange={e => setTrialDays(Number(e.target.value))}
                 className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs"
               />
-              <span className="text-[10px] text-slate-400 mt-0.5 block">Applied to new photography studio registrations</span>
+              <span className="text-xs text-slate-400 mt-0.5 block">Applied to new photography studio registrations</span>
             </div>
 
             <div>
@@ -63,7 +63,7 @@ export const PlatformSettingsPage: React.FC = () => {
                 onChange={e => setGracePeriodDays(Number(e.target.value))}
                 className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs"
               />
-              <span className="text-[10px] text-slate-400 mt-0.5 block">Permitted operations window after unpaid invoice expiry</span>
+              <span className="text-xs text-slate-400 mt-0.5 block">Permitted operations window after unpaid invoice expiry</span>
             </div>
 
             <div>
@@ -74,7 +74,7 @@ export const PlatformSettingsPage: React.FC = () => {
                 disabled
                 className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs bg-slate-50 font-mono"
               />
-              <span className="text-[10px] text-slate-400 mt-0.5 block">Indian Rupee (₹) standard for Studio OS</span>
+              <span className="text-xs text-slate-400 mt-0.5 block">Indian Rupee (₹) standard for Studio OS</span>
             </div>
 
             <div>
@@ -85,7 +85,7 @@ export const PlatformSettingsPage: React.FC = () => {
                 disabled
                 className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs bg-slate-50 font-mono"
               />
-              <span className="text-[10px] text-slate-400 mt-0.5 block">Fixed at ₹500/month per studio (not per employee)</span>
+              <span className="text-xs text-slate-400 mt-0.5 block">Fixed at ₹500/month per studio (not per employee)</span>
             </div>
           </div>
         </div>
@@ -105,7 +105,7 @@ export const PlatformSettingsPage: React.FC = () => {
                 onChange={e => setWebhookSecret(e.target.value)}
                 className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono"
               />
-              <span className="text-[10px] text-slate-400 mt-0.5 block">
+              <span className="text-xs text-slate-400 mt-0.5 block">
                 Never exposed to frontend clients. Validates webhook authenticity and prevents replay attacks.
               </span>
             </div>

@@ -116,27 +116,27 @@ export const EmployeeDashboardView: React.FC = () => {
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-4 rounded-2xl bg-white border border-zinc-200/90 shadow-xs space-y-1">
-          <span className="text-[11px] font-bold text-zinc-400 uppercase">Assigned Shoots</span>
+          <span className="text-xs font-bold text-zinc-400 uppercase">Assigned Shoots</span>
           <p className="text-xl font-bold font-mono text-zinc-900">{myEvents.length}</p>
-          <p className="text-[10px] text-zinc-500">Active productions</p>
+          <p className="text-xs text-zinc-500">Active productions</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-zinc-200/90 shadow-xs space-y-1">
-          <span className="text-[11px] font-bold text-zinc-400 uppercase">Sub-Event Calls</span>
+          <span className="text-xs font-bold text-zinc-400 uppercase">Sub-Event Calls</span>
           <p className="text-xl font-bold font-mono text-zinc-900">{mySubEvents.length}</p>
-          <p className="text-[10px] text-zinc-500">Ceremonies on call sheet</p>
+          <p className="text-xs text-zinc-500">Ceremonies on call sheet</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-zinc-200/90 shadow-xs space-y-1">
-          <span className="text-[11px] font-bold text-zinc-400 uppercase">Pending Tasks</span>
+          <span className="text-xs font-bold text-zinc-400 uppercase">Pending Tasks</span>
           <p className="text-xl font-bold font-mono text-amber-600">{pendingTasks.length}</p>
-          <p className="text-[10px] text-zinc-500">Action items assigned</p>
+          <p className="text-xs text-zinc-500">Action items assigned</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 shadow-xs space-y-1">
-          <span className="text-[11px] font-bold text-emerald-800 uppercase">Leave Balance</span>
+          <span className="text-xs font-bold text-emerald-800 uppercase">Leave Balance</span>
           <p className="text-xl font-bold font-mono text-emerald-700">{myBalance?.totalRemaining ?? 20} Days</p>
-          <p className="text-[10px] text-emerald-600">Available time off</p>
+          <p className="text-xs text-emerald-600">Available time off</p>
         </div>
       </div>
 
@@ -172,7 +172,7 @@ export const EmployeeDashboardView: React.FC = () => {
                       <MapPin className="w-3.5 h-3.5" /> {s.venue}
                     </p>
                     {s.instructions && (
-                      <p className="text-amber-900 text-[11px] italic bg-white/70 p-2 rounded-lg border border-amber-200">
+                      <p className="text-amber-900 text-xs italic bg-white/70 p-2 rounded-lg border border-amber-200">
                         {s.instructions}
                       </p>
                     )}
@@ -201,9 +201,9 @@ export const EmployeeDashboardView: React.FC = () => {
                   <div key={s.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                     <div>
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-mono text-[10px] text-zinc-400">{s.subEventNumber}</span>
+                        <span className="font-mono text-xs text-zinc-400">{s.subEventNumber}</span>
                         <h4 className="font-bold text-zinc-900">{s.name}</h4>
-                        <span className="text-[10px] font-semibold text-zinc-600 bg-zinc-100 px-2 py-0.2 rounded-full">
+                        <span className="text-xs font-semibold text-zinc-600 bg-zinc-100 px-2 py-0.2 rounded-full">
                           {s.customCategory}
                         </span>
                       </div>
@@ -214,7 +214,7 @@ export const EmployeeDashboardView: React.FC = () => {
                       </p>
                     </div>
 
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 self-start sm:self-auto">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 self-start sm:self-auto">
                       {s.status}
                     </span>
                   </div>
@@ -241,9 +241,9 @@ export const EmployeeDashboardView: React.FC = () => {
                   <div key={t.id} className="p-3 rounded-xl border border-zinc-200 bg-white flex items-center justify-between text-xs">
                     <div className="min-w-0">
                       <p className="font-bold text-zinc-900 truncate">{t.title}</p>
-                      <p className="text-[11px] text-zinc-500">Due: {t.dueDate}</p>
+                      <p className="text-xs text-zinc-500">Due: {t.dueDate}</p>
                     </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                       t.status === 'Done' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
                     }`}>
                       {t.status}
@@ -273,9 +273,9 @@ export const EmployeeDashboardView: React.FC = () => {
                   <div key={l.id} className="p-2.5 rounded-xl border border-zinc-200 bg-white flex items-center justify-between">
                     <div>
                       <p className="font-bold text-zinc-900">{l.leaveTypeName}</p>
-                      <p className="text-[11px] text-zinc-500">{l.startDate} to {l.endDate}</p>
+                      <p className="text-xs text-zinc-500">{l.startDate} to {l.endDate}</p>
                     </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
                       l.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                       l.status === 'rejected' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-amber-50 text-amber-700 border-amber-200'
                     }`}>

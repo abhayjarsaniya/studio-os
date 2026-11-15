@@ -92,7 +92,7 @@ export const NotificationsPage: React.FC = () => {
                 <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
                   {notif.message}
                 </p>
-                <div className="text-[10px] text-zinc-400 mt-2 font-medium">
+                <div className="text-xs text-zinc-400 mt-2 font-medium">
                   {notif.timestamp}
                 </div>
               </div>
@@ -104,7 +104,7 @@ export const NotificationsPage: React.FC = () => {
                   e.stopPropagation();
                   markNotificationAsRead(notif.id);
                 }}
-                className="text-[11px] text-zinc-500 hover:text-zinc-900 px-2 py-1 rounded hover:bg-zinc-100 shrink-0"
+                className="text-xs text-zinc-500 hover:text-zinc-900 px-2 py-1 rounded hover:bg-zinc-100 shrink-0"
               >
                 Mark Read
               </button>

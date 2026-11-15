@@ -166,11 +166,11 @@ export const PlatformPlansPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <span className="font-black text-base text-slate-900">{plan.name}</span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-mono">
+                    <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-mono">
                       v{plan.version}
                     </span>
                   </div>
-                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                  <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${
                     plan.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'
                   }`}>
                     {plan.isActive ? 'Active' : 'Inactive'}
@@ -184,7 +184,7 @@ export const PlatformPlansPage: React.FC = () => {
                   <span className="text-3xl font-black text-slate-900">₹{plan.priceMonthly}</span>
                   <span className="text-xs text-slate-500 font-semibold">/ month per studio</span>
                 </div>
-                <div className="text-[11px] text-indigo-600 font-medium">
+                <div className="text-xs text-indigo-600 font-medium">
                   Annual Option: ₹{plan.priceAnnual} / year
                 </div>
 
@@ -226,7 +226,7 @@ export const PlatformPlansPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleToggleActive(plan)}
-                        className="text-[11px] font-semibold text-slate-600 hover:text-slate-800"
+                        className="text-xs font-semibold text-slate-600 hover:text-slate-800"
                       >
                         {plan.isActive ? 'Deactivate' : 'Activate'}
                       </button>

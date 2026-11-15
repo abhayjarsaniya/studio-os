@@ -171,7 +171,7 @@ export const FollowUpManagerView: React.FC = () => {
             <Calendar className="w-4 h-4 text-amber-600" />
           </div>
           <p className="text-2xl font-bold font-display mt-2">{todayCount}</p>
-          <p className="text-[11px] text-zinc-400 mt-0.5">Calls & follow-ups today</p>
+          <p className="text-xs text-zinc-400 mt-0.5">Calls & follow-ups today</p>
         </button>
 
         <button
@@ -187,7 +187,7 @@ export const FollowUpManagerView: React.FC = () => {
             <AlertTriangle className="w-4 h-4 text-rose-600" />
           </div>
           <p className="text-2xl font-bold font-display mt-2 text-rose-600">{overdueCount}</p>
-          <p className="text-[11px] text-zinc-400 mt-0.5">Missed scheduled dates</p>
+          <p className="text-xs text-zinc-400 mt-0.5">Missed scheduled dates</p>
         </button>
 
         <button
@@ -203,7 +203,7 @@ export const FollowUpManagerView: React.FC = () => {
             <CalendarClock className="w-4 h-4 text-blue-600" />
           </div>
           <p className="text-2xl font-bold font-display mt-2">{upcomingCount}</p>
-          <p className="text-[11px] text-zinc-400 mt-0.5">Scheduled future tasks</p>
+          <p className="text-xs text-zinc-400 mt-0.5">Scheduled future tasks</p>
         </button>
 
         <button
@@ -219,7 +219,7 @@ export const FollowUpManagerView: React.FC = () => {
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
           <p className="text-2xl font-bold font-display mt-2 text-emerald-600">{completedCount}</p>
-          <p className="text-[11px] text-zinc-400 mt-0.5">Successfully closed</p>
+          <p className="text-xs text-zinc-400 mt-0.5">Successfully closed</p>
         </button>
       </div>
 
@@ -345,7 +345,7 @@ export const FollowUpManagerView: React.FC = () => {
                         {fu.customerName}
                       </span>
                       {fu.priority && (
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                           fu.priority === 'High' 
                             ? 'bg-rose-100 text-rose-700' 
                             : fu.priority === 'Medium' 
@@ -355,7 +355,7 @@ export const FollowUpManagerView: React.FC = () => {
                           {fu.priority}
                         </span>
                       )}
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                         isCompleted 
                           ? 'bg-emerald-100 text-emerald-700' 
                           : isOverdue 
@@ -369,7 +369,7 @@ export const FollowUpManagerView: React.FC = () => {
                     </div>
                     <p className="text-xs text-zinc-700 font-medium">{fu.reason}</p>
                     {fu.notes && (
-                      <p className="text-[11px] text-zinc-400 italic">Notes: {fu.notes}</p>
+                      <p className="text-xs text-zinc-400 italic">Notes: {fu.notes}</p>
                     )}
                   </div>
 
@@ -462,7 +462,7 @@ export const FollowUpManagerView: React.FC = () => {
                 </div>
 
                 {/* Footer metadata */}
-                <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-zinc-100 text-[11px] text-zinc-500">
+                <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-zinc-100 text-xs text-zinc-500">
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5 text-zinc-400" />
                     Due: <strong className="text-zinc-700">{formatDate(fu.dueDate)}</strong> {fu.dueTime && `at ${fu.dueTime}`}

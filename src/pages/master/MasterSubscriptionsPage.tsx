@@ -117,7 +117,7 @@ export const MasterSubscriptionsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200">
               Subscription Engine
             </span>
             <span className="text-xs text-zinc-500">MRR @ ₹500/mo flat per studio</span>
@@ -169,7 +169,7 @@ export const MasterSubscriptionsPage: React.FC = () => {
             </p>
           </div>
         </div>
-        <div className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg bg-white/80 border border-current">
+        <div className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-white/80 border border-current">
           NPCI e-Mandate Cap: ₹15,000 / Debit
         </div>
       </div>
@@ -205,7 +205,7 @@ export const MasterSubscriptionsPage: React.FC = () => {
       <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs whitespace-nowrap">
-            <thead className="bg-zinc-50 text-zinc-500 text-[10px] uppercase font-semibold border-b border-zinc-200">
+            <thead className="bg-zinc-50 text-zinc-500 text-xs uppercase font-semibold border-b border-zinc-200">
               <tr>
                 <th className="px-4 py-3">Studio Name</th>
                 <th className="px-4 py-3">Current Plan</th>
@@ -243,7 +243,7 @@ export const MasterSubscriptionsPage: React.FC = () => {
                   <td className="px-4 py-3 text-zinc-500">{sub.billingCycle}</td>
 
                   <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
                       sub.status === 'active'
                         ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                         : 'bg-rose-50 text-rose-800 border border-rose-200'
@@ -257,7 +257,7 @@ export const MasterSubscriptionsPage: React.FC = () => {
                   <td className="px-4 py-3">
                     <div>
                       <span className="font-medium text-zinc-900">{sub.paymentMethod}</span>
-                      <p className="text-[10px] font-mono text-zinc-500">{sub.mandateUmn}</p>
+                      <p className="text-xs font-mono text-zinc-500">{sub.mandateUmn}</p>
                     </div>
                   </td>
 
@@ -269,13 +269,13 @@ export const MasterSubscriptionsPage: React.FC = () => {
                     <div className="flex items-center justify-center gap-1.5">
                       <button
                         onClick={() => handleExtend(sub.studioId, 30)}
-                        className="px-2 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-[10px] font-semibold text-amber-300 border border-zinc-200"
+                        className="px-2 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-xs font-semibold text-amber-300 border border-zinc-200"
                       >
                         +30d
                       </button>
                       <button
                         onClick={() => showToast(`Invoice generated for ${sub.studioName}`)}
-                        className="px-2 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-[10px] font-semibold text-zinc-800 border border-zinc-200"
+                        className="px-2 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-xs font-semibold text-zinc-800 border border-zinc-200"
                       >
                         Bill Now
                       </button>

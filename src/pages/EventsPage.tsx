@@ -294,7 +294,7 @@ export const EventsPage: React.FC = () => {
 
         {/* Category Pill Filters (Horizontal Scroll) */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 scrollbar-none text-xs">
-          <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+          <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
             <Filter className="w-3 h-3" /> Categories ({ALL_EVENT_CATEGORIES.length}):
           </span>
           <button

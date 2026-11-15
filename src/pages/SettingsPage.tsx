@@ -347,7 +347,7 @@ export const SettingsPage: React.FC = () => {
                     value={profileForm.logoUrl}
                     onChange={e => setProfileForm({ ...profileForm, logoUrl: e.target.value })}
                     placeholder="https://..."
-                    className="flex-1 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900 font-mono text-[11px]"
+                    className="flex-1 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900 font-mono text-xs"
                   />
                   <label className="px-3 py-2 bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 rounded-xl cursor-pointer flex items-center gap-1.5 font-bold">
                     <Upload className="w-3.5 h-3.5" />
@@ -377,13 +377,13 @@ export const SettingsPage: React.FC = () => {
             <div className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200">
-                  <span className="text-zinc-400 block text-[10px] font-bold uppercase tracking-wider">Studio Name</span>
+                  <span className="text-zinc-400 block text-xs font-bold uppercase tracking-wider">Studio Name</span>
                   <div className="text-sm font-bold text-zinc-900 mt-0.5">{profileForm.name}</div>
-                  {profileForm.tagline && <div className="text-zinc-500 text-[11px] mt-0.5 italic">{profileForm.tagline}</div>}
+                  {profileForm.tagline && <div className="text-zinc-500 text-xs mt-0.5 italic">{profileForm.tagline}</div>}
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200">
-                  <span className="text-zinc-400 block text-[10px] font-bold uppercase tracking-wider">Contact Phone</span>
+                  <span className="text-zinc-400 block text-xs font-bold uppercase tracking-wider">Contact Phone</span>
                   <div className="text-xs font-semibold text-zinc-800 mt-0.5 flex items-center gap-1.5">
                     <Phone className="w-3.5 h-3.5 text-zinc-400" />
                     <span>{profileForm.phone}</span>
@@ -391,7 +391,7 @@ export const SettingsPage: React.FC = () => {
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200">
-                  <span className="text-zinc-400 block text-[10px] font-bold uppercase tracking-wider">Official Email</span>
+                  <span className="text-zinc-400 block text-xs font-bold uppercase tracking-wider">Official Email</span>
                   <div className="text-xs font-semibold text-zinc-800 mt-0.5 flex items-center gap-1.5">
                     <Mail className="w-3.5 h-3.5 text-zinc-400" />
                     <span>{profileForm.email}</span>
@@ -399,7 +399,7 @@ export const SettingsPage: React.FC = () => {
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200">
-                  <span className="text-zinc-400 block text-[10px] font-bold uppercase tracking-wider">Location</span>
+                  <span className="text-zinc-400 block text-xs font-bold uppercase tracking-wider">Location</span>
                   <div className="text-xs font-semibold text-zinc-800 mt-0.5 flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 text-zinc-400" />
                     <span>{profileForm.city}, {profileForm.address || 'Flagship Studio'}</span>
@@ -409,7 +409,7 @@ export const SettingsPage: React.FC = () => {
 
               {profileForm.gstNumber && (
                 <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200">
-                  <span className="text-zinc-400 block text-[10px] font-bold uppercase tracking-wider">Tax GSTIN</span>
+                  <span className="text-zinc-400 block text-xs font-bold uppercase tracking-wider">Tax GSTIN</span>
                   <div className="text-xs font-mono font-bold text-zinc-900 mt-0.5">{profileForm.gstNumber}</div>
                 </div>
               )}
@@ -507,7 +507,7 @@ export const SettingsPage: React.FC = () => {
               {/* Strength Indicator */}
               {passwordForm.newPassword && (
                 <div className="mt-2 space-y-1">
-                  <div className="flex items-center justify-between text-[10px]">
+                  <div className="flex items-center justify-between text-xs">
                     <span className="text-zinc-500">Password Strength:</span>
                     <span className="font-bold text-zinc-700">{passwordStrength.label}</span>
                   </div>
@@ -559,7 +559,7 @@ export const SettingsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleForgotPassword}
-                className="text-[11px] font-semibold text-zinc-500 hover:text-zinc-900 underline-offset-2 hover:underline cursor-pointer"
+                className="text-xs font-semibold text-zinc-500 hover:text-zinc-900 underline-offset-2 hover:underline cursor-pointer"
               >
                 Forgot your current password?
               </button>
@@ -572,7 +572,7 @@ export const SettingsPage: React.FC = () => {
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
               <span>Password Security Standards</span>
             </h4>
-            <ul className="text-zinc-500 space-y-1 list-disc list-inside text-[11px] leading-relaxed">
+            <ul className="text-zinc-500 space-y-1 list-disc list-inside text-xs leading-relaxed">
               <li>Use at least 8-12 characters with a mix of uppercase, lowercase, numbers, and symbols.</li>
               <li>Passwords are protected by Firebase Authentication and are never stored in plaintext.</li>
               <li>Your updated password remains valid across sessions without repeated password change prompts.</li>

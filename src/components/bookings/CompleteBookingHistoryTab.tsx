@@ -373,56 +373,56 @@ export const CompleteBookingHistoryTab: React.FC<CompleteBookingHistoryTabProps>
               Chronological audit trail of all payments, photography services, album selections, handovers, and price revisions
             </p>
           </div>
-          <span className="text-[11px] font-semibold text-zinc-500 bg-zinc-50 px-2.5 py-1 rounded-lg border border-zinc-200/60 self-start sm:self-auto">
+          <span className="text-xs font-semibold text-zinc-500 bg-zinc-50 px-2.5 py-1 rounded-lg border border-zinc-200/60 self-start sm:self-auto">
             Last Activity: {summary.lastActivityDate}
           </span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200">
-            <span className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider block">Total Received</span>
+            <span className="text-xs text-emerald-700 font-bold uppercase tracking-wider block">Total Received</span>
             <span className="text-sm font-extrabold text-emerald-800 mt-0.5 block font-display">
               ₹{summary.totalPaymentsReceived.toLocaleString('en-IN')}
             </span>
           </div>
 
           <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200">
-            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Payments</span>
+            <span className="text-xs text-zinc-400 font-bold uppercase tracking-wider block">Payments</span>
             <span className="text-sm font-bold text-zinc-900 mt-0.5 block font-display">
               {summary.paymentTransactionsCount} Transactions
             </span>
           </div>
 
           <div className="p-3 rounded-xl bg-indigo-50/60 border border-indigo-200">
-            <span className="text-[10px] text-indigo-700 font-bold uppercase tracking-wider block">Services Booked</span>
+            <span className="text-xs text-indigo-700 font-bold uppercase tracking-wider block">Services Booked</span>
             <span className="text-sm font-bold text-indigo-900 mt-0.5 block font-display">
               {summary.totalServicesBooked} Services
             </span>
           </div>
 
           <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200">
-            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Services Done</span>
+            <span className="text-xs text-zinc-400 font-bold uppercase tracking-wider block">Services Done</span>
             <span className="text-sm font-bold text-zinc-900 mt-0.5 block font-display">
               {summary.servicesCompleted} Completed
             </span>
           </div>
 
           <div className="p-3 rounded-xl bg-purple-50/60 border border-purple-200">
-            <span className="text-[10px] text-purple-700 font-bold uppercase tracking-wider block">Albums Selected</span>
+            <span className="text-xs text-purple-700 font-bold uppercase tracking-wider block">Albums Selected</span>
             <span className="text-sm font-bold text-purple-900 mt-0.5 block font-display">
               {summary.albumsSelected} Albums / Sets
             </span>
           </div>
 
           <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-200">
-            <span className="text-[10px] text-blue-700 font-bold uppercase tracking-wider block">Deliveries Done</span>
+            <span className="text-xs text-blue-700 font-bold uppercase tracking-wider block">Deliveries Done</span>
             <span className="text-sm font-bold text-blue-900 mt-0.5 block font-display">
               {summary.deliveriesCompleted} Handed Over
             </span>
           </div>
 
           <div className="p-3 rounded-xl bg-amber-50/60 border border-amber-200">
-            <span className="text-[10px] text-amber-700 font-bold uppercase tracking-wider block">Pending Delivery</span>
+            <span className="text-xs text-amber-700 font-bold uppercase tracking-wider block">Pending Delivery</span>
             <span className="text-sm font-bold text-amber-900 mt-0.5 block font-display">
               {summary.pendingDeliveries} Items in Queue
             </span>
@@ -458,7 +458,7 @@ export const CompleteBookingHistoryTab: React.FC<CompleteBookingHistoryTabProps>
         {/* Function & Date Range Selectors */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 border-t border-zinc-100 text-xs">
           <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">
+            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block mb-1">
               Filter by Function
             </label>
             <select
@@ -476,7 +476,7 @@ export const CompleteBookingHistoryTab: React.FC<CompleteBookingHistoryTabProps>
           </div>
 
           <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">
+            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block mb-1">
               From Date
             </label>
             <input
@@ -488,7 +488,7 @@ export const CompleteBookingHistoryTab: React.FC<CompleteBookingHistoryTabProps>
           </div>
 
           <div>
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">
+            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block mb-1">
               To Date
             </label>
             <input
@@ -597,18 +597,18 @@ export const CompleteBookingHistoryTab: React.FC<CompleteBookingHistoryTabProps>
                 <div className="p-4 rounded-2xl border border-zinc-200/80 bg-zinc-50/50 hover:bg-zinc-50 hover:border-zinc-300 transition-all space-y-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-md border ${style.badgeBg}`}>
+                      <span className={`text-xs font-bold px-2.5 py-0.5 rounded-md border ${style.badgeBg}`}>
                         {style.label}
                       </span>
                       <h4 className="text-xs font-bold text-zinc-900">{item.title}</h4>
                       {item.isDemoData && (
-                        <span className="text-[9px] text-zinc-400 font-mono bg-zinc-100 px-1.5 py-0.2 rounded">
+                        <span className="text-xs text-zinc-400 font-mono bg-zinc-100 px-1.5 py-0.2 rounded">
                           Historical Record
                         </span>
                       )}
                     </div>
 
-                    <div className="text-[11px] text-zinc-400 flex items-center gap-1 font-medium">
+                    <div className="text-xs text-zinc-400 flex items-center gap-1 font-medium">
                       <Clock className="w-3 h-3 text-zinc-400" />
                       <span>{formattedDate}</span>
                       <span>•</span>
@@ -621,7 +621,7 @@ export const CompleteBookingHistoryTab: React.FC<CompleteBookingHistoryTabProps>
                   </p>
 
                   {/* Metadata preview row */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zinc-200/60 text-[11px] text-zinc-500">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zinc-200/60 text-xs text-zinc-500">
                     <div className="flex flex-wrap items-center gap-3">
                       <span className="flex items-center gap-1 font-semibold text-zinc-700">
                         <User className="w-3 h-3 text-zinc-400" />
@@ -647,7 +647,7 @@ export const CompleteBookingHistoryTab: React.FC<CompleteBookingHistoryTabProps>
                       {item.activityType === 'payment_received' && (
                         <button
                           onClick={() => handleViewReceipt(item)}
-                          className="px-2.5 py-1 rounded-lg bg-zinc-900 text-white font-bold text-[10px] hover:bg-zinc-800 transition-colors flex items-center gap-1 cursor-pointer"
+                          className="px-2.5 py-1 rounded-lg bg-zinc-900 text-white font-bold text-xs hover:bg-zinc-800 transition-colors flex items-center gap-1 cursor-pointer"
                         >
                           <FileText className="w-3 h-3" />
                           <span>View Receipt</span>
@@ -658,7 +658,7 @@ export const CompleteBookingHistoryTab: React.FC<CompleteBookingHistoryTabProps>
                       {item.metadata && Object.keys(item.metadata).length > 0 && (
                         <button
                           onClick={() => toggleExpanded(item.historyId)}
-                          className="text-[10px] font-semibold text-zinc-600 hover:text-zinc-900 flex items-center gap-0.5 cursor-pointer"
+                          className="text-xs font-semibold text-zinc-600 hover:text-zinc-900 flex items-center gap-0.5 cursor-pointer"
                         >
                           <span>{isExpanded ? 'Hide Details' : 'Details'}</span>
                           {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -670,13 +670,13 @@ export const CompleteBookingHistoryTab: React.FC<CompleteBookingHistoryTabProps>
                   {/* Expanded Metadata Card */}
                   {isExpanded && item.metadata && (
                     <div className="mt-3 p-3 bg-white rounded-xl border border-zinc-200 text-xs space-y-1.5 animate-in fade-in duration-100">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1">
+                      <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 block mb-1">
                         Transaction & Activity Metadata
                       </span>
                       {Object.entries(item.metadata)
                         .filter(([k]) => !['isDemoData'].includes(k))
                         .map(([k, v]) => (
-                          <div key={k} className="flex justify-between py-0.5 border-b border-zinc-50 text-[11px]">
+                          <div key={k} className="flex justify-between py-0.5 border-b border-zinc-50 text-xs">
                             <span className="text-zinc-500 capitalize">{k.replace(/([A-Z])/g, ' $1')}</span>
                             <span className="font-semibold text-zinc-900 font-mono">
                               {typeof v === 'object' ? JSON.stringify(v) : String(v)}

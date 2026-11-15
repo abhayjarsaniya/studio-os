@@ -98,7 +98,7 @@ export const PlatformStudioDetailPage: React.FC = () => {
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
               {details.profile.name}
             </h1>
-            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
               details.lifecycleStatus === 'active'
                 ? 'bg-emerald-100 text-emerald-800'
                 : 'bg-rose-100 text-rose-800'
@@ -320,7 +320,7 @@ export const PlatformStudioDetailPage: React.FC = () => {
                       <td className="px-4 py-3 font-bold text-slate-900">₹{inv.totalAmount.toLocaleString('en-IN')}</td>
                       <td className="px-4 py-3 text-emerald-600 font-semibold">₹{inv.paidAmount.toLocaleString('en-IN')}</td>
                       <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-100 text-emerald-800">
                           {inv.status}
                         </span>
                       </td>
@@ -413,11 +413,11 @@ export const PlatformStudioDetailPage: React.FC = () => {
                       <tr key={grant.id} className="hover:bg-slate-50">
                         <td className="px-4 py-3 font-semibold text-slate-800">{grant.adminName}</td>
                         <td className="px-4 py-3 text-slate-600 max-w-xs truncate">{grant.reason}</td>
-                        <td className="px-4 py-3 text-slate-500 font-mono text-[11px]">
+                        <td className="px-4 py-3 text-slate-500 font-mono text-xs">
                           {new Date(grant.expiresAt).toLocaleString('en-IN')}
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
                             isActive
                               ? 'bg-emerald-100 text-emerald-800'
                               : grant.isRevoked
@@ -431,7 +431,7 @@ export const PlatformStudioDetailPage: React.FC = () => {
                           {isActive && (
                             <button
                               onClick={() => handleRevokeSupport(grant.id)}
-                              className="px-2 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg"
+                              className="px-2 py-1 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg"
                             >
                               Revoke Now
                             </button>

@@ -418,15 +418,15 @@ export const UnifiedBookingPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
               Direct Booking Engine
             </span>
             <span className="text-xs text-zinc-400">Step {currentStep} of 7</span>
           </div>
-          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight mt-1 font-display">
+          <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight mt-1 font-display">
             New Event Booking & Quotation
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-sm text-zinc-600 mt-1">
             Single progressive flow: create customer, configure functions, customize package, and confirm booking.
           </p>
         </div>
@@ -465,7 +465,7 @@ export const UnifiedBookingPage: React.FC = () => {
                   }`}>
                     {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : st.num}
                   </div>
-                  <span className={`text-xs font-semibold whitespace-nowrap ${
+                  <span className={`text-xs sm:text-sm font-semibold whitespace-nowrap ${
                     isCurrent ? 'text-zinc-900 font-bold' : isCompleted ? 'text-zinc-700' : 'text-zinc-400'
                   }`}>
                     {st.title}
@@ -489,8 +489,8 @@ export const UnifiedBookingPage: React.FC = () => {
             <CheckCircle2 className="w-8 h-8" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-zinc-900 font-display">Event Booking Saved Successfully!</h2>
-            <p className="text-xs text-zinc-500 mt-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 font-display">Event Booking Saved Successfully!</h2>
+            <p className="text-sm text-zinc-600 mt-1">
               Record created for <strong>{customerName}</strong> ({eventName}). All deliverables & financial ledgers initialized.
             </p>
           </div>
@@ -501,15 +501,15 @@ export const UnifiedBookingPage: React.FC = () => {
                 setActiveTab('bookings');
                 window.location.hash = `#/app/bookings/${successBookingId}`;
               }}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
+              className="px-5 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-sm shadow-xs transition-all active:scale-95 cursor-pointer min-h-[48px]"
             >
               Open Booking Workspace →
             </button>
             <button
               onClick={handleGeneratePdf}
-              className="px-4 py-2.5 rounded-xl border border-zinc-200 hover:bg-zinc-100 font-semibold text-xs flex items-center gap-1.5"
+              className="px-4 py-3 rounded-xl border border-zinc-200 hover:bg-zinc-100 font-semibold text-sm flex items-center gap-1.5 min-h-[48px]"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <Printer className="w-4 h-4" />
               <span>Print Quotation PDF</span>
             </button>
           </div>
@@ -529,7 +529,7 @@ export const UnifiedBookingPage: React.FC = () => {
 
               {/* Duplicate Prevention Search */}
               <div className="relative">
-                <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">
+                <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">
                   Lookup Existing Customer (Prevent Duplicates)
                 </label>
                 <div className="relative">
@@ -554,9 +554,9 @@ export const UnifiedBookingPage: React.FC = () => {
                       >
                         <div>
                           <strong className="text-zinc-900 block">{c.name}</strong>
-                          <span className="text-[11px] text-zinc-500 font-mono">{c.phone} • {c.city || 'City not set'}</span>
+                          <span className="text-xs text-zinc-500 font-mono">{c.phone} • {c.city || 'City not set'}</span>
                         </div>
-                        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Use This Profile</span>
+                        <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Use This Profile</span>
                       </button>
                     ))}
                   </div>
@@ -565,7 +565,7 @@ export const UnifiedBookingPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">Customer Full Name *</label>
+                  <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Customer Full Name *</label>
                   <input
                     type="text"
                     required
@@ -577,7 +577,7 @@ export const UnifiedBookingPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">Mobile Phone Number *</label>
+                  <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Mobile Phone Number *</label>
                   <input
                     type="tel"
                     required
@@ -589,7 +589,7 @@ export const UnifiedBookingPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">WhatsApp Number</label>
+                  <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">WhatsApp Number</label>
                   <input
                     type="tel"
                     value={customerWhatsApp}
@@ -600,7 +600,7 @@ export const UnifiedBookingPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">City / Region</label>
+                  <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">City / Region</label>
                   <input
                     type="text"
                     value={customerCity}
@@ -611,7 +611,7 @@ export const UnifiedBookingPage: React.FC = () => {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">Email Address</label>
+                  <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Email Address</label>
                   <input
                     type="email"
                     value={customerEmail}
@@ -622,7 +622,7 @@ export const UnifiedBookingPage: React.FC = () => {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">Client Notes / Special Requests</label>
+                  <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Client Notes / Special Requests</label>
                   <textarea
                     rows={2}
                     value={customerNotes}
@@ -645,7 +645,7 @@ export const UnifiedBookingPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">Event Title *</label>
+                  <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Event Title *</label>
                   <input
                     type="text"
                     required
@@ -657,7 +657,7 @@ export const UnifiedBookingPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">Category / Type</label>
+                  <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Category / Type</label>
                   <select
                     value={eventCategory}
                     onChange={(e) => setEventCategory(e.target.value)}
@@ -675,7 +675,7 @@ export const UnifiedBookingPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">Main Event Date *</label>
+                  <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Main Event Date *</label>
                   <input
                     type="date"
                     required
@@ -686,7 +686,7 @@ export const UnifiedBookingPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">Start Time</label>
+                  <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Start Time</label>
                   <input
                     type="time"
                     value={eventTime}
@@ -696,7 +696,7 @@ export const UnifiedBookingPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">Final Delivery Target Date</label>
+                  <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Final Delivery Target Date</label>
                   <input
                     type="date"
                     value={mainEventDeadline}
@@ -706,7 +706,7 @@ export const UnifiedBookingPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">Venue / Hotel / Resort</label>
+                  <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Venue / Hotel / Resort</label>
                   <input
                     type="text"
                     value={venue}
@@ -717,7 +717,7 @@ export const UnifiedBookingPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-zinc-500 mb-1">City / Shoot Location</label>
+                  <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">City / Shoot Location</label>
                   <input
                     type="text"
                     value={eventLocation}
@@ -739,13 +739,13 @@ export const UnifiedBookingPage: React.FC = () => {
                   <p className="text-xs text-zinc-500">Add unlimited functions with individual dates, venues and schedule times.</p>
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] text-zinc-400 font-bold uppercase mr-1">Quick Add:</span>
+                  <span className="text-xs text-zinc-400 font-bold uppercase mr-1">Quick Add:</span>
                   {PREDEFINED_FUNCTION_TYPES.slice(0, 4).map(fn => (
                     <button
                       type="button"
                       key={fn}
                       onClick={() => handleAddFunction(fn)}
-                      className="px-2 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-[10px] font-semibold"
+                      className="px-2 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-semibold"
                     >
                       + {fn}
                     </button>
@@ -753,7 +753,7 @@ export const UnifiedBookingPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleAddFunction('Custom Function')}
-                    className="px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold"
+                    className="px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold"
                   >
                     + Custom
                   </button>
@@ -765,7 +765,7 @@ export const UnifiedBookingPage: React.FC = () => {
                   <div key={fn.id} className="p-4 rounded-2xl border border-zinc-200 bg-zinc-50/50 space-y-3 text-xs">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-lg bg-orange-500 text-white font-bold text-[10px] flex items-center justify-center">
+                        <span className="w-6 h-6 rounded-lg bg-orange-500 text-white font-bold text-xs flex items-center justify-center">
                           #{idx + 1}
                         </span>
                         <input
@@ -793,7 +793,7 @@ export const UnifiedBookingPage: React.FC = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                       <div>
-                        <label className="block text-[10px] font-bold uppercase text-zinc-400 mb-0.5">Date</label>
+                        <label className="block text-xs font-bold uppercase text-zinc-400 mb-0.5">Date</label>
                         <input
                           type="date"
                           value={fn.date}
@@ -806,7 +806,7 @@ export const UnifiedBookingPage: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-bold uppercase text-zinc-400 mb-0.5">Start Time</label>
+                        <label className="block text-xs font-bold uppercase text-zinc-400 mb-0.5">Start Time</label>
                         <input
                           type="time"
                           value={fn.startTime}
@@ -819,7 +819,7 @@ export const UnifiedBookingPage: React.FC = () => {
                       </div>
 
                       <div className="sm:col-span-2">
-                        <label className="block text-[10px] font-bold uppercase text-zinc-400 mb-0.5">Venue</label>
+                        <label className="block text-xs font-bold uppercase text-zinc-400 mb-0.5">Venue</label>
                         <input
                           type="text"
                           value={fn.venue}
@@ -847,7 +847,7 @@ export const UnifiedBookingPage: React.FC = () => {
                   <p className="text-xs text-zinc-500">Configure photography, cinematography, drone, and editing items with rates.</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-zinc-400 uppercase font-bold block">Package Subtotal</span>
+                  <span className="text-xs text-zinc-400 uppercase font-bold block">Package Subtotal</span>
                   <span className="text-lg font-black text-zinc-900 font-mono">₹{packageTotal.toLocaleString('en-IN')}</span>
                 </div>
               </div>
@@ -855,7 +855,7 @@ export const UnifiedBookingPage: React.FC = () => {
               {/* Line items table */}
               <div className="border border-zinc-200 rounded-2xl overflow-hidden text-xs">
                 <table className="w-full text-left">
-                  <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 uppercase text-[10px] font-bold">
+                  <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 uppercase text-xs font-bold">
                     <tr>
                       <th className="p-3">Service Item</th>
                       <th className="p-3">Description</th>
@@ -869,7 +869,7 @@ export const UnifiedBookingPage: React.FC = () => {
                     {lineItems.map(item => (
                       <tr key={item.id} className="hover:bg-zinc-50/50">
                         <td className="p-3 font-semibold text-zinc-900">{item.name}</td>
-                        <td className="p-3 text-zinc-500 text-[11px]">{item.description}</td>
+                        <td className="p-3 text-zinc-500 text-xs">{item.description}</td>
                         <td className="p-3 text-center">
                           <input
                             type="number"
@@ -961,7 +961,7 @@ export const UnifiedBookingPage: React.FC = () => {
                       className="w-4 h-4 accent-zinc-900 rounded"
                     />
                   </div>
-                  <p className="text-[11px] text-zinc-500">Handover of full uncut RAW camera captures via SSD / cloud drive.</p>
+                  <p className="text-xs text-zinc-500">Handover of full uncut RAW camera captures via SSD / cloud drive.</p>
                 </div>
 
                 {/* Edited Photos */}
@@ -975,7 +975,7 @@ export const UnifiedBookingPage: React.FC = () => {
                       className="w-20 px-2 py-1 rounded-lg border border-zinc-200 bg-white font-mono text-center text-xs"
                     />
                   </div>
-                  <p className="text-[11px] text-zinc-500">Selected master retouch photos for print & album inclusion.</p>
+                  <p className="text-xs text-zinc-500">Selected master retouch photos for print & album inclusion.</p>
                 </div>
 
                 {/* Cinematic Film & Teaser */}
@@ -1009,7 +1009,7 @@ export const UnifiedBookingPage: React.FC = () => {
                       className="w-20 px-2 py-1 rounded-lg border border-zinc-200 bg-white font-mono text-center text-xs"
                     />
                   </div>
-                  <p className="text-[11px] text-zinc-500">Fast 48-hour vertical teaser reels formatted for 9:16 mobile sharing.</p>
+                  <p className="text-xs text-zinc-500">Fast 48-hour vertical teaser reels formatted for 9:16 mobile sharing.</p>
                 </div>
 
                 {/* Premium Album */}
@@ -1026,7 +1026,7 @@ export const UnifiedBookingPage: React.FC = () => {
                   {deliverables.albumRequired && (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                       <div>
-                        <span className="text-[10px] text-zinc-400 font-bold block mb-1">Album Type & Material</span>
+                        <span className="text-xs text-zinc-400 font-bold block mb-1">Album Type & Material</span>
                         <input
                           type="text"
                           value={deliverables.albumType}
@@ -1035,7 +1035,7 @@ export const UnifiedBookingPage: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <span className="text-[10px] text-zinc-400 font-bold block mb-1">Sheets Count</span>
+                        <span className="text-xs text-zinc-400 font-bold block mb-1">Sheets Count</span>
                         <input
                           type="number"
                           value={deliverables.albumSheets}
@@ -1044,7 +1044,7 @@ export const UnifiedBookingPage: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <span className="text-[10px] text-zinc-400 font-bold block mb-1">Album Copies</span>
+                        <span className="text-xs text-zinc-400 font-bold block mb-1">Album Copies</span>
                         <input
                           type="number"
                           value={deliverables.albumCopies}
@@ -1069,38 +1069,38 @@ export const UnifiedBookingPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                 <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200">
-                  <span className="text-[10px] text-zinc-400 font-bold uppercase block mb-1">Base Package Total</span>
+                  <span className="text-xs text-zinc-400 font-bold uppercase block mb-1">Base Package Total</span>
                   <div className="text-xl font-black text-zinc-900 font-mono">₹{packageTotal.toLocaleString('en-IN')}</div>
-                  <span className="text-[10px] text-zinc-500 mt-1 block">{lineItems.length} selected line items</span>
+                  <span className="text-xs text-zinc-500 mt-1 block">{lineItems.length} selected line items</span>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200">
-                  <span className="text-[10px] text-zinc-400 font-bold uppercase block mb-1">Additional Services</span>
+                  <span className="text-xs text-zinc-400 font-bold uppercase block mb-1">Additional Services</span>
                   <input
                     type="number"
                     value={additionalServices}
                     onChange={(e) => setAdditionalServices(parseInt(e.target.value) || 0)}
                     className="w-full px-3 py-1.5 rounded-xl border border-zinc-200 bg-white font-mono font-bold text-sm"
                   />
-                  <span className="text-[10px] text-zinc-500 mt-1 block">Travel, stay, extra crew</span>
+                  <span className="text-xs text-zinc-500 mt-1 block">Travel, stay, extra crew</span>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-rose-50/50 border border-rose-200">
-                  <span className="text-[10px] text-rose-600 font-bold uppercase block mb-1">Negotiated Discount (₹)</span>
+                  <span className="text-xs text-rose-600 font-bold uppercase block mb-1">Negotiated Discount (₹)</span>
                   <input
                     type="number"
                     value={discount}
                     onChange={(e) => setDiscount(parseInt(e.target.value) || 0)}
                     className="w-full px-3 py-1.5 rounded-xl border border-rose-200 bg-white font-mono font-bold text-sm text-rose-700"
                   />
-                  <span className="text-[10px] text-rose-500 mt-1 block">Bundle / client courtesy</span>
+                  <span className="text-xs text-rose-500 mt-1 block">Bundle / client courtesy</span>
                 </div>
               </div>
 
               {/* Total Settlement Card */}
               <div className="p-5 rounded-2xl bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md">
                 <div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-orange-100">Final Agreed Booking Amount</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-orange-100">Final Agreed Booking Amount</span>
                   <div className="text-3xl font-black font-mono tracking-tight mt-0.5 text-white">
                     ₹{finalNegotiatedAmount.toLocaleString('en-IN')}
                   </div>
@@ -1108,7 +1108,7 @@ export const UnifiedBookingPage: React.FC = () => {
 
                 <div className="flex items-center gap-4 border-t sm:border-t-0 sm:border-l border-orange-400/40 pt-3 sm:pt-0 sm:pl-6 text-xs">
                   <div>
-                    <span className="text-[10px] text-orange-100 uppercase block">Advance Received</span>
+                    <span className="text-xs text-orange-100 uppercase block">Advance Received</span>
                     <input
                       type="number"
                       value={advancePayment}
@@ -1117,7 +1117,7 @@ export const UnifiedBookingPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] text-orange-100 uppercase block">Remaining Balance</span>
+                    <span className="text-xs text-orange-100 uppercase block">Remaining Balance</span>
                     <div className="text-base font-bold font-mono text-amber-400 mt-1.5">
                       ₹{remainingBalance.toLocaleString('en-IN')}
                     </div>
@@ -1138,7 +1138,7 @@ export const UnifiedBookingPage: React.FC = () => {
               {/* Summary overview */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div className="p-4 rounded-2xl border border-zinc-200 bg-zinc-50/50 space-y-2">
-                  <span className="text-[10px] font-bold uppercase text-zinc-400 block">Customer & Event</span>
+                  <span className="text-xs font-bold uppercase text-zinc-400 block">Customer & Event</span>
                   <div className="space-y-1">
                     <p><strong className="text-zinc-900">{customerName}</strong> ({customerPhone})</p>
                     <p className="text-zinc-600">{eventName} • {eventCategory}</p>
@@ -1147,7 +1147,7 @@ export const UnifiedBookingPage: React.FC = () => {
                 </div>
 
                 <div className="p-4 rounded-2xl border border-zinc-200 bg-zinc-50/50 space-y-2">
-                  <span className="text-[10px] font-bold uppercase text-zinc-400 block">Financial Summary</span>
+                  <span className="text-xs font-bold uppercase text-zinc-400 block">Financial Summary</span>
                   <div className="space-y-1 font-mono">
                     <p className="flex justify-between"><span>Agreed Deal:</span> <strong className="text-zinc-900">₹{finalNegotiatedAmount.toLocaleString('en-IN')}</strong></p>
                     <p className="flex justify-between text-emerald-700"><span>Advance Token:</span> <strong>₹{advancePayment.toLocaleString('en-IN')}</strong></p>
@@ -1158,7 +1158,7 @@ export const UnifiedBookingPage: React.FC = () => {
 
               {/* Functions & Deliverables pill summary */}
               <div className="p-4 rounded-2xl border border-zinc-200 bg-zinc-50/30 space-y-2 text-xs">
-                <span className="text-[10px] font-bold uppercase text-zinc-400 block">
+                <span className="text-xs font-bold uppercase text-zinc-400 block">
                   Functions ({functions.length}) & Deliverables
                 </span>
                 <div className="flex flex-wrap gap-1.5">

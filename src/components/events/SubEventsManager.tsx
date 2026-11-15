@@ -154,7 +154,7 @@ export const SubEventsManager: React.FC<SubEventsManagerProps> = ({ parentEventI
           </div>
 
           {/* Counts Badges */}
-          <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] font-medium">
+          <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-medium">
             <span className="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
               Total: <strong>{progress.total}</strong>
             </span>
@@ -180,7 +180,7 @@ export const SubEventsManager: React.FC<SubEventsManagerProps> = ({ parentEventI
 
         {/* Quick Add Presets Row */}
         <div className="pt-2 border-t border-zinc-100 flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-          <span className="text-[11px] font-semibold text-zinc-400 shrink-0">Quick Add:</span>
+          <span className="text-xs font-semibold text-zinc-400 shrink-0">Quick Add:</span>
           {QUICK_ADD_PRESETS.map(preset => (
             <button
               key={preset}
@@ -230,16 +230,16 @@ export const SubEventsManager: React.FC<SubEventsManagerProps> = ({ parentEventI
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-mono text-[10px] text-zinc-500 font-semibold bg-zinc-50 border border-zinc-200 px-1.5 py-0.5 rounded">
+                      <span className="font-mono text-xs text-zinc-500 font-semibold bg-zinc-50 border border-zinc-200 px-1.5 py-0.5 rounded">
                         {sub.subEventNumber}
                       </span>
                       <h4 className="text-sm font-bold text-zinc-900 truncate">
                         {sub.name}
                       </h4>
-                      <span className="text-[10px] font-semibold text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-semibold text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-full">
                         {sub.customCategory}
                       </span>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getStatusStyle(sub.status)}`}>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${getStatusStyle(sub.status)}`}>
                         {sub.status}
                       </span>
                     </div>

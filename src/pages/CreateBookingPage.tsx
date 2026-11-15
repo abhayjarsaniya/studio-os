@@ -362,7 +362,7 @@ export const CreateBookingPage: React.FC = () => {
                 : 'bg-white text-zinc-500 border-zinc-200 hover:bg-zinc-50'
             }`}
           >
-            <div className="text-[10px] opacity-70">0{s.step}</div>
+            <div className="text-xs opacity-70">0{s.step}</div>
             <div className="truncate">{s.title}</div>
           </button>
         ))}
@@ -376,7 +376,7 @@ export const CreateBookingPage: React.FC = () => {
               <User className="w-4 h-4 text-emerald-600" />
               Step 1: Customer Details
             </h3>
-            <span className="text-[11px] text-zinc-400">Search CRM or Add New Client</span>
+            <span className="text-xs text-zinc-400">Search CRM or Add New Client</span>
           </div>
 
           {/* CRM Search / Lookup */}
@@ -404,10 +404,10 @@ export const CreateBookingPage: React.FC = () => {
                   >
                     <div>
                       <span className="font-bold text-zinc-900">{mc.name}</span>
-                      <span className="text-zinc-500 font-mono text-[11px] ml-2">{mc.phone}</span>
-                      <div className="text-[10px] text-zinc-400">{mc.city} • Total Bookings: {mc.totalBookings || 0}</div>
+                      <span className="text-zinc-500 font-mono text-xs ml-2">{mc.phone}</span>
+                      <div className="text-xs text-zinc-400">{mc.city} • Total Bookings: {mc.totalBookings || 0}</div>
                     </div>
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
                       Select
                     </span>
                   </button>
@@ -536,7 +536,7 @@ export const CreateBookingPage: React.FC = () => {
               <Calendar className="w-4 h-4 text-emerald-600" />
               Step 2: Event Details & Sub-Events
             </h3>
-            <span className="text-[11px] text-zinc-400">Multi-day & Multi-ritual Timeline</span>
+            <span className="text-xs text-zinc-400">Multi-day & Multi-ritual Timeline</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -650,7 +650,7 @@ export const CreateBookingPage: React.FC = () => {
                 <h4 className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
                   Sub-Events & Ceremonies ({subEvents.length})
                 </h4>
-                <p className="text-[11px] text-zinc-500">
+                <p className="text-xs text-zinc-500">
                   Configure individual rituals (Haldi, Mehndi, Sangeet, Ceremony, Reception).
                 </p>
               </div>
@@ -746,7 +746,7 @@ export const CreateBookingPage: React.FC = () => {
               <Camera className="w-4 h-4 text-emerald-600" />
               Step 3: Photography & Videography Services Selection
             </h3>
-            <span className="text-[11px] text-zinc-400">Select Services and Crew Count</span>
+            <span className="text-xs text-zinc-400">Select Services and Crew Count</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -770,13 +770,13 @@ export const CreateBookingPage: React.FC = () => {
                     />
                     <div>
                       <div className="text-xs font-bold text-zinc-900">{srv.name}</div>
-                      <div className="text-[10px] text-zinc-500">Default crew: {srv.defaultCrew}</div>
+                      <div className="text-xs text-zinc-500">Default crew: {srv.defaultCrew}</div>
                     </div>
                   </label>
 
                   {state.selected && (
                     <div className="flex items-center gap-1.5 ml-2">
-                      <span className="text-[10px] text-zinc-500 font-medium">Crew:</span>
+                      <span className="text-xs text-zinc-500 font-medium">Crew:</span>
                       <input
                         type="number"
                         min={1}
@@ -802,7 +802,7 @@ export const CreateBookingPage: React.FC = () => {
               <Layers className="w-4 h-4 text-emerald-600" />
               Step 4: Album & Delivery Specifications
             </h3>
-            <span className="text-[11px] text-zinc-400">Physical Albums & Digital Delivery</span>
+            <span className="text-xs text-zinc-400">Physical Albums & Digital Delivery</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -953,7 +953,7 @@ export const CreateBookingPage: React.FC = () => {
               <CreditCard className="w-4 h-4 text-emerald-600" />
               Step 5: Pricing & Payment Terms (Studio Owner / Admin Only)
             </h3>
-            <span className="text-[11px] text-zinc-400">Financial Setup</span>
+            <span className="text-xs text-zinc-400">Financial Setup</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1065,21 +1065,21 @@ export const CreateBookingPage: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               <div className="p-2.5 rounded-lg bg-emerald-50 text-emerald-900 border border-emerald-100">
-                <div className="text-[10px] uppercase font-bold text-emerald-700">1. Booking Advance</div>
+                <div className="text-xs uppercase font-bold text-emerald-700">1. Booking Advance</div>
                 <div className="font-black text-sm mt-0.5">₹{advanceReceived.toLocaleString('en-IN')}</div>
-                <div className="text-[10px] text-emerald-600">Immediate / Paid</div>
+                <div className="text-xs text-emerald-600">Immediate / Paid</div>
               </div>
               <div className="p-2.5 rounded-lg bg-zinc-50 text-zinc-800 border border-zinc-200">
-                <div className="text-[10px] uppercase font-bold text-zinc-500">2. Event Date Payment</div>
+                <div className="text-xs uppercase font-bold text-zinc-500">2. Event Date Payment</div>
                 <div className="font-black text-sm mt-0.5">₹{Math.round(grandTotal * 0.4).toLocaleString('en-IN')}</div>
-                <div className="text-[10px] text-zinc-500">On shoot day</div>
+                <div className="text-xs text-zinc-500">On shoot day</div>
               </div>
               <div className="p-2.5 rounded-lg bg-zinc-50 text-zinc-800 border border-zinc-200">
-                <div className="text-[10px] uppercase font-bold text-zinc-500">3. Final Delivery Balance</div>
+                <div className="text-xs uppercase font-bold text-zinc-500">3. Final Delivery Balance</div>
                 <div className="font-black text-sm mt-0.5">
                   ₹{Math.max(0, grandTotal - advanceReceived - Math.round(grandTotal * 0.4)).toLocaleString('en-IN')}
                 </div>
-                <div className="text-[10px] text-zinc-500">Before album release</div>
+                <div className="text-xs text-zinc-500">Before album release</div>
               </div>
             </div>
           </div>
@@ -1094,7 +1094,7 @@ export const CreateBookingPage: React.FC = () => {
               <FileCheck className="w-4 h-4 text-emerald-600" />
               Step 6: Review & Confirmation
             </h3>
-            <span className="text-[11px] text-zinc-400">Verify all booking terms</span>
+            <span className="text-xs text-zinc-400">Verify all booking terms</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">

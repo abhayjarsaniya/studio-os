@@ -181,31 +181,31 @@ export const PayrollPage: React.FC = () => {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-4 rounded-2xl bg-white border border-zinc-200 space-y-1">
-          <span className="text-[11px] font-bold text-zinc-400 uppercase">Total Payroll Runs</span>
+          <span className="text-xs font-bold text-zinc-400 uppercase">Total Payroll Runs</span>
           <p className="text-xl font-bold font-mono text-zinc-900">{payrollRuns.length}</p>
-          <p className="text-[10px] text-zinc-500">Recorded cycles</p>
+          <p className="text-xs text-zinc-500">Recorded cycles</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-zinc-200 space-y-1">
-          <span className="text-[11px] font-bold text-zinc-400 uppercase">Active Crew Profiles</span>
+          <span className="text-xs font-bold text-zinc-400 uppercase">Active Crew Profiles</span>
           <p className="text-xl font-bold font-mono text-zinc-900">{salaryProfiles.length}</p>
-          <p className="text-[10px] text-zinc-500">Staff under payroll</p>
+          <p className="text-xs text-zinc-500">Staff under payroll</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-1">
-          <span className="text-[11px] font-bold text-emerald-800 uppercase">Latest Net Payable</span>
+          <span className="text-xs font-bold text-emerald-800 uppercase">Latest Net Payable</span>
           <p className="text-xl font-bold font-mono text-emerald-700">
             {latestRun ? formatCurrency(latestRun.totalNetPayable) : '₹0'}
           </p>
-          <p className="text-[10px] text-emerald-600">{latestRun?.month || 'No active run'}</p>
+          <p className="text-xs text-emerald-600">{latestRun?.month || 'No active run'}</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-zinc-200 space-y-1">
-          <span className="text-[11px] font-bold text-zinc-400 uppercase">Disbursed Amount</span>
+          <span className="text-xs font-bold text-zinc-400 uppercase">Disbursed Amount</span>
           <p className="text-xl font-bold font-mono text-zinc-900">
             {latestRun ? formatCurrency(latestRun.totalPaidAmount) : '₹0'}
           </p>
-          <p className="text-[10px] text-zinc-500">Processed payments</p>
+          <p className="text-xs text-zinc-500">Processed payments</p>
         </div>
       </div>
 
@@ -250,7 +250,7 @@ export const PayrollPage: React.FC = () => {
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-base font-bold text-zinc-900">{run.title}</h3>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
                         run.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                         run.status === 'processed' ? 'bg-blue-50 text-blue-700 border-blue-200' :
                         'bg-amber-50 text-amber-700 border-amber-200'
@@ -278,7 +278,7 @@ export const PayrollPage: React.FC = () => {
                 {/* Entries Table */}
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 uppercase text-[10px]">
+                    <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 uppercase text-xs">
                       <tr>
                         <th className="p-2.5">Staff Member</th>
                         <th className="p-2.5">Base Salary</th>
@@ -295,7 +295,7 @@ export const PayrollPage: React.FC = () => {
                         <tr key={entry.id} className="hover:bg-zinc-50/50">
                           <td className="p-2.5">
                             <p className="font-bold text-zinc-900">{entry.employeeName}</p>
-                            <p className="text-[10px] text-zinc-400">{entry.department}</p>
+                            <p className="text-xs text-zinc-400">{entry.department}</p>
                           </td>
                           <td className="p-2.5 font-mono">{formatCurrency(entry.baseSalary)}</td>
                           <td className="p-2.5 font-mono text-emerald-600">+{formatCurrency(entry.bonusAmount)}</td>
@@ -303,7 +303,7 @@ export const PayrollPage: React.FC = () => {
                           <td className="p-2.5 font-mono font-bold text-zinc-900">{formatCurrency(entry.netPayable)}</td>
                           <td className="p-2.5 font-mono text-emerald-700">{formatCurrency(entry.paidAmount)}</td>
                           <td className="p-2.5">
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                               entry.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-700' :
                               entry.paymentStatus === 'partial' ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700'
                             }`}>
@@ -349,7 +349,7 @@ export const PayrollPage: React.FC = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="font-bold text-sm text-zinc-900">{p.employeeName}</p>
-                    <span className="text-[10px] font-semibold text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded">
+                    <span className="text-xs font-semibold text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded">
                       {p.salaryType === 'daily' ? 'Daily Wage' : 'Monthly Salary'}
                     </span>
                   </div>

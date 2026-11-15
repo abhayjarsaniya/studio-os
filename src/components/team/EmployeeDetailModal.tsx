@@ -109,10 +109,10 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
             )}
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-mono text-[11px] font-semibold text-zinc-500 bg-white border border-zinc-200 px-2 py-0.5 rounded-md">
+                <span className="font-mono text-xs font-semibold text-zinc-500 bg-white border border-zinc-200 px-2 py-0.5 rounded-md">
                   {employee.employeeNumber}
                 </span>
-                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
                   employee.employmentStatus === 'active'
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     : 'bg-zinc-100 text-zinc-600 border-zinc-200'
@@ -158,7 +158,7 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
             }`}
           >
             <span>Assigned Shoots</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-zinc-100 text-[10px]">
+            <span className="px-1.5 py-0.2 rounded-full bg-zinc-100 text-xs">
               {assignedEvents.length + assignedSubEvents.length}
             </span>
           </button>
@@ -171,7 +171,7 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
             }`}
           >
             <span>Leave History</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-zinc-100 text-[10px]">
+            <span className="px-1.5 py-0.2 rounded-full bg-zinc-100 text-xs">
               {employeeLeaves.length}
             </span>
           </button>
@@ -235,7 +235,7 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                     <Lock className="w-4 h-4 text-zinc-700" />
                     <div>
                       <h4 className="font-bold text-xs text-zinc-900">Admin-Controlled Credentials</h4>
-                      <p className="text-[11px] text-zinc-500">
+                      <p className="text-xs text-zinc-500">
                         Login ID: <span className="font-mono font-semibold">{employee.loginCredentials?.loginId || employee.email}</span>
                       </p>
                     </div>
@@ -292,9 +292,9 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                       <div key={e.id} className="p-3 rounded-xl border border-zinc-200 bg-white flex items-center justify-between">
                         <div>
                           <p className="text-xs font-bold text-zinc-900">{e.name}</p>
-                          <p className="text-[11px] text-zinc-500">{e.startDate} • {e.venue}</p>
+                          <p className="text-xs text-zinc-500">{e.startDate} • {e.venue}</p>
                         </div>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700">
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700">
                           {e.status}
                         </span>
                       </div>
@@ -313,12 +313,12 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                       <div key={s.id} className="p-3 rounded-xl border border-zinc-200 bg-white flex items-center justify-between">
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <span className="font-mono text-[10px] text-zinc-500">{s.subEventNumber}</span>
+                            <span className="font-mono text-xs text-zinc-500">{s.subEventNumber}</span>
                             <p className="text-xs font-bold text-zinc-900">{s.name}</p>
                           </div>
-                          <p className="text-[11px] text-zinc-500">{s.date} • {s.startTime}–{s.endTime} • {s.venue}</p>
+                          <p className="text-xs text-zinc-500">{s.date} • {s.startTime}–{s.endTime} • {s.venue}</p>
                         </div>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                           {s.status}
                         </span>
                       </div>
@@ -346,10 +346,10 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                     <div key={l.id} className="p-3 rounded-xl border border-zinc-200 bg-white flex items-center justify-between">
                       <div>
                         <p className="text-xs font-bold text-zinc-900">{l.leaveTypeName} ({l.totalDays} Days)</p>
-                        <p className="text-[11px] text-zinc-500">{l.startDate} to {l.endDate}</p>
-                        <p className="text-[11px] text-zinc-600 italic">"{l.reason}"</p>
+                        <p className="text-xs text-zinc-500">{l.startDate} to {l.endDate}</p>
+                        <p className="text-xs text-zinc-600 italic">"{l.reason}"</p>
                       </div>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
                         l.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                         l.status === 'rejected' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-amber-50 text-amber-700 border-amber-200'
                       }`}>
@@ -371,9 +371,9 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                   <div key={att.id} className="p-2.5 rounded-xl border border-zinc-200 bg-white flex items-center justify-between text-xs">
                     <div>
                       <p className="font-bold text-zinc-900">{att.date}</p>
-                      {att.checkIn && <p className="text-[11px] text-zinc-500">In: {att.checkIn} {att.checkOut ? `• Out: ${att.checkOut}` : ''}</p>}
+                      {att.checkIn && <p className="text-xs text-zinc-500">In: {att.checkIn} {att.checkOut ? `• Out: ${att.checkOut}` : ''}</p>}
                     </div>
-                    <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px]">
+                    <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-xs">
                       {att.status.toUpperCase()}
                     </span>
                   </div>

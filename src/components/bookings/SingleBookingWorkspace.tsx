@@ -778,7 +778,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
           <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
             {/* Final Agreed Amount */}
             <div className="w-full sm:w-auto text-left sm:text-right px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl">
-              <span className="text-[10px] text-zinc-500 block uppercase tracking-wider font-semibold">Agreed Amount</span>
+              <span className="text-xs text-zinc-500 block uppercase tracking-wider font-semibold">Agreed Amount</span>
               <span className="text-base font-extrabold text-zinc-900 font-display">
                 ₹{finalAgreedAmount.toLocaleString('en-IN')}
               </span>
@@ -857,10 +857,10 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3">
           {/* Mobile */}
           <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between">
-            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Customer Mobile</span>
+            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Customer Mobile</span>
             <a 
               href={`tel:${booking.customerPhone}`} 
-              className="text-xs font-bold text-zinc-900 hover:text-blue-600 mt-1 inline-flex items-center gap-1 min-h-[32px]"
+              className="text-sm font-bold text-zinc-900 hover:text-blue-600 mt-1 inline-flex items-center gap-1 min-h-[32px]"
             >
               <Phone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
               <span className="truncate">{booking.customerPhone || 'N/A'}</span>
@@ -869,8 +869,8 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
           {/* Dates */}
           <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between">
-            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Event Date</span>
-            <div className="text-xs font-bold text-zinc-900 mt-1 flex items-center gap-1 min-h-[32px]">
+            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Event Date</span>
+            <div className="text-sm font-bold text-zinc-900 mt-1 flex items-center gap-1 min-h-[32px]">
               <Calendar className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
               <span className="truncate">{booking.mainEventDate || booking.startDate}</span>
             </div>
@@ -878,40 +878,40 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
           {/* Venue */}
           <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between">
-            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Venue</span>
-            <div className="text-xs font-bold text-zinc-900 mt-1 truncate min-h-[32px] flex items-center" title={booking.venue}>
+            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Venue</span>
+            <div className="text-sm font-bold text-zinc-900 mt-1 truncate min-h-[32px] flex items-center" title={booking.venue}>
               <span className="truncate">{booking.venue || 'Studio'}</span>
             </div>
           </div>
 
           {/* Functions Count */}
           <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between">
-            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Functions</span>
-            <div className="text-xs font-bold text-zinc-900 mt-1 min-h-[32px] flex items-center">
+            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Functions</span>
+            <div className="text-sm font-bold text-zinc-900 mt-1 min-h-[32px] flex items-center">
               {(booking.functions || []).length} Sub-events
             </div>
           </div>
 
           {/* Agreed Amount */}
           <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between">
-            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Agreed Amount</span>
-            <div className="text-xs font-bold text-zinc-900 mt-1 min-h-[32px] flex items-center">
+            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Agreed Amount</span>
+            <div className="text-sm font-bold text-zinc-900 mt-1 min-h-[32px] flex items-center">
               ₹{finalAgreedAmount.toLocaleString('en-IN')}
             </div>
           </div>
 
           {/* Advance Received */}
           <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between">
-            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Advance Received</span>
-            <div className="text-xs font-bold text-emerald-700 mt-1 min-h-[32px] flex items-center">
+            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Advance Received</span>
+            <div className="text-sm font-bold text-emerald-700 mt-1 min-h-[32px] flex items-center">
               ₹{verifiedPaymentsReceived.toLocaleString('en-IN')}
             </div>
           </div>
 
           {/* Remaining Balance */}
           <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between col-span-2 sm:col-span-1">
-            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Remaining Balance</span>
-            <div className={`text-xs font-extrabold mt-1 min-h-[32px] flex items-center ${isFullyPaid ? 'text-emerald-700' : 'text-rose-600'}`}>
+            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Remaining Balance</span>
+            <div className={`text-sm font-extrabold mt-1 min-h-[32px] flex items-center ${isFullyPaid ? 'text-emerald-700' : 'text-rose-600'}`}>
               {isFullyPaid ? '✓ Fully Paid' : `₹${remainingBalance.toLocaleString('en-IN')}`}
             </div>
           </div>
@@ -1033,22 +1033,22 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 >
                   <div className="space-y-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-zinc-900 text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                      <span className="w-5 h-5 rounded-full bg-zinc-900 text-white text-xs font-bold flex items-center justify-center shrink-0">
                         {idx + 1}
                       </span>
-                      <h4 className="text-xs font-bold text-zinc-900">{fn.name}</h4>
+                      <h4 className="text-sm sm:text-base font-bold text-zinc-900">{fn.name}</h4>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-zinc-500 pl-7">
+                    <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-zinc-600 pl-7">
                       <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-zinc-400" />
+                        <Calendar className="w-3.5 h-3.5 text-zinc-400" />
                         {fn.date}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-zinc-400" />
+                        <Clock className="w-3.5 h-3.5 text-zinc-400" />
                         {fn.startTime} - {fn.endTime}
                       </span>
                       <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-zinc-400" />
+                        <MapPin className="w-3.5 h-3.5 text-zinc-400" />
                         {fn.venue}
                       </span>
                     </div>
@@ -1060,13 +1060,13 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                       fn.assignedCrew.map((c, cIdx) => (
                         <span 
                           key={cIdx} 
-                          className="px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-[10px] font-semibold"
+                          className="px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold"
                         >
                           {c.employeeName} ({c.role})
                         </span>
                       ))
                     ) : (
-                      <span className="text-[11px] text-zinc-400 italic">No specific crew pinned</span>
+                      <span className="text-xs text-zinc-400 italic">No specific crew pinned</span>
                     )}
                   </div>
                 </div>
@@ -1080,11 +1080,11 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-base font-bold text-zinc-900 font-display">Crew Assignments & Calendar Visibility</h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200">
                     {crewTableRows.length} Assigned
                   </span>
                 </div>
-                <p className="text-xs text-zinc-500 mt-0.5">
+                <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">
                   Manage crew responsibilities and toggle employee calendar visibility with one tap
                 </p>
               </div>
@@ -1095,7 +1095,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   setCrewModalVisibleOnCalendar(true);
                   setIsCrewModalOpen(true);
                 }}
-                className="w-full sm:w-auto min-h-[44px] px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 transition-all"
+                className="w-full sm:w-auto min-h-[44px] px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 transition-all"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Assign Crew</span>
@@ -1106,7 +1106,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-zinc-200/80 text-[11px] font-bold text-zinc-500 uppercase tracking-wider bg-zinc-50/80">
+                  <tr className="border-b border-zinc-200/80 text-xs font-bold text-zinc-500 uppercase tracking-wider bg-zinc-50/80">
                     <th className="py-3 px-3.5 rounded-l-xl">Employee</th>
                     <th className="py-3 px-3.5">Responsibility</th>
                     <th className="py-3 px-3.5">Assigned</th>
@@ -1114,7 +1114,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                     <th className="py-3 px-3.5 text-right rounded-r-xl">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-100 text-xs">
+                <tbody className="divide-y divide-zinc-100 text-sm">
                   {crewTableRows.map((row) => (
                     <tr key={`${row.employeeId}_${row.functionId}`} className="hover:bg-orange-50/20 transition-colors">
                       {/* 1. Employee */}
@@ -1124,9 +1124,9 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                             {row.employeeName.charAt(0)}
                           </div>
                           <div className="min-w-0">
-                            <div className="font-bold text-zinc-900 truncate">{row.employeeName}</div>
-                            <div className="text-[11px] text-zinc-500 truncate">{row.designation || 'Production Staff'}</div>
-                            {row.contact && <div className="text-[10px] text-zinc-400">{row.contact}</div>}
+                            <div className="font-bold text-sm sm:text-[15px] text-zinc-900 truncate">{row.employeeName}</div>
+                            <div className="text-xs text-zinc-500 truncate">{row.designation || 'Production Staff'}</div>
+                            {row.contact && <div className="text-xs text-zinc-400 font-mono">{row.contact}</div>}
                           </div>
                         </div>
                       </td>
@@ -1136,12 +1136,12 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                         <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-orange-50 text-orange-900 border border-orange-200/80">
                           {row.responsibility}
                         </span>
-                        <div className="text-[10px] text-zinc-400 mt-1">{row.functionName}</div>
+                        <div className="text-xs text-zinc-400 mt-1">{row.functionName}</div>
                       </td>
 
                       {/* 3. Assigned */}
                       <td className="py-3.5 px-3.5">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                           <span>Yes • Confirmed</span>
                         </span>
@@ -1152,7 +1152,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                         <button
                           type="button"
                           onClick={() => handleToggleVisibility(row.employeeId, row.functionId, row.isVisibleOnCalendar)}
-                          className={`min-h-[42px] px-3.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 cursor-pointer transition-all active:scale-95 ${
+                          className={`min-h-[42px] px-3.5 py-1.5 rounded-xl border text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer transition-all active:scale-95 ${
                             row.isVisibleOnCalendar
                               ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300 shadow-2xs'
                               : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300'
@@ -1169,7 +1169,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                             <>
                               <EyeOff className="w-4 h-4 text-amber-600 shrink-0" />
                               <span>Hide from calendar</span>
-                              <span className="text-[10px] font-medium text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded">(Hidden)</span>
+                              <span className="text-xs font-medium text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded">(Hidden)</span>
                             </>
                           )}
                         </button>
@@ -1215,38 +1215,38 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200">
-                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Original Quotation</span>
-                <span className="text-sm font-bold text-zinc-700 mt-1 block">
+                <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Original Quotation</span>
+                <span className="text-sm sm:text-base font-bold text-zinc-700 mt-1 block">
                   ₹{originalQuotation.toLocaleString('en-IN')}
                 </span>
               </div>
 
               <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200">
-                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Negotiated Discount</span>
-                <span className="text-sm font-bold text-amber-700 mt-1 block">
+                <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Negotiated Discount</span>
+                <span className="text-sm sm:text-base font-bold text-amber-700 mt-1 block">
                   - ₹{negotiatedDiscount.toLocaleString('en-IN')}
                 </span>
               </div>
 
               <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-2xs">
-                <span className="text-[10px] text-orange-100 font-bold uppercase tracking-wider block">Final Agreed Amount</span>
-                <span className="text-base font-extrabold text-white mt-1 block font-display">
+                <span className="text-xs text-orange-100 font-bold uppercase tracking-wider block">Final Agreed Amount</span>
+                <span className="text-base sm:text-lg font-extrabold text-white mt-1 block font-display">
                   ₹{finalAgreedAmount.toLocaleString('en-IN')}
                 </span>
               </div>
 
               <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-                <span className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider block">Total Received</span>
-                <span className="text-base font-bold text-emerald-800 mt-1 block font-display">
+                <span className="text-xs text-emerald-700 font-bold uppercase tracking-wider block">Total Received</span>
+                <span className="text-base sm:text-lg font-bold text-emerald-800 mt-1 block font-display">
                   ₹{verifiedPaymentsReceived.toLocaleString('en-IN')}
                 </span>
               </div>
 
               <div className={`p-3 rounded-xl border ${isFullyPaid ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`}>
-                <span className={`text-[10px] font-bold uppercase tracking-wider block ${isFullyPaid ? 'text-emerald-700' : 'text-rose-700'}`}>
+                <span className={`text-xs font-bold uppercase tracking-wider block ${isFullyPaid ? 'text-emerald-700' : 'text-rose-700'}`}>
                   Remaining Balance
                 </span>
-                <span className={`text-base font-extrabold mt-1 block font-display ${isFullyPaid ? 'text-emerald-800' : 'text-rose-700'}`}>
+                <span className={`text-base sm:text-lg font-extrabold mt-1 block font-display ${isFullyPaid ? 'text-emerald-800' : 'text-rose-700'}`}>
                   {isFullyPaid ? '✓ Nil (Paid)' : `₹${remainingBalance.toLocaleString('en-IN')}`}
                 </span>
               </div>
@@ -1284,7 +1284,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                     <div key={item.historyId} className="p-4 rounded-xl border border-zinc-200/90 bg-zinc-50/70 space-y-2.5">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-zinc-500">{dateStr}</span>
-                        <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold">
+                        <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold">
                           {mode}
                         </span>
                       </div>
@@ -1310,7 +1310,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 <div className="p-4 rounded-xl border border-zinc-200/90 bg-zinc-50/70 space-y-2.5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-zinc-500">{booking.mainEventDate || 'Verified'}</span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold">
+                    <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold">
                       UPI / Digital
                     </span>
                   </div>
@@ -1339,9 +1339,9 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
             {/* Desktop Payment Table (hidden sm:block) */}
             <div className="hidden sm:block overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-200 text-zinc-400 uppercase text-[10px] font-bold">
+                  <tr className="border-b border-zinc-200 text-zinc-500 uppercase text-xs font-bold">
                     <th className="py-2.5 px-3">Date</th>
                     <th className="py-2.5 px-3">Amount Paid</th>
                     <th className="py-2.5 px-3">Payment Mode</th>
@@ -1369,7 +1369,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                             ₹{amount.toLocaleString('en-IN')}
                           </td>
                           <td className="py-3 px-3">
-                            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-semibold">
+                            <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold">
                               {mode}
                             </span>
                           </td>
@@ -1382,7 +1382,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                           <td className="py-3 px-3 text-right">
                             <button
                               onClick={() => handleGenerateReceipt(amount)}
-                              className="px-2.5 py-1 rounded-lg border border-zinc-200 hover:bg-zinc-100 text-[11px] font-semibold text-zinc-700 cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-100 text-xs sm:text-sm font-semibold text-zinc-700 cursor-pointer"
                             >
                               View Receipt
                             </button>
@@ -1399,7 +1399,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                         ₹{verifiedPaymentsReceived.toLocaleString('en-IN')}
                       </td>
                       <td className="py-3 px-3">
-                        <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-semibold">
+                        <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold">
                           UPI / Digital
                         </span>
                       </td>
@@ -1412,7 +1412,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                       <td className="py-3 px-3 text-right">
                         <button
                           onClick={() => handleGenerateReceipt(verifiedPaymentsReceived)}
-                          className="px-2.5 py-1 rounded-lg border border-zinc-200 hover:bg-zinc-100 text-[11px] font-semibold text-zinc-700 cursor-pointer"
+                          className="px-2.5 py-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-100 text-xs sm:text-sm font-semibold text-zinc-700 cursor-pointer"
                         >
                           View Receipt
                         </button>
@@ -1561,14 +1561,14 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className={`text-xs font-bold truncate ${isDone ? 'line-through text-zinc-500' : 'text-zinc-900'}`}>
+                          <span className={`text-sm sm:text-base font-bold truncate ${isDone ? 'line-through text-zinc-500' : 'text-zinc-900'}`}>
                             {idx + 1}. {item.name}
                           </span>
-                          <span className="text-[10px] text-zinc-400 capitalize hidden sm:inline">
+                          <span className="text-xs text-zinc-500 capitalize hidden sm:inline">
                             • {item.category}
                           </span>
                         </div>
-                        <p className="text-[11px] text-zinc-500 flex items-center gap-1 mt-0.5">
+                        <p className="text-xs sm:text-sm text-zinc-500 flex items-center gap-1 mt-0.5">
                           <Clock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                           <span>Deadline: {item.deadline}</span>
                         </p>
@@ -1621,17 +1621,17 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
               {/* Customer Requests */}
               <div className="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200 space-y-1">
-                <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">
+                <span className="text-xs font-bold text-amber-900 uppercase tracking-wider block">
                   Customer Special Requests & Family Preferences
                 </span>
-                <p className="text-xs text-zinc-700">
+                <p className="text-sm text-zinc-700">
                   {booking.description || 'No special requests submitted by client.'}
                 </p>
               </div>
 
               {/* Add Internal Note */}
               <form onSubmit={handleAddInternalNote} className="space-y-2 pt-2">
-                <label className="text-[11px] font-bold text-zinc-700 block">
+                <label className="text-xs sm:text-sm font-bold text-zinc-700 block">
                   + Add Internal Studio / Crew Note
                 </label>
                 <textarea
@@ -1639,11 +1639,11 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   value={newInternalNote}
                   onChange={e => setNewInternalNote(e.target.value)}
                   placeholder="e.g. Lens requirements, drone permit, client requested warm grading..."
-                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-zinc-900"
+                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-sm text-zinc-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-zinc-900"
                 />
                 <button
                   type="submit"
-                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[40px] px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-xl text-sm sm:text-xs font-bold cursor-pointer touch-manipulation active:scale-95 transition-all shadow-2xs"
+                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[40px] px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-xl text-sm font-bold cursor-pointer touch-manipulation active:scale-95 transition-all shadow-2xs"
                 >
                   Save Internal Note
                 </button>
@@ -1652,12 +1652,12 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
               {/* Notes list */}
               <div className="space-y-2 pt-2">
                 {(booking.notes || []).map((n, idx) => (
-                  <div key={n.id || idx} className="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs space-y-0.5">
-                    <div className="flex items-center justify-between text-[10px] text-zinc-400">
-                      <span className="font-semibold text-zinc-600">{n.createdByName || 'Studio'}</span>
+                  <div key={n.id || idx} className="p-3 rounded-xl border border-zinc-200 bg-zinc-50 text-sm space-y-1">
+                    <div className="flex items-center justify-between text-xs text-zinc-500">
+                      <span className="font-semibold text-zinc-700">{n.createdByName || 'Studio'}</span>
                       <span>{n.createdAt ? n.createdAt.split('T')[0] : ''}</span>
                     </div>
-                    <p className="text-zinc-800">{n.content}</p>
+                    <p className="text-zinc-800 leading-normal">{n.content}</p>
                   </div>
                 ))}
               </div>
@@ -1668,11 +1668,11 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
               <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
                 <div className="flex items-center gap-2">
                   <MessageCircle className="w-4 h-4 text-emerald-600" />
-                  <h3 className="text-sm font-bold text-zinc-900 font-display">
+                  <h3 className="text-base font-bold text-zinc-900 font-display">
                     Ready-to-Send WhatsApp Messages
                   </h3>
                 </div>
-                <span className="text-[10px] text-zinc-400">Click-to-Chat</span>
+                <span className="text-xs text-zinc-400 font-medium">Click-to-Chat</span>
               </div>
 
               {/* Template Selectors */}
@@ -1686,7 +1686,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   <button
                     key={tmpl.id}
                     onClick={() => setActiveWhatsAppTemplate(tmpl.id as any)}
-                    className={`min-h-[48px] px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer border touch-manipulation active:scale-98 ${
+                    className={`min-h-[48px] px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all text-left cursor-pointer border touch-manipulation active:scale-98 ${
                       activeWhatsAppTemplate === tmpl.id
                         ? 'bg-emerald-50 text-emerald-900 border-emerald-300 shadow-2xs'
                         : 'bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100'
@@ -1699,10 +1699,10 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
               {/* Live Preview of Message */}
               <div className="p-3.5 bg-zinc-50 border border-zinc-200 rounded-xl space-y-2">
-                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">
+                <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">
                   Message Preview for {booking.customerPhone}
                 </span>
-                <pre className="text-xs font-sans text-zinc-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-zinc-200 max-h-48 overflow-y-auto">
+                <pre className="text-xs sm:text-sm font-sans text-zinc-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-zinc-200 max-h-48 overflow-y-auto">
                   {activeWhatsAppText}
                 </pre>
               </div>
@@ -1980,7 +1980,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                     <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     <span>Scheduling Warning</span>
                   </div>
-                  <p className="text-[11px] leading-relaxed">{crewConflictWarn.warningMessage}</p>
+                  <p className="text-xs sm:text-sm leading-relaxed">{crewConflictWarn.warningMessage}</p>
                   <label className="flex items-center gap-2 font-bold text-amber-950 cursor-pointer pt-1 min-h-[36px]">
                     <input
                       type="checkbox"
@@ -1988,13 +1988,13 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                       onChange={e => setAllowCrewConflictOverride(e.target.checked)}
                       className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500"
                     />
-                    <span>Allow Overlap & Confirm Assignment</span>
+                    <span className="text-xs sm:text-sm">Allow Overlap & Confirm Assignment</span>
                   </label>
                 </div>
               )}
 
               <div>
-                <label className="font-semibold text-zinc-700 block mb-1">Select Employee</label>
+                <label className="text-sm font-semibold text-zinc-700 block mb-1">Select Employee</label>
                 <select
                   value={selectedCrewEmployeeId}
                   onChange={e => {
@@ -2015,7 +2015,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                       setCrewConflictWarn(null);
                     }
                   }}
-                  className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 focus:bg-white min-h-[48px]"
+                  className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-sm text-zinc-900 focus:bg-white min-h-[48px]"
                   required
                 >
                   <option value="">-- Choose team member --</option>
@@ -2028,11 +2028,11 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
               </div>
 
               <div>
-                <label className="font-semibold text-zinc-700 block mb-1">Assigned Role</label>
+                <label className="text-sm font-semibold text-zinc-700 block mb-1">Assigned Role</label>
                 <select
                   value={selectedCrewRole}
                   onChange={e => setSelectedCrewRole(e.target.value)}
-                  className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 focus:bg-white min-h-[48px]"
+                  className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-sm text-zinc-900 focus:bg-white min-h-[48px]"
                 >
                   <option value="Lead Photographer">Lead Photographer</option>
                   <option value="Candid Photographer">Candid Photographer</option>
@@ -2046,13 +2046,13 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
               </div>
 
               {/* Calendar Visibility setting */}
-              <div className="p-3 rounded-xl bg-orange-50/60 border border-orange-200/80 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-orange-50/60 border border-orange-200/80 flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-bold text-zinc-900 flex items-center gap-1.5">
+                  <div className="text-sm font-bold text-zinc-900 flex items-center gap-1.5">
                     {crewModalVisibleOnCalendar ? <Eye className="w-4 h-4 text-emerald-600" /> : <EyeOff className="w-4 h-4 text-amber-600" />}
                     <span>Show on Employee's Calendar</span>
                   </div>
-                  <div className="text-[11px] text-zinc-500">
+                  <div className="text-xs text-zinc-500 mt-0.5">
                     {crewModalVisibleOnCalendar ? 'Event will appear on the employee’s personal schedule' : 'Assigned in studio roster; schedule hidden from employee view'}
                   </div>
                 </div>

@@ -86,10 +86,10 @@ export const PlatformAnnouncementsPage: React.FC = () => {
             >
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100">
+                  <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100">
                     {ann.type}
                   </span>
-                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                  <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full ${
                     isPublished ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
                   }`}>
                     {ann.status}
@@ -98,14 +98,14 @@ export const PlatformAnnouncementsPage: React.FC = () => {
 
                 <h3 className="text-base font-bold text-slate-900 mt-2">{ann.title}</h3>
                 <p className="text-xs text-slate-600 mt-1 leading-relaxed">{ann.description}</p>
-                <div className="text-[11px] text-slate-400 mt-3">
+                <div className="text-xs text-slate-400 mt-3">
                   Scope: <span className="font-semibold text-slate-600 capitalize">{ann.targetScope.replace('_', ' ')}</span>
                   {ann.publishedAt && ` • Published ${new Date(ann.publishedAt).toLocaleDateString('en-IN')}`}
                 </div>
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-[10px] text-slate-400">By {ann.createdBy}</span>
+                <span className="text-xs text-slate-400">By {ann.createdBy}</span>
                 <div className="flex items-center gap-1.5">
                   {!isPublished && canAdmin('manage_announcements') && (
                     <button

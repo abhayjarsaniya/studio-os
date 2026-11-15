@@ -112,8 +112,8 @@ export const WhatsAppChatModal: React.FC<WhatsAppChatModalProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] uppercase font-bold text-zinc-400">Status:</span>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+            <span className="text-xs uppercase font-bold text-zinc-400">Status:</span>
+            <span className={`text-xs font-bold px-2 py-0.5 rounded-full uppercase ${
               trackingStatus === 'confirmed_sent' 
                 ? 'bg-emerald-100 text-emerald-800' 
                 : trackingStatus === 'opened' 
@@ -171,7 +171,7 @@ export const WhatsAppChatModal: React.FC<WhatsAppChatModalProps> = ({
                 <Edit3 className="w-3.5 h-3.5 text-zinc-400" />
                 Live Message Preview & Edit
               </label>
-              <span className="text-[11px] text-zinc-400">
+              <span className="text-xs text-zinc-400">
                 You can edit text freely before opening WhatsApp
               </span>
             </div>
@@ -185,7 +185,7 @@ export const WhatsAppChatModal: React.FC<WhatsAppChatModalProps> = ({
           </div>
 
           {/* Compliance & API Notice */}
-          <div className="p-3 rounded-xl border border-zinc-200 bg-zinc-50 text-[11px] text-zinc-500 leading-relaxed">
+          <div className="p-3 rounded-xl border border-zinc-200 bg-zinc-50 text-xs text-zinc-500 leading-relaxed">
             <strong className="text-zinc-700">Studio OS Click-to-Chat Privacy Guarantee:</strong> Messages open securely through standard WhatsApp Web / Desktop protocol (<code className="text-emerald-700">wa.me</code>) without storing private chat history or bypassing user consent.
           </div>
 

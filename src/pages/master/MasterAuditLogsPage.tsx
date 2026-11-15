@@ -32,7 +32,7 @@ export const MasterAuditLogsPage: React.FC = () => {
     <div className="space-y-6 pb-20">
       <div>
         <div className="flex items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-zinc-100 text-zinc-700 border border-zinc-200">
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-zinc-100 text-zinc-700 border border-zinc-200">
             Immutable Audit Trail
           </span>
           <span className="text-xs text-zinc-500">Security & Governance Compliance</span>
@@ -77,7 +77,7 @@ export const MasterAuditLogsPage: React.FC = () => {
       <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs whitespace-nowrap">
-            <thead className="bg-zinc-50 text-zinc-500 text-[10px] uppercase font-semibold border-b border-zinc-200">
+            <thead className="bg-zinc-50 text-zinc-500 text-xs uppercase font-semibold border-b border-zinc-200">
               <tr>
                 <th className="px-4 py-3">Timestamp (IST)</th>
                 <th className="px-4 py-3">Acting Admin</th>
@@ -96,19 +96,19 @@ export const MasterAuditLogsPage: React.FC = () => {
               ) : (
                 filteredLogs.map(l => (
                   <tr key={l.id} className="hover:bg-zinc-50 transition-colors">
-                    <td className="px-4 py-3 font-mono text-[11px] text-zinc-500">
+                    <td className="px-4 py-3 font-mono text-xs text-zinc-500">
                       {new Date(l.timestamp).toLocaleString('en-IN')}
                     </td>
                     <td className="px-4 py-3 font-bold text-zinc-800">
                       {l.adminName}
                     </td>
-                    <td className="px-4 py-3 font-mono text-amber-400 font-semibold text-[11px]">
+                    <td className="px-4 py-3 font-mono text-amber-400 font-semibold text-xs">
                       {l.action}
                     </td>
                     <td className="px-4 py-3 text-zinc-700 font-medium">
                       {l.targetId || 'Platform'}
                     </td>
-                    <td className="px-4 py-3 text-zinc-500 text-[11px] truncate max-w-xs">
+                    <td className="px-4 py-3 text-zinc-500 text-xs truncate max-w-xs">
                       {l.details}
                     </td>
                   </tr>

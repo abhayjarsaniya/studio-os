@@ -96,8 +96,8 @@ export const PlatformSupportPage: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-[11px] text-slate-500">{ticket.ticketNumber}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                    <span className="font-mono font-bold text-xs text-slate-500">{ticket.ticketNumber}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
                       ticket.status === 'open' 
                         ? 'bg-rose-100 text-rose-800' 
                         : ticket.status === 'resolved' 
@@ -108,7 +108,7 @@ export const PlatformSupportPage: React.FC = () => {
                     </span>
                   </div>
                   <h4 className="text-xs font-bold text-slate-900 mt-1 line-clamp-1">{ticket.subject}</h4>
-                  <div className="text-[11px] text-slate-500 mt-1">{ticket.studioName}</div>
+                  <div className="text-xs text-slate-500 mt-1">{ticket.studioName}</div>
                 </div>
               );
             })}

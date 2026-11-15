@@ -115,7 +115,7 @@ export const DeliveriesPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-900 text-white">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-zinc-900 text-white">
               Production & Logistics
             </span>
             <span className="text-xs text-zinc-500">11-Stage Production Lifecycle</span>
@@ -140,39 +140,39 @@ export const DeliveriesPage: React.FC = () => {
       {/* Production Overview Metrics KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
         <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-2xs">
-          <span className="text-[10px] text-zinc-500 block font-semibold uppercase">Pending Items</span>
+          <span className="text-xs text-zinc-500 block font-semibold uppercase">Pending Items</span>
           <span className="text-2xl font-black text-zinc-900 mt-1 block">{metrics.pendingDeliveriesCount}</span>
-          <span className="text-[10px] text-amber-600 font-medium">In queue</span>
+          <span className="text-xs text-amber-600 font-medium">In queue</span>
         </div>
 
         <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-2xs">
-          <span className="text-[10px] text-rose-600 block font-semibold uppercase">Same-Day Priority</span>
+          <span className="text-xs text-rose-600 block font-semibold uppercase">Same-Day Priority</span>
           <span className="text-2xl font-black text-rose-600 mt-1 block">{metrics.sameDayCount}</span>
-          <span className="text-[10px] text-rose-600 font-medium">Instant turnaround</span>
+          <span className="text-xs text-rose-600 font-medium">Instant turnaround</span>
         </div>
 
         <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-2xs">
-          <span className="text-[10px] text-amber-600 block font-semibold uppercase">Due Tomorrow</span>
+          <span className="text-xs text-amber-600 block font-semibold uppercase">Due Tomorrow</span>
           <span className="text-2xl font-black text-amber-600 mt-1 block">{metrics.dueTomorrowCount}</span>
-          <span className="text-[10px] text-zinc-400 font-medium">24h deadline</span>
+          <span className="text-xs text-zinc-400 font-medium">24h deadline</span>
         </div>
 
         <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-2xs">
-          <span className="text-[10px] text-indigo-600 block font-semibold uppercase">Editing In Progress</span>
+          <span className="text-xs text-indigo-600 block font-semibold uppercase">Editing In Progress</span>
           <span className="text-2xl font-black text-indigo-600 mt-1 block">{metrics.editingInProgressCount}</span>
-          <span className="text-[10px] text-zinc-400 font-medium">Post-production</span>
+          <span className="text-xs text-zinc-400 font-medium">Post-production</span>
         </div>
 
         <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-2xs">
-          <span className="text-[10px] text-purple-600 block font-semibold uppercase">Albums Pending</span>
+          <span className="text-xs text-purple-600 block font-semibold uppercase">Albums Pending</span>
           <span className="text-2xl font-black text-purple-600 mt-1 block">{metrics.albumsPendingCount}</span>
-          <span className="text-[10px] text-zinc-400 font-medium">Print & bind</span>
+          <span className="text-xs text-zinc-400 font-medium">Print & bind</span>
         </div>
 
         <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-2xs">
-          <span className="text-[10px] text-emerald-600 block font-semibold uppercase">Completed</span>
+          <span className="text-xs text-emerald-600 block font-semibold uppercase">Completed</span>
           <span className="text-2xl font-black text-emerald-600 mt-1 block">{metrics.completedDeliveriesCount}</span>
-          <span className="text-[10px] text-emerald-600 font-medium">{metrics.onTimePercentage}% on-time</span>
+          <span className="text-xs text-emerald-600 font-medium">{metrics.onTimePercentage}% on-time</span>
         </div>
       </div>
 
@@ -220,7 +220,7 @@ export const DeliveriesPage: React.FC = () => {
       <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs whitespace-nowrap">
-            <thead className="bg-zinc-50 text-zinc-500 text-[10px] uppercase font-bold border-b border-zinc-200">
+            <thead className="bg-zinc-50 text-zinc-500 text-xs uppercase font-bold border-b border-zinc-200">
               <tr>
                 <th className="px-4 py-3">Deliverable Item</th>
                 <th className="px-4 py-3">Function / Ceremony</th>
@@ -264,7 +264,7 @@ export const DeliveriesPage: React.FC = () => {
                             href={del.fileLinkRef}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[10px] text-indigo-600 hover:underline flex items-center gap-1 mt-0.5"
+                            className="text-xs text-indigo-600 hover:underline flex items-center gap-1 mt-0.5"
                           >
                             <ExternalLink className="w-2.5 h-2.5" />
                             <span className="truncate max-w-[200px]">{del.fileLinkRef}</span>
@@ -295,7 +295,7 @@ export const DeliveriesPage: React.FC = () => {
                       </td>
 
                       <td className="px-4 py-3 text-center">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                        <span className={`px-2 py-0.5 rounded text-xs font-black uppercase ${
                           isSameDay 
                             ? 'bg-rose-100 text-rose-800 border border-rose-200' 
                             : del.priority === 'urgent'
@@ -307,7 +307,7 @@ export const DeliveriesPage: React.FC = () => {
                       </td>
 
                       <td className="px-4 py-3 text-center">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
                           isComplete ? 'bg-emerald-100 text-emerald-800' : isPartial ? 'bg-amber-100 text-amber-800' : 'bg-zinc-100 text-zinc-600'
                         }`}>
                           {DELIVERY_STAGE_LABELS[del.stage] || del.stage}
@@ -363,7 +363,7 @@ export const DeliveriesPage: React.FC = () => {
                   onChange={e => setModalForm({ ...modalForm, completedQty: Number(e.target.value) })}
                   className="w-full bg-zinc-50 border border-zinc-300 rounded-xl px-3 py-2 text-zinc-900 font-mono"
                 />
-                <span className="text-[11px] text-zinc-400 mt-0.5 block">
+                <span className="text-xs text-zinc-400 mt-0.5 block">
                   Support partial delivery: enter less than {activeDeliverable.requiredQty} to mark partial.
                 </span>
               </div>

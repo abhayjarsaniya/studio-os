@@ -4,22 +4,46 @@
   :root {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     color-scheme: light;
+
+    /* Responsive Typography Tokens (Fluid clamp: mobile -> desktop) */
+    --text-page-title: clamp(1.375rem, 1.15rem + 1vw, 1.875rem); /* 22px -> 30px */
+    --text-section-title: clamp(1.1875rem, 1.05rem + 0.6vw, 1.5rem); /* 19px -> 24px */
+    --text-card-title: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem); /* 17px -> 20px */
+    --text-body: clamp(0.9375rem, 0.91rem + 0.15vw, 1rem); /* 15px -> 16px */
+    --text-secondary: clamp(0.8125rem, 0.8rem + 0.1vw, 0.875rem); /* 13px -> 14px */
+    --text-caption: clamp(0.75rem, 0.74rem + 0.05vw, 0.8125rem); /* 12px -> 13px (strictly >= 12px) */
+    --text-form-label: clamp(0.875rem, 0.85rem + 0.1vw, 0.9375rem); /* 14px -> 15px */
+    --text-form-input: clamp(0.9375rem, 0.91rem + 0.15vw, 1rem); /* 15px -> 16px */
+    --text-btn: clamp(0.9375rem, 0.91rem + 0.15vw, 1rem); /* 15px -> 16px */
+    --text-nav: clamp(0.8125rem, 0.78rem + 0.15vw, 0.875rem); /* 13px -> 14px */
+    --text-table: clamp(0.875rem, 0.85rem + 0.1vw, 0.9375rem); /* 14px -> 15px */
+    --text-calendar-date: clamp(0.9375rem, 0.91rem + 0.15vw, 1.0625rem); /* 15px -> 17px */
+    --text-calendar-event: clamp(0.8125rem, 0.8rem + 0.1vw, 0.9375rem); /* 13px -> 15px */
+
+    /* Line Height Tokens */
+    --leading-tight: 1.25;
+    --leading-snug: 1.375;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.625;
   }
 
   html, body {
     overflow-x: hidden;
     max-width: 100vw;
     -webkit-tap-highlight-color: transparent;
+    font-size: 16px;
+    line-height: var(--leading-normal);
   }
 
-  /* Prevent iOS zoom on inputs while keeping text crisp */
+  /* Mobile: 16px strictly avoids iOS & browser auto-zoom. Desktop: 15px professional sizing */
   input, select, textarea {
     font-size: 16px;
+    line-height: var(--leading-normal);
     touch-action: manipulation;
   }
   @media (min-width: 640px) {
     input, select, textarea {
-      font-size: 0.875rem; /* 14px on sm screens */
+      font-size: 0.9375rem; /* 15px on sm+ desktop screens */
     }
   }
 
@@ -84,4 +108,59 @@
   background-color: #fff7ed;
   color: #9a3412;
   border: 1px solid #fed7aa;
+}
+
+/* Studio OS Responsive Typography Utility Classes */
+.text-page-title {
+  font-size: var(--text-page-title);
+  line-height: var(--leading-tight);
+}
+.text-section-title {
+  font-size: var(--text-section-title);
+  line-height: var(--leading-snug);
+}
+.text-card-title {
+  font-size: var(--text-card-title);
+  line-height: var(--leading-snug);
+}
+.text-body-regular {
+  font-size: var(--text-body);
+  line-height: var(--leading-normal);
+}
+.text-body-secondary {
+  font-size: var(--text-secondary);
+  line-height: var(--leading-normal);
+}
+.text-caption-readable {
+  font-size: var(--text-caption); /* strictly >= 12px */
+  line-height: var(--leading-snug);
+}
+.text-form-label {
+  font-size: var(--text-form-label);
+  line-height: var(--leading-snug);
+}
+.text-btn-label {
+  font-size: var(--text-btn);
+  line-height: 1.25;
+}
+.text-nav-label {
+  font-size: var(--text-nav);
+  line-height: var(--leading-snug);
+}
+.text-table-cell {
+  font-size: var(--text-table);
+  line-height: var(--leading-normal);
+}
+.text-table-heading {
+  font-size: var(--text-caption);
+  line-height: var(--leading-tight);
+  letter-spacing: 0.05em;
+}
+.text-calendar-date-number {
+  font-size: var(--text-calendar-date);
+  line-height: 1.1;
+}
+.text-calendar-event-title {
+  font-size: var(--text-calendar-event);
+  line-height: var(--leading-snug);
 }

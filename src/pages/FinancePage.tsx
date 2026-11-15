@@ -194,10 +194,10 @@ export const FinancePage: React.FC = () => {
                 ₹
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight">
                   Finance & Billing
                 </h1>
-                <p className="text-xs text-zinc-500">
+                <p className="text-sm text-zinc-600 mt-0.5">
                   {studio.name} • GSTIN: {financialSettings?.gstin || 'Unregistered'}
                 </p>
               </div>
@@ -256,7 +256,7 @@ export const FinancePage: React.FC = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg whitespace-nowrap transition-colors ${
                     isActive
                       ? 'bg-zinc-900 text-white'
                       : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
@@ -284,7 +284,7 @@ export const FinancePage: React.FC = () => {
               <button
                 key={p.id}
                 onClick={() => setDatePreset(p.id as DateRangePreset)}
-                className={`px-2.5 py-1 rounded-md transition-colors text-[11px] ${
+                className={`px-2.5 py-1 rounded-md transition-colors text-xs ${
                   datePreset === p.id
                     ? 'bg-zinc-200 text-zinc-900 font-semibold'
                     : 'text-zinc-500 hover:text-zinc-900'
@@ -307,123 +307,123 @@ export const FinancePage: React.FC = () => {
             {/* 12 KPIs Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
-                <span className="text-[11px] font-medium text-zinc-500 block uppercase tracking-wider">
+                <span className="text-xs font-medium text-zinc-500 block uppercase tracking-wider">
                   Total Invoiced
                 </span>
                 <div className="text-lg sm:text-xl font-bold text-zinc-900 mt-1">
                   ₹{kpis.totalRevenue.toLocaleString('en-IN')}
                 </div>
-                <span className="text-[10px] text-zinc-400">All non-cancelled invoices</span>
+                <span className="text-xs text-zinc-400">All non-cancelled invoices</span>
               </div>
 
               <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
-                <span className="text-[11px] font-medium text-emerald-600 block uppercase tracking-wider">
+                <span className="text-xs font-medium text-emerald-600 block uppercase tracking-wider">
                   Revenue Received
                 </span>
                 <div className="text-lg sm:text-xl font-bold text-emerald-600 mt-1">
                   ₹{kpis.revenueReceived.toLocaleString('en-IN')}
                 </div>
-                <span className="text-[10px] text-zinc-400">Net after customer refunds</span>
+                <span className="text-xs text-zinc-400">Net after customer refunds</span>
               </div>
 
               <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
-                <span className="text-[11px] font-medium text-rose-600 block uppercase tracking-wider">
+                <span className="text-xs font-medium text-rose-600 block uppercase tracking-wider">
                   Outstanding Receivables
                 </span>
                 <div className="text-lg sm:text-xl font-bold text-rose-600 mt-1">
                   ₹{kpis.outstandingPayments.toLocaleString('en-IN')}
                 </div>
-                <span className="text-[10px] text-zinc-400">{kpis.pendingCustomerPaymentsCount} client balances</span>
+                <span className="text-xs text-zinc-400">{kpis.pendingCustomerPaymentsCount} client balances</span>
               </div>
 
               <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
-                <span className="text-[11px] font-medium text-amber-600 block uppercase tracking-wider">
+                <span className="text-xs font-medium text-amber-600 block uppercase tracking-wider">
                   Overdue Invoices
                 </span>
                 <div className="text-lg sm:text-xl font-bold text-amber-600 mt-1">
                   ₹{kpis.overdueInvoices.toLocaleString('en-IN')}
                 </div>
-                <span className="text-[10px] text-zinc-400">Past agreed due dates</span>
+                <span className="text-xs text-zinc-400">Past agreed due dates</span>
               </div>
 
               <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
-                <span className="text-[11px] font-medium text-zinc-500 block uppercase tracking-wider">
+                <span className="text-xs font-medium text-zinc-500 block uppercase tracking-wider">
                   Total Expenses
                 </span>
                 <div className="text-lg sm:text-xl font-bold text-zinc-900 mt-1">
                   ₹{kpis.totalExpenses.toLocaleString('en-IN')}
                 </div>
-                <span className="text-[10px] text-zinc-400">Approved & paid studio costs</span>
+                <span className="text-xs text-zinc-400">Approved & paid studio costs</span>
               </div>
 
               <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
-                <span className="text-[11px] font-medium text-zinc-500 block uppercase tracking-wider">
+                <span className="text-xs font-medium text-zinc-500 block uppercase tracking-wider">
                   Net Operating Profit
                 </span>
                 <div className={`text-lg sm:text-xl font-bold mt-1 ${kpis.netProfit >= 0 ? 'text-indigo-600' : 'text-rose-600'}`}>
                   ₹{kpis.netProfit.toLocaleString('en-IN')}
                 </div>
-                <span className="text-[10px] text-zinc-400">Revenue minus expenses</span>
+                <span className="text-xs text-zinc-400">Revenue minus expenses</span>
               </div>
 
               <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
-                <span className="text-[11px] font-medium text-zinc-500 block uppercase tracking-wider">
+                <span className="text-xs font-medium text-zinc-500 block uppercase tracking-wider">
                   Monthly Revenue
                 </span>
                 <div className="text-lg sm:text-xl font-bold text-zinc-900 mt-1">
                   ₹{kpis.monthlyRevenue.toLocaleString('en-IN')}
                 </div>
-                <span className="text-[10px] text-zinc-400">Current calendar month</span>
+                <span className="text-xs text-zinc-400">Current calendar month</span>
               </div>
 
               <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
-                <span className="text-[11px] font-medium text-zinc-500 block uppercase tracking-wider">
+                <span className="text-xs font-medium text-zinc-500 block uppercase tracking-wider">
                   Monthly Expenses
                 </span>
                 <div className="text-lg sm:text-xl font-bold text-zinc-900 mt-1">
                   ₹{kpis.monthlyExpenses.toLocaleString('en-IN')}
                 </div>
-                <span className="text-[10px] text-zinc-400">Current calendar month</span>
+                <span className="text-xs text-zinc-400">Current calendar month</span>
               </div>
 
               <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
-                <span className="text-[11px] font-medium text-zinc-500 block uppercase tracking-wider">
+                <span className="text-xs font-medium text-zinc-500 block uppercase tracking-wider">
                   Upcoming Deadlines
                 </span>
                 <div className="text-lg sm:text-xl font-bold text-zinc-900 mt-1">
                   {kpis.upcomingPaymentDeadlinesCount}
                 </div>
-                <span className="text-[10px] text-zinc-400">Due within next 7 days</span>
+                <span className="text-xs text-zinc-400">Due within next 7 days</span>
               </div>
 
               <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
-                <span className="text-[11px] font-medium text-zinc-500 block uppercase tracking-wider">
+                <span className="text-xs font-medium text-zinc-500 block uppercase tracking-wider">
                   Salary Disbursed
                 </span>
                 <div className="text-lg sm:text-xl font-bold text-emerald-600 mt-1">
                   ₹{kpis.salaryPaid.toLocaleString('en-IN')}
                 </div>
-                <span className="text-[10px] text-zinc-400">Paid studio payroll</span>
+                <span className="text-xs text-zinc-400">Paid studio payroll</span>
               </div>
 
               <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
-                <span className="text-[11px] font-medium text-zinc-500 block uppercase tracking-wider">
+                <span className="text-xs font-medium text-zinc-500 block uppercase tracking-wider">
                   Salary Payable
                 </span>
                 <div className="text-lg sm:text-xl font-bold text-amber-600 mt-1">
                   ₹{kpis.salaryPayable.toLocaleString('en-IN')}
                 </div>
-                <span className="text-[10px] text-zinc-400">Pending payroll run</span>
+                <span className="text-xs text-zinc-400">Pending payroll run</span>
               </div>
 
               <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
-                <span className="text-[11px] font-medium text-indigo-600 block uppercase tracking-wider">
+                <span className="text-xs font-medium text-indigo-600 block uppercase tracking-wider">
                   SaaS Subscription
                 </span>
                 <div className="text-lg sm:text-xl font-bold text-zinc-900 mt-1">
                   ₹500 <span className="text-xs font-normal text-zinc-400">/mo</span>
                 </div>
-                <span className="text-[10px] text-emerald-600 font-medium">Standard Studio Plan</span>
+                <span className="text-xs text-emerald-600 font-medium">Standard Studio Plan</span>
               </div>
             </div>
 
@@ -467,7 +467,7 @@ export const FinancePage: React.FC = () => {
                             title={`Expense: ₹${(pt.secondaryValue || 0).toLocaleString('en-IN')}`}
                           />
                         </div>
-                        <span className="text-[11px] text-zinc-500 font-medium">{pt.label}</span>
+                        <span className="text-xs text-zinc-500 font-medium">{pt.label}</span>
                       </div>
                     );
                   })}
@@ -560,7 +560,7 @@ export const FinancePage: React.FC = () => {
                         </div>
                         <div>
                           <div className="font-medium text-zinc-900">{tx.title}</div>
-                          <div className="text-[11px] text-zinc-400">{tx.partyName} • {tx.date}</div>
+                          <div className="text-xs text-zinc-400">{tx.partyName} • {tx.date}</div>
                         </div>
                       </div>
 
@@ -570,7 +570,7 @@ export const FinancePage: React.FC = () => {
                         }`}>
                           {tx.amount > 0 ? `+₹${tx.amount.toLocaleString('en-IN')}` : `-₹${Math.abs(tx.amount).toLocaleString('en-IN')}`}
                         </div>
-                        <span className="text-[10px] text-zinc-400 font-mono">{tx.referenceNumber}</span>
+                        <span className="text-xs text-zinc-400 font-mono">{tx.referenceNumber}</span>
                       </div>
                     </div>
                   ))}
@@ -626,18 +626,18 @@ export const FinancePage: React.FC = () => {
                       <td className="py-3 px-4 font-mono font-medium">{q.quotationNumber}</td>
                       <td className="py-3 px-4">
                         <div className="font-medium text-zinc-900">{q.customerName}</div>
-                        <div className="text-[11px] text-zinc-400">{q.customerPhone}</div>
+                        <div className="text-xs text-zinc-400">{q.customerPhone}</div>
                       </td>
                       <td className="py-3 px-4">
                         <div className="font-medium">{q.packageName || 'Custom Package'}</div>
-                        <div className="text-[11px] text-zinc-400">{q.eventCategory}</div>
+                        <div className="text-xs text-zinc-400">{q.eventCategory}</div>
                       </td>
                       <td className="py-3 px-4 text-zinc-500">{q.expiryDate || q.validUntil || '-'}</td>
                       <td className="py-3 px-4 text-right font-semibold">
                         ₹{(q.grandTotal || q.totalAmount || 0).toLocaleString('en-IN')}
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
                           q.status === 'Accepted' || q.status === 'Converted to Booking' ? 'bg-emerald-100 text-emerald-800' :
                           q.status === 'Sent' ? 'bg-indigo-100 text-indigo-800' :
                           q.status === 'Rejected' ? 'bg-rose-100 text-rose-800' :
@@ -649,7 +649,7 @@ export const FinancePage: React.FC = () => {
                       <td className="py-3 px-4 text-right space-x-1">
                         <button
                           onClick={() => handlePrintQuotation(q)}
-                          className="px-2 py-1 text-[11px] border border-zinc-200 rounded hover:bg-zinc-100 text-zinc-700"
+                          className="px-2 py-1 text-xs border border-zinc-200 rounded hover:bg-zinc-100 text-zinc-700"
                           title="View / Print PDF"
                         >
                           <Printer className="w-3 h-3 inline mr-1" />
@@ -658,7 +658,7 @@ export const FinancePage: React.FC = () => {
                         {q.status !== 'Converted to Booking' && (
                           <button
                             onClick={() => handleConvertQuote(q.id)}
-                            className="px-2 py-1 text-[11px] bg-emerald-600 text-white rounded hover:bg-emerald-700 shadow-sm"
+                            className="px-2 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 shadow-sm"
                             title="1-Click Convert to Confirmed Booking & Invoice"
                           >
                             <Sparkles className="w-3 h-3 inline mr-1" />
@@ -734,7 +734,7 @@ export const FinancePage: React.FC = () => {
                         ₹{(inv.pendingAmount || 0).toLocaleString('en-IN')}
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
                           inv.status === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
                           inv.status === 'Partially Paid' ? 'bg-amber-100 text-amber-800' :
                           inv.status === 'Overdue' ? 'bg-rose-100 text-rose-800' :
@@ -747,7 +747,7 @@ export const FinancePage: React.FC = () => {
                       <td className="py-3 px-4 text-right space-x-1">
                         <button
                           onClick={() => handlePrintInvoice(inv)}
-                          className="px-2 py-1 text-[11px] border border-zinc-200 rounded hover:bg-zinc-100"
+                          className="px-2 py-1 text-xs border border-zinc-200 rounded hover:bg-zinc-100"
                           title="Print / View PDF"
                         >
                           <Printer className="w-3 h-3 inline mr-1" />
@@ -756,7 +756,7 @@ export const FinancePage: React.FC = () => {
                         {(inv.pendingAmount || 0) > 0 && inv.status !== 'Cancelled' && (
                           <button
                             onClick={() => { setSelectedInvoiceForPayment(inv); setIsPaymentModalOpen(true); }}
-                            className="px-2 py-1 text-[11px] bg-emerald-600 text-white rounded hover:bg-emerald-700"
+                            className="px-2 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700"
                             title="Record Payment"
                           >
                             Pay
@@ -765,7 +765,7 @@ export const FinancePage: React.FC = () => {
                         {inv.status !== 'Cancelled' && (
                           <button
                             onClick={() => handleCancelInvoice(inv.id)}
-                            className="px-2 py-1 text-[11px] text-zinc-400 hover:text-rose-500 rounded"
+                            className="px-2 py-1 text-xs text-zinc-400 hover:text-rose-500 rounded"
                             title="Cancel Invoice"
                           >
                             Cancel
@@ -833,7 +833,7 @@ export const FinancePage: React.FC = () => {
                         <td className="py-3 px-4 font-mono">{p.invoiceNumber}</td>
                         <td className="py-3 px-4 font-medium text-zinc-900">{p.customerName}</td>
                         <td className="py-3 px-4">{p.paymentMethod}</td>
-                        <td className="py-3 px-4 font-mono text-[11px] text-zinc-400">{p.transactionReference || '-'}</td>
+                        <td className="py-3 px-4 font-mono text-xs text-zinc-400">{p.transactionReference || '-'}</td>
                         <td className="py-3 px-4 text-zinc-500">{p.paymentDate}</td>
                         <td className="py-3 px-4 text-right font-semibold text-emerald-600">
                           ₹{p.amount.toLocaleString('en-IN')}
@@ -841,7 +841,7 @@ export const FinancePage: React.FC = () => {
                         <td className="py-3 px-4 text-right space-x-1">
                           <button
                             onClick={() => handlePrintPayment(p)}
-                            className="px-2 py-1 text-[11px] border border-zinc-200 rounded hover:bg-zinc-100"
+                            className="px-2 py-1 text-xs border border-zinc-200 rounded hover:bg-zinc-100"
                             title="Receipt PDF"
                           >
                             <Printer className="w-3 h-3 inline mr-1" />
@@ -849,7 +849,7 @@ export const FinancePage: React.FC = () => {
                           </button>
                           <button
                             onClick={() => { setSelectedPaymentForRefund(p); setIsRefundModalOpen(true); }}
-                            className="px-2 py-1 text-[11px] text-rose-600 border border-rose-200 rounded hover:bg-rose-50"
+                            className="px-2 py-1 text-xs text-rose-600 border border-rose-200 rounded hover:bg-rose-50"
                             title="Refund"
                           >
                             <RotateCcw className="w-3 h-3 inline mr-1" />
@@ -908,7 +908,7 @@ export const FinancePage: React.FC = () => {
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => handlePrintRefund(r)}
-                            className="px-2 py-1 text-[11px] border border-zinc-200 rounded hover:bg-zinc-100"
+                            className="px-2 py-1 text-xs border border-zinc-200 rounded hover:bg-zinc-100"
                           >
                             <Printer className="w-3 h-3 inline mr-1" />
                             Voucher
@@ -973,10 +973,10 @@ export const FinancePage: React.FC = () => {
                       <td className="py-3 px-4 font-mono font-medium">{exp.expenseNumber || 'EXP'}</td>
                       <td className="py-3 px-4">
                         <div className="font-medium text-zinc-900">{exp.title}</div>
-                        {exp.eventName && <div className="text-[11px] text-zinc-400">Event: {exp.eventName}</div>}
+                        {exp.eventName && <div className="text-xs text-zinc-400">Event: {exp.eventName}</div>}
                       </td>
                       <td className="py-3 px-4">
-                        <span className="inline-block px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-[11px]">
+                        <span className="inline-block px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 text-xs">
                           {exp.category}
                         </span>
                       </td>
@@ -984,7 +984,7 @@ export const FinancePage: React.FC = () => {
                       <td className="py-3 px-4 text-zinc-500">{exp.expenseDate}</td>
                       <td className="py-3 px-4 text-right font-semibold">₹{exp.amount.toLocaleString('en-IN')}</td>
                       <td className="py-3 px-4">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
                           exp.approvalStatus === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
                           exp.approvalStatus === 'Approved' ? 'bg-blue-100 text-blue-800' :
                           exp.approvalStatus === 'Rejected' ? 'bg-rose-100 text-rose-800' :
@@ -1004,7 +1004,7 @@ export const FinancePage: React.FC = () => {
                                   alert(err.message);
                                 }
                               }}
-                              className="px-2 py-1 text-[11px] bg-emerald-600 text-white rounded hover:bg-emerald-700"
+                              className="px-2 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700"
                             >
                               Approve
                             </button>
@@ -1013,7 +1013,7 @@ export const FinancePage: React.FC = () => {
                                 const r = prompt('Rejection reason:');
                                 if (r) rejectExpense(exp.id, r);
                               }}
-                              className="px-2 py-1 text-[11px] text-rose-600 border border-rose-200 rounded hover:bg-rose-50"
+                              className="px-2 py-1 text-xs text-rose-600 border border-rose-200 rounded hover:bg-rose-50"
                             >
                               Reject
                             </button>
@@ -1022,7 +1022,7 @@ export const FinancePage: React.FC = () => {
                         {exp.approvalStatus === 'Approved' && (
                           <button
                             onClick={() => markExpensePaid(exp.id, {})}
-                            className="px-2 py-1 text-[11px] bg-zinc-900 text-white rounded hover:bg-zinc-800"
+                            className="px-2 py-1 text-xs bg-zinc-900 text-white rounded hover:bg-zinc-800"
                           >
                             Mark Paid
                           </button>
@@ -1140,7 +1140,7 @@ export const FinancePage: React.FC = () => {
               {Object.keys(reportData.summary).length > 0 && (
                 <div className="mt-6 pt-4 border-t border-zinc-200 flex justify-end">
                   <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200 min-w-64 space-y-2 text-xs">
-                    <span className="font-semibold text-zinc-900 block uppercase tracking-wider text-[11px]">
+                    <span className="font-semibold text-zinc-900 block uppercase tracking-wider text-xs">
                       Report Aggregate Summary
                     </span>
                     {Object.entries(reportData.summary).map(([k, v]) => (
@@ -1168,21 +1168,21 @@ export const FinancePage: React.FC = () => {
                 <div className="text-xl font-bold text-zinc-900 mt-1">
                   {platformMetrics.totalStudios}
                 </div>
-                <span className="text-[10px] text-zinc-400">Multi-tenant tenants</span>
+                <span className="text-xs text-zinc-400">Multi-tenant tenants</span>
               </div>
               <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
                 <span className="text-xs text-emerald-600 font-medium block">Active Subscriptions</span>
                 <div className="text-xl font-bold text-emerald-600 mt-1">
                   {platformMetrics.activeStudios}
                 </div>
-                <span className="text-[10px] text-zinc-400">Paying platform tenants</span>
+                <span className="text-xs text-zinc-400">Paying platform tenants</span>
               </div>
               <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
                 <span className="text-xs text-indigo-600 font-medium block">Platform SaaS MRR</span>
                 <div className="text-xl font-bold text-indigo-600 mt-1">
                   ₹{platformMetrics.mrr.toLocaleString('en-IN')}
                 </div>
-                <span className="text-[10px] text-zinc-400">₹500 / month / studio</span>
+                <span className="text-xs text-zinc-400">₹500 / month / studio</span>
               </div>
               <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-sm">
                 <span className="text-xs text-zinc-500 font-medium block">Revenue Separation</span>
@@ -1190,7 +1190,7 @@ export const FinancePage: React.FC = () => {
                   <CheckCircle2 className="w-4 h-4" />
                   Strict Isolation
                 </div>
-                <span className="text-[10px] text-zinc-400">Never mixed with shoot rev</span>
+                <span className="text-xs text-zinc-400">Never mixed with shoot rev</span>
               </div>
             </div>
 
@@ -1228,7 +1228,7 @@ export const FinancePage: React.FC = () => {
                         <td className="py-3 px-4 text-zinc-500">{s.renewalDate}</td>
                         <td className="py-3 px-4 text-right font-semibold">₹{s.pricePerMonth}/mo</td>
                         <td className="py-3 px-4">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
                             {s.status}
                           </span>
                         </td>

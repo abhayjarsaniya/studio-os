@@ -89,12 +89,12 @@ export const RoleSwitcherModal: React.FC = () => {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-sm text-zinc-900">{userForRole?.name}</span>
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 border border-zinc-200">
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 border border-zinc-200">
                         {r.badge}
                       </span>
                     </div>
                     <div className="text-xs text-zinc-600 mt-0.5 font-medium">{r.title}</div>
-                    <p className="text-[11px] text-zinc-500 mt-1 line-clamp-1">{r.desc}</p>
+                    <p className="text-xs text-zinc-500 mt-1 line-clamp-1">{r.desc}</p>
                   </div>
                 </div>
 
@@ -114,7 +114,7 @@ export const RoleSwitcherModal: React.FC = () => {
           <span className="flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5 text-zinc-400" /> Multi-Tenant Isolation Active
           </span>
-          <span className="font-mono text-[11px] text-zinc-400">Preview: Tenant_Aura_098</span>
+          <span className="font-mono text-xs text-zinc-400">Preview: Tenant_Aura_098</span>
         </div>
       </div>
     </Modal>

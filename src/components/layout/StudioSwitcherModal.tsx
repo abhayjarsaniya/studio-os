@@ -57,24 +57,24 @@ export const StudioSwitcherModal: React.FC = () => {
                       <h4 className="font-bold text-sm text-zinc-900 truncate font-display">
                         {s.name}
                       </h4>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                         {s.subscription.status}
                       </span>
                     </div>
 
                     <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1">{s.tagline}</p>
 
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-zinc-500 mt-2">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500 mt-2">
                       <span className="flex items-center gap-1 font-medium text-zinc-700">
                         <MapPin className="w-3 h-3 text-zinc-400" />
                         {s.city}
                       </span>
                       <span className="text-zinc-400">•</span>
-                      <span className="font-mono text-zinc-400 text-[10px]">
+                      <span className="font-mono text-zinc-400 text-xs">
                         ID: {s.id}
                       </span>
                       <span className="text-zinc-400">•</span>
-                      <span className="text-[10px] text-zinc-500">
+                      <span className="text-xs text-zinc-500">
                         ₹{s.subscription.pricePerMonth}/mo
                       </span>
                     </div>
@@ -100,7 +100,7 @@ export const StudioSwitcherModal: React.FC = () => {
           </strong>
           <div className="flex flex-wrap gap-1.5">
             {branches.map(b => (
-              <span key={b.id} className="px-2 py-0.5 bg-white border border-zinc-200 rounded text-[11px] font-medium text-zinc-700">
+              <span key={b.id} className="px-2 py-0.5 bg-white border border-zinc-200 rounded text-xs font-medium text-zinc-700">
                 {b.name} ({b.city})
               </span>
             ))}
@@ -110,7 +110,7 @@ export const StudioSwitcherModal: React.FC = () => {
 
         <div className="pt-2 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-400 font-mono">
           <span>Active Tenant: {currentStudio.tenantId}</span>
-          <span className="text-[11px] text-zinc-500">SaaS Multi-Tenant Mode</span>
+          <span className="text-xs text-zinc-500">SaaS Multi-Tenant Mode</span>
         </div>
       </div>
     </Modal>

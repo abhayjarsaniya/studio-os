@@ -122,7 +122,7 @@ export const WorkflowPipelineBoard: React.FC<WorkflowPipelineBoardProps> = ({
               style={{ width: `${activeInstance.progressPercentage}%` }}
             />
           </div>
-          <div className="flex items-center justify-between text-[11px] text-zinc-500">
+          <div className="flex items-center justify-between text-xs text-zinc-500">
             <span>{activeInstance.completedTasksCount} of {activeInstance.totalTasksCount} tasks completed</span>
             <span className="capitalize font-semibold text-zinc-700">Status: {activeInstance.status}</span>
           </div>
@@ -152,7 +152,7 @@ export const WorkflowPipelineBoard: React.FC<WorkflowPipelineBoardProps> = ({
                   : 'border-zinc-200 bg-white'
               }`}
             >
-              <div className="flex items-center justify-between gap-1 text-[11px]">
+              <div className="flex items-center justify-between gap-1 text-xs">
                 <span className="font-mono font-bold text-zinc-500">Stage {stage.order}</span>
                 {isPast ? (
                   <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center gap-1">
@@ -173,7 +173,7 @@ export const WorkflowPipelineBoard: React.FC<WorkflowPipelineBoardProps> = ({
                 <h4 className="text-sm font-bold text-zinc-900 leading-snug">
                   {stage.name}
                 </h4>
-                <div className="text-[11px] text-zinc-500 mt-0.5 flex items-center gap-1">
+                <div className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
                   <span>{stage.department}</span>
                   {stage.estimatedHours > 0 && <span>• {stage.estimatedHours} hrs</span>}
                 </div>
@@ -181,7 +181,7 @@ export const WorkflowPipelineBoard: React.FC<WorkflowPipelineBoardProps> = ({
 
               {/* Tasks in this stage */}
               <div className="space-y-1.5 pt-2 border-t border-zinc-200/60">
-                <div className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
+                <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                   Stage Tasks ({completedTasks.length}/{stageTasks.length})
                 </div>
                 {stageTasks.length === 0 ? (
@@ -196,7 +196,7 @@ export const WorkflowPipelineBoard: React.FC<WorkflowPipelineBoardProps> = ({
                       className="p-2 rounded-lg border border-zinc-200/80 bg-white hover:bg-zinc-50 transition-colors text-xs cursor-pointer flex items-center justify-between gap-1"
                     >
                       <span className="font-medium text-zinc-800 truncate">{task.title}</span>
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase shrink-0 ${
+                      <span className={`text-xs font-bold px-1.5 py-0.5 rounded uppercase shrink-0 ${
                         task.status === 'Completed' || task.status === 'Done' ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-100 text-zinc-600'
                       }`}>
                         {task.status}

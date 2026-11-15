@@ -213,11 +213,11 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="text-lg font-bold font-display">{customer.name}</span>
-              <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-mono">
+              <span className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full font-mono">
                 {customer.status}
               </span>
               {customer.companyName && (
-                <span className="text-[10px] bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="text-xs bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded-full flex items-center gap-1">
                   <Building2 className="w-3 h-3" />
                   <span>{customer.companyName}</span>
                 </span>
@@ -299,55 +299,55 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
             {/* KPI Cards Strip */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200">
-                <span className="text-[10px] uppercase font-bold text-zinc-400">Total Bookings</span>
+                <span className="text-xs uppercase font-bold text-zinc-400">Total Bookings</span>
                 <p className="text-xl font-bold font-mono text-zinc-900 mt-0.5">{customerEvents.length}</p>
-                <span className="text-[10px] text-zinc-500">Lifetime shoots</span>
+                <span className="text-xs text-zinc-500">Lifetime shoots</span>
               </div>
 
               <div className="p-3 rounded-xl bg-blue-50/50 border border-blue-200">
-                <span className="text-[10px] uppercase font-bold text-blue-700">Upcoming Events</span>
+                <span className="text-xs uppercase font-bold text-blue-700">Upcoming Events</span>
                 <p className="text-xl font-bold font-mono text-blue-900 mt-0.5">{upcomingEvents.length}</p>
-                <span className="text-[10px] text-blue-600">Calendar locked</span>
+                <span className="text-xs text-blue-600">Calendar locked</span>
               </div>
 
               <div className="p-3 rounded-xl bg-emerald-50/50 border border-emerald-200">
-                <span className="text-[10px] uppercase font-bold text-emerald-700">Completed</span>
+                <span className="text-xs uppercase font-bold text-emerald-700">Completed</span>
                 <p className="text-xl font-bold font-mono text-emerald-900 mt-0.5">{completedEvents.length}</p>
-                <span className="text-[10px] text-emerald-600">Albums delivered</span>
+                <span className="text-xs text-emerald-600">Albums delivered</span>
               </div>
 
               <div className="p-3 rounded-xl bg-amber-50/50 border border-amber-200">
-                <span className="text-[10px] uppercase font-bold text-amber-700">Outstanding Due</span>
+                <span className="text-xs uppercase font-bold text-amber-700">Outstanding Due</span>
                 <p className="text-xl font-bold font-mono text-amber-900 mt-0.5">
                   {canViewSalary ? formatCurrency(customer.pendingBalance || 0) : 'Confidential'}
                 </p>
-                <span className="text-[10px] text-amber-600">Pending balance</span>
+                <span className="text-xs text-amber-600">Pending balance</span>
               </div>
             </div>
 
             {/* Profile Information Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 rounded-xl border border-zinc-200 bg-white space-y-2.5 text-xs">
-                <h5 className="font-bold text-zinc-900 uppercase tracking-wider text-[11px] border-b border-zinc-100 pb-1.5">
+                <h5 className="font-bold text-zinc-900 uppercase tracking-wider text-xs border-b border-zinc-100 pb-1.5">
                   Client Profile Information
                 </h5>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-zinc-400 block text-[10px]">Lead Source:</span>
+                    <span className="text-zinc-400 block text-xs">Lead Source:</span>
                     <span className="font-semibold text-zinc-800">{customer.customerSource || 'Walk-in'}</span>
                   </div>
                   <div>
-                    <span className="text-zinc-400 block text-[10px]">Relationship Manager:</span>
+                    <span className="text-zinc-400 block text-xs">Relationship Manager:</span>
                     <span className="font-semibold text-zinc-800">{customer.assignedManagerName || 'Unassigned'}</span>
                   </div>
                   <div>
-                    <span className="text-zinc-400 block text-[10px]">Anniversary:</span>
+                    <span className="text-zinc-400 block text-xs">Anniversary:</span>
                     <span className="font-semibold text-zinc-800">
                       {customer.anniversaryDate ? formatDate(customer.anniversaryDate) : 'Not shared'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-zinc-400 block text-[10px]">Birthday:</span>
+                    <span className="text-zinc-400 block text-xs">Birthday:</span>
                     <span className="font-semibold text-zinc-800">
                       {customer.dob ? formatDate(customer.dob) : 'Not shared'}
                     </span>
@@ -356,10 +356,10 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
                 {customer.tags && customer.tags.length > 0 && (
                   <div className="pt-2">
-                    <span className="text-zinc-400 block text-[10px] mb-1">Tags & Segments:</span>
+                    <span className="text-zinc-400 block text-xs mb-1">Tags & Segments:</span>
                     <div className="flex flex-wrap gap-1.5">
                       {customer.tags.map((tg, idx) => (
-                        <span key={idx} className="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 text-[10px] font-medium border border-zinc-200">
+                        <span key={idx} className="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 text-xs font-medium border border-zinc-200">
                           {tg}
                         </span>
                       ))}
@@ -370,17 +370,17 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 
               {/* Recent Timeline & Activity */}
               <div className="p-4 rounded-xl border border-zinc-200 bg-white space-y-2.5 text-xs">
-                <h5 className="font-bold text-zinc-900 uppercase tracking-wider text-[11px] border-b border-zinc-100 pb-1.5">
+                <h5 className="font-bold text-zinc-900 uppercase tracking-wider text-xs border-b border-zinc-100 pb-1.5">
                   Recent Interactions
                 </h5>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {customerInteractions.map(i => (
                     <div key={i.id} className="p-2 rounded-lg bg-zinc-50 border border-zinc-100 space-y-0.5">
-                      <div className="flex items-center justify-between text-[10px]">
+                      <div className="flex items-center justify-between text-xs">
                         <span className="font-bold text-zinc-800 uppercase tracking-wide">{i.type}</span>
                         <span className="text-zinc-400">{formatDate(i.timestamp)}</span>
                       </div>
-                      <p className="text-zinc-700 text-[11px]">{i.summary}</p>
+                      <p className="text-zinc-700 text-xs">{i.summary}</p>
                     </div>
                   ))}
                   {customerInteractions.length === 0 && (
@@ -398,7 +398,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <h5 className="text-xs font-bold text-zinc-900 uppercase tracking-wider">Customer Quotations & Proposals</h5>
-                <p className="text-[11px] text-zinc-500">Itemized photography packages, deliverables & pricing history</p>
+                <p className="text-xs text-zinc-500">Itemized photography packages, deliverables & pricing history</p>
               </div>
             </div>
 
@@ -407,34 +407,34 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="font-mono font-bold text-zinc-900">{quote.quotationNumber}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                    <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                       {quote.status}
                     </span>
                   </div>
-                  <span className="text-[10px] text-zinc-400">{formatDate(quote.createdAt)}</span>
+                  <span className="text-xs text-zinc-400">{formatDate(quote.createdAt)}</span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2.5 rounded-lg bg-zinc-50 border border-zinc-100">
                   <div>
-                    <span className="text-[10px] text-zinc-400 block">Original Quoted:</span>
+                    <span className="text-xs text-zinc-400 block">Original Quoted:</span>
                     <span className="font-bold text-zinc-700">{formatCurrency(quote.totalAmount || 0)}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-zinc-400 block">Discount:</span>
+                    <span className="text-xs text-zinc-400 block">Discount:</span>
                     <span className="font-bold text-rose-600">{formatCurrency(quote.discount || 0)}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-zinc-400 block">Agreed Final:</span>
+                    <span className="text-xs text-zinc-400 block">Agreed Final:</span>
                     <span className="font-bold text-emerald-700">{formatCurrency((quote as any).finalAmount || quote.totalAmount || 0)}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-zinc-400 block">Line Items:</span>
+                    <span className="text-xs text-zinc-400 block">Line Items:</span>
                     <span className="font-bold text-zinc-700">{quote.items?.length || 0} services</span>
                   </div>
                 </div>
 
                 <div className="pt-2 border-t border-zinc-100 flex items-center justify-between">
-                  <span className="text-[11px] text-zinc-500 truncate max-w-[240px]">
+                  <span className="text-xs text-zinc-500 truncate max-w-[240px]">
                     {quote.notes || 'Standard wedding photography package'}
                   </span>
                   <div className="flex items-center gap-2">
@@ -467,7 +467,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-bold text-sm text-zinc-900">{bkg.bookingNumber}</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200">
                         {bkg.status.replace(/_/g, ' ').toUpperCase()}
                       </span>
                     </div>
@@ -477,24 +477,24 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   </div>
 
                   <div className="text-right">
-                    <span className="text-[10px] text-zinc-400 block">Agreed Amount</span>
+                    <span className="text-xs text-zinc-400 block">Agreed Amount</span>
                     <span className="text-sm font-bold text-emerald-700">
                       {formatCurrency(bkg.financials?.finalAgreedAmount || 0)}
                     </span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 p-2 rounded-lg bg-zinc-50 text-[11px] border border-zinc-100">
+                <div className="grid grid-cols-3 gap-2 p-2 rounded-lg bg-zinc-50 text-xs border border-zinc-100">
                   <div>
-                    <span className="text-zinc-400 block text-[10px]">Functions:</span>
+                    <span className="text-zinc-400 block text-xs">Functions:</span>
                     <span className="font-bold text-zinc-800">{bkg.functions?.length || 0} scheduled</span>
                   </div>
                   <div>
-                    <span className="text-zinc-400 block text-[10px]">Deliverables:</span>
+                    <span className="text-zinc-400 block text-xs">Deliverables:</span>
                     <span className="font-bold text-zinc-800">{bkg.deliverables?.length || 0} items</span>
                   </div>
                   <div>
-                    <span className="text-zinc-400 block text-[10px]">Pending Balance:</span>
+                    <span className="text-zinc-400 block text-xs">Pending Balance:</span>
                     <span className="font-bold text-amber-700">{formatCurrency(bkg.financials?.remainingBalance || 0)}</span>
                   </div>
                 </div>
@@ -506,7 +506,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-zinc-900">{evt.name}</span>
-                    <span className="text-[10px] font-mono text-zinc-400">#{evt.eventNumber}</span>
+                    <span className="text-xs font-mono text-zinc-400">#{evt.eventNumber}</span>
                   </div>
                   <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-zinc-100 text-zinc-700">{evt.status}</span>
                 </div>
@@ -526,7 +526,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
             <h5 className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
               Function-Wise Production Schedule
             </h5>
-            <p className="text-[11px] text-zinc-500">Independent function rituals, venues, timings, and photography setups</p>
+            <p className="text-xs text-zinc-500">Independent function rituals, venues, timings, and photography setups</p>
 
             <div className="space-y-2.5">
               {customerFunctions.map((fn, idx) => (
@@ -534,7 +534,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-zinc-900">{fn.name}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 font-medium">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 font-medium">
                         {fn.category}
                       </span>
                     </div>
@@ -544,7 +544,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                     <span>{fn.venue}, {fn.city}</span>
                   </div>
-                  <div className="flex flex-wrap items-center gap-3 pt-1 border-t border-zinc-100 text-[11px] text-zinc-500">
+                  <div className="flex flex-wrap items-center gap-3 pt-1 border-t border-zinc-100 text-xs text-zinc-500">
                     <span>📷 Photographers: {fn.assignedPhotographerIds?.length || 0}</span>
                     <span>🎥 Videographers: {fn.assignedVideographerIds?.length || 0}</span>
                     <span>🚁 Drone: {fn.assignedDroneOperatorIds?.length || 0}</span>
@@ -568,9 +568,9 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <h5 className="text-xs font-bold text-zinc-900 uppercase tracking-wider">Assigned Photography & Video Crew</h5>
-                <p className="text-[11px] text-zinc-500">Crew deployed to client events (Client PII & financials protected)</p>
+                <p className="text-xs text-zinc-500">Crew deployed to client events (Client PII & financials protected)</p>
               </div>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
                 <ShieldCheck className="w-3 h-3 text-emerald-600" /> Crew Privacy Active
               </span>
             </div>
@@ -582,10 +582,10 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     <img src={emp.profilePhoto || (emp as any).avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'} alt={emp.fullName || (emp as any).name} className="w-8 h-8 rounded-full object-cover border border-zinc-200" />
                     <div>
                       <div className="font-semibold text-zinc-900">{emp.fullName || (emp as any).name}</div>
-                      <div className="text-[10px] text-zinc-500">{(emp as any).roleTitle || emp.department}</div>
+                      <div className="text-xs text-zinc-500">{(emp as any).roleTitle || emp.department}</div>
                     </div>
                   </div>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 font-medium">Assigned</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 font-medium">Assigned</span>
                 </div>
               ))}
             </div>
@@ -605,7 +605,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <h5 className="text-xs font-bold text-zinc-900 uppercase tracking-wider">Deliverables Checklist & Production Stages</h5>
-                <p className="text-[11px] text-zinc-500">Only agreed deliverables included in quotation ({customerDeliverables.length} total)</p>
+                <p className="text-xs text-zinc-500">Only agreed deliverables included in quotation ({customerDeliverables.length} total)</p>
               </div>
             </div>
 
@@ -615,16 +615,16 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-bold text-zinc-900">{del.name}</span>
-                      <span className="text-[10px] text-zinc-400 ml-2">({del.functionName || 'Wedding'})</span>
+                      <span className="text-xs text-zinc-400 ml-2">({del.functionName || 'Wedding'})</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                         del.priority === 'instant_same_day' ? 'bg-rose-100 text-rose-800 border border-rose-300' :
                         del.priority === 'urgent' ? 'bg-amber-100 text-amber-800' : 'bg-zinc-100 text-zinc-700'
                       }`}>
                         {del.priority === 'instant_same_day' ? 'SAME DAY' : del.priority.toUpperCase()}
                       </span>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                         del.isDelivered ? 'bg-emerald-100 text-emerald-800' :
                         del.isPartiallyDelivered ? 'bg-blue-100 text-blue-800' : 'bg-zinc-100 text-zinc-600'
                       }`}>
@@ -633,21 +633,21 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-zinc-600 bg-zinc-50 p-2 rounded-lg">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-zinc-600 bg-zinc-50 p-2 rounded-lg">
                     <div>
-                      <span className="text-zinc-400 block text-[10px]">Quantity:</span>
+                      <span className="text-zinc-400 block text-xs">Quantity:</span>
                       <span className="font-semibold">{del.completedQty} / {del.requiredQty} {del.unit}</span>
                     </div>
                     <div>
-                      <span className="text-zinc-400 block text-[10px]">Deadline:</span>
+                      <span className="text-zinc-400 block text-xs">Deadline:</span>
                       <span className="font-semibold text-rose-700">{del.calculatedDeadline}</span>
                     </div>
                     <div>
-                      <span className="text-zinc-400 block text-[10px]">Method:</span>
+                      <span className="text-zinc-400 block text-xs">Method:</span>
                       <span className="font-semibold">{del.deliveryMethod}</span>
                     </div>
                     <div>
-                      <span className="text-zinc-400 block text-[10px]">Status:</span>
+                      <span className="text-zinc-400 block text-xs">Status:</span>
                       <span className="font-semibold">{del.isDelivered ? '✓ Completed' : del.isPartiallyDelivered ? 'Partial' : 'Pending'}</span>
                     </div>
                   </div>
@@ -686,34 +686,34 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
             <div className="space-y-4 text-xs">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200">
-                  <span className="text-[10px] uppercase font-bold text-zinc-400">Quoted Price</span>
+                  <span className="text-xs uppercase font-bold text-zinc-400">Quoted Price</span>
                   <div className="text-lg font-bold text-zinc-900 mt-0.5">{formatCurrency(summary.quotedAmount)}</div>
                 </div>
                 <div className="p-3 rounded-xl bg-rose-50 border border-rose-200">
-                  <span className="text-[10px] uppercase font-bold text-rose-700">Negotiated Discount</span>
+                  <span className="text-xs uppercase font-bold text-rose-700">Negotiated Discount</span>
                   <div className="text-lg font-bold text-rose-700 mt-0.5">-{formatCurrency(summary.negotiatedDiscount)}</div>
                 </div>
                 <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-                  <span className="text-[10px] uppercase font-bold text-emerald-700">Final Agreed Amount</span>
+                  <span className="text-xs uppercase font-bold text-emerald-700">Final Agreed Amount</span>
                   <div className="text-lg font-bold text-emerald-800 mt-0.5">{formatCurrency(summary.finalAgreedAmount)}</div>
                 </div>
                 <div className="p-3 rounded-xl bg-blue-50 border border-blue-200">
-                  <span className="text-[10px] uppercase font-bold text-blue-700">Advance Paid</span>
+                  <span className="text-xs uppercase font-bold text-blue-700">Advance Paid</span>
                   <div className="text-lg font-bold text-blue-800 mt-0.5">{formatCurrency(summary.advancePaid)}</div>
                 </div>
                 <div className="p-3 rounded-xl bg-teal-50 border border-teal-200">
-                  <span className="text-[10px] uppercase font-bold text-teal-700">Total Verified Payments</span>
+                  <span className="text-xs uppercase font-bold text-teal-700">Total Verified Payments</span>
                   <div className="text-lg font-bold text-teal-800 mt-0.5">{formatCurrency(summary.verifiedPaymentsReceived)}</div>
                 </div>
                 <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
-                  <span className="text-[10px] uppercase font-bold text-amber-700">Remaining Due Balance</span>
+                  <span className="text-xs uppercase font-bold text-amber-700">Remaining Due Balance</span>
                   <div className="text-lg font-bold text-amber-900 mt-0.5">{formatCurrency(summary.remainingBalance)}</div>
                 </div>
               </div>
 
               {/* Milestones */}
               <div className="p-4 rounded-xl border border-zinc-200 bg-white space-y-2.5">
-                <h5 className="font-bold text-zinc-900 uppercase tracking-wider text-[11px]">Payment Milestones Schedule</h5>
+                <h5 className="font-bold text-zinc-900 uppercase tracking-wider text-xs">Payment Milestones Schedule</h5>
                 <div className="space-y-2">
                   {(customerBookings[0]?.financials?.paymentMilestones || [
                     { id: 'm1', title: 'Booking Advance (30%)', amount: 50000, dueDate: 'At Confirmation', status: 'paid', paidAmount: 50000, percentage: 30 },
@@ -723,11 +723,11 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     <div key={m.id || idx} className="p-2.5 rounded-lg border border-zinc-100 bg-zinc-50 flex items-center justify-between text-xs">
                       <div>
                         <span className="font-bold text-zinc-900">{m.title}</span>
-                        <div className="text-[10px] text-zinc-500">Due: {m.dueDate}</div>
+                        <div className="text-xs text-zinc-500">Due: {m.dueDate}</div>
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-zinc-900">{formatCurrency(m.amount)}</div>
-                        <span className={`text-[10px] font-semibold ${m.status === 'paid' ? 'text-emerald-700' : 'text-amber-700'}`}>
+                        <span className={`text-xs font-semibold ${m.status === 'paid' ? 'text-emerald-700' : 'text-amber-700'}`}>
                           {m.status === 'paid' ? '✓ Paid' : 'Pending'}
                         </span>
                       </div>
@@ -742,14 +742,14 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         {/* TAB 8: DOCUMENTS */}
         {activeTab === 'documents' && (
           <div className="p-4 rounded-xl border border-zinc-200 bg-zinc-50/50 space-y-3 text-xs">
-            <h5 className="font-bold text-zinc-900 uppercase tracking-wider text-[11px]">Customer Quotations & Agreements</h5>
+            <h5 className="font-bold text-zinc-900 uppercase tracking-wider text-xs">Customer Quotations & Agreements</h5>
             <div className="space-y-2">
               <div className="p-3 rounded-xl bg-white border border-zinc-200 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <FileText className="w-4 h-4 text-zinc-500" />
                   <div>
                     <span className="font-semibold text-zinc-900">Signed Booking Contract.pdf</span>
-                    <span className="text-[10px] text-zinc-400 ml-2">PDF Document • 1.2 MB</span>
+                    <span className="text-xs text-zinc-400 ml-2">PDF Document • 1.2 MB</span>
                   </div>
                 </div>
                 <button className="text-xs font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">Download</button>
@@ -760,7 +760,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   <Receipt className="w-4 h-4 text-zinc-500" />
                   <div>
                     <span className="font-semibold text-zinc-900">Tax Invoice #{customer.id.toUpperCase()}.pdf</span>
-                    <span className="text-[10px] text-zinc-400 ml-2">Verified Ledger Invoice</span>
+                    <span className="text-xs text-zinc-400 ml-2">Verified Ledger Invoice</span>
                   </div>
                 </div>
                 <button className="text-xs font-semibold text-blue-600 hover:text-blue-800 cursor-pointer">Download</button>
@@ -774,7 +774,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
           <div className="space-y-4">
             <div className="p-4 rounded-xl border border-zinc-200 bg-zinc-50 space-y-3 text-xs">
               <div className="flex items-center justify-between">
-                <h5 className="font-bold text-zinc-900 uppercase tracking-wider text-[11px]">Add Production / Customer Note</h5>
+                <h5 className="font-bold text-zinc-900 uppercase tracking-wider text-xs">Add Production / Customer Note</h5>
                 <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-700 cursor-pointer">
                   <input
                     type="checkbox"
@@ -806,7 +806,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                   className="w-full p-2.5 rounded-lg border border-zinc-200 bg-white text-xs"
                 />
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-zinc-500">
+                  <span className="text-xs text-zinc-500">
                     {isNotePrivate 
                       ? '🔒 Protected: Strictly excluded from customer WhatsApp messages.' 
                       : '💬 Client Visible: Can be included in quotation notes.'}
@@ -833,7 +833,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     ? 'bg-amber-50/40 border-amber-200 text-amber-950' 
                     : 'bg-white border-zinc-200 text-zinc-800'
                 }`}>
-                  <div className="flex items-center justify-between text-[10px]">
+                  <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-1.5">
                       <span className="font-bold text-zinc-800">{n.title}</span>
                       {n.isPrivate ? (
@@ -866,19 +866,19 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     <span className="font-bold text-emerald-700 flex items-center gap-1">
                       <MessageCircle className="w-3.5 h-3.5" /> WhatsApp: {l.templateTitle || 'Direct Message'}
                     </span>
-                    <span className="text-[10px] text-zinc-400">{formatDate(l.timestamp)}</span>
+                    <span className="text-xs text-zinc-400">{formatDate(l.timestamp)}</span>
                   </div>
-                  <p className="text-zinc-600 text-[11px] bg-zinc-50 p-2 rounded">{l.messageText}</p>
+                  <p className="text-zinc-600 text-xs bg-zinc-50 p-2 rounded">{l.messageText}</p>
                 </div>
               ))}
 
               {customerInteractions.map(i => (
                 <div key={i.id} className="p-2.5 rounded-xl border border-zinc-200 bg-white text-xs flex items-center justify-between">
                   <div>
-                    <span className="font-bold uppercase text-[10px] text-zinc-500">{i.type}</span>
-                    <p className="text-zinc-800 text-[11px]">{i.summary}</p>
+                    <span className="font-bold uppercase text-xs text-zinc-500">{i.type}</span>
+                    <p className="text-zinc-800 text-xs">{i.summary}</p>
                   </div>
-                  <span className="text-[10px] text-zinc-400">{formatDate(i.timestamp)}</span>
+                  <span className="text-xs text-zinc-400">{formatDate(i.timestamp)}</span>
                 </div>
               ))}
 
@@ -892,7 +892,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         {/* TAB 6: PREFERENCES */}
         {activeTab === 'preferences' && (
           <div className="p-4 rounded-xl border border-zinc-200 bg-white space-y-3 text-xs">
-            <h5 className="font-bold text-zinc-900 uppercase tracking-wider text-[11px] border-b border-zinc-100 pb-1.5">
+            <h5 className="font-bold text-zinc-900 uppercase tracking-wider text-xs border-b border-zinc-100 pb-1.5">
               Client Communication & Privacy Preferences
             </h5>
 
@@ -966,15 +966,15 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
               {/* Summary Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200">
-                  <span className="text-[10px] text-zinc-500 uppercase font-semibold">Total Invoiced</span>
+                  <span className="text-xs text-zinc-500 uppercase font-semibold">Total Invoiced</span>
                   <div className="text-sm font-bold text-zinc-900 mt-0.5">₹{totalInvoiced.toLocaleString('en-IN')}</div>
                 </div>
                 <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-                  <span className="text-[10px] text-emerald-700 uppercase font-semibold">Net Paid</span>
+                  <span className="text-xs text-emerald-700 uppercase font-semibold">Net Paid</span>
                   <div className="text-sm font-bold text-emerald-700 mt-0.5">₹{netCollected.toLocaleString('en-IN')}</div>
                 </div>
                 <div className="p-3 rounded-xl bg-rose-50 border border-rose-200">
-                  <span className="text-[10px] text-rose-700 uppercase font-semibold">Outstanding Due</span>
+                  <span className="text-xs text-rose-700 uppercase font-semibold">Outstanding Due</span>
                   <div className="text-sm font-bold text-rose-700 mt-0.5">₹{balanceDue.toLocaleString('en-IN')}</div>
                 </div>
                 <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200 flex flex-col justify-center">
@@ -998,11 +998,11 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     <div key={inv.id} className="p-3 flex justify-between items-center hover:bg-zinc-50/50">
                       <div>
                         <span className="font-mono font-bold text-zinc-900">{inv.invoiceNumber}</span>
-                        <div className="text-[11px] text-zinc-500">{inv.invoiceType} • Due: {inv.dueDate}</div>
+                        <div className="text-xs text-zinc-500">{inv.invoiceType} • Due: {inv.dueDate}</div>
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-zinc-900">₹{inv.totalAmount.toLocaleString('en-IN')}</div>
-                        <div className={`text-[10px] font-semibold ${inv.pendingAmount === 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        <div className={`text-xs font-semibold ${inv.pendingAmount === 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                           {inv.status} (Bal: ₹{(inv.pendingAmount || 0).toLocaleString('en-IN')})
                         </div>
                       </div>
@@ -1024,7 +1024,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                     <div key={p.id} className="p-3 flex justify-between items-center hover:bg-zinc-50/50">
                       <div>
                         <span className="font-mono font-bold text-emerald-700">{p.receiptNumber || 'REC'}</span>
-                        <div className="text-[11px] text-zinc-500">{p.paymentMethod} • {p.paymentDate}</div>
+                        <div className="text-xs text-zinc-500">{p.paymentMethod} • {p.paymentDate}</div>
                       </div>
                       <div className="text-right font-bold text-emerald-600">
                         +₹{p.amount.toLocaleString('en-IN')}
