@@ -51,6 +51,7 @@ import { calendarVisibilityService } from '../../services/calendarVisibilityServ
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { generateDeliverablesForCategory } from '../../services/deliverablesPresetService';
 import { crewConflictService, CrewConflictInfo } from '../../services/crewConflictService';
+import { isStudioOwnerId } from '../../services/studioOwnerHelper';
 import { StudioEvent } from '../../types';
 
 interface SingleBookingWorkspaceProps {
@@ -131,6 +132,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
   const [isCrewModalOpen, setIsCrewModalOpen] = useState(false);
   const [selectedCrewEmployeeId, setSelectedCrewEmployeeId] = useState('');
+  const [selectedCrewFunctionId, setSelectedCrewFunctionId] = useState<string>('all');
   const [selectedCrewRole, setSelectedCrewRole] = useState('Lead Photographer');
   const [crewModalVisibleOnCalendar, setCrewModalVisibleOnCalendar] = useState(true);
   const [crewConflictWarn, setCrewConflictWarn] = useState<CrewConflictInfo | null>(null);
@@ -536,32 +538,40 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
       }];
     }
 
-    const mainFn = booking.functions[0];
+    const targetFunctions = selectedCrewFunctionId === 'all'
+      ? booking.functions
+      : booking.functions.filter(f => f.id === selectedCrewFunctionId);
+
+    const fnsToAssign = targetFunctions.length > 0 ? targetFunctions : [booking.functions[0]];
 
     firestoreService.setStatus('saving', 'Assigning crew member...');
-    await calendarVisibilityService.assignCrewMember(
-      studioId,
-      booking.id,
-      mainFn.id,
-      {
-        employeeId: emp.id,
-        employeeName: emp.fullName,
-        designation: emp.designation,
-        department: emp.department,
-        role: selectedCrewRole,
-        contact: emp.phone || ''
-      },
-      crewModalVisibleOnCalendar,
-      'Studio Owner'
-    );
+    for (const fn of fnsToAssign) {
+      await calendarVisibilityService.assignCrewMember(
+        studioId,
+        booking.id,
+        fn.id,
+        {
+          employeeId: emp.id,
+          employeeName: emp.fullName,
+          designation: emp.designation,
+          department: emp.department,
+          role: selectedCrewRole,
+          contact: emp.phone || ''
+        },
+        crewModalVisibleOnCalendar,
+        'Studio Owner'
+      );
+    }
     firestoreService.setStatus('saved', 'Crew assignment saved');
 
     setIsCrewModalOpen(false);
     setSelectedCrewEmployeeId('');
+    setSelectedCrewFunctionId('all');
     setCrewConflictWarn(null);
     setAllowCrewConflictOverride(false);
     setRefreshKey(k => k + 1);
-    showToast(`${emp.fullName} assigned as ${selectedCrewRole} (${crewModalVisibleOnCalendar ? 'Visible on calendar' : 'Hidden from calendar'})`);
+    const scopeLabel = selectedCrewFunctionId === 'all' ? 'entire booking' : 'selected function';
+    showToast(`${emp.fullName} assigned as ${selectedCrewRole} for ${scopeLabel} (${crewModalVisibleOnCalendar ? 'Visible on calendar' : 'Hidden from calendar'})`);
   };
 
   const handleToggleVisibility = async (empId: string, fnId: string, currentVisible: boolean) => {
@@ -1428,31 +1438,45 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-zinc-200/80 text-xs font-bold text-zinc-500 uppercase tracking-wider bg-zinc-50/80">
-                    <th className="py-3 px-3.5 rounded-l-xl">Employee</th>
-                    <th className="py-3 px-3.5">Responsibility</th>
-                    <th className="py-3 px-3.5">Assigned</th>
+                    <th className="py-3 px-3.5 rounded-l-xl">Crew Member</th>
+                    <th className="py-3 px-3.5">Role</th>
+                    <th className="py-3 px-3.5">Assignment</th>
                     <th className="py-3 px-3.5">Calendar</th>
                     <th className="py-3 px-3.5 text-right rounded-r-xl">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 text-sm">
-                  {crewTableRows.map((row) => (
+                  {crewTableRows.map((row) => {
+                    const isOwner = isStudioOwnerId(row.employeeId, studioId) || row.employeeName.includes('(Studio Owner)');
+
+                    return (
                     <tr key={`${row.employeeId}_${row.functionId}`} className="hover:bg-orange-50/20 transition-colors">
-                      {/* 1. Employee */}
+                      {/* 1. Crew Member */}
                       <td className="py-3.5 px-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-orange-100 border border-orange-200 text-orange-800 font-bold flex items-center justify-center text-xs shrink-0">
+                          <div className={`w-9 h-9 rounded-xl border font-bold flex items-center justify-center text-xs shrink-0 ${
+                            isOwner 
+                              ? 'bg-amber-100 border-amber-300 text-amber-900 shadow-2xs' 
+                              : 'bg-orange-100 border-orange-200 text-orange-800'
+                          }`}>
                             {row.employeeName.charAt(0)}
                           </div>
                           <div className="min-w-0">
-                            <div className="font-bold text-sm sm:text-[15px] text-zinc-900 truncate">{row.employeeName}</div>
-                            <div className="text-xs text-zinc-500 truncate">{row.designation || 'Production Staff'}</div>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-bold text-sm sm:text-[15px] text-zinc-900 truncate">{row.employeeName}</span>
+                              {isOwner && (
+                                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 shrink-0">
+                                  Studio Owner
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-zinc-500 truncate">{isOwner ? 'Studio Owner' : (row.designation || 'Production Staff')}</div>
                             {row.contact && <div className="text-xs text-zinc-400 font-mono">{row.contact}</div>}
                           </div>
                         </div>
                       </td>
 
-                      {/* 2. Responsibility */}
+                      {/* 2. Role */}
                       <td className="py-3.5 px-3.5">
                         <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-orange-50 text-orange-900 border border-orange-200/80">
                           {row.responsibility}
@@ -1460,11 +1484,11 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                         <div className="text-xs text-zinc-400 mt-1">{row.functionName}</div>
                       </td>
 
-                      {/* 3. Assigned */}
+                      {/* 3. Assignment */}
                       <td className="py-3.5 px-3.5">
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>Yes • Confirmed</span>
+                          <span>Assigned</span>
                         </span>
                       </td>
 
@@ -1508,7 +1532,8 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                         </button>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
 
                   {crewTableRows.length === 0 && (
                     <tr>
@@ -2314,8 +2339,43 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 </div>
               )}
 
+              {/* Function Selector (Requirement: Assign to entire booking or specific wedding functions) */}
               <div>
-                <label className="text-sm font-semibold text-zinc-700 block mb-1">Select Employee</label>
+                <label className="text-sm font-semibold text-zinc-700 block mb-1">
+                  Assign to Function / Shoot Event
+                </label>
+                <select
+                  value={selectedCrewFunctionId}
+                  onChange={e => {
+                    const fnId = e.target.value;
+                    setSelectedCrewFunctionId(fnId);
+                    if (selectedCrewEmployeeId) {
+                      const targetFn = (booking.functions || []).find(f => f.id === fnId);
+                      const targetDate = targetFn?.date || booking.mainEventDate || booking.startDate || '';
+                      const warn = crewConflictService.checkConflict(
+                        studioId,
+                        selectedCrewEmployeeId,
+                        targetDate,
+                        targetFn?.startTime || '10:00',
+                        targetFn?.endTime || '18:00',
+                        booking.id
+                      );
+                      setCrewConflictWarn(warn.hasConflict ? warn : null);
+                    }
+                  }}
+                  className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-sm text-zinc-900 focus:bg-white min-h-[48px]"
+                >
+                  <option value="all">Entire Booking — All Wedding Functions</option>
+                  {(booking.functions || []).map(fn => (
+                    <option key={fn.id} value={fn.id}>
+                      {fn.name} ({fn.date || 'Date TBD'}{fn.venue ? ` • ${fn.venue}` : ''})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-zinc-700 block mb-1">Select Crew Member</label>
                 <select
                   value={selectedCrewEmployeeId}
                   onChange={e => {
@@ -2323,12 +2383,18 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                     setSelectedCrewEmployeeId(empId);
                     setAllowCrewConflictOverride(false);
                     if (empId) {
+                      const emp = crewConflictService.getActiveEmployees(studioId).find(x => x.id === empId);
+                      if (emp && isStudioOwnerId(emp.id, studioId)) {
+                        setSelectedCrewRole('Lead Photographer');
+                      }
+                      const targetFn = (booking.functions || []).find(f => f.id === selectedCrewFunctionId);
+                      const targetDate = targetFn?.date || booking.mainEventDate || booking.startDate || '';
                       const warn = crewConflictService.checkConflict(
                         studioId,
                         empId,
-                        booking.mainEventDate || booking.startDate || '',
-                        '10:00',
-                        '18:00',
+                        targetDate,
+                        targetFn?.startTime || '10:00',
+                        targetFn?.endTime || '18:00',
                         booking.id
                       );
                       setCrewConflictWarn(warn.hasConflict ? warn : null);
@@ -2339,12 +2405,15 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-sm text-zinc-900 focus:bg-white min-h-[48px]"
                   required
                 >
-                  <option value="">-- Choose team member --</option>
-                  {crewConflictService.getActiveEmployees(studioId).map(emp => (
-                    <option key={emp.id} value={emp.id}>
-                      {emp.fullName} ({emp.designation || emp.roleName || 'Staff'})
-                    </option>
-                  ))}
+                  <option value="">-- Choose crew member --</option>
+                  {crewConflictService.getActiveEmployees(studioId).map(emp => {
+                    const isOwner = isStudioOwnerId(emp.id, studioId) || emp.fullName.includes('(Studio Owner)');
+                    return (
+                      <option key={emp.id} value={emp.id}>
+                        {isOwner ? emp.fullName : `${emp.fullName} (${emp.designation || emp.roleName || 'Staff'})`}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
@@ -2356,12 +2425,15 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-sm text-zinc-900 focus:bg-white min-h-[48px]"
                 >
                   <option value="Lead Photographer">Lead Photographer</option>
+                  <option value="Photographer">Photographer</option>
                   <option value="Candid Photographer">Candid Photographer</option>
                   <option value="Cinematographer">Cinematographer</option>
+                  <option value="Videographer">Videographer</option>
                   <option value="Drone Operator">Drone Operator</option>
                   <option value="Photo Editor">Photo Editor</option>
                   <option value="Video Editor">Video Editor</option>
                   <option value="Album Designer">Album Designer</option>
+                  <option value="Assistant">Assistant</option>
                   <option value="Production Assistant">Production Assistant</option>
                 </select>
               </div>

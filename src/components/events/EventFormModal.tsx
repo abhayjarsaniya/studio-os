@@ -462,7 +462,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
         endTime: f.endTime || endTime,
         venue: f.venue || venue,
         city: venueCity,
-        assignedPhotographerIds: assignedEmployees.filter(e => e.department === 'Photography').map(e => e.id),
+        assignedPhotographerIds: assignedEmployees.filter(e => e.department === 'Photography' || (e as any).isStudioOwner).map(e => e.id),
         assignedVideographerIds: assignedEmployees.filter(e => e.department === 'Videography').map(e => e.id),
         assignedDroneOperatorIds: assignedEmployees.filter(e => e.designation?.toLowerCase().includes('drone')).map(e => e.id),
         assignedEditorIds: assignedEmployees.filter(e => e.department?.toLowerCase().includes('edit')).map(e => e.id),
@@ -470,7 +470,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
         assignedCrew: assignedEmployees.map(emp => ({
           employeeId: emp.id,
           employeeName: emp.fullName,
-          role: emp.designation || 'Crew',
+          role: (emp as any).isStudioOwner ? 'Lead Photographer' : (emp.designation || 'Crew'),
           contact: emp.phone || ''
         })),
         deliverables: deliverablesList,
@@ -905,7 +905,9 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                   >
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
                     <span className="font-bold">{emp.fullName}</span>
-                    <span className="text-xs text-zinc-400 font-normal">({emp.designation})</span>
+                    {!emp.fullName.includes('(Studio Owner)') && (
+                      <span className="text-xs text-zinc-400 font-normal">({emp.designation})</span>
+                    )}
                     <button
                       type="button"
                       onClick={() => handleToggleEmployee(empId)}

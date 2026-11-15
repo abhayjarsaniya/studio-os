@@ -22,6 +22,7 @@ import { StudioEvent } from '../types';
 import { BookingRecord } from '../types/bookingProduction';
 import { bookingProductionService } from '../services/bookingProductionService';
 import { calendarVisibilityService } from '../services/calendarVisibilityService';
+import { getStudioOwnerProfile, isStudioOwnerId } from '../services/studioOwnerHelper';
 import { THEME } from '../utils/theme';
 
 type CalendarViewMode = 'month' | 'week' | 'day';
@@ -45,6 +46,7 @@ export const CalendarPage: React.FC = () => {
 
   // Calendar view mode: month, week, day
   const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
+  const [ownerScheduleFilter, setOwnerScheduleFilter] = useState<'all' | 'mine'>('all');
 
   // November 2026 as initial active date (matches test data timeline)
   const [currentYear, setCurrentYear] = useState(2026);
@@ -87,6 +89,33 @@ export const CalendarPage: React.FC = () => {
       } as unknown as StudioEvent));
     }
 
+    // If Studio Owner has selected "My Assigned Shoots", show only their personal assigned & visible events
+    if (ownerScheduleFilter === 'mine') {
+      const ownerProfile = getStudioOwnerProfile(studioId);
+      const ownerEvents = calendarVisibilityService.getEmployeeCalendarEvents(studioId, ownerProfile.id);
+      return ownerEvents.map(ev => ({
+        id: ev.bookingId,
+        studioId,
+        eventNumber: ev.bookingNumber,
+        name: ev.eventName,
+        title: ev.eventName,
+        customerId: '',
+        customerName: ev.customerName,
+        customerPhone: ev.customerPhone,
+        category: ev.category as any,
+        startDate: ev.date,
+        startTime: ev.startTime,
+        endDate: ev.date,
+        endTime: ev.endTime,
+        venue: ev.venue,
+        venueCity: ev.city,
+        priority: 'High',
+        status: ev.status as any,
+        assignedTeamIds: [ownerProfile.id],
+        notes: ''
+      } as unknown as StudioEvent));
+    }
+
     const list: StudioEvent[] = [...events].filter(e => !e.isDeleted) as any[];
     const bookings = bookingProductionService.listBookings(studioId);
 
@@ -112,7 +141,11 @@ export const CalendarPage: React.FC = () => {
           venueCity: bkg.city,
           priority: 'High',
           status: (bkg.status === 'completed' ? 'Completed' : bkg.status === 'cancelled' ? 'Cancelled' : 'Confirmed') as any,
-          assignedTeamIds: (bkg.functions || []).flatMap(f => f.assignedPhotographerIds || []),
+          assignedTeamIds: (bkg.functions || []).flatMap(f => [
+            ...(f.assignedPhotographerIds || []),
+            ...(f.assignedVideographerIds || []),
+            ...(f.assignedCrew || []).map(c => c.employeeId)
+          ]),
           detailedAssignments: (bkg.functions || []).flatMap(f => (f.assignedCrew || []).map(c => ({
             memberId: c.employeeId,
             memberName: c.employeeName,
@@ -127,7 +160,7 @@ export const CalendarPage: React.FC = () => {
     });
 
     return list;
-  }, [events, studioId, dataVersion]);
+  }, [events, studioId, dataVersion, ownerScheduleFilter]);
 
   const handlePrev = () => {
     if (viewMode === 'month') {
@@ -317,7 +350,28 @@ export const CalendarPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Studio Owner Schedule Filter (Requirement 3: Owner personal calendar visibility) */}
+          <div className="flex items-center p-1 bg-zinc-100 rounded-xl text-xs font-semibold border border-zinc-200/70">
+            <button
+              onClick={() => setOwnerScheduleFilter('all')}
+              className={`min-h-[40px] px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                ownerScheduleFilter === 'all' ? 'bg-orange-500 text-white shadow-2xs font-bold' : 'text-zinc-600 hover:text-zinc-900'
+              }`}
+            >
+              All Shoots
+            </button>
+            <button
+              onClick={() => setOwnerScheduleFilter('mine')}
+              className={`min-h-[40px] px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                ownerScheduleFilter === 'mine' ? 'bg-orange-500 text-white shadow-2xs font-bold' : 'text-zinc-600 hover:text-zinc-900'
+              }`}
+            >
+              <UserCheck className="w-3.5 h-3.5" />
+              <span>My Shoots</span>
+            </button>
+          </div>
+
           {/* Mode Switcher: Month / Week / Day */}
           <div className="flex items-center p-1 bg-zinc-100 rounded-xl text-xs font-semibold border border-zinc-200/70">
             <button

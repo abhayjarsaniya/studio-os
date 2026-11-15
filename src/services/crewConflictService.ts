@@ -4,6 +4,7 @@ import { employeeService } from './employeeService';
 import { Employee, StudioEvent } from '../types/schema';
 import { BookingRecord } from '../types/bookingProduction';
 import { SHREEJI_EMPLOYEES_DEF } from './seedShreejiStudio';
+import { getStudioOwnerCrewMember, isStudioOwnerId } from './studioOwnerHelper';
 
 export interface CrewAssignmentRecord {
   assignmentId: string;
@@ -37,35 +38,51 @@ export interface CrewConflictInfo {
 export class CrewConflictService {
   /**
    * Load all active employees for studio (defaults to Shreeji Films 14 team members if store empty)
+   * Prepend the logged-in Studio Owner dynamically as an assignable crew member
    */
   getActiveEmployees(studioId: string): Employee[] {
+    let list: Employee[] = [];
+
     try {
       const emps = employeeService.listEmployees(studioId);
       if (emps && emps.length > 0) {
-        return emps.filter(e => e.employmentStatus === 'active');
+        list = emps.filter(e => e.employmentStatus === 'active');
       }
     } catch {
       // Fallback
     }
 
-    // Fallback to SHREEJI_EMPLOYEES_DEF
-    return SHREEJI_EMPLOYEES_DEF.map(def => ({
-      id: def.id,
-      studioId,
-      userId: `user_${def.id}`,
-      employeeNumber: def.employeeNumber,
-      fullName: def.fullName,
-      phone: def.phone,
-      email: def.email,
-      joiningDate: def.joiningDate,
-      department: def.department,
-      designation: def.designation,
-      roleId: def.roleId,
-      roleName: def.roleName,
-      employmentStatus: 'active',
-      createdAt: '2026-01-15T00:00:00Z',
-      updatedAt: '2026-11-14T00:00:00Z'
-    })) as Employee[];
+    if (list.length === 0) {
+      // Fallback to SHREEJI_EMPLOYEES_DEF
+      list = SHREEJI_EMPLOYEES_DEF.map(def => ({
+        id: def.id,
+        studioId,
+        userId: `user_${def.id}`,
+        employeeNumber: def.employeeNumber,
+        fullName: def.fullName,
+        phone: def.phone,
+        email: def.email,
+        joiningDate: def.joiningDate,
+        department: def.department,
+        designation: def.designation,
+        roleId: def.roleId,
+        roleName: def.roleName,
+        employmentStatus: 'active',
+        createdAt: '2026-01-15T00:00:00Z',
+        updatedAt: '2026-11-14T00:00:00Z'
+      })) as Employee[];
+    }
+
+    // Always include the dynamic Studio Owner at the top of the roster
+    const ownerMember = getStudioOwnerCrewMember(studioId);
+    const existingOwnerIndex = list.findIndex(e => isStudioOwnerId(e.id, studioId) || (e as any).isStudioOwner);
+    if (existingOwnerIndex >= 0) {
+      list[existingOwnerIndex] = ownerMember;
+    } else {
+      list = [ownerMember, ...list];
+    }
+
+    return list;
   }
 
   /**
@@ -87,6 +104,13 @@ export class CrewConflictService {
       return { hasConflict: false, employeeId, employeeName };
     }
 
+    const matchesEmployee = (candidateId?: string): boolean => {
+      if (!candidateId) return false;
+      if (candidateId === employeeId) return true;
+      if (isStudioOwnerId(employeeId, studioId) && isStudioOwnerId(candidateId, studioId)) return true;
+      return false;
+    };
+
     // 1. Check Events in TenantStore
     const events = TenantStore.get<StudioEvent>(studioId, 'events') || [];
     for (const evt of events) {
@@ -102,8 +126,8 @@ export class CrewConflictService {
       if (!isDateMatch) continue;
 
       // Check if employee is assigned to this event
-      const isAssigned = (evt.assignedTeamIds || []).includes(employeeId) ||
-        (evt.detailedAssignments || []).some(a => a.memberId === employeeId);
+      const isAssigned = (evt.assignedTeamIds || []).some(matchesEmployee) ||
+        (evt.detailedAssignments || []).some(a => matchesEmployee(a.memberId));
 
       if (isAssigned) {
         // Check time overlap
@@ -146,9 +170,9 @@ export class CrewConflictService {
       if (Array.isArray(bkg.functions)) {
         for (const fn of bkg.functions) {
           if (fn.date === targetDate) {
-            const hasEmp = (fn.assignedPhotographerIds || []).includes(employeeId) ||
-              (fn.assignedVideographerIds || []).includes(employeeId) ||
-              (fn.assignedCrew || []).some(c => c.employeeId === employeeId);
+            const hasEmp = (fn.assignedPhotographerIds || []).some(matchesEmployee) ||
+              (fn.assignedVideographerIds || []).some(matchesEmployee) ||
+              (fn.assignedCrew || []).some(c => matchesEmployee(c.employeeId));
 
             if (hasEmp) {
               isAssigned = true;
@@ -162,7 +186,7 @@ export class CrewConflictService {
       }
 
       if ((bkg as any).crew && Array.isArray((bkg as any).crew)) {
-        if ((bkg as any).crew.some((c: any) => c.id === employeeId || c.employeeId === employeeId)) {
+        if ((bkg as any).crew.some((c: any) => matchesEmployee(c.id || c.employeeId))) {
           isAssigned = true;
         }
       }

@@ -5,6 +5,7 @@ import { bookingHistoryService } from './bookingHistoryService';
 import { crewConflictService, CrewConflictInfo } from './crewConflictService';
 import { StudioEvent } from '../types/schema';
 import { BookingRecord, FunctionPlan } from '../types/bookingProduction';
+import { formatOwnerCrewDisplayName, isStudioOwnerId } from './studioOwnerHelper';
 
 export interface CrewAssignmentRecord {
   assignmentId: string;
@@ -120,6 +121,10 @@ export class CalendarVisibilityService {
       contact = crewMemberArg!.contact || '';
       isVisibleOnCalendar = visibleOnCalendarArg;
       assignedBy = assignedByArg;
+    }
+
+    if (isStudioOwnerId(employeeId, studioId)) {
+      employeeName = formatOwnerCrewDisplayName(employeeName);
     }
 
     const booking = bookingProductionService.getBooking(studioId, bookingId);
@@ -402,10 +407,11 @@ export class CalendarVisibilityService {
    * Check if a specific employee assignment is currently visible on their calendar
    */
   isEmployeeVisibleOnCalendar(studioId: string, bookingId: string, employeeId: string, functionId?: string): boolean {
+    const isOwner = isStudioOwnerId(employeeId, studioId);
     const list = TenantStore.get<EmployeeCalendarVisibilityRecord>(studioId, 'calendarVisibility') || [];
     const record = list.find(v => 
       v.bookingId === bookingId && 
-      v.employeeId === employeeId && 
+      (v.employeeId === employeeId || (isOwner && isStudioOwnerId(v.employeeId, studioId))) && 
       (!functionId || v.eventFunctionId === functionId)
     );
 
@@ -418,7 +424,9 @@ export class CalendarVisibilityService {
     if (booking?.functions) {
       for (const fn of booking.functions) {
         if (!functionId || fn.id === functionId) {
-          const crew = (fn.assignedCrew || []).find(c => c.employeeId === employeeId);
+          const crew = (fn.assignedCrew || []).find(c => 
+            c.employeeId === employeeId || (isOwner && isStudioOwnerId(c.employeeId, studioId))
+          );
           if (crew) {
             return (crew as any).isVisibleOnCalendar !== false;
           }
@@ -436,9 +444,12 @@ export class CalendarVisibilityService {
     const booking = bookingProductionService.getBooking(studioId, bookingId);
     if (!booking) return false;
 
+    const isOwner = isStudioOwnerId(employeeId, studioId);
     const fn = (booking.functions || []).find(f => f.id === functionId) || (booking.functions && booking.functions[0]);
     if (fn && fn.assignedCrew) {
-      fn.assignedCrew = fn.assignedCrew.filter(c => c.employeeId !== employeeId);
+      fn.assignedCrew = fn.assignedCrew.filter(c => 
+        c.employeeId !== employeeId && !(isOwner && isStudioOwnerId(c.employeeId, studioId))
+      );
       bookingProductionService.saveBooking(studioId, booking);
     }
 
@@ -584,11 +595,15 @@ export class CalendarVisibilityService {
     (booking.functions || []).forEach(fn => {
       (fn.assignedCrew || []).forEach(c => {
         const isVisible = this.isEmployeeVisibleOnCalendar(studioId, booking.id, c.employeeId, fn.id);
-        const emp = roster.find(e => e.id === c.employeeId);
+        const emp = roster.find(e => e.id === c.employeeId || (isStudioOwnerId(e.id, studioId) && isStudioOwnerId(c.employeeId, studioId)));
+        const isOwner = isStudioOwnerId(c.employeeId, studioId) || Boolean((emp as any)?.isStudioOwner);
+        const employeeName = isOwner ? formatOwnerCrewDisplayName(c.employeeName || emp?.fullName) : c.employeeName;
+        const designation = isOwner ? 'Studio Owner' : (emp?.designation || emp?.roleName || 'Production Staff');
+
         rows.push({
           employeeId: c.employeeId,
-          employeeName: c.employeeName,
-          designation: emp?.designation || emp?.roleName || 'Production Staff',
+          employeeName,
+          designation,
           role: c.role,
           responsibility: c.role,
           functionId: fn.id,
