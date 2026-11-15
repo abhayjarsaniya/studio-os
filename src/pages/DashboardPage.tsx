@@ -188,7 +188,7 @@ export const DashboardPage: React.FC = () => {
             setActiveTab('create-booking');
             window.location.hash = '#/app/bookings/new';
           }}
-          className="min-h-[44px] px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer self-start sm:self-auto"
+          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
         >
           <Plus className="w-4 h-4 text-emerald-400" />
           <span>+ New Booking</span>
@@ -324,7 +324,7 @@ export const DashboardPage: React.FC = () => {
                         e.stopPropagation();
                         openBookingWorkspace(ev.id);
                       }}
-                      className="px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-[11px] font-bold shrink-0 hover:bg-zinc-800"
+                      className="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 text-white text-xs font-bold shrink-0 hover:bg-zinc-800 touch-manipulation active:scale-95"
                     >
                       Open
                     </button>
@@ -455,13 +455,13 @@ export const DashboardPage: React.FC = () => {
               Quick Actions
             </h2>
 
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <button
                 onClick={() => {
                   setActiveTab('create-booking');
                   window.location.hash = '#/app/bookings/new';
                 }}
-                className="w-full min-h-[44px] px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold flex items-center justify-between transition-all cursor-pointer shadow-2xs"
+                className="w-full min-h-[50px] sm:min-h-[44px] px-4 py-3 sm:py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-sm sm:text-xs font-bold flex items-center justify-between transition-all cursor-pointer shadow-2xs touch-manipulation active:scale-[0.98]"
               >
                 <div className="flex items-center gap-2.5">
                   <Plus className="w-4 h-4 text-emerald-400" />
@@ -475,7 +475,7 @@ export const DashboardPage: React.FC = () => {
                   setActiveTab('bookings');
                   window.location.hash = '#/app/bookings';
                 }}
-                className="w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-zinc-800 text-xs font-semibold flex items-center justify-between transition-all cursor-pointer"
+                className="w-full min-h-[50px] sm:min-h-[44px] px-4 py-3 sm:py-2.5 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-zinc-800 text-sm sm:text-xs font-semibold flex items-center justify-between transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
               >
                 <div className="flex items-center gap-2.5">
                   <PackageCheck className="w-4 h-4 text-amber-600" />
@@ -489,7 +489,7 @@ export const DashboardPage: React.FC = () => {
                   setActiveTab('calendar');
                   window.location.hash = '#/app/calendar';
                 }}
-                className="w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-zinc-800 text-xs font-semibold flex items-center justify-between transition-all cursor-pointer"
+                className="w-full min-h-[50px] sm:min-h-[44px] px-4 py-3 sm:py-2.5 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-zinc-800 text-sm sm:text-xs font-semibold flex items-center justify-between transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
               >
                 <div className="flex items-center gap-2.5">
                   <Calendar className="w-4 h-4 text-blue-600" />

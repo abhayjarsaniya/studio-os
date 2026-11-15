@@ -469,9 +469,9 @@ export const CrewMembersPage: React.FC = () => {
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs transition-all shadow-xs cursor-pointer self-start sm:self-auto"
+          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4 text-emerald-400" />
           <span>Add Employee</span>
         </button>
       </div>
@@ -525,7 +525,7 @@ export const CrewMembersPage: React.FC = () => {
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-zinc-200/80 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 sm:p-3 rounded-2xl border border-zinc-200/80 shadow-xs">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -533,15 +533,15 @@ export const CrewMembersPage: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name, ID, phone, designation..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-zinc-50/70 border border-zinc-200/80 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 transition-all"
+            className="w-full pl-10 pr-4 py-3 sm:py-2 rounded-xl bg-zinc-50/70 border border-zinc-200/80 text-base sm:text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 transition-all min-h-[48px] sm:min-h-[40px]"
           />
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 touch-scroll">
           <select
             value={selectedCrewType}
             onChange={(e) => setSelectedCrewType(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-700 focus:outline-none cursor-pointer"
+            className="px-3.5 py-2.5 sm:py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-base sm:text-xs font-semibold text-zinc-700 focus:outline-none cursor-pointer min-h-[48px] sm:min-h-[38px]"
           >
             <option value="all">All Crew Types</option>
             <option value="Permanent Employee">Permanent Employee</option>
@@ -553,7 +553,7 @@ export const CrewMembersPage: React.FC = () => {
           <select
             value={selectedDepartment}
             onChange={(e) => setSelectedDepartment(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-700 focus:outline-none cursor-pointer"
+            className="px-3.5 py-2.5 sm:py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-base sm:text-xs font-semibold text-zinc-700 focus:outline-none cursor-pointer min-h-[48px] sm:min-h-[38px]"
           >
             <option value="all">All Departments</option>
             <option value="Photography">Photography</option>
@@ -568,7 +568,7 @@ export const CrewMembersPage: React.FC = () => {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-700 focus:outline-none cursor-pointer"
+            className="px-3.5 py-2.5 sm:py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-base sm:text-xs font-semibold text-zinc-700 focus:outline-none cursor-pointer min-h-[48px] sm:min-h-[38px]"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -664,17 +664,17 @@ export const CrewMembersPage: React.FC = () => {
                       setSelectedCrew(emp);
                       setIsDetailModalOpen(true);
                     }}
-                    className="flex-1 px-2.5 py-1.5 rounded-xl bg-zinc-50 hover:bg-zinc-100 text-zinc-700 font-semibold text-xs border border-zinc-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                    className="flex-1 min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 hover:bg-zinc-100 text-zinc-700 font-semibold text-xs border border-zinc-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors touch-manipulation active:scale-95"
                   >
-                    <Eye className="w-3.5 h-3.5 text-zinc-500" />
+                    <Eye className="w-4 h-4 text-zinc-500" />
                     <span>View</span>
                   </button>
 
                   <button
                     onClick={() => handleOpenEdit(emp)}
-                    className="flex-1 px-2.5 py-1.5 rounded-xl bg-zinc-50 hover:bg-zinc-100 text-zinc-700 font-semibold text-xs border border-zinc-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                    className="flex-1 min-h-[44px] px-3 py-2 rounded-xl bg-zinc-50 hover:bg-zinc-100 text-zinc-700 font-semibold text-xs border border-zinc-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors touch-manipulation active:scale-95"
                   >
-                    <Edit3 className="w-3.5 h-3.5 text-zinc-500" />
+                    <Edit3 className="w-4 h-4 text-zinc-500" />
                     <span>Edit</span>
                   </button>
 
@@ -683,9 +683,9 @@ export const CrewMembersPage: React.FC = () => {
                       setAssigningCrew(emp);
                       setSelectedEventToAssign('');
                     }}
-                    className="flex-1 px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs border border-indigo-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                    className="flex-1 min-h-[44px] px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs border border-indigo-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors touch-manipulation active:scale-95"
                   >
-                    <CalendarDays className="w-3.5 h-3.5 text-indigo-500" />
+                    <CalendarDays className="w-4 h-4 text-indigo-500" />
                     <span>Assign</span>
                   </button>
                 </div>
@@ -693,7 +693,7 @@ export const CrewMembersPage: React.FC = () => {
                 <div className="flex items-center justify-between gap-1.5 pt-1">
                   <button
                     onClick={() => handleResetPassword(emp)}
-                    className="px-2.5 py-1.5 rounded-xl text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                    className="min-h-[40px] px-3 py-2 rounded-xl text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors touch-manipulation active:scale-95"
                     title="Reset Employee Password"
                   >
                     <KeyRound className="w-3.5 h-3.5 text-zinc-400" />

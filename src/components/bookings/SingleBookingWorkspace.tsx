@@ -709,15 +709,15 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
               window.location.hash = '#/app/bookings';
             }
           }}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 text-xs font-semibold cursor-pointer shadow-2xs transition-colors"
+          className="inline-flex items-center gap-2 min-h-[48px] sm:min-h-[38px] px-4 py-2.5 sm:px-3 sm:py-1.5 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 text-sm sm:text-xs font-semibold cursor-pointer shadow-2xs transition-colors touch-manipulation active:scale-95"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
           <span>Back to All Bookings</span>
         </button>
       </div>
 
       {/* 1. TOP HEADER */}
-      <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
+      <div className="bg-white rounded-2xl border border-zinc-200/90 p-4 sm:p-5 shadow-2xs space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start sm:items-center gap-3.5">
             <div className="w-12 h-12 rounded-xl bg-zinc-900 text-white flex items-center justify-center font-bold text-lg font-display shrink-0">
@@ -736,7 +736,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 <div className="relative inline-block">
                   <button
                     onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border cursor-pointer transition-all bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100"
+                    className="inline-flex items-center gap-1.5 min-h-[40px] px-3 py-1.5 rounded-full text-xs font-bold border cursor-pointer transition-all bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100 touch-manipulation"
                   >
                     <span>{BOOKING_STATUS_LABELS[booking.status] || booking.status}</span>
                     <ChevronDown className="w-3 h-3 text-emerald-700" />
@@ -759,7 +759,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                         <button
                           key={st.id}
                           onClick={() => handleUpdateStatus(st.id as BookingStatus)}
-                          className="w-full text-left px-3 py-1.5 hover:bg-zinc-50 font-medium text-zinc-700 flex items-center justify-between"
+                          className="w-full text-left px-3.5 py-2 hover:bg-zinc-50 font-medium text-zinc-700 flex items-center justify-between min-h-[40px]"
                         >
                           <span>{st.label}</span>
                           {booking.status === st.id && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
@@ -787,9 +787,9 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
             {/* Final Agreed Amount */}
-            <div className="text-right px-3 py-1.5 bg-zinc-50 border border-zinc-200 rounded-xl mr-1">
+            <div className="w-full sm:w-auto text-left sm:text-right px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl">
               <span className="text-[10px] text-zinc-500 block uppercase tracking-wider font-semibold">Agreed Amount</span>
               <span className="text-base font-extrabold text-zinc-900 font-display">
                 ₹{finalAgreedAmount.toLocaleString('en-IN')}
@@ -799,9 +799,9 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
             {/* Edit Booking */}
             <button
               onClick={handleOpenFullEditModal}
-              className="min-h-[44px] px-3.5 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-zinc-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="flex-1 sm:flex-initial min-h-[48px] sm:min-h-[42px] px-4 py-2.5 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-zinc-700 text-sm sm:text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer touch-manipulation active:scale-95"
             >
-              <Edit3 className="w-3.5 h-3.5" />
+              <Edit3 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
               <span>Edit</span>
             </button>
 
@@ -810,51 +810,51 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
               href={`https://wa.me/${cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone}`}
               target="_blank"
               rel="noreferrer"
-              className="min-h-[44px] px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+              className="flex-1 sm:flex-initial min-h-[48px] sm:min-h-[42px] px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm sm:text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs touch-manipulation active:scale-95"
             >
-              <MessageCircle className="w-3.5 h-3.5" />
+              <MessageCircle className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
               <span>WhatsApp</span>
             </a>
 
             {/* 1-Tap PDF Dropdown */}
-            <div className="relative inline-block">
+            <div className="relative inline-block w-full sm:w-auto">
               <button
                 onClick={() => setIsPdfDropdownOpen(!isPdfDropdownOpen)}
-                className="min-h-[44px] px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                className="w-full sm:w-auto min-h-[48px] sm:min-h-[42px] px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-sm sm:text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs touch-manipulation active:scale-95"
               >
-                <Printer className="w-3.5 h-3.5" />
+                <Printer className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                 <span>Download / Print</span>
                 <ChevronDown className="w-3.5 h-3.5" />
               </button>
 
               {isPdfDropdownOpen && (
-                <div className="absolute right-0 mt-1 w-52 bg-white border border-zinc-200 rounded-xl shadow-xl z-30 py-1.5 text-xs">
+                <div className="absolute left-0 sm:left-auto sm:right-0 mt-1 w-full sm:w-52 bg-white border border-zinc-200 rounded-xl shadow-xl z-30 py-1.5 text-xs">
                   <button
                     onClick={() => handleGeneratePdf('quotation')}
-                    className="w-full text-left px-3.5 py-2 hover:bg-zinc-50 text-zinc-700 font-medium flex items-center gap-2"
+                    className="w-full text-left px-3.5 py-2.5 hover:bg-zinc-50 text-zinc-700 font-medium flex items-center gap-2 min-h-[44px]"
                   >
-                    <FileText className="w-3.5 h-3.5 text-blue-600" />
+                    <FileText className="w-4 h-4 text-blue-600" />
                     <span>Quotation PDF</span>
                   </button>
                   <button
                     onClick={() => handleGeneratePdf('invoice')}
-                    className="w-full text-left px-3.5 py-2 hover:bg-zinc-50 text-zinc-700 font-medium flex items-center gap-2"
+                    className="w-full text-left px-3.5 py-2.5 hover:bg-zinc-50 text-zinc-700 font-medium flex items-center gap-2 min-h-[44px]"
                   >
-                    <FileText className="w-3.5 h-3.5 text-emerald-600" />
+                    <FileText className="w-4 h-4 text-emerald-600" />
                     <span>Final Invoice PDF</span>
                   </button>
                   <button
                     onClick={() => handleGeneratePdf('receipt')}
-                    className="w-full text-left px-3.5 py-2 hover:bg-zinc-50 text-zinc-700 font-medium flex items-center gap-2"
+                    className="w-full text-left px-3.5 py-2.5 hover:bg-zinc-50 text-zinc-700 font-medium flex items-center gap-2 min-h-[44px]"
                   >
-                    <FileText className="w-3.5 h-3.5 text-amber-600" />
+                    <FileText className="w-4 h-4 text-amber-600" />
                     <span>Payment Receipt PDF</span>
                   </button>
                   <button
                     onClick={() => handleGeneratePdf('summary')}
-                    className="w-full text-left px-3.5 py-2 hover:bg-zinc-50 text-zinc-700 font-medium flex items-center gap-2"
+                    className="w-full text-left px-3.5 py-2.5 hover:bg-zinc-50 text-zinc-700 font-medium flex items-center gap-2 min-h-[44px]"
                   >
-                    <FileText className="w-3.5 h-3.5 text-purple-600" />
+                    <FileText className="w-4 h-4 text-purple-600" />
                     <span>Booking Summary PDF</span>
                   </button>
                 </div>
@@ -864,66 +864,66 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
         </div>
       </div>
 
-      {/* 2. TOP SUMMARY CARD */}
+      {/* 2. TOP SUMMARY TILES */}
       <div className="bg-white rounded-2xl border border-zinc-200/90 p-4 sm:p-5 shadow-2xs">
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-zinc-100">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3">
           {/* Mobile */}
-          <div className="pt-2 sm:pt-0 sm:pr-3">
+          <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between">
             <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Customer Mobile</span>
             <a 
               href={`tel:${booking.customerPhone}`} 
-              className="text-xs font-bold text-zinc-900 hover:text-blue-600 mt-1 inline-flex items-center gap-1"
+              className="text-xs font-bold text-zinc-900 hover:text-blue-600 mt-1 inline-flex items-center gap-1 min-h-[32px]"
             >
-              <Phone className="w-3 h-3 text-zinc-400" />
-              <span>{booking.customerPhone || 'N/A'}</span>
+              <Phone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+              <span className="truncate">{booking.customerPhone || 'N/A'}</span>
             </a>
           </div>
 
           {/* Dates */}
-          <div className="pt-2 sm:pt-0 sm:px-3">
+          <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between">
             <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Event Date</span>
-            <div className="text-xs font-bold text-zinc-900 mt-1 flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-zinc-400" />
-              <span>{booking.mainEventDate || booking.startDate}</span>
+            <div className="text-xs font-bold text-zinc-900 mt-1 flex items-center gap-1 min-h-[32px]">
+              <Calendar className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+              <span className="truncate">{booking.mainEventDate || booking.startDate}</span>
             </div>
           </div>
 
           {/* Venue */}
-          <div className="pt-2 sm:pt-0 sm:px-3">
+          <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between">
             <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Venue</span>
-            <div className="text-xs font-bold text-zinc-900 mt-1 truncate" title={booking.venue}>
-              {booking.venue || 'Studio'}
+            <div className="text-xs font-bold text-zinc-900 mt-1 truncate min-h-[32px] flex items-center" title={booking.venue}>
+              <span className="truncate">{booking.venue || 'Studio'}</span>
             </div>
           </div>
 
           {/* Functions Count */}
-          <div className="pt-2 sm:pt-0 sm:px-3">
+          <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between">
             <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Functions</span>
-            <div className="text-xs font-bold text-zinc-900 mt-1">
+            <div className="text-xs font-bold text-zinc-900 mt-1 min-h-[32px] flex items-center">
               {(booking.functions || []).length} Sub-events
             </div>
           </div>
 
           {/* Agreed Amount */}
-          <div className="pt-2 sm:pt-0 sm:px-3">
+          <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between">
             <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Agreed Amount</span>
-            <div className="text-xs font-bold text-zinc-900 mt-1">
+            <div className="text-xs font-bold text-zinc-900 mt-1 min-h-[32px] flex items-center">
               ₹{finalAgreedAmount.toLocaleString('en-IN')}
             </div>
           </div>
 
           {/* Advance Received */}
-          <div className="pt-2 sm:pt-0 sm:px-3">
+          <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between">
             <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Advance Received</span>
-            <div className="text-xs font-bold text-emerald-700 mt-1">
+            <div className="text-xs font-bold text-emerald-700 mt-1 min-h-[32px] flex items-center">
               ₹{verifiedPaymentsReceived.toLocaleString('en-IN')}
             </div>
           </div>
 
           {/* Remaining Balance */}
-          <div className="pt-2 sm:pt-0 sm:pl-3">
+          <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between col-span-2 sm:col-span-1">
             <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Remaining Balance</span>
-            <div className={`text-xs font-extrabold mt-1 ${isFullyPaid ? 'text-emerald-700' : 'text-rose-600'}`}>
+            <div className={`text-xs font-extrabold mt-1 min-h-[32px] flex items-center ${isFullyPaid ? 'text-emerald-700' : 'text-rose-600'}`}>
               {isFullyPaid ? '✓ Fully Paid' : `₹${remainingBalance.toLocaleString('en-IN')}`}
             </div>
           </div>
@@ -931,7 +931,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
       </div>
 
       {/* 3. 5 EMBEDDED SECTIONS NAVIGATION */}
-      <div className="flex items-center gap-2 border-b border-zinc-200/90 pb-2 overflow-x-auto">
+      <div className="flex items-center gap-2 border-b border-zinc-200/90 pb-2 overflow-x-auto touch-scroll">
         {[
           { id: 'details', label: '1. Details & Crew', icon: <User className="w-4 h-4" /> },
           { id: 'money', label: '2. Money & Payments', icon: <IndianRupee className="w-4 h-4" /> },
@@ -942,7 +942,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
           <button
             key={sec.id}
             onClick={() => setActiveSection(sec.id as BookingSectionTab)}
-            className={`min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`min-h-[48px] px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
               activeSection === sec.id
                 ? 'bg-zinc-900 text-white shadow-xs'
                 : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
@@ -1088,7 +1088,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
           {/* Assigned Crew Section */}
           <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-3">
               <div>
                 <h3 className="text-sm font-bold text-zinc-900 font-display">Assigned Production Crew</h3>
                 <p className="text-xs text-zinc-400 mt-0.5">Lead photographer, candid, cinematic, drone operator & editors</p>
@@ -1096,9 +1096,9 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
               <button
                 onClick={() => setIsCrewModalOpen(true)}
-                className="px-3 py-1.5 rounded-xl bg-zinc-900 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-zinc-800"
+                className="w-full sm:w-auto min-h-[48px] sm:min-h-[38px] px-4 py-2 rounded-xl bg-zinc-900 text-white text-sm sm:text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover:bg-zinc-800 touch-manipulation active:scale-95"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                 <span>+ Assign Crew</span>
               </button>
             </div>
@@ -1181,7 +1181,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
           {/* Payment History Table & Add Payment */}
           <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-3">
               <div>
                 <h3 className="text-sm font-bold text-zinc-900 font-display">Payment History & Receipts</h3>
                 <p className="text-xs text-zinc-400 mt-0.5">Recorded advance payments, cash receipts, UPI transactions & settlements</p>
@@ -1189,14 +1189,82 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
               <button
                 onClick={() => setIsPaymentModalOpen(true)}
-                className="min-h-[44px] px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm sm:text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer touch-manipulation active:scale-95"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Add Payment</span>
               </button>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Mobile Payment Cards (sm:hidden) */}
+            <div className="sm:hidden space-y-3">
+              {paymentHistoryItems.length > 0 ? (
+                paymentHistoryItems.map(item => {
+                  const meta = item.metadata;
+                  const amount = item.amount || meta?.amount || 0;
+                  const dateStr = item.createdAt ? item.createdAt.split('T')[0] : 'Verified';
+                  const mode = meta?.paymentMethod || 'UPI';
+                  const refStr = meta?.receiptNumber || meta?.reference || item.relatedRecordId || 'Verified';
+
+                  return (
+                    <div key={item.historyId} className="p-4 rounded-xl border border-zinc-200/90 bg-zinc-50/70 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-zinc-500">{dateStr}</span>
+                        <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold">
+                          {mode}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold text-emerald-700 font-display">
+                          ₹{amount.toLocaleString('en-IN')}
+                        </span>
+                        <span className="font-mono text-xs text-zinc-500">{refStr}</span>
+                      </div>
+                      <div className="pt-2 border-t border-zinc-200/70 flex justify-end">
+                        <button
+                          onClick={() => handleGenerateReceipt(amount)}
+                          className="w-full min-h-[44px] py-2 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-xs font-bold text-zinc-800 cursor-pointer touch-manipulation active:scale-98 flex items-center justify-center gap-1.5"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-zinc-600" />
+                          <span>View Official Receipt</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : verifiedPaymentsReceived > 0 ? (
+                <div className="p-4 rounded-xl border border-zinc-200/90 bg-zinc-50/70 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-zinc-500">{booking.mainEventDate || 'Verified'}</span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold">
+                      UPI / Digital
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-bold text-emerald-700 font-display">
+                      ₹{verifiedPaymentsReceived.toLocaleString('en-IN')}
+                    </span>
+                    <span className="font-mono text-xs text-zinc-500">ADV-{booking.bookingNumber}</span>
+                  </div>
+                  <div className="pt-2 border-t border-zinc-200/70 flex justify-end">
+                    <button
+                      onClick={() => handleGenerateReceipt(verifiedPaymentsReceived)}
+                      className="w-full min-h-[44px] py-2 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-xs font-bold text-zinc-800 cursor-pointer touch-manipulation active:scale-98 flex items-center justify-center gap-1.5"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-zinc-600" />
+                      <span>View Official Receipt</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="py-6 text-center text-zinc-400 text-xs bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
+                  No payments recorded yet. Tap "+ Add Payment" above.
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Payment Table (hidden sm:block) */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-zinc-200 text-zinc-400 uppercase text-[10px] font-bold">
@@ -1308,9 +1376,9 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
               <div className="flex items-center gap-2.5">
                 <button
                   onClick={() => setShowAddCustomDel(!showAddCustomDel)}
-                  className="px-3 py-1.5 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-xs font-semibold text-zinc-700 flex items-center gap-1 cursor-pointer"
+                  className="min-h-[44px] px-4 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-xs font-bold text-zinc-700 flex items-center gap-1.5 cursor-pointer touch-manipulation active:scale-95"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-4 h-4" />
                   <span>Add Deliverable</span>
                 </button>
                 <span className="text-xs font-bold text-zinc-700">
@@ -1321,29 +1389,29 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
             {/* Inline Add Custom Deliverable Form */}
             {showAddCustomDel && (
-              <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2.5 animate-in fade-in duration-150">
+              <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-3 animate-in fade-in duration-150">
                 <div className="flex items-center justify-between text-xs font-bold text-zinc-700">
                   <span>Add Custom Deliverable</span>
                   <button
                     type="button"
                     onClick={() => setShowAddCustomDel(false)}
-                    className="text-zinc-400 hover:text-zinc-600"
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-400 hover:text-zinc-600 cursor-pointer"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <input
                     type="text"
                     placeholder="Deliverable Name (e.g. 100 Edited Stills)"
                     value={customDelName}
                     onChange={e => setCustomDelName(e.target.value)}
-                    className="px-3 py-2 rounded-xl border border-zinc-200 text-xs bg-white focus:outline-none"
+                    className="px-3.5 py-3 rounded-xl border border-zinc-200 text-base sm:text-xs bg-white focus:outline-none min-h-[48px] sm:min-h-[42px]"
                   />
                   <select
                     value={customDelCat}
                     onChange={e => setCustomDelCat(e.target.value as any)}
-                    className="px-3 py-2 rounded-xl border border-zinc-200 text-xs bg-white focus:outline-none"
+                    className="px-3.5 py-3 rounded-xl border border-zinc-200 text-base sm:text-xs bg-white focus:outline-none min-h-[48px] sm:min-h-[42px]"
                   >
                     <option value="photography">Photography</option>
                     <option value="video">Videography</option>
@@ -1354,21 +1422,21 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                     type="date"
                     value={customDelDueDate}
                     onChange={e => setCustomDelDueDate(e.target.value)}
-                    className="px-3 py-2 rounded-xl border border-zinc-200 text-xs bg-white focus:outline-none"
+                    className="px-3.5 py-3 rounded-xl border border-zinc-200 text-base sm:text-xs bg-white focus:outline-none min-h-[48px] sm:min-h-[42px]"
                   />
                 </div>
                 <div className="flex justify-end gap-2 pt-1">
                   <button
                     type="button"
                     onClick={() => setShowAddCustomDel(false)}
-                    className="px-3 py-1.5 text-xs text-zinc-500 hover:bg-zinc-200 rounded-lg"
+                    className="min-h-[44px] px-4 py-2 text-xs font-semibold text-zinc-600 hover:bg-zinc-200 rounded-xl"
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
                     onClick={handleAddCustomDeliverable}
-                    className="px-3.5 py-1.5 text-xs font-bold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 cursor-pointer"
+                    className="min-h-[44px] px-5 py-2 text-xs font-bold text-white bg-zinc-900 rounded-xl hover:bg-zinc-800 cursor-pointer shadow-xs"
                   >
                     Save Deliverable
                   </button>
@@ -1395,7 +1463,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 return (
                   <div
                     key={item.id}
-                    className={`p-3.5 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                    className={`p-3.5 sm:p-4 rounded-xl border transition-all flex items-center justify-between gap-3 ${
                       isDone 
                         ? 'bg-emerald-50/50 border-emerald-200' 
                         : isInProgress 
@@ -1407,37 +1475,37 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                       {/* Interactive 1-tap Checkbox */}
                       <button
                         onClick={() => handleToggleDeliverableStatus(item.id)}
-                        className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all cursor-pointer touch-manipulation active:scale-90 shrink-0 ${
                           isDone 
-                            ? 'bg-emerald-600 text-white' 
+                            ? 'bg-emerald-600 text-white shadow-xs' 
                             : 'border-2 border-zinc-300 hover:border-zinc-500 text-transparent'
                         }`}
                         title="Click to toggle Done"
                       >
-                        <CheckCircle2 className="w-4 h-4" />
+                        <CheckCircle2 className="w-5 h-5" />
                       </button>
 
-                      <div>
+                      <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className={`text-xs font-bold ${isDone ? 'line-through text-zinc-500' : 'text-zinc-900'}`}>
+                          <span className={`text-xs font-bold truncate ${isDone ? 'line-through text-zinc-500' : 'text-zinc-900'}`}>
                             {idx + 1}. {item.name}
                           </span>
-                          <span className="text-[10px] text-zinc-400 capitalize">
+                          <span className="text-[10px] text-zinc-400 capitalize hidden sm:inline">
                             • {item.category}
                           </span>
                         </div>
                         <p className="text-[11px] text-zinc-500 flex items-center gap-1 mt-0.5">
-                          <Clock className="w-3 h-3 text-zinc-400" />
+                          <Clock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                           <span>Deadline: {item.deadline}</span>
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                       {/* 1-Tap Status Pill */}
                       <button
                         onClick={() => handleToggleDeliverableStatus(item.id)}
-                        className={`min-h-[36px] px-3 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                        className={`min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer touch-manipulation active:scale-95 ${
                           isDone
                             ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                             : isInProgress
@@ -1452,10 +1520,10 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                       <button
                         type="button"
                         onClick={() => handleRemoveDeliverable(item.id)}
-                        className="p-1.5 text-zinc-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition-colors cursor-pointer touch-manipulation active:scale-95"
                         title="Delete Deliverable"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -1501,7 +1569,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-bold cursor-pointer"
+                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[40px] px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-sm sm:text-xs font-bold cursor-pointer touch-manipulation active:scale-95"
                 >
                   Save Internal Note
                 </button>
@@ -1544,9 +1612,9 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   <button
                     key={tmpl.id}
                     onClick={() => setActiveWhatsAppTemplate(tmpl.id as any)}
-                    className={`min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold transition-all text-left cursor-pointer border ${
+                    className={`min-h-[48px] px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer border touch-manipulation active:scale-98 ${
                       activeWhatsAppTemplate === tmpl.id
-                        ? 'bg-emerald-50 text-emerald-900 border-emerald-300'
+                        ? 'bg-emerald-50 text-emerald-900 border-emerald-300 shadow-2xs'
                         : 'bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100'
                     }`}
                   >
@@ -1566,12 +1634,12 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <a
                   href={activeWhatsAppUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex-1 min-h-[44px] px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer"
+                  className="flex-1 min-h-[50px] sm:min-h-[44px] px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer touch-manipulation active:scale-98"
                 >
                   <Send className="w-4 h-4" />
                   <span>Send on WhatsApp</span>
@@ -1582,11 +1650,11 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                     navigator.clipboard.writeText(activeWhatsAppText);
                     showToast('Message copied to clipboard!');
                   }}
-                  className="min-h-[44px] px-3.5 py-2.5 rounded-xl border border-zinc-200 hover:bg-zinc-100 text-zinc-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="min-h-[50px] sm:min-h-[44px] px-4 py-3 rounded-xl border border-zinc-200 hover:bg-zinc-100 text-zinc-700 text-sm sm:text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer touch-manipulation active:scale-98"
                   title="Copy Text"
                 >
                   <Copy className="w-4 h-4" />
-                  <span>Copy</span>
+                  <span>Copy Message</span>
                 </button>
               </div>
             </div>
@@ -1605,19 +1673,19 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
       {/* MODAL 1: ADD PAYMENT */}
       {isPaymentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl border border-zinc-200 max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <h3 className="text-base font-bold text-zinc-900 font-display">Record Client Payment</h3>
               <button 
                 onClick={() => setIsPaymentModalOpen(false)}
-                className="w-8 h-8 rounded-lg hover:bg-zinc-100 flex items-center justify-center text-zinc-500"
+                className="min-w-[44px] min-h-[44px] rounded-xl hover:bg-zinc-100 flex items-center justify-center text-zinc-500 cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5 sm:w-4 sm:h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleRecordPayment} className="space-y-3.5 text-xs">
+            <form onSubmit={handleRecordPayment} className="space-y-4 text-xs">
               <div>
                 <label className="font-semibold text-zinc-700 block mb-1">Amount to Credit (₹)</label>
                 <input
@@ -1625,7 +1693,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   min="1"
                   value={paymentAmount}
                   onChange={e => setPaymentAmount(Number(e.target.value))}
-                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl font-bold text-base text-zinc-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-zinc-900"
+                  className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl font-bold text-lg sm:text-base text-zinc-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-zinc-900 min-h-[48px]"
                   required
                 />
               </div>
@@ -1635,7 +1703,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 <select
                   value={paymentMode}
                   onChange={e => setPaymentMode(e.target.value as any)}
-                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:outline-none focus:bg-white"
+                  className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 focus:outline-none focus:bg-white min-h-[48px]"
                 >
                   <option value="UPI">UPI / GPay / PhonePe</option>
                   <option value="Cash">Cash at Studio</option>
@@ -1650,7 +1718,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   type="text"
                   value={paymentRef}
                   onChange={e => setPaymentRef(e.target.value)}
-                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:outline-none focus:bg-white"
+                  className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 focus:outline-none focus:bg-white min-h-[48px]"
                 />
               </div>
 
@@ -1661,21 +1729,21 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   value={paymentNote}
                   onChange={e => setPaymentNote(e.target.value)}
                   placeholder="e.g. Booking advance / Haldi installment"
-                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:outline-none focus:bg-white"
+                  className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 focus:outline-none focus:bg-white min-h-[48px]"
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2">
+              <div className="pt-2 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsPaymentModalOpen(false)}
-                  className="px-4 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50"
+                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[40px] px-5 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50 text-sm sm:text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-xs"
+                  className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs"
                 >
                   Confirm & Credit Payment
                 </button>
@@ -1685,18 +1753,17 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
         </div>
       )}
 
-
       {/* MODAL 2: EDIT BOOKING DETAILS */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl border border-zinc-200 max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl border border-zinc-200 max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <h3 className="text-base font-bold text-zinc-900 font-display">Edit Booking Details</h3>
               <button 
                 onClick={() => setIsEditModalOpen(false)}
-                className="w-8 h-8 rounded-lg hover:bg-zinc-100 flex items-center justify-center text-zinc-500"
+                className="min-w-[44px] min-h-[44px] rounded-xl hover:bg-zinc-100 flex items-center justify-center text-zinc-500 cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5 sm:w-4 sm:h-4" />
               </button>
             </div>
 
@@ -1708,7 +1775,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                     type="text"
                     value={editFormData.customerName}
                     onChange={e => setEditFormData({ ...editFormData, customerName: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                    className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 focus:bg-white min-h-[48px]"
                     required
                   />
                 </div>
@@ -1718,7 +1785,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                     type="text"
                     value={editFormData.customerPhone}
                     onChange={e => setEditFormData({ ...editFormData, customerPhone: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                    className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 focus:bg-white min-h-[48px]"
                     required
                   />
                 </div>
@@ -1730,7 +1797,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   type="email"
                   value={editFormData.customerEmail}
                   onChange={e => setEditFormData({ ...editFormData, customerEmail: e.target.value })}
-                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                  className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 focus:bg-white min-h-[48px]"
                 />
               </div>
 
@@ -1741,7 +1808,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                     type="text"
                     value={editFormData.eventName}
                     onChange={e => setEditFormData({ ...editFormData, eventName: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                    className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 focus:bg-white min-h-[48px]"
                     required
                   />
                 </div>
@@ -1751,7 +1818,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                     type="date"
                     value={editFormData.eventDate}
                     onChange={e => setEditFormData({ ...editFormData, eventDate: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                    className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 focus:bg-white min-h-[48px]"
                     required
                   />
                 </div>
@@ -1763,18 +1830,18 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   type="text"
                   value={editFormData.venue}
                   onChange={e => setEditFormData({ ...editFormData, venue: e.target.value })}
-                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                  className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 focus:bg-white min-h-[48px]"
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-3 border-t border-zinc-100 pt-3">
+              <div className="grid grid-cols-3 gap-2.5 border-t border-zinc-100 pt-3">
                 <div>
                   <label className="font-semibold text-zinc-700 block mb-1">Quotation (₹)</label>
                   <input
                     type="number"
                     value={editFormData.originalQuotation}
                     onChange={e => setEditFormData({ ...editFormData, originalQuotation: Number(e.target.value) })}
-                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 focus:bg-white min-h-[48px]"
                   />
                 </div>
                 <div>
@@ -1783,7 +1850,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                     type="number"
                     value={editFormData.negotiatedDiscount}
                     onChange={e => setEditFormData({ ...editFormData, negotiatedDiscount: Number(e.target.value) })}
-                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 focus:bg-white min-h-[48px]"
                   />
                 </div>
                 <div>
@@ -1792,23 +1859,23 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                     type="number"
                     value={editFormData.finalAgreedAmount}
                     onChange={e => setEditFormData({ ...editFormData, finalAgreedAmount: Number(e.target.value) })}
-                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 font-bold focus:bg-white"
+                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 font-bold focus:bg-white min-h-[48px]"
                     required
                   />
                 </div>
               </div>
 
-              <div className="pt-3 flex items-center justify-end gap-2 border-t border-zinc-100">
+              <div className="pt-3 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 border-t border-zinc-100">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50"
+                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[40px] px-5 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50 text-sm sm:text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl shadow-xs"
+                  className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs"
                 >
                   Save Changes
                 </button>
@@ -1818,35 +1885,34 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
         </div>
       )}
 
-
       {/* MODAL 3: ASSIGN CREW */}
       {isCrewModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl border border-zinc-200 max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <h3 className="text-base font-bold text-zinc-900 font-display">Assign Team Member</h3>
               <button 
                 onClick={() => setIsCrewModalOpen(false)}
-                className="w-8 h-8 rounded-lg hover:bg-zinc-100 flex items-center justify-center text-zinc-500"
+                className="min-w-[44px] min-h-[44px] rounded-xl hover:bg-zinc-100 flex items-center justify-center text-zinc-500 cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5 sm:w-4 sm:h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleAssignCrew} className="space-y-3.5 text-xs">
+            <form onSubmit={handleAssignCrew} className="space-y-4 text-xs">
               {crewConflictWarn && (
-                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 space-y-2">
+                <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 space-y-2">
                   <div className="flex items-start gap-1.5 font-bold text-amber-800">
                     <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     <span>Scheduling Warning</span>
                   </div>
                   <p className="text-[11px] leading-relaxed">{crewConflictWarn.warningMessage}</p>
-                  <label className="flex items-center gap-2 font-bold text-amber-950 cursor-pointer pt-1">
+                  <label className="flex items-center gap-2 font-bold text-amber-950 cursor-pointer pt-1 min-h-[36px]">
                     <input
                       type="checkbox"
                       checked={allowCrewConflictOverride}
                       onChange={e => setAllowCrewConflictOverride(e.target.checked)}
-                      className="rounded text-amber-600 focus:ring-amber-500"
+                      className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500"
                     />
                     <span>Allow Overlap & Confirm Assignment</span>
                   </label>
@@ -1875,7 +1941,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                       setCrewConflictWarn(null);
                     }
                   }}
-                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                  className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 focus:bg-white min-h-[48px]"
                   required
                 >
                   <option value="">-- Choose team member --</option>
@@ -1892,7 +1958,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 <select
                   value={selectedCrewRole}
                   onChange={e => setSelectedCrewRole(e.target.value)}
-                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 focus:bg-white"
+                  className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 focus:bg-white min-h-[48px]"
                 >
                   <option value="Lead Photographer">Lead Photographer</option>
                   <option value="Candid Photographer">Candid Photographer</option>
@@ -1905,17 +1971,17 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 </select>
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2">
+              <div className="pt-2 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsCrewModalOpen(false)}
-                  className="px-4 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50"
+                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[40px] px-5 py-2.5 border border-zinc-200 rounded-xl font-semibold text-zinc-600 hover:bg-zinc-50 text-sm sm:text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-xs"
+                  className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs"
                 >
                   Assign Member
                 </button>

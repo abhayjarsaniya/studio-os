@@ -113,10 +113,10 @@ You can change your password anytime from Settings or use Forgot Password on the
       <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-zinc-100 space-y-5 animate-in fade-in zoom-in-95 duration-200 relative">
         <button
           onClick={onClose}
-          className="absolute right-5 top-5 p-1 rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors cursor-pointer"
+          className="absolute right-4 top-4 min-w-[44px] min-h-[44px] rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors cursor-pointer flex items-center justify-center touch-manipulation"
           aria-label="Close"
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5" />
         </button>
 
         {/* Modal Header */}
@@ -146,62 +146,62 @@ You can change your password anytime from Settings or use Forgot Password on the
 
           <div className="flex items-center justify-between py-1">
             <span className="text-zinc-500 font-sans">Login URL:</span>
-            <div className="flex items-center gap-2">
-              <span className="text-zinc-900 truncate max-w-[200px] text-[11px]">{loginUrl}</span>
+            <div className="flex items-center gap-1">
+              <span className="text-zinc-900 truncate max-w-[170px] sm:max-w-[200px] text-[11px]">{loginUrl}</span>
               <button
                 type="button"
                 onClick={() => copyToClipboard(loginUrl, 'url')}
-                className="p-1 hover:bg-zinc-200 rounded text-zinc-600 cursor-pointer"
+                className="min-w-[40px] min-h-[40px] flex items-center justify-center hover:bg-zinc-200 rounded-lg text-zinc-600 cursor-pointer touch-manipulation"
                 title="Copy Login URL"
               >
-                {copiedKey === 'url' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedKey === 'url' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
           <div className="flex items-center justify-between py-1">
             <span className="text-zinc-500 font-sans">Studio ID:</span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <strong className="text-amber-800 font-bold">{data.studioId}</strong>
               <button
                 type="button"
                 onClick={() => copyToClipboard(data.studioId, 'id')}
-                className="p-1 hover:bg-zinc-200 rounded text-zinc-600 cursor-pointer"
+                className="min-w-[40px] min-h-[40px] flex items-center justify-center hover:bg-zinc-200 rounded-lg text-zinc-600 cursor-pointer touch-manipulation"
                 title="Copy Studio ID"
               >
-                {copiedKey === 'id' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedKey === 'id' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
           <div className="flex items-center justify-between py-1">
             <span className="text-zinc-500 font-sans">Login ID:</span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <strong className="text-indigo-800 font-bold">{data.username}</strong>
               <button
                 type="button"
                 onClick={() => copyToClipboard(data.username, 'user')}
-                className="p-1 hover:bg-zinc-200 rounded text-zinc-600 cursor-pointer"
+                className="min-w-[40px] min-h-[40px] flex items-center justify-center hover:bg-zinc-200 rounded-lg text-zinc-600 cursor-pointer touch-manipulation"
                 title="Copy Login ID"
               >
-                {copiedKey === 'user' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedKey === 'user' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
           <div className="flex items-center justify-between py-1.5 px-2.5 bg-amber-50/80 border border-amber-200/70 rounded-xl">
             <span className="text-amber-900 font-sans font-semibold">Temporary Password:</span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <strong className="text-amber-950 font-black tracking-wider text-xs bg-white px-2 py-0.5 rounded border border-amber-300">
                 {data.temporaryPassword}
               </strong>
               <button
                 type="button"
                 onClick={() => copyToClipboard(data.temporaryPassword, 'pass')}
-                className="p-1 hover:bg-amber-200 rounded text-amber-900 cursor-pointer"
+                className="min-w-[40px] min-h-[40px] flex items-center justify-center hover:bg-amber-200 rounded-lg text-amber-900 cursor-pointer touch-manipulation"
                 title="Copy Temporary Password"
               >
-                {copiedKey === 'pass' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedKey === 'pass' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
               </button>
             </div>
           </div>
@@ -213,11 +213,11 @@ You can change your password anytime from Settings or use Forgot Password on the
         </p>
 
         {/* Action Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-sans">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 font-sans">
           <button
             type="button"
             onClick={copyAllDetails}
-            className="py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+            className="min-h-[48px] sm:min-h-[44px] py-3 px-4 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-sm sm:text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm touch-manipulation active:scale-[0.98]"
           >
             {copiedKey === 'all' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
             <span>{copiedKey === 'all' ? 'All Details Copied!' : 'Copy All Login Details'}</span>
@@ -226,7 +226,7 @@ You can change your password anytime from Settings or use Forgot Password on the
           <button
             type="button"
             onClick={handleShareWhatsApp}
-            className="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+            className="min-h-[48px] sm:min-h-[44px] py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm sm:text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm touch-manipulation active:scale-[0.98]"
           >
             <Share2 className="w-4 h-4" />
             <span>Share via WhatsApp</span>
@@ -236,7 +236,7 @@ You can change your password anytime from Settings or use Forgot Password on the
             type="button"
             onClick={handleSendResetEmail}
             disabled={sendingReset}
-            className="py-2.5 px-4 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-semibold text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer sm:col-span-2 disabled:opacity-50 border border-zinc-200"
+            className="min-h-[48px] sm:min-h-[44px] py-3 px-4 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-semibold text-sm sm:text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer sm:col-span-2 disabled:opacity-50 border border-zinc-200 touch-manipulation active:scale-[0.98]"
           >
             <Mail className="w-4 h-4 text-zinc-600" />
             <span>{sendingReset ? 'Sending Reset Email...' : 'Send Password Reset Email to Owner'}</span>

@@ -231,27 +231,27 @@ export const EmployeeDashboardPage: React.FC = () => {
       </header>
 
       {/* Mobile Sub-Navigation Tabs */}
-      <div className="sm:hidden bg-white border-b border-zinc-200 px-4 py-2 flex items-center gap-2 sticky top-[57px] z-30">
+      <div className="sm:hidden bg-white border-b border-zinc-200 px-4 py-2.5 flex items-center gap-2 sticky top-[57px] z-30">
         <button
           onClick={() => setMobileTab('overview')}
-          className={`flex-1 min-h-[44px] py-1.5 text-xs font-bold rounded-lg transition-colors ${
-            mobileTab === 'overview' ? 'bg-zinc-900 text-white' : 'text-zinc-600 hover:bg-zinc-100'
+          className={`flex-1 min-h-[48px] py-2 text-xs font-bold rounded-xl transition-all touch-manipulation active:scale-95 ${
+            mobileTab === 'overview' ? 'bg-zinc-900 text-white shadow-xs' : 'text-zinc-600 hover:bg-zinc-100'
           }`}
         >
           Overview
         </button>
         <button
           onClick={() => setMobileTab('events')}
-          className={`flex-1 min-h-[44px] py-1.5 text-xs font-bold rounded-lg transition-colors ${
-            mobileTab === 'events' ? 'bg-zinc-900 text-white' : 'text-zinc-600 hover:bg-zinc-100'
+          className={`flex-1 min-h-[48px] py-2 text-xs font-bold rounded-xl transition-all touch-manipulation active:scale-95 ${
+            mobileTab === 'events' ? 'bg-zinc-900 text-white shadow-xs' : 'text-zinc-600 hover:bg-zinc-100'
           }`}
         >
           Events ({metrics.assignedEvents.length})
         </button>
         <button
           onClick={() => setMobileTab('tasks')}
-          className={`flex-1 min-h-[44px] py-1.5 text-xs font-bold rounded-lg transition-colors ${
-            mobileTab === 'tasks' ? 'bg-zinc-900 text-white' : 'text-zinc-600 hover:bg-zinc-100'
+          className={`flex-1 min-h-[48px] py-2 text-xs font-bold rounded-xl transition-all touch-manipulation active:scale-95 ${
+            mobileTab === 'tasks' ? 'bg-zinc-900 text-white shadow-xs' : 'text-zinc-600 hover:bg-zinc-100'
           }`}
         >
           Tasks ({metrics.pendingTasks.length})
@@ -274,35 +274,35 @@ export const EmployeeDashboardPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto">
             {metrics.attendanceStatus === 'not_marked' && (
               <button
                 onClick={handleCheckIn}
-                className="w-full sm:w-auto min-h-[48px] px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+                className="w-full sm:w-auto min-h-[52px] sm:min-h-[48px] px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
               >
-                <LogIn className="w-4 h-4" />
+                <LogIn className="w-5 h-5 sm:w-4 sm:h-4" />
                 <span>Mark Attendance / Check In</span>
               </button>
             )}
 
             {metrics.attendanceStatus === 'checked_in' && (
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-                <div className="px-3.5 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2 font-medium">
+                <div className="px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2 font-medium min-h-[48px]">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
                   <span>Checked In at {metrics.currentCheckInTime || '09:00 AM'}</span>
                 </div>
                 <button
                   onClick={handleCheckOut}
-                  className="min-h-[44px] px-4 py-2 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-300 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
+                  className="min-h-[48px] sm:min-h-[44px] px-5 py-2.5 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-300 font-bold text-sm sm:text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs touch-manipulation active:scale-98"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
+                  <LogOut className="w-4 h-4" />
                   <span>Check Out</span>
                 </button>
               </div>
             )}
 
             {metrics.attendanceStatus === 'checked_out' && (
-              <div className="px-4 py-3 rounded-xl bg-zinc-100 border border-zinc-200 text-xs text-zinc-700 flex items-center gap-2 font-semibold">
+              <div className="w-full sm:w-auto min-h-[48px] px-5 py-3 rounded-xl bg-zinc-100 border border-zinc-200 text-xs text-zinc-700 flex items-center justify-center gap-2 font-semibold">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 <span>Shift Completed for Today</span>
               </div>

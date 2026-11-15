@@ -1171,11 +1171,11 @@ export const UnifiedBookingPage: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-4 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-end gap-3">
+              <div className="pt-4 border-t border-zinc-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={handleGeneratePdf}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-zinc-300 hover:bg-zinc-100 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px] px-5 py-3 rounded-xl border border-zinc-300 hover:bg-zinc-100 font-bold text-sm sm:text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors touch-manipulation active:scale-98"
                 >
                   <Printer className="w-4 h-4 text-zinc-600" />
                   <span>Preview & Print Quotation PDF</span>
@@ -1184,7 +1184,7 @@ export const UnifiedBookingPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleSaveBooking('quotation')}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-xs cursor-pointer transition-colors"
+                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px] px-5 py-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-sm sm:text-xs cursor-pointer transition-colors touch-manipulation active:scale-98"
                 >
                   Save as Draft Quotation
                 </button>
@@ -1192,7 +1192,7 @@ export const UnifiedBookingPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleSaveBooking('confirmed')}
-                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs shadow-md cursor-pointer transition-all flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto min-h-[52px] sm:min-h-[44px] px-6 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-sm sm:text-xs shadow-md cursor-pointer transition-all flex items-center justify-center gap-2 touch-manipulation active:scale-98"
                 >
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                   <span>Confirm Deal & Booking</span>
@@ -1202,14 +1202,14 @@ export const UnifiedBookingPage: React.FC = () => {
           )}
 
           {/* Stepper Navigation Buttons */}
-          <div className="pt-6 border-t border-zinc-100 flex items-center justify-between">
+          <div className="pt-6 border-t border-zinc-100 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
             {currentStep > 1 ? (
               <button
                 type="button"
                 onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
-                className="px-4 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-100 text-xs font-semibold text-zinc-700 flex items-center gap-1.5 cursor-pointer"
+                className="w-full sm:w-auto min-h-[48px] sm:min-h-[40px] px-5 py-2.5 rounded-xl border border-zinc-200 hover:bg-zinc-100 text-sm sm:text-xs font-semibold text-zinc-700 flex items-center justify-center gap-2 cursor-pointer touch-manipulation active:scale-95"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
+                <ArrowLeft className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                 <span>Back</span>
               </button>
             ) : <div />}
@@ -1218,10 +1218,10 @@ export const UnifiedBookingPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setCurrentStep(prev => Math.min(7, prev + 1))}
-                className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                className="w-full sm:w-auto min-h-[52px] sm:min-h-[44px] px-6 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-sm sm:text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs touch-manipulation active:scale-95"
               >
                 <span>Continue to Step {currentStep + 1}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
               </button>
             )}
           </div>

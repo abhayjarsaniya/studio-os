@@ -161,7 +161,7 @@ export const BookingsWorkspacePage: React.FC = () => {
             setActiveTab('create-booking');
             window.location.hash = '#/app/bookings/new';
           }}
-          className="min-h-[44px] px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer self-start sm:self-auto"
+          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
         >
           <Plus className="w-4 h-4 text-emerald-400" />
           <span>+ New Booking</span>
@@ -171,18 +171,18 @@ export const BookingsWorkspacePage: React.FC = () => {
       {/* Search & Filter Bar */}
       <div className="bg-white border border-zinc-200/90 rounded-2xl p-4 shadow-2xs space-y-3">
         <div className="relative w-full">
-          <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3.5 sm:top-3" />
           <input
             type="text"
             placeholder="Search by customer name, mobile phone, booking ID, or event name..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-zinc-900"
+            className="w-full pl-10 pr-4 py-3 sm:py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-zinc-900 min-h-[48px] sm:min-h-[42px]"
           />
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs touch-scroll">
           {[
             { id: 'all', label: 'All Bookings', count: bookings.length },
             { 
@@ -214,7 +214,7 @@ export const BookingsWorkspacePage: React.FC = () => {
             <button
               key={f.id}
               onClick={() => setStatusFilter(f.id)}
-              className={`min-h-[36px] px-3.5 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`min-h-[44px] sm:min-h-[36px] px-4 py-2 sm:px-3.5 sm:py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 touch-manipulation active:scale-95 ${
                 statusFilter === f.id
                   ? 'bg-zinc-900 text-white shadow-xs'
                   : 'bg-zinc-100/80 text-zinc-600 hover:bg-zinc-200/70 hover:text-zinc-900'

@@ -285,48 +285,48 @@ export const MasterStudioDetailPage: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setMasterRoute('studios')}
-            className="p-2 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition-colors"
+            className="min-w-[44px] min-h-[44px] p-2 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition-colors flex items-center justify-center cursor-pointer touch-manipulation active:scale-95"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-5 h-5 sm:w-4 sm:h-4" />
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono text-amber-400 font-bold uppercase">{studio.id}</span>
+              <span className="text-xs font-mono text-amber-500 font-bold uppercase">{studio.id}</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
                 {studio.subscription?.status || 'Active'}
               </span>
             </div>
-            <h1 className="text-2xl font-black text-zinc-900 font-display tracking-tight">{studio.name}</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-zinc-900 font-display tracking-tight">{studio.name}</h1>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleOpenEdit}
-            className="min-h-[40px] px-3 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+            className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
           >
-            <Edit3 className="w-3.5 h-3.5 text-zinc-600" />
+            <Edit3 className="w-4 h-4 text-zinc-600" />
             <span>Edit Studio</span>
           </button>
           <button
             onClick={handleShareLoginDetails}
-            className="min-h-[40px] px-3 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+            className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
           >
-            <Share2 className="w-3.5 h-3.5 text-indigo-600" />
+            <Share2 className="w-4 h-4 text-indigo-600" />
             <span>Share Login Details</span>
           </button>
           <button
             onClick={handleOpenSetPassword}
-            className="min-h-[40px] px-3 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+            className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
           >
-            <KeyRound className="w-3.5 h-3.5 text-amber-500" />
+            <KeyRound className="w-4 h-4 text-amber-500" />
             <span>Set / Reset Password</span>
           </button>
           <button
             onClick={handleSendResetEmail}
-            className="min-h-[40px] px-3 py-1.5 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+            className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
           >
-            <Mail className="w-3.5 h-3.5 text-emerald-600" />
+            <Mail className="w-4 h-4 text-emerald-600" />
             <span>Send Reset Email</span>
           </button>
           <button
@@ -334,16 +334,16 @@ export const MasterStudioDetailPage: React.FC = () => {
               setSelectedStudioId(studio.id);
               setMasterRoute('studio-features');
             }}
-            className="min-h-[40px] px-3 py-1.5 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+            className="min-h-[44px] px-4 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 flex items-center gap-1.5 transition-all shadow-xs cursor-pointer touch-manipulation active:scale-95"
           >
-            <ToggleRight className="w-3.5 h-3.5" />
+            <ToggleRight className="w-4 h-4" />
             <span>Configure Features</span>
           </button>
         </div>
       </div>
 
       {/* 8 Tabs Navigation */}
-      <div className="flex items-center gap-1 border-b border-zinc-200 overflow-x-auto pb-1 text-xs font-semibold scrollbar-none">
+      <div className="flex items-center gap-1.5 border-b border-zinc-200 overflow-x-auto pb-1 text-xs font-semibold scrollbar-none touch-scroll">
         {[
           { id: 'overview', label: '1. Overview', icon: Building2 },
           { id: 'events', label: '2. Events & Bookings (Read-Only)', icon: Calendar },
@@ -360,7 +360,7 @@ export const MasterStudioDetailPage: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all whitespace-nowrap ${
+              className={`min-h-[44px] flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap touch-manipulation active:scale-95 ${
                 isActive
                   ? 'bg-amber-500 text-zinc-950 font-bold shadow-md shadow-amber-500/20'
                   : 'text-zinc-500 hover:text-zinc-900 hover:bg-white'

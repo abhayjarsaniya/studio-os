@@ -163,22 +163,22 @@ export const MasterStudiosPage: React.FC = () => {
       {/* Search & Filter Toolbar */}
       <div className="bg-white border border-zinc-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search by studio name, owner, city or ID..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 bg-white border border-zinc-200 rounded-xl text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-amber-400"
+            className="w-full pl-10 pr-3 py-3 sm:py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-zinc-900 min-h-[48px] sm:min-h-[40px]"
           />
         </div>
 
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 touch-scroll">
           {/* Status Filter */}
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value as any)}
-            className="bg-white border border-zinc-200 rounded-xl px-2.5 py-1.5 text-xs text-zinc-700 focus:outline-none focus:border-amber-400"
+            className="bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 sm:py-2 text-base sm:text-xs text-zinc-700 focus:outline-none focus:bg-white min-h-[48px] sm:min-h-[38px] cursor-pointer"
           >
             <option value="all">All Statuses ({studios.length})</option>
             <option value="active">Active Only</option>
@@ -190,7 +190,7 @@ export const MasterStudiosPage: React.FC = () => {
           <select
             value={cityFilter}
             onChange={e => setCityFilter(e.target.value)}
-            className="bg-white border border-zinc-200 rounded-xl px-2.5 py-1.5 text-xs text-zinc-700 focus:outline-none focus:border-amber-400"
+            className="bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 sm:py-2 text-base sm:text-xs text-zinc-700 focus:outline-none focus:bg-white min-h-[48px] sm:min-h-[38px] cursor-pointer"
           >
             {cities.map(c => (
               <option key={c} value={c}>{c === 'all' ? 'All Cities' : c}</option>
@@ -199,8 +199,86 @@ export const MasterStudiosPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 4.1. All Studios Comprehensive Table (14 Columns) */}
-      <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-xl">
+      {/* MOBILE STUDIOS CARD VIEW (sm:hidden) */}
+      <div className="sm:hidden space-y-3.5">
+        {filteredStudios.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-zinc-200 p-8 text-center text-zinc-400 text-xs">
+            No studios found matching the criteria.
+          </div>
+        ) : (
+          filteredStudios.map(studio => (
+            <div
+              key={studio.studioId}
+              className="bg-white rounded-2xl border border-zinc-200/90 p-4 shadow-xs space-y-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-amber-500 font-bold shrink-0">
+                    {studio.logoUrl ? (
+                      <img src={studio.logoUrl} alt="" className="w-full h-full object-cover rounded-xl" />
+                    ) : (
+                      <Building2 className="w-5 h-5" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-zinc-900 font-display">{studio.name}</h3>
+                    <p className="text-[11px] font-mono text-amber-700 font-semibold">{studio.studioCode}</p>
+                  </div>
+                </div>
+
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                  studio.status === 'active'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    : studio.status === 'hidden'
+                    ? 'bg-zinc-100 text-zinc-600 border border-zinc-200'
+                    : 'bg-rose-50 text-rose-700 border border-rose-200'
+                }`}>
+                  {studio.status}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs bg-zinc-50/80 p-3 rounded-xl border border-zinc-100">
+                <div>
+                  <span className="text-[10px] text-zinc-400 uppercase font-bold block">Owner</span>
+                  <span className="font-semibold text-zinc-800">{studio.ownerName}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-zinc-400 uppercase font-bold block">City</span>
+                  <span className="font-semibold text-zinc-800">{studio.city}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-zinc-400 uppercase font-bold block">Plan</span>
+                  <span className="font-semibold text-indigo-700">{studio.subscriptionPlan}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-zinc-400 uppercase font-bold block">Total Revenue</span>
+                  <span className="font-bold text-emerald-700 font-mono">₹{studio.totalRevenue.toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button
+                  onClick={() => handleDrilldown(studio.studioId)}
+                  className="min-h-[44px] px-3 py-2 rounded-xl bg-zinc-900 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation active:scale-95"
+                >
+                  <Eye className="w-4 h-4" />
+                  <span>View Studio</span>
+                </button>
+                <button
+                  onClick={() => handleResetPassword(studio)}
+                  className="min-h-[44px] px-3 py-2 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation active:scale-95"
+                >
+                  <KeyRound className="w-4 h-4 text-amber-600" />
+                  <span>Reset Key</span>
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* 4.1. All Studios Comprehensive Table (14 Columns) - Desktop view */}
+      <div className="hidden sm:block bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs whitespace-nowrap">
             <thead className="bg-zinc-50 text-zinc-500 font-semibold uppercase text-[10px] tracking-wider border-b border-zinc-200">
