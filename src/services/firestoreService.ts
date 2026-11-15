@@ -52,7 +52,7 @@ export class FirestoreService {
     return this.currentSaveStatus;
   }
 
-  private setStatus(status: SaveStatus, message?: string) {
+  setStatus(status: SaveStatus, message?: string) {
     this.currentSaveStatus = status;
     this.statusListeners.forEach(fn => fn(status, message));
   }

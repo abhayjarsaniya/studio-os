@@ -46,7 +46,7 @@ export class BookingProductionService {
   }
 
   // Save booking with full Firestore & StudioEvent synchronization
-  saveBooking(studioId: string, booking: BookingRecord): void {
+  async saveBooking(studioId: string, booking: BookingRecord): Promise<BookingRecord> {
     const list = this.listBookings(studioId);
     const idx = list.findIndex(b => b.id === booking.id);
     if (idx >= 0) {
@@ -106,34 +106,37 @@ export class BookingProductionService {
       console.warn('[saveBooking] Event sync note:', e);
     }
 
-    // 2. Background Firestore write
+    // 2. Direct Firestore write
     const isTestRunner = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
     if (!isTestRunner) {
-      firestoreService.saveDocument(studioId, 'bookings', booking.id, booking).catch(err => {
-        console.warn(`[bookingProductionService.saveBooking] Firestore save note:`, err);
-      });
-      // Subcollections
-      (booking.deliverables || []).forEach(del => {
-        firestoreService.saveDocument(studioId, `bookings/${booking.id}/deliverables`, del.id, del).catch(() => {});
-      });
-      (booking.functions || []).forEach(fn => {
-        firestoreService.saveDocument(studioId, `bookings/${booking.id}/subEvents`, fn.id, fn).catch(() => {});
-        (fn.assignedCrew || []).forEach(c => {
-          firestoreService.saveDocument(studioId, `bookings/${booking.id}/assignments`, `asgn_${booking.id}_${fn.id}_${c.employeeId}`, {
-            assignmentId: `asgn_${booking.id}_${fn.id}_${c.employeeId}`,
-            studioId,
-            bookingId: booking.id,
-            subEventId: fn.id,
-            employeeId: c.employeeId,
-            employeeName: c.employeeName,
-            role: c.role,
-            assignedAt: new Date().toISOString(),
-            assignedBy: 'Studio Owner',
-            assignmentStatus: 'confirmed'
-          }).catch(() => {});
+      try {
+        await firestoreService.saveDocument(studioId, 'bookings', booking.id, booking);
+        // Subcollections
+        (booking.deliverables || []).forEach(del => {
+          firestoreService.saveDocument(studioId, `bookings/${booking.id}/deliverables`, del.id, del).catch(() => {});
         });
-      });
+        (booking.functions || []).forEach(fn => {
+          firestoreService.saveDocument(studioId, `bookings/${booking.id}/subEvents`, fn.id, fn).catch(() => {});
+          (fn.assignedCrew || []).forEach(c => {
+            firestoreService.saveDocument(studioId, `bookings/${booking.id}/assignments`, `asgn_${booking.id}_${fn.id}_${c.employeeId}`, {
+              assignmentId: `asgn_${booking.id}_${fn.id}_${c.employeeId}`,
+              studioId,
+              bookingId: booking.id,
+              subEventId: fn.id,
+              employeeId: c.employeeId,
+              employeeName: c.employeeName,
+              role: c.role,
+              assignedAt: new Date().toISOString(),
+              assignedBy: 'Studio Owner',
+              assignmentStatus: 'confirmed'
+            }).catch(() => {});
+          });
+        });
+      } catch (err) {
+        console.warn(`[bookingProductionService.saveBooking] Firestore save note:`, err);
+      }
     }
+    return booking;
   }
 
   // Delete booking and related references
@@ -694,6 +697,22 @@ export class BookingProductionService {
     const verifiedAmount = Number(payment.amount) || 0;
     if (verifiedAmount <= 0) throw new Error('Payment amount must be greater than zero');
 
+    const existingPayments = (TenantStore.get(studioId, 'payments') as any[]) || [];
+
+    // Strict idempotency: prevent accidental duplicate payment writes within 10s or matching reference
+    const now = Date.now();
+    const isDuplicate = existingPayments.some(p => {
+      if (p.bookingId !== booking.id) return false;
+      if (payment.reference && p.reference && p.reference === payment.reference) return true;
+      const pTime = new Date(p.paymentDate || p.createdAt || 0).getTime();
+      return p.amount === verifiedAmount && p.method === payment.paymentMethod && (now - pTime < 10000);
+    });
+
+    if (isDuplicate) {
+      console.warn(`[recordBookingPayment] Duplicate payment prevented for booking ${bookingId}`);
+      return Object.assign(booking, { payment: existingPayments[0], booking }) as any;
+    }
+
     // Prevent duplicate payments: create real ledger payment in TenantStore
     const paymentRecord = {
       id: `pay_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -708,7 +727,6 @@ export class BookingProductionService {
       receivedBy: payment.receivedBy || 'Studio Owner'
     };
 
-    const existingPayments = (TenantStore.get(studioId, 'payments') as any[]) || [];
     TenantStore.set(studioId, 'payments', [paymentRecord, ...existingPayments]);
 
     // Recalculate balances

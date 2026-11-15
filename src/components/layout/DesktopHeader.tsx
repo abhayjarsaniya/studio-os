@@ -1,8 +1,7 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { useStudio } from '../../context/StudioContext';
-import { Search, Plus, Bell, Shield, Sparkles, Building2 } from 'lucide-react';
-import { Button } from '../ui/Button';
+import { Search, Bell, Shield, Sparkles, Building2 } from 'lucide-react';
 import { SaveIndicator } from '../common/SaveIndicator';
 
 export const DesktopHeader: React.FC = () => {
@@ -15,10 +14,6 @@ export const DesktopHeader: React.FC = () => {
   } = useApp();
 
   const { currentStudio, setIsStudioSwitcherOpen } = useStudio();
-
-  const handleCreateBooking = () => {
-    setActiveTab('create-booking');
-  };
 
   return (
     <header className="h-16 border-b border-zinc-200/80 bg-white/90 backdrop-blur-md px-6 flex items-center justify-between gap-4 sticky top-0 z-20">
@@ -78,16 +73,6 @@ export const DesktopHeader: React.FC = () => {
             <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
           )}
         </button>
-
-        {/* Quick Create Booking Shortcut */}
-        <Button
-          variant="primary"
-          size="sm"
-          icon={<Plus className="w-4 h-4" />}
-          onClick={handleCreateBooking}
-        >
-          Create Booking
-        </Button>
       </div>
     </header>
   );

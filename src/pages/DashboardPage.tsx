@@ -188,9 +188,9 @@ export const DashboardPage: React.FC = () => {
             setActiveTab('create-booking');
             window.location.hash = '#/app/bookings/new';
           }}
-          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
+          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-sm tracking-tight flex items-center justify-center gap-2 shadow-sm hover:shadow-md hover:shadow-orange-500/20 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
         >
-          <Plus className="w-4 h-4 text-white" />
+          <Plus className="w-4 h-4 text-white shrink-0" />
           <span>+ New Booking</span>
         </button>
       </div>
@@ -461,13 +461,13 @@ export const DashboardPage: React.FC = () => {
                   setActiveTab('create-booking');
                   window.location.hash = '#/app/bookings/new';
                 }}
-                className="w-full min-h-[50px] sm:min-h-[44px] px-4 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-sm sm:text-xs font-bold flex items-center justify-between transition-all cursor-pointer shadow-2xs touch-manipulation active:scale-[0.98]"
+                className="w-full min-h-[48px] sm:min-h-[44px] px-4 py-2.5 rounded-xl bg-orange-50/80 hover:bg-orange-100 text-orange-950 border border-orange-200/80 text-sm font-semibold flex items-center justify-between transition-all cursor-pointer shadow-2xs touch-manipulation active:scale-[0.98]"
               >
                 <div className="flex items-center gap-2.5">
-                  <Plus className="w-4 h-4 text-white" />
-                  <span>+ New Booking</span>
+                  <Plus className="w-4 h-4 text-orange-600 shrink-0" />
+                  <span>Start New Booking</span>
                 </div>
-                <ArrowRight className="w-3.5 h-3.5 text-orange-200" />
+                <ArrowRight className="w-3.5 h-3.5 text-orange-500" />
               </button>
 
               <button

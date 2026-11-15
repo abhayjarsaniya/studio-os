@@ -113,15 +113,15 @@ export const DesktopSidebar: React.FC = () => {
         </div>
 
         {/* Quick Action: New Booking */}
-        <div className="px-3 pt-3">
+        <div className="px-3.5 pt-3.5 pb-2">
           <button
             onClick={() => {
               setActiveTab('create-booking');
               window.location.hash = '#/app/bookings/new';
             }}
-            className="w-full min-h-[46px] flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-[13.5px] font-bold shadow-xs shadow-orange-500/20 transition-all cursor-pointer"
+            className="w-full min-h-[48px] flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-sm font-bold tracking-tight shadow-sm hover:shadow-md hover:shadow-orange-500/20 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
           >
-            <PlusCircle className="w-4 h-4 text-white" />
+            <PlusCircle className="w-4 h-4 text-white shrink-0" />
             <span>+ New Booking</span>
           </button>
         </div>

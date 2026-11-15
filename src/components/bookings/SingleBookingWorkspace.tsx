@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useStudio } from '../../context/StudioContext';
 import { bookingProductionService } from '../../services/bookingProductionService';
+import { firestoreService } from '../../services/firestoreService';
 import { 
   BookingRecord, 
   BookingStatus, 
@@ -22,6 +23,7 @@ import {
   CheckCircle2, 
   AlertCircle, 
   Clock3,
+  Loader2,
   MessageCircle, 
   Send, 
   FileText, 
@@ -93,14 +95,24 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
   const [editFormData, setEditFormData] = useState({
     customerName: '',
     customerPhone: '',
+    customerWhatsApp: '',
     customerEmail: '',
+    city: '',
     eventName: '',
     eventDate: '',
     venue: '',
+    category: 'Wedding',
+    notes: '',
     finalAgreedAmount: 0,
     originalQuotation: 0,
     negotiatedDiscount: 0
   });
+
+  // Instant Auto-Save State & Engine
+  const [instantSaveStatus, setInstantSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
+  const [instantSaveMsg, setInstantSaveMsg] = useState<string>('');
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+  const debounceTimerRef = useRef<any>(null);
 
   const [isCrewModalOpen, setIsCrewModalOpen] = useState(false);
   const [selectedCrewEmployeeId, setSelectedCrewEmployeeId] = useState('');
@@ -143,16 +155,67 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
       setEditFormData({
         customerName: booking.customerName || '',
         customerPhone: booking.customerPhone || '',
+        customerWhatsApp: booking.customerWhatsApp || booking.customerPhone || '',
         customerEmail: booking.customerEmail || '',
+        city: booking.city || '',
         eventName: booking.eventName || '',
         eventDate: booking.mainEventDate || booking.startDate || '',
         venue: booking.venue || '',
+        category: (booking.category as any) || 'Wedding',
+        notes: booking.notes || booking.description || '',
         finalAgreedAmount: booking.financials?.finalAgreedAmount || 0,
         originalQuotation: booking.financials?.originalQuotation || 0,
         negotiatedDiscount: booking.financials?.negotiatedDiscount || 0
       });
     }
   }, [booking]);
+
+  // Instant Auto-Save Engine for all booking controls
+  const autoSaveBookingChange = useCallback(async (updates: Partial<BookingRecord>, immediate: boolean = false) => {
+    if (!booking) return;
+
+    // Apply updates directly to the in-memory booking object for instant reactivity
+    Object.assign(booking, updates);
+    booking.updatedAt = new Date().toISOString();
+
+    if (updates.mainEventDate) {
+      booking.mainEventDate = updates.mainEventDate;
+      booking.startDate = updates.mainEventDate;
+    }
+
+    const executePersistence = async () => {
+      setInstantSaveStatus('saving');
+      setInstantSaveMsg('Saving to cloud...');
+      firestoreService.setStatus('saving', 'Saving booking to Firestore...');
+
+      try {
+        await bookingProductionService.saveBooking(studioId, booking);
+        setInstantSaveStatus('saved');
+        setInstantSaveMsg('Saved');
+        firestoreService.setStatus('saved', 'Booking saved to Firestore');
+        setRefreshKey(k => k + 1);
+
+        setTimeout(() => {
+          setInstantSaveStatus('idle');
+        }, 2500);
+      } catch (err: any) {
+        console.error('Instant save error:', err);
+        setInstantSaveStatus('failed');
+        setInstantSaveMsg('Sync failed — retrying');
+        firestoreService.setStatus('error', 'Auto-save failed');
+      }
+    };
+
+    if (immediate) {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      await executePersistence();
+    } else {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = setTimeout(() => {
+        executePersistence();
+      }, 500);
+    }
+  }, [booking, studioId]);
 
   if (!booking) {
     return (
@@ -224,7 +287,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
   const completionPercentage = checklistItems.length > 0 ? Math.round((completedCount / checklistItems.length) * 100) : 0;
 
   // Handle Deliverable Status Toggle
-  const handleToggleDeliverableStatus = (delId: string) => {
+  const handleToggleDeliverableStatus = async (delId: string) => {
     const item = checklistItems.find(i => i.id === delId);
     if (!item) return;
 
@@ -241,17 +304,20 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
       isDelivered = false;
     }
 
+    firestoreService.setStatus('saving', 'Saving deliverable...');
     bookingProductionService.updateDeliverableStage(studioId, booking.id, delId, {
       stage: nextStage,
       completedQty: isDelivered ? (item.rawDeliverable?.requiredQty || 1) : 0,
       verifiedBy: 'Studio Owner'
     });
 
+    await bookingProductionService.saveBooking(studioId, booking);
+    firestoreService.setStatus('saved', 'Deliverable saved to cloud');
     setRefreshKey(k => k + 1);
     showToast(`Updated "${item.name}" to ${isDelivered ? 'Done' : nextStage === 'editing' ? 'In Progress' : 'Pending'}`);
   };
 
-  const handleAddCustomDeliverable = () => {
+  const handleAddCustomDeliverable = async () => {
     if (!customDelName.trim()) return;
     const newDel: DeliverableSpecification = {
       id: `del_${booking.id}_custom_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
@@ -272,7 +338,11 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
     if (!Array.isArray(booking.deliverables)) booking.deliverables = [];
     booking.deliverables.push(newDel);
-    bookingProductionService.saveBooking(studioId, booking);
+    
+    firestoreService.setStatus('saving', 'Adding deliverable...');
+    await bookingProductionService.saveBooking(studioId, booking);
+    firestoreService.setStatus('saved', 'Deliverable saved');
+
     setCustomDelName('');
     setCustomDelDueDate('');
     setShowAddCustomDel(false);
@@ -280,42 +350,61 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
     showToast(`Added custom deliverable: ${newDel.name}`);
   };
 
-  const handleRemoveDeliverable = (delId: string) => {
+  const handleRemoveDeliverable = async (delId: string) => {
     if (!Array.isArray(booking.deliverables)) return;
     booking.deliverables = booking.deliverables.filter(d => d.id !== delId);
-    bookingProductionService.saveBooking(studioId, booking);
+    firestoreService.setStatus('saving', 'Removing deliverable...');
+    await bookingProductionService.saveBooking(studioId, booking);
+    firestoreService.setStatus('saved', 'Deliverable removed');
     setRefreshKey(k => k + 1);
     showToast('Deliverable removed');
   };
 
   // Handle Status Change
-  const handleUpdateStatus = (newStatus: BookingStatus) => {
+  const handleUpdateStatus = async (newStatus: BookingStatus) => {
     booking.status = newStatus;
-    bookingProductionService.saveBooking(studioId, booking);
     setIsStatusDropdownOpen(false);
-    setRefreshKey(k => k + 1);
-    showToast(`Booking status updated to ${BOOKING_STATUS_LABELS[newStatus] || newStatus}`);
+    firestoreService.setStatus('saving', `Updating status to ${BOOKING_STATUS_LABELS[newStatus] || newStatus}...`);
+    try {
+      await bookingProductionService.saveBooking(studioId, booking);
+      firestoreService.setStatus('saved', 'Status updated in cloud');
+      setRefreshKey(k => k + 1);
+      showToast(`Booking status updated to ${BOOKING_STATUS_LABELS[newStatus] || newStatus}`);
+    } catch (err: any) {
+      firestoreService.setStatus('error', 'Status update failed');
+    }
   };
 
   // Handle Add Payment
-  const handleRecordPayment = (e: React.FormEvent) => {
+  const handleRecordPayment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmittingPayment) return;
     if (paymentAmount <= 0) {
       alert('Please enter a valid payment amount.');
       return;
     }
 
-    const updated = bookingProductionService.recordBookingPayment(studioId, booking.id, {
-      amount: paymentAmount,
-      paymentMethod: paymentMode,
-      reference: paymentRef || `REC-${Date.now().toString().slice(-6)}`,
-      receivedBy: 'Studio Owner',
-      isAdvance: verifiedPaymentsReceived === 0
-    });
+    setIsSubmittingPayment(true);
+    firestoreService.setStatus('saving', 'Recording payment...');
+    try {
+      bookingProductionService.recordBookingPayment(studioId, booking.id, {
+        amount: paymentAmount,
+        paymentMethod: paymentMode,
+        reference: paymentRef || `REC-${Date.now().toString().slice(-6)}`,
+        receivedBy: 'Studio Owner',
+        isAdvance: verifiedPaymentsReceived === 0
+      });
 
-    setIsPaymentModalOpen(false);
-    setRefreshKey(k => k + 1);
-    showToast(`Payment of ₹${paymentAmount.toLocaleString('en-IN')} recorded successfully!`);
+      firestoreService.setStatus('saved', 'Payment confirmed');
+      setIsPaymentModalOpen(false);
+      setRefreshKey(k => k + 1);
+      showToast(`Payment of ₹${paymentAmount.toLocaleString('en-IN')} recorded successfully!`);
+    } catch (err: any) {
+      firestoreService.setStatus('error', err.message || 'Payment recording failed');
+      alert(err.message || 'Failed to record payment');
+    } finally {
+      setIsSubmittingPayment(false);
+    }
   };
 
   // Handle Edit Booking Details
@@ -394,7 +483,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
   };
 
   // Handle Add Crew Member with Conflict Detection and Smart Calendar Visibility
-  const handleAssignCrew = (e: React.FormEvent) => {
+  const handleAssignCrew = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCrewEmployeeId) return;
 
@@ -433,7 +522,8 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
     const mainFn = booking.functions[0];
 
-    calendarVisibilityService.assignCrewMember(
+    firestoreService.setStatus('saving', 'Assigning crew member...');
+    await calendarVisibilityService.assignCrewMember(
       studioId,
       booking.id,
       mainFn.id,
@@ -448,6 +538,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
       crewModalVisibleOnCalendar,
       'Studio Owner'
     );
+    firestoreService.setStatus('saved', 'Crew assignment saved');
 
     setIsCrewModalOpen(false);
     setSelectedCrewEmployeeId('');
@@ -457,28 +548,33 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
     showToast(`${emp.fullName} assigned as ${selectedCrewRole} (${crewModalVisibleOnCalendar ? 'Visible on calendar' : 'Hidden from calendar'})`);
   };
 
-  const handleToggleVisibility = (empId: string, fnId: string, currentVisible: boolean) => {
+  const handleToggleVisibility = async (empId: string, fnId: string, currentVisible: boolean) => {
     const nextVisible = !currentVisible;
-    calendarVisibilityService.setEmployeeCalendarVisibility(studioId, booking.id, empId, fnId, nextVisible);
+    firestoreService.setStatus('saving', 'Updating calendar visibility...');
+    await calendarVisibilityService.setEmployeeCalendarVisibility(studioId, booking.id, empId, fnId, nextVisible);
+    firestoreService.setStatus('saved', 'Calendar visibility saved');
     setRefreshKey(k => k + 1);
     const emp = employees.find(e => e.id === empId);
     showToast(nextVisible 
       ? `${emp?.fullName || 'Crew member'} is now visible on team calendar.` 
-      : `${emp?.fullName || 'Crew member'} is now hidden from calendar. (Assignment preserved in Firestore)`
+      : `${emp?.fullName || 'Crew member'} is now hidden from calendar.`
     );
   };
 
-  const handleUnassignCrew = (empId: string, fnId: string) => {
-    calendarVisibilityService.unassignCrewMember(studioId, booking.id, fnId, empId);
+  const handleUnassignCrew = async (empId: string, fnId: string) => {
+    firestoreService.setStatus('saving', 'Removing crew assignment...');
+    await calendarVisibilityService.unassignCrewMember(studioId, booking.id, fnId, empId);
+    firestoreService.setStatus('saved', 'Crew assignment updated');
     setRefreshKey(k => k + 1);
     showToast('Crew member removed from assignment.');
   };
 
   // Add Internal Note
-  const handleAddInternalNote = (e: React.FormEvent) => {
+  const handleAddInternalNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newInternalNote.trim()) return;
 
+    firestoreService.setStatus('saving', 'Saving internal note...');
     bookingProductionService.addCustomerNote(studioId, {
       customerId: booking.customerId,
       bookingId: booking.id,
@@ -489,6 +585,8 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
       createdBy: 'Studio Owner'
     });
 
+    await bookingProductionService.saveBooking(studioId, booking);
+    firestoreService.setStatus('saved', 'Note saved to cloud');
     setNewInternalNote('');
     setRefreshKey(k => k + 1);
     showToast('Internal note saved!');
@@ -945,69 +1043,232 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
       {/* SECTION 1: DETAILS */}
       {activeSection === 'details' && (
         <div className="space-y-6">
+          {/* Instant Auto-Save Status Banner */}
+          <div className="flex items-center justify-between bg-orange-50/70 border border-orange-200/90 rounded-2xl p-3.5 shadow-2xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs sm:text-sm font-bold text-zinc-800">Instant Actions & Auto-Save Active</span>
+              <span className="hidden sm:inline text-xs text-zinc-500">— All changes save automatically to Firestore</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs font-bold">
+              {instantSaveStatus === 'saving' && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600" />
+                  <span>Saving to cloud...</span>
+                </span>
+              )}
+              {instantSaveStatus === 'saved' && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 animate-in fade-in">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Saved to cloud</span>
+                </span>
+              )}
+              {instantSaveStatus === 'failed' && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-900 border border-rose-300">
+                  <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Sync failed — retrying</span>
+                </span>
+              )}
+              {instantSaveStatus === 'idle' && (
+                <span className="text-xs text-zinc-400 font-medium">Auto-save on edit</span>
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Customer Details */}
             <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
-              <h3 className="text-sm font-bold text-zinc-900 font-display flex items-center gap-2 border-b border-zinc-100 pb-2">
-                <User className="w-4 h-4 text-zinc-500" />
-                <span>Customer Information</span>
-              </h3>
-              <div className="space-y-2.5 text-xs">
-                <div className="flex justify-between py-1 border-b border-zinc-50">
-                  <span className="text-zinc-400">Full Name</span>
-                  <span className="font-bold text-zinc-900">{booking.customerName}</span>
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
+                <h3 className="text-sm font-bold text-zinc-900 font-display flex items-center gap-2">
+                  <User className="w-4 h-4 text-zinc-500" />
+                  <span>Customer Information</span>
+                </h3>
+                <span className="text-xs text-zinc-400 font-medium">Auto-saves on change</span>
+              </div>
+
+              <div className="space-y-3 text-xs sm:text-sm">
+                <div>
+                  <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Full Name</label>
+                  <input
+                    type="text"
+                    value={editFormData.customerName}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditFormData(prev => ({ ...prev, customerName: val }));
+                      autoSaveBookingChange({ customerName: val }, false);
+                    }}
+                    onBlur={() => autoSaveBookingChange({ customerName: editFormData.customerName }, true)}
+                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-bold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px]"
+                    placeholder="Customer Name"
+                  />
                 </div>
-                <div className="flex justify-between py-1 border-b border-zinc-50">
-                  <span className="text-zinc-400">Phone Number</span>
-                  <a href={`tel:${booking.customerPhone}`} className="font-semibold text-blue-600 hover:underline">
-                    {booking.customerPhone}
-                  </a>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Phone Number</label>
+                    <input
+                      type="tel"
+                      value={editFormData.customerPhone}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEditFormData(prev => ({ ...prev, customerPhone: val }));
+                        autoSaveBookingChange({ customerPhone: val }, false);
+                      }}
+                      onBlur={() => autoSaveBookingChange({ customerPhone: editFormData.customerPhone }, true)}
+                      className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px]"
+                      placeholder="+91 Mobile"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">WhatsApp</label>
+                    <input
+                      type="tel"
+                      value={editFormData.customerWhatsApp}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEditFormData(prev => ({ ...prev, customerWhatsApp: val }));
+                        autoSaveBookingChange({ customerWhatsApp: val }, false);
+                      }}
+                      onBlur={() => autoSaveBookingChange({ customerWhatsApp: editFormData.customerWhatsApp }, true)}
+                      className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px]"
+                      placeholder="+91 WhatsApp"
+                    />
+                  </div>
                 </div>
-                <div className="flex justify-between py-1 border-b border-zinc-50">
-                  <span className="text-zinc-400">WhatsApp</span>
-                  <span className="font-semibold text-zinc-900">{booking.customerWhatsApp || booking.customerPhone}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-zinc-50">
-                  <span className="text-zinc-400">Email Address</span>
-                  <span className="font-semibold text-zinc-900">{booking.customerEmail || 'Not specified'}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-zinc-50">
-                  <span className="text-zinc-400">City / Location</span>
-                  <span className="font-semibold text-zinc-900">{booking.city}</span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-zinc-400">Venue Address</span>
-                  <span className="font-semibold text-zinc-900 text-right">{booking.venue}</span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      value={editFormData.customerEmail}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEditFormData(prev => ({ ...prev, customerEmail: val }));
+                        autoSaveBookingChange({ customerEmail: val }, false);
+                      }}
+                      onBlur={() => autoSaveBookingChange({ customerEmail: editFormData.customerEmail }, true)}
+                      className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px]"
+                      placeholder="client@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">City / Location</label>
+                    <input
+                      type="text"
+                      value={editFormData.city}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEditFormData(prev => ({ ...prev, city: val }));
+                        autoSaveBookingChange({ city: val }, false);
+                      }}
+                      onBlur={() => autoSaveBookingChange({ city: editFormData.city }, true)}
+                      className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px]"
+                      placeholder="City"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Event Information */}
             <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
-              <h3 className="text-sm font-bold text-zinc-900 font-display flex items-center gap-2 border-b border-zinc-100 pb-2">
-                <Calendar className="w-4 h-4 text-zinc-500" />
-                <span>Event Information</span>
-              </h3>
-              <div className="space-y-2.5 text-xs">
-                <div className="flex justify-between py-1 border-b border-zinc-50">
-                  <span className="text-zinc-400">Event Title</span>
-                  <span className="font-bold text-zinc-900">{booking.eventName}</span>
+              <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
+                <h3 className="text-sm font-bold text-zinc-900 font-display flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-zinc-500" />
+                  <span>Event Information</span>
+                </h3>
+                <span className="text-xs text-zinc-400 font-medium">Auto-saves on change</span>
+              </div>
+
+              <div className="space-y-3 text-xs sm:text-sm">
+                <div>
+                  <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Event Title</label>
+                  <input
+                    type="text"
+                    value={editFormData.eventName}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditFormData(prev => ({ ...prev, eventName: val }));
+                      autoSaveBookingChange({ eventName: val }, false);
+                    }}
+                    onBlur={() => autoSaveBookingChange({ eventName: editFormData.eventName }, true)}
+                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-bold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px]"
+                    placeholder="Event Title"
+                  />
                 </div>
-                <div className="flex justify-between py-1 border-b border-zinc-50">
-                  <span className="text-zinc-400">Photography Category</span>
-                  <span className="font-semibold text-zinc-900">{booking.category || 'Wedding'}</span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Category</label>
+                    <select
+                      value={editFormData.category}
+                      onChange={(e) => {
+                        const val = e.target.value as any;
+                        setEditFormData(prev => ({ ...prev, category: val }));
+                        autoSaveBookingChange({ category: val }, true);
+                      }}
+                      className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px] cursor-pointer"
+                    >
+                      <option value="Wedding">Wedding</option>
+                      <option value="Pre-Wedding">Pre-Wedding</option>
+                      <option value="Engagement">Engagement</option>
+                      <option value="Mandvo / Pithi">Mandvo / Pithi</option>
+                      <option value="Haldi & Mehndi">Haldi & Mehndi</option>
+                      <option value="Sangeet Night">Sangeet Night</option>
+                      <option value="Reception">Reception</option>
+                      <option value="Birthday">Birthday</option>
+                      <option value="Corporate">Corporate</option>
+                      <option value="Fashion">Fashion</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Main Event Date</label>
+                    <input
+                      type="date"
+                      value={editFormData.eventDate}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEditFormData(prev => ({ ...prev, eventDate: val }));
+                        autoSaveBookingChange({ mainEventDate: val, startDate: val }, true);
+                      }}
+                      className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px] cursor-pointer"
+                    />
+                  </div>
                 </div>
-                <div className="flex justify-between py-1 border-b border-zinc-50">
-                  <span className="text-zinc-400">Main Event Date</span>
-                  <span className="font-semibold text-zinc-900">{booking.mainEventDate || booking.startDate}</span>
+
+                <div>
+                  <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Primary Venue & Address</label>
+                  <input
+                    type="text"
+                    value={editFormData.venue}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditFormData(prev => ({ ...prev, venue: val }));
+                      autoSaveBookingChange({ venue: val }, false);
+                    }}
+                    onBlur={() => autoSaveBookingChange({ venue: editFormData.venue }, true)}
+                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px]"
+                    placeholder="Venue name & address"
+                  />
                 </div>
-                <div className="flex justify-between py-1 border-b border-zinc-50">
-                  <span className="text-zinc-400">Primary Venue</span>
-                  <span className="font-semibold text-zinc-900">{booking.venue}</span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-zinc-400">Special Notes</span>
-                  <span className="font-semibold text-zinc-600 text-right">{booking.description || 'Standard high-end coverage'}</span>
+
+                <div>
+                  <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Special Notes & Instructions</label>
+                  <textarea
+                    rows={2}
+                    value={editFormData.notes}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditFormData(prev => ({ ...prev, notes: val }));
+                      autoSaveBookingChange({ notes: val, description: val }, false);
+                    }}
+                    onBlur={() => autoSaveBookingChange({ notes: editFormData.notes, description: editFormData.notes }, true)}
+                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-zinc-800 focus:bg-white focus:ring-2 focus:ring-orange-500"
+                    placeholder="Special instructions, style requirements..."
+                  />
                 </div>
               </div>
             </div>
