@@ -16,6 +16,7 @@ import {
   Users
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+import { NewBookingButton } from '../components/common/NewBookingButton';
 import { seedCalendarTestBookings, CALENDAR_TEST_FLAG } from '../services/calendarTestBookingsSeed';
 import { TenantStore } from '../services/tenantStore';
 import { StudioEvent } from '../types';
@@ -407,17 +408,12 @@ export const CalendarPage: React.FC = () => {
             </button>
           </div>
 
-          <Button
-            variant="primary"
-            size="md"
-            icon={<Plus className="w-4 h-4" />}
+          <NewBookingButton
             onClick={() => {
               setEditingEvent(null);
               setIsEventFormOpen(true);
             }}
-          >
-            Book Shoot
-          </Button>
+          />
         </div>
       </div>
 

@@ -26,6 +26,10 @@ export const THEME = {
 
   // Button styles
   button: {
+    // Signature Primary Shiny Medium-Orange with soft gradient and light border highlight
+    newBooking:
+      'min-h-[50px] sm:min-h-[46px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-sm tracking-tight shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98] inline-flex items-center justify-center gap-2',
+
     // Primary Shiny Medium-Orange with soft gradient and light border highlight
     primary:
       'bg-gradient-to-r from-orange-500 via-orange-500 to-amber-600 hover:from-orange-600 hover:via-orange-600 hover:to-amber-700 text-white font-bold shadow-sm shadow-orange-500/25 border border-orange-400/30 active:scale-[0.98] transition-all cursor-pointer touch-manipulation',
@@ -47,6 +51,8 @@ export const THEME = {
   active: {
     navItem:
       'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs',
+    navItemMinimal:
+      'text-orange-600 font-bold bg-orange-50/40',
     tab:
       'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs',
     subtleTab:
@@ -54,7 +60,7 @@ export const THEME = {
     badge:
       'bg-orange-50 text-orange-800 border border-orange-200 font-bold',
     filterPill:
-      'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs'
+      'bg-orange-500 text-white font-bold shadow-xs'
   },
 
   // Calendar specific design tokens
@@ -80,50 +86,55 @@ export const THEME = {
  */
 export const TYPOGRAPHY = {
   // Main page headings: Mobile 22-26px, Desktop 28-32px
-  pageTitle: 'text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 leading-tight',
+  pageTitle: 'text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 font-heading leading-tight',
   
   // Section headings: Mobile 19-21px, Desktop 22-24px
-  sectionTitle: 'text-lg sm:text-xl font-bold tracking-tight text-zinc-900 leading-snug',
+  sectionTitle: 'text-lg sm:text-xl font-bold tracking-tight text-zinc-900 font-heading leading-snug',
   
-  // Card headings: Mobile 17-19px, Desktop 18-20px
-  cardTitle: 'text-base sm:text-lg font-bold text-zinc-900 leading-snug',
+  // Card headings: Mobile 16-18px, Desktop 18-20px
+  cardTitle: 'text-base sm:text-lg font-bold text-zinc-900 font-heading leading-snug',
   
   // Regular body text: 15-16px
-  body: 'text-[15px] sm:text-base text-zinc-700 leading-normal',
-  bodyMedium: 'text-[15px] sm:text-base font-medium text-zinc-800 leading-normal',
-  bodyBold: 'text-[15px] sm:text-base font-bold text-zinc-900 leading-normal',
+  body: 'text-[15px] sm:text-base text-zinc-700 leading-normal font-sans',
+  bodyMedium: 'text-[15px] sm:text-base font-medium text-zinc-800 leading-normal font-sans',
+  bodyBold: 'text-[15px] sm:text-base font-bold text-zinc-900 leading-normal font-sans',
   
   // Secondary text: 13-14px
-  secondary: 'text-xs sm:text-sm text-zinc-500 leading-normal',
-  secondaryMedium: 'text-xs sm:text-sm font-medium text-zinc-600 leading-normal',
+  secondary: 'text-xs sm:text-sm text-zinc-500 leading-normal font-sans',
+  secondaryMedium: 'text-xs sm:text-sm font-medium text-zinc-600 leading-normal font-sans',
   
   // Form labels: 14-15px
-  label: 'text-sm font-semibold text-zinc-700 leading-snug',
-  labelRequired: 'text-sm font-semibold text-zinc-700 leading-snug after:content-["*"] after:ml-0.5 after:text-rose-500',
+  label: 'text-sm font-semibold text-zinc-700 leading-snug font-sans',
+  labelRequired: 'text-sm font-semibold text-zinc-700 leading-snug after:content-["*"] after:ml-0.5 after:text-rose-500 font-sans',
   
   // Input text: Mobile 16px (prevents browser auto-zoom), Desktop 15-16px
-  input: 'text-base sm:text-[15px] text-zinc-900 leading-normal',
+  input: 'text-base sm:text-[15px] text-zinc-900 leading-normal font-sans',
   
   // Button text: 15-16px
-  button: 'text-[15px] sm:text-base font-bold leading-none',
-  buttonSm: 'text-xs sm:text-sm font-semibold leading-none',
+  button: 'text-[15px] sm:text-base font-bold leading-none font-sans',
+  buttonSm: 'text-xs sm:text-sm font-semibold leading-none font-sans',
   
   // Navigation labels: Mobile 12-14px, Desktop 13-14px
-  nav: 'text-xs sm:text-[13.5px] font-semibold leading-snug',
+  nav: 'text-xs sm:text-[13.5px] font-semibold leading-snug font-sans',
   
   // Table typography: minimum 14px content, 12-13px uppercase headers
-  tableCell: 'text-sm font-medium text-zinc-800 leading-normal',
-  tableHeader: 'text-xs font-bold text-zinc-500 uppercase tracking-wider leading-tight',
+  tableCell: 'text-sm font-medium text-zinc-800 leading-normal font-sans',
+  tableHeader: 'text-xs font-bold text-zinc-500 uppercase tracking-wider leading-tight font-sans',
+  
+  // Number typography: Tabular numerals with Inter
+  numberMetric: 'text-2xl sm:text-3xl font-bold font-tabular tabular-nums text-zinc-900 leading-tight',
+  numberMoney: 'text-base sm:text-lg font-bold font-tabular tabular-nums leading-snug',
+  numberMoneySm: 'text-sm font-semibold font-tabular tabular-nums leading-snug',
   
   // Calendar typography: date numbers 15-17px, event titles 13-15px
-  calendarDate: 'text-[15px] sm:text-base md:text-[17px] font-bold leading-none',
-  calendarEvent: 'text-[13px] sm:text-sm font-semibold leading-snug',
+  calendarDate: 'text-[15px] sm:text-base md:text-[17px] font-bold font-tabular tabular-nums leading-none',
+  calendarEvent: 'text-[13px] sm:text-sm font-semibold leading-snug font-sans',
   
   // Status badges: minimum 12px
-  badge: 'text-xs font-bold tracking-wide uppercase',
+  badge: 'text-xs font-bold tracking-wide uppercase font-sans',
   
   // Small metadata / captions: minimum 12px
-  caption: 'text-xs text-zinc-500 font-medium leading-normal',
-  captionMuted: 'text-xs text-zinc-400 font-medium leading-normal',
+  caption: 'text-xs text-zinc-500 font-medium leading-normal font-sans',
+  captionMuted: 'text-xs text-zinc-400 font-medium leading-normal font-sans',
   captionMono: 'text-xs font-mono font-medium text-zinc-500 leading-normal'
 };

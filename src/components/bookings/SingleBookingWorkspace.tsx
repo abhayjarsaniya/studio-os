@@ -976,11 +976,11 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
             <div className="relative inline-block w-full sm:w-auto" ref={pdfDropdownRef}>
               <button
                 onClick={() => setIsPdfDropdownOpen(!isPdfDropdownOpen)}
-                className="w-full sm:w-auto min-h-[48px] sm:min-h-[42px] px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-sm sm:text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs touch-manipulation active:scale-95"
+                className="w-full sm:w-auto min-h-[48px] sm:min-h-[42px] px-4 py-2.5 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-50 hover:border-zinc-300 text-zinc-800 text-sm sm:text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs touch-manipulation active:scale-95"
               >
-                <Printer className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                <Printer className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-zinc-600" />
                 <span>Download / Print</span>
-                <ChevronDown className="w-3.5 h-3.5" />
+                <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
               </button>
 
               {isPdfDropdownOpen && (
@@ -1075,24 +1075,24 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
           {/* Agreed Amount */}
           <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between">
-            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Agreed Amount</span>
-            <div className="text-sm font-bold text-zinc-900 mt-1 min-h-[32px] flex items-center">
+            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block font-sans">Agreed Amount</span>
+            <div className="text-sm font-bold text-zinc-900 mt-1 min-h-[32px] flex items-center font-tabular tabular-nums">
               ₹{finalAgreedAmount.toLocaleString('en-IN')}
             </div>
           </div>
 
           {/* Advance Received */}
           <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between">
-            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Advance Received</span>
-            <div className="text-sm font-bold text-emerald-700 mt-1 min-h-[32px] flex items-center">
+            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block font-sans">Advance Received</span>
+            <div className="text-sm font-bold text-emerald-700 mt-1 min-h-[32px] flex items-center font-tabular tabular-nums">
               ₹{verifiedPaymentsReceived.toLocaleString('en-IN')}
             </div>
           </div>
 
           {/* Remaining Balance */}
           <div className="bg-zinc-50/80 border border-zinc-200/70 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between col-span-2 sm:col-span-1">
-            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Remaining Balance</span>
-            <div className={`text-sm font-extrabold mt-1 min-h-[32px] flex items-center ${isFullyPaid ? 'text-emerald-700' : 'text-rose-600'}`}>
+            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block font-sans">Remaining Balance</span>
+            <div className={`text-sm font-extrabold mt-1 min-h-[32px] flex items-center font-tabular tabular-nums ${isFullyPaid ? 'text-emerald-700' : 'text-rose-600'}`}>
               {isFullyPaid ? '✓ Fully Paid' : `₹${remainingBalance.toLocaleString('en-IN')}`}
             </div>
           </div>

@@ -70,7 +70,28 @@
 }
 
 .font-display {
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.015em;
+}
+
+.font-heading {
+  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.015em;
+}
+
+.font-readable {
+  font-family: 'Open Sans', 'Inter', system-ui, sans-serif;
+}
+
+.font-tabular {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: "tnum" 1, "cv05" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 /* Safe area insets for mobile devices */

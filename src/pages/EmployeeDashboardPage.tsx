@@ -255,39 +255,43 @@ export const EmployeeDashboardPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Sub-Navigation Tabs with Orange Active States */}
-      <div className="bg-white border-b border-zinc-200 px-4 py-2.5 flex items-center gap-2 sticky top-[57px] z-30 overflow-x-auto">
+      {/* Sub-Navigation Tabs with Refined Orange Active States */}
+      <div className="bg-white border-b border-zinc-200 px-4 py-2 flex items-center gap-2 sticky top-[57px] z-30 overflow-x-auto touch-scroll">
         <button
           onClick={() => setMobileTab('overview')}
-          className={`flex-1 min-w-[90px] min-h-[48px] py-2 px-3 text-xs sm:text-sm font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
-            mobileTab === 'overview' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs' : 'text-zinc-600 hover:bg-orange-50/40'
+          className={`flex-1 min-w-[90px] min-h-[48px] py-2 px-3 text-xs sm:text-sm font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer flex flex-col items-center justify-center relative ${
+            mobileTab === 'overview' ? 'text-orange-600 font-bold bg-orange-50/50' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/60'
           }`}
         >
-          Overview
+          <span>Overview</span>
+          {mobileTab === 'overview' && <span className="absolute bottom-1 w-6 h-[2.5px] bg-gradient-to-r from-orange-500 to-amber-500 rounded-full" />}
         </button>
         <button
           onClick={() => setMobileTab('events')}
-          className={`flex-1 min-w-[90px] min-h-[48px] py-2 px-3 text-xs sm:text-sm font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
-            mobileTab === 'events' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs' : 'text-zinc-600 hover:bg-orange-50/40'
+          className={`flex-1 min-w-[90px] min-h-[48px] py-2 px-3 text-xs sm:text-sm font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer flex flex-col items-center justify-center relative ${
+            mobileTab === 'events' ? 'text-orange-600 font-bold bg-orange-50/50' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/60'
           }`}
         >
-          Events ({metrics.assignedEvents.length})
+          <span>Events ({metrics.assignedEvents.length})</span>
+          {mobileTab === 'events' && <span className="absolute bottom-1 w-6 h-[2.5px] bg-gradient-to-r from-orange-500 to-amber-500 rounded-full" />}
         </button>
         <button
           onClick={() => setMobileTab('calendar')}
-          className={`flex-1 min-w-[100px] min-h-[48px] py-2 px-3 text-xs sm:text-sm font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
-            mobileTab === 'calendar' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs' : 'text-zinc-600 hover:bg-orange-50/40'
+          className={`flex-1 min-w-[100px] min-h-[48px] py-2 px-3 text-xs sm:text-sm font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer flex flex-col items-center justify-center relative ${
+            mobileTab === 'calendar' ? 'text-orange-600 font-bold bg-orange-50/50' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/60'
           }`}
         >
-          My Calendar ({calendarEvents.length})
+          <span>My Calendar ({calendarEvents.length})</span>
+          {mobileTab === 'calendar' && <span className="absolute bottom-1 w-6 h-[2.5px] bg-gradient-to-r from-orange-500 to-amber-500 rounded-full" />}
         </button>
         <button
           onClick={() => setMobileTab('tasks')}
-          className={`flex-1 min-w-[90px] min-h-[48px] py-2 px-3 text-xs sm:text-sm font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer ${
-            mobileTab === 'tasks' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-xs' : 'text-zinc-600 hover:bg-orange-50/40'
+          className={`flex-1 min-w-[90px] min-h-[48px] py-2 px-3 text-xs sm:text-sm font-bold rounded-xl transition-all touch-manipulation active:scale-95 cursor-pointer flex flex-col items-center justify-center relative ${
+            mobileTab === 'tasks' ? 'text-orange-600 font-bold bg-orange-50/50' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100/60'
           }`}
         >
-          Tasks ({metrics.pendingTasks.length})
+          <span>Tasks ({metrics.pendingTasks.length})</span>
+          {mobileTab === 'tasks' && <span className="absolute bottom-1 w-6 h-[2.5px] bg-gradient-to-r from-orange-500 to-amber-500 rounded-full" />}
         </button>
       </div>
 
