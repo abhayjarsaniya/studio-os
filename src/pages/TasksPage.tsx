@@ -72,9 +72,6 @@ export const TasksPage: React.FC = () => {
                   {pendingCount} Active
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">
-                Photography production pipeline, culling, color grading, album review milestones & crew workloads.
-              </p>
             </div>
           </div>
         </div>

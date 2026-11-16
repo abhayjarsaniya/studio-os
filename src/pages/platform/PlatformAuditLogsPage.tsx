@@ -27,9 +27,6 @@ export const PlatformAuditLogsPage: React.FC = () => {
           <ShieldCheck className="w-7 h-7 text-indigo-600" />
           Platform Immutable Audit Logs
         </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Cryptographically recorded, tamper-evident logs of all platform administrator actions, plan edits, payments, and grants.
-        </p>
       </div>
 
       {/* Search */}

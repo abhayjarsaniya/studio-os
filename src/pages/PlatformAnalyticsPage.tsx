@@ -32,9 +32,6 @@ export const PlatformAnalyticsPage: React.FC = () => {
             <Layers className="w-7 h-7 text-indigo-600" />
             Studio OS SaaS Platform Analytics
           </h1>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Macro-level SaaS subscription health, monthly recurring revenue (MRR @ ₹500/studio/month), churn, and retention.
-          </p>
         </div>
 
         <button

@@ -40,9 +40,6 @@ export const MasterAuditLogsPage: React.FC = () => {
         <h1 className="text-2xl font-black text-zinc-900 font-display tracking-tight mt-1">
           Platform-Wide Audit Logs ({logs.length})
         </h1>
-        <p className="text-xs text-zinc-500 mt-0.5">
-          Tamper-evident logs of every Master Admin action, permission override, subscription alteration, and studio status change.
-        </p>
       </div>
 
       {/* Search Toolbar */}

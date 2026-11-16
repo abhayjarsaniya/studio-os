@@ -59,9 +59,6 @@ export const PlatformAnnouncementsPage: React.FC = () => {
             <Megaphone className="w-7 h-7 text-indigo-600" />
             Platform Announcements & Broadcasts
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Broadcast operational notices, billing updates, and new releases directly into tenant studio notification feeds.
-          </p>
         </div>
 
         {canAdmin('manage_announcements') && (

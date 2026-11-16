@@ -84,9 +84,6 @@ export const PlatformBillingPage: React.FC = () => {
             <Receipt className="w-7 h-7 text-indigo-600" />
             Platform Subscription Billing & Revenue
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Subscription tax invoices, verified payments, manual offline receipts, and multi-tenant ledger isolation.
-          </p>
         </div>
 
         <div className="text-xs font-semibold text-slate-500 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs self-start sm:self-auto">

@@ -73,9 +73,6 @@ export const PlatformAdminsPage: React.FC = () => {
             <Users className="w-7 h-7 text-indigo-600" />
             Platform Master Admin & Operations Team
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Provision and govern authorized Studio OS SaaS administrators with role-based platform permissions.
-          </p>
         </div>
 
         {canAdmin('manage_admins') && (

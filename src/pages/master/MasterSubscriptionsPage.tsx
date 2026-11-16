@@ -125,9 +125,6 @@ export const MasterSubscriptionsPage: React.FC = () => {
           <h1 className="text-2xl font-black text-zinc-900 font-display tracking-tight mt-1">
             Active Studio Subscriptions ({subscriptions.length})
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Monitor renewal deadlines, grant trial extensions, pause subscriptions, or update studio tiers.
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

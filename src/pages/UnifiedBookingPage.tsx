@@ -53,6 +53,7 @@ import {
   Check
 } from 'lucide-react';
 import { useOutsideClick } from '../hooks/useOutsideClick';
+import { DeliverablesSelectorModal, DeliverableCatalogItem, MASTER_DELIVERABLES_CATALOG } from '../components/bookings/DeliverablesSelectorModal';
 
 export interface PackageLineItem {
   id: string;
@@ -242,6 +243,31 @@ export const UnifiedBookingPage: React.FC = () => {
     onlineLink: true,
     customRequirement: 'Drone reel within 48 hours for Instagram'
   });
+
+  // Searchable Multi-Select Deliverables Modal State (Requirement 3)
+  const [isDeliverablesModalOpen, setIsDeliverablesModalOpen] = useState(false);
+  const [selectedDeliverableCatalogIds, setSelectedDeliverableCatalogIds] = useState<string[]>([
+    'raw_photos', 'edited_stills', 'cinematic_teaser', 'social_reels', 'premium_photobook', 'cloud_gallery_1yr'
+  ]);
+
+  const handleApplyDeliverables = (items: DeliverableCatalogItem[]) => {
+    setSelectedDeliverableCatalogIds(items.map(i => i.id));
+    const hasRaw = items.some(i => i.id === 'raw_photos');
+    const editedItem = items.find(i => i.id === 'edited_stills');
+    const hasCinema = items.some(i => i.id === 'cinematic_teaser' || i.id === 'full_cinematic_film');
+    const reelsItem = items.find(i => i.id === 'social_reels');
+    const albumItem = items.find(i => i.category === 'physical');
+
+    setDeliverables(prev => ({
+      ...prev,
+      rawPhotos: hasRaw,
+      editedPhotosCount: editedItem ? editedItem.defaultQty : prev.editedPhotosCount,
+      cinematicFilm: hasCinema,
+      reelsCount: reelsItem ? reelsItem.defaultQty : prev.reelsCount,
+      albumRequired: !!albumItem,
+      albumType: albumItem ? albumItem.name : prev.albumType
+    }));
+  };
 
   // Step 6: Pricing & Negotiation
   const packageTotal = useMemo(() => {
@@ -2013,9 +2039,47 @@ export const UnifiedBookingPage: React.FC = () => {
           {/* STEP 6: DELIVERABLES */}
           {currentStep === 6 && (
             <div className="space-y-5 animate-in fade-in duration-150">
-              <div className="border-b border-zinc-100 pb-3">
-                <h3 className="text-base font-bold text-zinc-900 font-display">Step 6 — Delivery Requirements</h3>
-                <p className="text-xs text-zinc-500">Configure client output deliverables: albums, videos, reels, drive links.</p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-3">
+                <div>
+                  <h3 className="text-base font-bold text-zinc-900 font-display">Step 6 — Delivery Requirements</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsDeliverablesModalOpen(true)}
+                  className="min-h-[48px] px-4 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation active:scale-95 transition-all shadow-2xs"
+                >
+                  <ListPlus className="w-4 h-4 text-orange-600" />
+                  <span>+ Quick Multi-Select Deliverables ({selectedDeliverableCatalogIds.length})</span>
+                </button>
+              </div>
+
+              {/* Fast Deliverables Selection Summary Box (Requirement 3) */}
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-orange-50/40 border border-orange-200/80 space-y-2.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-orange-950">Active Deliverable Items ({selectedDeliverableCatalogIds.length})</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsDeliverablesModalOpen(true)}
+                    className="text-orange-700 font-bold hover:underline cursor-pointer"
+                  >
+                    Change selection
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedDeliverableCatalogIds.map(id => {
+                    const item = MASTER_DELIVERABLES_CATALOG.find(m => m.id === id);
+                    if (!item) return null;
+                    return (
+                      <span 
+                        key={id} 
+                        className="px-2.5 py-1 rounded-lg bg-white border border-orange-200 text-xs font-semibold text-zinc-800 flex items-center gap-1 shadow-2xs"
+                      >
+                        <Check className="w-3 h-3 text-orange-600 shrink-0 stroke-[2.5]" />
+                        <span>{item.name}</span>
+                      </span>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -2376,6 +2440,16 @@ export const UnifiedBookingPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Deliverables Searchable Multi-Select Modal (Requirement 3) */}
+      <DeliverablesSelectorModal
+        isOpen={isDeliverablesModalOpen}
+        onClose={() => setIsDeliverablesModalOpen(false)}
+        onApply={handleApplyDeliverables}
+        initialSelectedIds={selectedDeliverableCatalogIds}
+        bookingId=""
+        functionName="Booking Output Requirements"
+      />
     </div>
   );
 };

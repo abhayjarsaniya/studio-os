@@ -43,9 +43,13 @@ import {
   CheckSquare,
   History,
   Eye,
-  EyeOff
+  EyeOff,
+  ChevronUp,
+  Check,
+  BookOpen
 } from 'lucide-react';
 import { CompleteBookingHistoryTab } from './CompleteBookingHistoryTab';
+import { DeliverablesSelectorModal, DeliverableCatalogItem } from './DeliverablesSelectorModal';
 import { bookingHistoryService } from '../../services/bookingHistoryService';
 import { calendarVisibilityService } from '../../services/calendarVisibilityService';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
@@ -171,6 +175,77 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
   };
+
+  // 9 Structured Accordion Sections State (Requirement 4)
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    customer: true, // open by default as primary starting section
+    event: false,
+    crew: false,
+    package: false,
+    money: false,
+    deliverables: false,
+    album: false,
+    notes: false,
+    history: false
+  });
+
+  const toggleSection = (id: string, forceState?: boolean) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [id]: forceState !== undefined ? forceState : !prev[id]
+    }));
+  };
+
+  const expandAll = () => {
+    setExpandedSections({
+      customer: true,
+      event: true,
+      crew: true,
+      package: true,
+      money: true,
+      deliverables: true,
+      album: true,
+      notes: true,
+      history: true
+    });
+  };
+
+  const collapseAll = () => {
+    setExpandedSections({
+      customer: false,
+      event: false,
+      crew: false,
+      package: false,
+      money: false,
+      deliverables: false,
+      album: false,
+      notes: false,
+      history: false
+    });
+  };
+
+  // Searchable Multi-Select Deliverables Modal (Requirement 3)
+  const [isDeliverablesSelectorOpen, setIsDeliverablesSelectorOpen] = useState(false);
+
+  // Album & Production Specifications State (Section 7)
+  const [albumFormData, setAlbumFormData] = useState({
+    albumType: 'Premium Flush Mount Acrylic',
+    size: '12x36',
+    sheets: 35,
+    copies: 2,
+    paperFinish: 'Velvet Matte',
+    printingVendor: 'Shreeji Color Lab',
+    notes: 'Laser engraved wooden box with couple names'
+  });
+
+  // New Sub-event / Function Form State (Section 2)
+  const [isAddFunctionOpen, setIsAddFunctionOpen] = useState(false);
+  const [newFunctionName, setNewFunctionName] = useState('');
+  const [newFunctionDate, setNewFunctionDate] = useState('');
+  const [newFunctionStartTime, setNewFunctionStartTime] = useState('10:00');
+  const [newFunctionEndTime, setNewFunctionEndTime] = useState('18:00');
+  const [newFunctionVenue, setNewFunctionVenue] = useState('');
+  const [newFunctionCategory, setNewFunctionCategory] = useState('Wedding');
 
   // Load current booking
   const booking = useMemo(() => {
@@ -630,6 +705,114 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
     setNewInternalNote('');
     setRefreshKey(k => k + 1);
     showToast('Internal note saved!');
+  };
+
+  // Apply Multi-Selected Deliverables from Catalog (Requirement 3)
+  const handleApplyDeliverables = async (selectedItems: DeliverableCatalogItem[]) => {
+    if (!selectedItems || selectedItems.length === 0) return;
+    if (!Array.isArray(booking.deliverables)) booking.deliverables = [];
+
+    const existingNames = new Set((booking.deliverables || []).map(d => d.name.toLowerCase().trim()));
+    const newDeliverables: DeliverableSpecification[] = [];
+
+    selectedItems.forEach(item => {
+      if (!existingNames.has(item.name.toLowerCase().trim())) {
+        newDeliverables.push({
+          id: `del_${booking.id}_${item.id}_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
+          bookingId: booking.id,
+          name: item.name,
+          category: item.category,
+          requiredQty: 1,
+          completedQty: 0,
+          unit: 'item',
+          deliveryMethod: 'Google Drive',
+          deadlineType: 'specific_date',
+          calculatedDeadline: booking.mainEventDate || new Date().toISOString().split('T')[0],
+          priority: 'normal',
+          stage: 'not_started',
+          isDelivered: false,
+          isPartiallyDelivered: false
+        });
+      }
+    });
+
+    if (newDeliverables.length > 0) {
+      booking.deliverables = [...booking.deliverables, ...newDeliverables];
+      firestoreService.setStatus('saving', 'Adding deliverables...');
+      await bookingProductionService.saveBooking(studioId, booking);
+      firestoreService.setStatus('saved', 'Deliverables added');
+      setRefreshKey(k => k + 1);
+      showToast(`Added ${newDeliverables.length} deliverable(s) from catalog!`);
+    } else {
+      showToast('Selected deliverables are already added.');
+    }
+  };
+
+  // Add Function / Sub-Event to Booking (Requirement 4)
+  const handleAddFunctionToBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFunctionName.trim()) return;
+
+    if (!Array.isArray(booking.functions)) booking.functions = [];
+
+    const newFn: FunctionPlan = {
+      id: `fn_${booking.id}_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
+      bookingId: booking.id,
+      name: newFunctionName.trim(),
+      category: newFunctionCategory as any,
+      date: newFunctionDate || booking.mainEventDate || new Date().toISOString().split('T')[0],
+      startTime: newFunctionStartTime,
+      endTime: newFunctionEndTime,
+      venue: newFunctionVenue.trim() || booking.venue || 'Studio / Venue',
+      city: booking.city || '',
+      assignedPhotographerIds: [],
+      assignedVideographerIds: [],
+      assignedDroneOperatorIds: [],
+      assignedEditorIds: [],
+      assignedSupplierIds: [],
+      deliverables: [],
+      priority: 'normal',
+      status: 'scheduled',
+      assignedCrew: []
+    };
+
+    booking.functions.push(newFn);
+    booking.numberOfFunctions = booking.functions.length;
+
+    firestoreService.setStatus('saving', 'Saving sub-event...');
+    await bookingProductionService.saveBooking(studioId, booking);
+    firestoreService.setStatus('saved', 'Sub-event saved');
+
+    setNewFunctionName('');
+    setNewFunctionDate('');
+    setNewFunctionVenue('');
+    setIsAddFunctionOpen(false);
+    setRefreshKey(k => k + 1);
+    showToast(`Added sub-event "${newFn.name}"`);
+  };
+
+  // Remove Function (Requirement 4)
+  const handleRemoveFunction = async (fnId: string) => {
+    if (!Array.isArray(booking.functions)) return;
+    booking.functions = booking.functions.filter(f => f.id !== fnId);
+    booking.numberOfFunctions = booking.functions.length;
+
+    firestoreService.setStatus('saving', 'Removing sub-event...');
+    await bookingProductionService.saveBooking(studioId, booking);
+    firestoreService.setStatus('saved', 'Sub-event removed');
+    setRefreshKey(k => k + 1);
+    showToast('Sub-event removed');
+  };
+
+  // Handle Update Album Specifications (Requirement 4 - Section 7)
+  const handleUpdateAlbumSpecs = async (updates: Partial<typeof albumFormData>) => {
+    const updatedData = { ...albumFormData, ...updates };
+    setAlbumFormData(updatedData);
+
+    (booking as any).albumSpecifications = updatedData;
+    autoSaveBookingChange({
+      notes: booking.notes
+    }, false);
   };
 
   // 1-Tap PDF Generators
@@ -1101,22 +1284,30 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
         </div>
       </div>
 
-      {/* 3. 5 EMBEDDED SECTIONS NAVIGATION */}
+      {/* 3. QUICK JUMP SECTION NAVIGATION BAR */}
       <div className="flex items-center gap-2 border-b border-zinc-200/90 pb-2 overflow-x-auto touch-scroll">
         {[
-          { id: 'details', label: '1. Details & Crew', icon: <User className="w-4 h-4" /> },
-          { id: 'money', label: '2. Money & Payments', icon: <IndianRupee className="w-4 h-4" /> },
-          { id: 'delivery', label: '3. Work & Delivery Checklist', icon: <PackageCheck className="w-4 h-4" /> },
-          { id: 'messages', label: '4. Notes & WhatsApp', icon: <MessageCircle className="w-4 h-4" /> },
-          { id: 'history', label: '5. Complete History', icon: <History className="w-4 h-4" /> }
+          { id: 'customer', label: '1. Customer Details', icon: <User className="w-4 h-4" /> },
+          { id: 'event', label: '2. Event Details', icon: <Calendar className="w-4 h-4" /> },
+          { id: 'crew', label: '3. Crew & Assignments', icon: <Users className="w-4 h-4" /> },
+          { id: 'package', label: '4. Package & Services', icon: <Sparkles className="w-4 h-4" /> },
+          { id: 'money', label: '5. Money & Payments', icon: <IndianRupee className="w-4 h-4" /> },
+          { id: 'deliverables', label: '6. Deliverables & Work', icon: <PackageCheck className="w-4 h-4" /> },
+          { id: 'album', label: '7. Album & Production', icon: <BookOpen className="w-4 h-4" /> },
+          { id: 'notes', label: '8. Notes & WhatsApp', icon: <MessageCircle className="w-4 h-4" /> },
+          { id: 'history', label: '9. Complete History', icon: <History className="w-4 h-4" /> }
         ].map(sec => (
           <button
             key={sec.id}
-            onClick={() => setActiveSection(sec.id as BookingSectionTab)}
+            onClick={() => {
+              toggleSection(sec.id, true);
+              const el = document.getElementById(`section-${sec.id}`);
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
             className={`min-h-[48px] px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
-              activeSection === sec.id
+              expandedSections[sec.id]
                 ? 'bg-orange-500 text-white shadow-xs font-bold'
-                : 'text-zinc-600 hover:text-zinc-900 hover:bg-orange-50/40'
+                : 'text-zinc-600 hover:text-zinc-900 hover:bg-orange-50/40 bg-white border border-zinc-200/70'
             }`}
           >
             {sec.icon}
@@ -1125,148 +1316,248 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
         ))}
       </div>
 
-      {/* SECTION 1: DETAILS */}
-      {activeSection === 'details' && (
-        <div className="space-y-6">
-          {/* Instant Auto-Save Status Banner */}
-          <div className="flex items-center justify-between bg-orange-50/70 border border-orange-200/90 rounded-2xl p-3.5 shadow-2xs">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs sm:text-sm font-bold text-zinc-800">Instant Actions & Auto-Save Active</span>
-              <span className="hidden sm:inline text-xs text-zinc-500">— Changes save automatically</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-xs font-bold">
-              {instantSaveStatus === 'saving' && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600" />
-                  <span>Saving to cloud...</span>
-                </span>
-              )}
-              {instantSaveStatus === 'saved' && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 animate-in fade-in">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Saved to cloud</span>
-                </span>
-              )}
-              {instantSaveStatus === 'failed' && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-900 border border-rose-300">
-                  <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
-                  <span>Sync failed — retrying</span>
-                </span>
-              )}
-              {instantSaveStatus === 'idle' && (
-                <span className="text-xs text-zinc-400 font-medium">Auto-save on edit</span>
-              )}
-            </div>
+      {/* Auto-Save & Accordion Controls Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-orange-50/70 border border-orange-200/90 rounded-2xl p-3.5 shadow-2xs">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-xs sm:text-sm font-bold text-zinc-800">Instant Actions & Auto-Save Active</span>
+          <span className="hidden sm:inline text-xs text-zinc-500">— Changes save automatically</span>
+        </div>
+        <div className="flex items-center justify-between sm:justify-end gap-2 text-xs font-bold">
+          <div className="flex items-center gap-1.5">
+            {instantSaveStatus === 'saving' && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600" />
+                <span>Saving to cloud...</span>
+              </span>
+            )}
+            {instantSaveStatus === 'saved' && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 animate-in fade-in">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Saved to cloud</span>
+              </span>
+            )}
+            {instantSaveStatus === 'failed' && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-900 border border-rose-300">
+                <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+                <span>Sync failed — retrying</span>
+              </span>
+            )}
+            {instantSaveStatus === 'idle' && (
+              <span className="text-xs text-zinc-400 font-medium">Auto-save on edit</span>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Customer Details */}
-            <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
-                <h3 className="text-sm font-bold text-zinc-900 font-display flex items-center gap-2">
-                  <User className="w-4 h-4 text-zinc-500" />
-                  <span>Customer Information</span>
-                </h3>
-                <span className="text-xs text-zinc-400 font-medium">Auto-saves on change</span>
+          <div className="flex items-center gap-1.5 pl-2 border-l border-orange-200">
+            <button
+              type="button"
+              onClick={expandAll}
+              className="min-h-[38px] px-3 py-1.5 rounded-xl bg-white/80 hover:bg-white text-zinc-700 hover:text-zinc-900 text-xs font-bold border border-orange-200/80 cursor-pointer touch-manipulation active:scale-95 transition-all"
+            >
+              Expand All
+            </button>
+            <button
+              type="button"
+              onClick={collapseAll}
+              className="min-h-[38px] px-3 py-1.5 rounded-xl bg-white/80 hover:bg-white text-zinc-700 hover:text-zinc-900 text-xs font-bold border border-orange-200/80 cursor-pointer touch-manipulation active:scale-95 transition-all"
+            >
+              Collapse All
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 9 REORGANIZED COLLAPSIBLE ACCORDION SECTIONS */}
+
+      {/* SECTION 1: CUSTOMER DETAILS */}
+      <div id="section-customer" className="bg-white rounded-2xl border border-zinc-200/90 shadow-2xs overflow-hidden transition-all">
+        <button
+          type="button"
+          onClick={() => toggleSection('customer')}
+          className="w-full min-h-[56px] px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between text-left cursor-pointer hover:bg-zinc-50/80 transition-colors touch-manipulation"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 border border-orange-200/60 flex items-center justify-center shrink-0">
+              <User className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm sm:text-base font-bold text-zinc-900 font-display">1. Customer Details</span>
+                <span className="hidden sm:inline-block text-xs font-medium text-zinc-500 bg-zinc-100 px-2.5 py-0.5 rounded-full truncate max-w-xs">
+                  {editFormData.customerName || 'Customer'} • {editFormData.customerPhone || 'No Phone'}
+                </span>
+              </div>
+              <span className="block text-xs text-zinc-500 font-normal truncate sm:hidden">
+                {editFormData.customerName || 'Customer'} • {editFormData.customerPhone || 'No Phone'}
+              </span>
+            </div>
+          </div>
+          <ChevronDown className={`w-5 h-5 transition-transform duration-200 shrink-0 ${expandedSections.customer ? 'rotate-180 text-orange-600' : 'text-zinc-400'}`} />
+        </button>
+
+        {expandedSections.customer && (
+          <div className="p-4 sm:p-5 border-t border-zinc-100 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Client Contact & Account Details</span>
+              <span className="text-xs text-zinc-400 font-medium">Auto-saves on change</span>
+            </div>
+
+            <div className="space-y-3.5 text-xs sm:text-sm">
+              <div>
+                <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Full Name</label>
+                <input
+                  type="text"
+                  value={editFormData.customerName}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setEditFormData(prev => ({ ...prev, customerName: val }));
+                    autoSaveBookingChange({ customerName: val }, false);
+                  }}
+                  onBlur={() => autoSaveBookingChange({ customerName: editFormData.customerName }, true)}
+                  className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-bold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px]"
+                  placeholder="Customer Name"
+                />
               </div>
 
-              <div className="space-y-3 text-xs sm:text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Full Name</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Phone Number</label>
+                    {editFormData.customerPhone && (
+                      <a href={`tel:${editFormData.customerPhone}`} className="text-xs text-orange-600 hover:text-orange-700 font-bold flex items-center gap-1">
+                        <Phone className="w-3 h-3" /> Call
+                      </a>
+                    )}
+                  </div>
                   <input
-                    type="text"
-                    value={editFormData.customerName}
+                    type="tel"
+                    value={editFormData.customerPhone}
                     onChange={(e) => {
                       const val = e.target.value;
-                      setEditFormData(prev => ({ ...prev, customerName: val }));
-                      autoSaveBookingChange({ customerName: val }, false);
+                      setEditFormData(prev => ({ ...prev, customerPhone: val }));
+                      autoSaveBookingChange({ customerPhone: val }, false);
                     }}
-                    onBlur={() => autoSaveBookingChange({ customerName: editFormData.customerName }, true)}
-                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-bold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px]"
-                    placeholder="Customer Name"
+                    onBlur={() => autoSaveBookingChange({ customerPhone: editFormData.customerPhone }, true)}
+                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px]"
+                    placeholder="+91 Mobile"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Phone Number</label>
-                    <input
-                      type="tel"
-                      value={editFormData.customerPhone}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setEditFormData(prev => ({ ...prev, customerPhone: val }));
-                        autoSaveBookingChange({ customerPhone: val }, false);
-                      }}
-                      onBlur={() => autoSaveBookingChange({ customerPhone: editFormData.customerPhone }, true)}
-                      className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px]"
-                      placeholder="+91 Mobile"
-                    />
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">WhatsApp</label>
+                    {cleanPhone && (
+                      <a
+                        href={`https://wa.me/${cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1"
+                      >
+                        <MessageCircle className="w-3 h-3" /> Chat
+                      </a>
+                    )}
                   </div>
-                  <div>
-                    <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">WhatsApp</label>
-                    <input
-                      type="tel"
-                      value={editFormData.customerWhatsApp}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setEditFormData(prev => ({ ...prev, customerWhatsApp: val }));
-                        autoSaveBookingChange({ customerWhatsApp: val }, false);
-                      }}
-                      onBlur={() => autoSaveBookingChange({ customerWhatsApp: editFormData.customerWhatsApp }, true)}
-                      className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px]"
-                      placeholder="+91 WhatsApp"
-                    />
-                  </div>
+                  <input
+                    type="tel"
+                    value={editFormData.customerWhatsApp}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditFormData(prev => ({ ...prev, customerWhatsApp: val }));
+                      autoSaveBookingChange({ customerWhatsApp: val }, false);
+                    }}
+                    onBlur={() => autoSaveBookingChange({ customerWhatsApp: editFormData.customerWhatsApp }, true)}
+                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px]"
+                    placeholder="+91 WhatsApp"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Email Address</label>
+                  <input
+                    type="email"
+                    value={editFormData.customerEmail}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditFormData(prev => ({ ...prev, customerEmail: val }));
+                      autoSaveBookingChange({ customerEmail: val }, false);
+                    }}
+                    onBlur={() => autoSaveBookingChange({ customerEmail: editFormData.customerEmail }, true)}
+                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px]"
+                    placeholder="client@example.com"
+                  />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Email Address</label>
-                    <input
-                      type="email"
-                      value={editFormData.customerEmail}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setEditFormData(prev => ({ ...prev, customerEmail: val }));
-                        autoSaveBookingChange({ customerEmail: val }, false);
-                      }}
-                      onBlur={() => autoSaveBookingChange({ customerEmail: editFormData.customerEmail }, true)}
-                      className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px]"
-                      placeholder="client@example.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">City / Location</label>
-                    <input
-                      type="text"
-                      value={editFormData.city}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setEditFormData(prev => ({ ...prev, city: val }));
-                        autoSaveBookingChange({ city: val }, false);
-                      }}
-                      onBlur={() => autoSaveBookingChange({ city: editFormData.city }, true)}
-                      className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px]"
-                      placeholder="City"
-                    />
-                  </div>
+                <div>
+                  <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">City / Location</label>
+                  <input
+                    type="text"
+                    value={editFormData.city}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditFormData(prev => ({ ...prev, city: val }));
+                      autoSaveBookingChange({ city: val }, false);
+                    }}
+                    onBlur={() => autoSaveBookingChange({ city: editFormData.city }, true)}
+                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px]"
+                    placeholder="City"
+                  />
                 </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Customer Special Requests & Notes</label>
+                <textarea
+                  rows={2}
+                  value={editFormData.notes}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setEditFormData(prev => ({ ...prev, notes: val }));
+                    autoSaveBookingChange({ notes: val, description: val }, false);
+                  }}
+                  onBlur={() => autoSaveBookingChange({ notes: editFormData.notes, description: editFormData.notes }, true)}
+                  className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-zinc-800 focus:bg-white focus:ring-2 focus:ring-orange-500"
+                  placeholder="Special requests, style preferences, VIP family instructions..."
+                />
               </div>
             </div>
+          </div>
+        )}
+      </div>
 
-            {/* Event Information */}
-            <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
-                <h3 className="text-sm font-bold text-zinc-900 font-display flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-zinc-500" />
-                  <span>Event Information</span>
-                </h3>
-                <span className="text-xs text-zinc-400 font-medium">Auto-saves on change</span>
+      {/* SECTION 2: EVENT DETAILS */}
+      <div id="section-event" className="bg-white rounded-2xl border border-zinc-200/90 shadow-2xs overflow-hidden transition-all">
+        <button
+          type="button"
+          onClick={() => toggleSection('event')}
+          className="w-full min-h-[56px] px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between text-left cursor-pointer hover:bg-zinc-50/80 transition-colors touch-manipulation"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 border border-orange-200/60 flex items-center justify-center shrink-0">
+              <Calendar className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm sm:text-base font-bold text-zinc-900 font-display">2. Event Details</span>
+                <span className="hidden sm:inline-block text-xs font-medium text-zinc-500 bg-zinc-100 px-2.5 py-0.5 rounded-full truncate max-w-xs">
+                  {editFormData.eventDate || 'Date TBD'} • {(booking.functions || []).length} Sub-Events • {editFormData.venue || 'Studio'}
+                </span>
               </div>
+              <span className="block text-xs text-zinc-500 font-normal truncate sm:hidden">
+                {editFormData.eventDate || 'Date TBD'} • {(booking.functions || []).length} Sub-Events
+              </span>
+            </div>
+          </div>
+          <ChevronDown className={`w-5 h-5 transition-transform duration-200 shrink-0 ${expandedSections.event ? 'rotate-180 text-orange-600' : 'text-zinc-400'}`} />
+        </button>
 
-              <div className="space-y-3 text-xs sm:text-sm">
+        {expandedSections.event && (
+          <div className="p-4 sm:p-5 border-t border-zinc-100 space-y-5">
+            <div className="space-y-3.5">
+              <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Primary Event Information</span>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Event Title</label>
                   <input
@@ -1278,50 +1569,50 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                       autoSaveBookingChange({ eventName: val }, false);
                     }}
                     onBlur={() => autoSaveBookingChange({ eventName: editFormData.eventName }, true)}
-                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-bold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px]"
+                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-bold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px]"
                     placeholder="Event Title"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Category</label>
-                    <select
-                      value={editFormData.category}
-                      onChange={(e) => {
-                        const val = e.target.value as any;
-                        setEditFormData(prev => ({ ...prev, category: val }));
-                        autoSaveBookingChange({ category: val }, true);
-                      }}
-                      className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px] cursor-pointer"
-                    >
-                      <option value="Wedding">Wedding</option>
-                      <option value="Pre-Wedding">Pre-Wedding</option>
-                      <option value="Engagement">Engagement</option>
-                      <option value="Mandvo / Pithi">Mandvo / Pithi</option>
-                      <option value="Haldi & Mehndi">Haldi & Mehndi</option>
-                      <option value="Sangeet Night">Sangeet Night</option>
-                      <option value="Reception">Reception</option>
-                      <option value="Birthday">Birthday</option>
-                      <option value="Corporate">Corporate</option>
-                      <option value="Fashion">Fashion</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
+                <div>
+                  <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Event Category</label>
+                  <select
+                    value={editFormData.category}
+                    onChange={(e) => {
+                      const val = e.target.value as any;
+                      setEditFormData(prev => ({ ...prev, category: val }));
+                      autoSaveBookingChange({ category: val }, true);
+                    }}
+                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px] cursor-pointer"
+                  >
+                    <option value="Wedding">Wedding</option>
+                    <option value="Pre-Wedding">Pre-Wedding</option>
+                    <option value="Engagement">Engagement</option>
+                    <option value="Mandvo / Pithi">Mandvo / Pithi</option>
+                    <option value="Haldi & Mehndi">Haldi & Mehndi</option>
+                    <option value="Sangeet Night">Sangeet Night</option>
+                    <option value="Reception">Reception</option>
+                    <option value="Birthday">Birthday</option>
+                    <option value="Corporate">Corporate</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
 
-                  <div>
-                    <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Main Event Date</label>
-                    <input
-                      type="date"
-                      value={editFormData.eventDate}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setEditFormData(prev => ({ ...prev, eventDate: val }));
-                        autoSaveBookingChange({ mainEventDate: val, startDate: val }, true);
-                      }}
-                      className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px] cursor-pointer"
-                    />
-                  </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Main Event Date</label>
+                  <input
+                    type="date"
+                    value={editFormData.eventDate}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditFormData(prev => ({ ...prev, eventDate: val }));
+                      autoSaveBookingChange({ mainEventDate: val, startDate: val }, true);
+                    }}
+                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px] cursor-pointer"
+                  />
                 </div>
 
                 <div>
@@ -1335,102 +1626,191 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                       autoSaveBookingChange({ venue: val }, false);
                     }}
                     onBlur={() => autoSaveBookingChange({ venue: editFormData.venue }, true)}
-                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[46px]"
+                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px]"
                     placeholder="Venue name & address"
                   />
                 </div>
+              </div>
+            </div>
 
+            {/* Sub-Events / Functions Schedule */}
+            <div className="pt-3 border-t border-zinc-100 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                  <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Special Notes & Instructions</label>
-                  <textarea
-                    rows={2}
-                    value={editFormData.notes}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setEditFormData(prev => ({ ...prev, notes: val }));
-                      autoSaveBookingChange({ notes: val, description: val }, false);
-                    }}
-                    onBlur={() => autoSaveBookingChange({ notes: editFormData.notes, description: editFormData.notes }, true)}
-                    className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-zinc-800 focus:bg-white focus:ring-2 focus:ring-orange-500"
-                    placeholder="Special instructions, style requirements..."
-                  />
+                  <h4 className="text-sm font-bold text-zinc-900 font-display">Sub-Event Functions Schedule</h4>
+                  <span className="text-xs text-zinc-400">{(booking.functions || []).length} Scheduled Functions</span>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddFunctionOpen(!isAddFunctionOpen)}
+                  className="min-h-[44px] px-3.5 py-1.5 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-xs font-bold text-zinc-700 flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation active:scale-95 transition-all"
+                >
+                  <Plus className="w-4 h-4 text-orange-600" />
+                  <span>{isAddFunctionOpen ? 'Cancel' : '+ Add Sub-Event'}</span>
+                </button>
+              </div>
+
+              {/* Add Sub-Event Form */}
+              {isAddFunctionOpen && (
+                <form onSubmit={handleAddFunctionToBooking} className="p-4 rounded-xl bg-orange-50/50 border border-orange-200/80 space-y-3 animate-in fade-in duration-150">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-orange-950 uppercase tracking-wider">New Function Details</span>
+                    <button type="button" onClick={() => setIsAddFunctionOpen(false)} className="text-zinc-400 hover:text-zinc-600">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      placeholder="Function Name (e.g. Haldi Ceremony, Sangeet)"
+                      value={newFunctionName}
+                      onChange={e => setNewFunctionName(e.target.value)}
+                      required
+                      className="px-3.5 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 min-h-[46px]"
+                    />
+                    <input
+                      type="date"
+                      value={newFunctionDate}
+                      onChange={e => setNewFunctionDate(e.target.value)}
+                      className="px-3.5 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 min-h-[46px]"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <input
+                      type="time"
+                      value={newFunctionStartTime}
+                      onChange={e => setNewFunctionStartTime(e.target.value)}
+                      className="px-3.5 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 min-h-[46px]"
+                    />
+                    <input
+                      type="time"
+                      value={newFunctionEndTime}
+                      onChange={e => setNewFunctionEndTime(e.target.value)}
+                      className="px-3.5 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 min-h-[46px]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Venue (e.g. Lawn / Ballroom)"
+                      value={newFunctionVenue}
+                      onChange={e => setNewFunctionVenue(e.target.value)}
+                      className="px-3.5 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 min-h-[46px]"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsAddFunctionOpen(false)}
+                      className="min-h-[42px] px-4 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-200/60 rounded-xl cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="min-h-[42px] px-5 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 rounded-xl cursor-pointer shadow-xs active:scale-95 transition-all"
+                    >
+                      Save Sub-Event
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Sub-Events List */}
+              <div className="space-y-2.5">
+                {(booking.functions || []).map((fn, idx) => (
+                  <div
+                    key={fn.id || idx}
+                    className="p-3.5 rounded-xl border border-zinc-200/80 bg-zinc-50/60 flex flex-col md:flex-row md:items-center justify-between gap-3"
+                  >
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-zinc-900 text-white text-xs font-bold flex items-center justify-center shrink-0">
+                          {idx + 1}
+                        </span>
+                        <h4 className="text-sm sm:text-base font-bold text-zinc-900">{fn.name}</h4>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-zinc-600 pl-7">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5 text-zinc-400" />
+                          {fn.date || 'Date TBD'}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                          {fn.startTime || '10:00'} - {fn.endTime || '18:00'}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5 text-zinc-400" />
+                          {fn.venue || booking.venue || 'Studio'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pl-7 md:pl-0 shrink-0">
+                      {(fn.assignedCrew && fn.assignedCrew.length > 0) ? (
+                        fn.assignedCrew.map((c, cIdx) => (
+                          <span
+                            key={cIdx}
+                            className="px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold"
+                          >
+                            {c.employeeName}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-zinc-400 italic">No crew pinned</span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFunction(fn.id)}
+                        className="min-w-[36px] min-h-[36px] rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center cursor-pointer transition-colors"
+                        title="Remove Sub-Event"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
+        )}
+      </div>
 
-          {/* Functions / Sub-Events Schedule */}
-          <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-              <div>
-                <h3 className="text-sm font-bold text-zinc-900 font-display">Functions & Sub-Events Schedule</h3>
-                <p className="text-xs text-zinc-400 mt-0.5">Pre-wedding, ceremony, reception & individual function plans</p>
+      {/* SECTION 3: CREW & ASSIGNMENTS */}
+      <div id="section-crew" className="bg-white rounded-2xl border border-zinc-200/90 shadow-2xs overflow-hidden transition-all">
+        <button
+          type="button"
+          onClick={() => toggleSection('crew')}
+          className="w-full min-h-[56px] px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between text-left cursor-pointer hover:bg-zinc-50/80 transition-colors touch-manipulation"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 border border-orange-200/60 flex items-center justify-center shrink-0">
+              <Users className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm sm:text-base font-bold text-zinc-900 font-display">3. Crew & Assignments</span>
+                <span className="hidden sm:inline-block text-xs font-medium text-zinc-500 bg-zinc-100 px-2.5 py-0.5 rounded-full truncate">
+                  {crewTableRows.length} Assigned • Studio Owner Included
+                </span>
               </div>
-              <span className="text-xs font-bold text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-lg">
-                {(booking.functions || []).length} Scheduled
+              <span className="block text-xs text-zinc-500 font-normal truncate sm:hidden">
+                {crewTableRows.length} Assigned • Studio Owner Included
               </span>
             </div>
-
-            <div className="space-y-3">
-              {(booking.functions || []).map((fn, idx) => (
-                <div 
-                  key={fn.id || idx}
-                  className="p-4 rounded-xl border border-zinc-200 bg-zinc-50/60 flex flex-col md:flex-row md:items-center justify-between gap-3"
-                >
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-zinc-900 text-white text-xs font-bold flex items-center justify-center shrink-0">
-                        {idx + 1}
-                      </span>
-                      <h4 className="text-sm sm:text-base font-bold text-zinc-900">{fn.name}</h4>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-zinc-600 pl-7">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5 text-zinc-400" />
-                        {fn.date}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-zinc-400" />
-                        {fn.startTime} - {fn.endTime}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 text-zinc-400" />
-                        {fn.venue}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Assigned crew for this function */}
-                  <div className="flex items-center gap-1.5 flex-wrap pl-7 md:pl-0">
-                    {(fn.assignedCrew && fn.assignedCrew.length > 0) ? (
-                      fn.assignedCrew.map((c, cIdx) => (
-                        <span 
-                          key={cIdx} 
-                          className="px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold"
-                        >
-                          {c.employeeName} ({c.role})
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-xs text-zinc-400 italic">No specific crew pinned</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
+          <ChevronDown className={`w-5 h-5 transition-transform duration-200 shrink-0 ${expandedSections.crew ? 'rotate-180 text-orange-600' : 'text-zinc-400'}`} />
+        </button>
 
-          {/* Assigned Crew Section */}
-          <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
+        {expandedSections.crew && (
+          <div className="p-4 sm:p-5 border-t border-zinc-100 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-zinc-900 font-display">Crew Assignments & Calendar Visibility</h3>
+                  <h4 className="text-sm font-bold text-zinc-900 font-display">Crew Members & Calendar Visibility</h4>
                   <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200">
                     {crewTableRows.length} Assigned
                   </span>
                 </div>
-                <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">
+                <p className="text-xs text-zinc-500 mt-0.5">
                   Manage crew responsibilities and toggle employee calendar visibility with one tap
                 </p>
               </div>
@@ -1462,15 +1842,14 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 </thead>
                 <tbody className="divide-y divide-zinc-100 text-sm">
                   {crewTableRows.map((row) => {
-                    const isOwner = isStudioOwnerId(row.employeeId, studioId) || row.employeeName.includes('(Studio Owner)');
+                    const isOwnerMember = isStudioOwnerId(row.employeeId, studioId) || row.employeeName.includes('(Studio Owner)');
 
                     return (
                     <tr key={`${row.employeeId}_${row.functionId}`} className="hover:bg-orange-50/20 transition-colors">
-                      {/* 1. Crew Member */}
                       <td className="py-3.5 px-3.5">
                         <div className="flex items-center gap-3">
                           <div className={`w-9 h-9 rounded-xl border font-bold flex items-center justify-center text-xs shrink-0 ${
-                            isOwner 
+                            isOwnerMember 
                               ? 'bg-amber-100 border-amber-300 text-amber-900 shadow-2xs' 
                               : 'bg-orange-100 border-orange-200 text-orange-800'
                           }`}>
@@ -1479,19 +1858,18 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="font-bold text-sm sm:text-[15px] text-zinc-900 truncate">{row.employeeName}</span>
-                              {isOwner && (
+                              {isOwnerMember && (
                                 <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 shrink-0">
                                   Studio Owner
                                 </span>
                               )}
                             </div>
-                            <div className="text-xs text-zinc-500 truncate">{isOwner ? 'Studio Owner' : (row.designation || 'Production Staff')}</div>
+                            <div className="text-xs text-zinc-500 truncate">{isOwnerMember ? 'Studio Owner' : (row.designation || 'Production Staff')}</div>
                             {row.contact && <div className="text-xs text-zinc-400 font-mono">{row.contact}</div>}
                           </div>
                         </div>
                       </td>
 
-                      {/* 2. Role */}
                       <td className="py-3.5 px-3.5">
                         <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-orange-50 text-orange-900 border border-orange-200/80">
                           {row.responsibility}
@@ -1499,7 +1877,6 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                         <div className="text-xs text-zinc-400 mt-1">{row.functionName}</div>
                       </td>
 
-                      {/* 3. Assignment */}
                       <td className="py-3.5 px-3.5">
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -1507,7 +1884,6 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                         </span>
                       </td>
 
-                      {/* 4. Calendar Visibility Switch */}
                       <td className="py-3.5 px-3.5">
                         <button
                           type="button"
@@ -1535,7 +1911,6 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                         </button>
                       </td>
 
-                      {/* Actions */}
                       <td className="py-3.5 px-3.5 text-right">
                         <button
                           type="button"
@@ -1561,19 +1936,127 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
               </table>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
+      {/* SECTION 4: PACKAGE & SERVICES */}
+      <div id="section-package" className="bg-white rounded-2xl border border-zinc-200/90 shadow-2xs overflow-hidden transition-all">
+        <button
+          type="button"
+          onClick={() => toggleSection('package')}
+          className="w-full min-h-[56px] px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between text-left cursor-pointer hover:bg-zinc-50/80 transition-colors touch-manipulation"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 border border-orange-200/60 flex items-center justify-center shrink-0">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm sm:text-base font-bold text-zinc-900 font-display">4. Package & Services</span>
+                <span className="hidden sm:inline-block text-xs font-medium text-zinc-500 bg-zinc-100 px-2.5 py-0.5 rounded-full truncate">
+                  ₹{finalAgreedAmount.toLocaleString('en-IN')} Agreed • {(booking as any).packageName || booking.category || 'Package'}
+                </span>
+              </div>
+              <span className="block text-xs text-zinc-500 font-normal truncate sm:hidden">
+                ₹{finalAgreedAmount.toLocaleString('en-IN')} Agreed
+              </span>
+            </div>
+          </div>
+          <ChevronDown className={`w-5 h-5 transition-transform duration-200 shrink-0 ${expandedSections.package ? 'rotate-180 text-orange-600' : 'text-zinc-400'}`} />
+        </button>
 
-      {/* SECTION 2: MONEY & PAYMENTS */}
-      {activeSection === 'money' && (
-        <div className="space-y-6">
-          {/* Financial Breakdown Card */}
-          <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
-            <h3 className="text-sm font-bold text-zinc-900 font-display border-b border-zinc-100 pb-2">
-              Financial Breakdown & Quotation Terms
-            </h3>
+        {expandedSections.package && (
+          <div className="p-4 sm:p-5 border-t border-zinc-100 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-3">
+              <div>
+                <h4 className="text-sm font-bold text-zinc-900 font-display">
+                  {(booking as any).packageName || `${booking.category || 'Wedding'} Photography & Cinema Package`}
+                </h4>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  Includes {booking.numberOfDays || 1} day(s) coverage, {(booking.functions || []).length} sub-events, and {checklistItems.length} client deliverables
+                </p>
+              </div>
 
+              <button
+                type="button"
+                onClick={handleOpenFullEditModal}
+                className="min-h-[44px] px-4 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-xs font-bold text-zinc-700 flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation active:scale-95 transition-all"
+              >
+                <Edit3 className="w-4 h-4 text-orange-600" />
+                <span>Edit Package Pricing</span>
+              </button>
+            </div>
+
+            {/* Commercial Pricing Agreement */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200">
+                <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Quoted Price</span>
+                <span className="text-base sm:text-lg font-bold text-zinc-800 mt-1 block">
+                  ₹{originalQuotation.toLocaleString('en-IN')}
+                </span>
+              </div>
+              <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200">
+                <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Special Discount</span>
+                <span className="text-base sm:text-lg font-bold text-amber-700 mt-1 block">
+                  - ₹{negotiatedDiscount.toLocaleString('en-IN')}
+                </span>
+              </div>
+              <div className="p-3.5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-2xs">
+                <span className="text-xs text-orange-100 font-bold uppercase tracking-wider block">Final Agreed Package Fee</span>
+                <span className="text-lg sm:text-xl font-extrabold text-white mt-1 block font-display">
+                  ₹{finalAgreedAmount.toLocaleString('en-IN')}
+                </span>
+              </div>
+            </div>
+
+            {/* Services Line Items */}
+            <div className="space-y-2 pt-2">
+              <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Package Line Items & Coverage</span>
+              <div className="divide-y divide-zinc-100 border border-zinc-200 rounded-xl overflow-hidden bg-white">
+                {(booking.functions && booking.functions.length > 0 ? booking.functions : [{ name: 'Main Event Coverage', date: booking.mainEventDate, venue: booking.venue }]).map((fn, idx) => (
+                  <div key={idx} className="p-3.5 flex items-center justify-between gap-3 text-xs sm:text-sm">
+                    <div>
+                      <div className="font-bold text-zinc-900">{fn.name} Coverage</div>
+                      <div className="text-xs text-zinc-500">{fn.date || booking.mainEventDate} • {fn.venue || booking.venue || 'Studio'}</div>
+                    </div>
+                    <span className="font-semibold text-zinc-700">Included</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* SECTION 5: MONEY & PAYMENTS */}
+      <div id="section-money" className="bg-white rounded-2xl border border-zinc-200/90 shadow-2xs overflow-hidden transition-all">
+        <button
+          type="button"
+          onClick={() => toggleSection('money')}
+          className="w-full min-h-[56px] px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between text-left cursor-pointer hover:bg-zinc-50/80 transition-colors touch-manipulation"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 border border-orange-200/60 flex items-center justify-center shrink-0">
+              <IndianRupee className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm sm:text-base font-bold text-zinc-900 font-display">5. Money & Payments</span>
+                <span className="hidden sm:inline-block text-xs font-medium text-zinc-500 bg-zinc-100 px-2.5 py-0.5 rounded-full truncate">
+                  ₹{verifiedPaymentsReceived.toLocaleString('en-IN')} Received • {isFullyPaid ? 'Fully Paid' : '₹' + remainingBalance.toLocaleString('en-IN') + ' Balance'}
+                </span>
+              </div>
+              <span className="block text-xs text-zinc-500 font-normal truncate sm:hidden">
+                ₹{verifiedPaymentsReceived.toLocaleString('en-IN')} Received • {isFullyPaid ? 'Fully Paid' : '₹' + remainingBalance.toLocaleString('en-IN') + ' Balance'}
+              </span>
+            </div>
+          </div>
+          <ChevronDown className={`w-5 h-5 transition-transform duration-200 shrink-0 ${expandedSections.money ? 'rotate-180 text-orange-600' : 'text-zinc-400'}`} />
+        </button>
+
+        {expandedSections.money && (
+          <div className="p-4 sm:p-5 border-t border-zinc-100 space-y-5">
+            {/* Financial Breakdown Tiles */}
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               <div className="p-3 rounded-xl bg-zinc-50 border border-zinc-200">
                 <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">Original Quotation</span>
@@ -1603,7 +2086,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 </span>
               </div>
 
-              <div className={`p-3 rounded-xl border ${isFullyPaid ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`}>
+              <div className={`p-3 rounded-xl border col-span-2 sm:col-span-1 ${isFullyPaid ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`}>
                 <span className={`text-xs font-bold uppercase tracking-wider block ${isFullyPaid ? 'text-emerald-700' : 'text-rose-700'}`}>
                   Remaining Balance
                 </span>
@@ -1612,213 +2095,267 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 </span>
               </div>
             </div>
-          </div>
 
-          {/* Payment History Table & Add Payment */}
-          <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-3">
-              <div>
-                <h3 className="text-sm font-bold text-zinc-900 font-display">Payment History & Receipts</h3>
-                <p className="text-xs text-zinc-400 mt-0.5">Recorded advance payments, cash receipts, UPI transactions & settlements</p>
+            {/* Payment History Table & Add Payment */}
+            <div className="space-y-4 pt-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-3">
+                <div>
+                  <h4 className="text-sm font-bold text-zinc-900 font-display">Payment History & Receipts</h4>
+                  <p className="text-xs text-zinc-400 mt-0.5">Recorded advance payments, cash receipts, UPI transactions & settlements</p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleGenerateReceipt(verifiedPaymentsReceived)}
+                    className="min-h-[44px] px-3.5 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-xs font-bold text-zinc-700 flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation active:scale-95 transition-all"
+                  >
+                    <FileText className="w-4 h-4 text-zinc-600" />
+                    <span>Receipt PDF</span>
+                  </button>
+                  <button
+                    onClick={() => setIsPaymentModalOpen(true)}
+                    className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm sm:text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer touch-manipulation active:scale-95"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ Add Payment</span>
+                  </button>
+                </div>
               </div>
 
-              <button
-                onClick={() => setIsPaymentModalOpen(true)}
-                className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm sm:text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer touch-manipulation active:scale-95"
-              >
-                <Plus className="w-4 h-4" />
-                <span>+ Add Payment</span>
-              </button>
-            </div>
+              {/* Mobile Payment Cards (sm:hidden) */}
+              <div className="sm:hidden space-y-3">
+                {paymentHistoryItems.length > 0 ? (
+                  paymentHistoryItems.map(item => {
+                    const meta = item.metadata;
+                    const amount = item.amount || meta?.amount || 0;
+                    const dateStr = item.createdAt ? item.createdAt.split('T')[0] : 'Verified';
+                    const mode = meta?.paymentMethod || 'UPI';
+                    const refStr = meta?.receiptNumber || meta?.reference || item.relatedRecordId || 'Verified';
 
-            {/* Mobile Payment Cards (sm:hidden) */}
-            <div className="sm:hidden space-y-3">
-              {paymentHistoryItems.length > 0 ? (
-                paymentHistoryItems.map(item => {
-                  const meta = item.metadata;
-                  const amount = item.amount || meta?.amount || 0;
-                  const dateStr = item.createdAt ? item.createdAt.split('T')[0] : 'Verified';
-                  const mode = meta?.paymentMethod || 'UPI';
-                  const refStr = meta?.receiptNumber || meta?.reference || item.relatedRecordId || 'Verified';
-
-                  return (
-                    <div key={item.historyId} className="p-4 rounded-xl border border-zinc-200/90 bg-zinc-50/70 space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-zinc-500">{dateStr}</span>
-                        <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold">
-                          {mode}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-emerald-700 font-display">
-                          ₹{amount.toLocaleString('en-IN')}
-                        </span>
-                        <span className="font-mono text-xs text-zinc-500">{refStr}</span>
-                      </div>
-                      <div className="pt-2 border-t border-zinc-200/70 flex justify-end">
-                        <button
-                          onClick={() => handleGenerateReceipt(amount)}
-                          className="w-full min-h-[44px] py-2 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-xs font-bold text-zinc-800 cursor-pointer touch-manipulation active:scale-98 flex items-center justify-center gap-1.5"
-                        >
-                          <FileText className="w-3.5 h-3.5 text-zinc-600" />
-                          <span>View Official Receipt</span>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : verifiedPaymentsReceived > 0 ? (
-                <div className="p-4 rounded-xl border border-zinc-200/90 bg-zinc-50/70 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-zinc-500">{booking.mainEventDate || 'Verified'}</span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold">
-                      UPI / Digital
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-emerald-700 font-display">
-                      ₹{verifiedPaymentsReceived.toLocaleString('en-IN')}
-                    </span>
-                    <span className="font-mono text-xs text-zinc-500">ADV-{booking.bookingNumber}</span>
-                  </div>
-                  <div className="pt-2 border-t border-zinc-200/70 flex justify-end">
-                    <button
-                      onClick={() => handleGenerateReceipt(verifiedPaymentsReceived)}
-                      className="w-full min-h-[44px] py-2 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-xs font-bold text-zinc-800 cursor-pointer touch-manipulation active:scale-98 flex items-center justify-center gap-1.5"
-                    >
-                      <FileText className="w-3.5 h-3.5 text-zinc-600" />
-                      <span>View Official Receipt</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="py-6 text-center text-zinc-400 text-xs bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
-                  No payments recorded yet. Tap "+ Add Payment" above.
-                </div>
-              )}
-            </div>
-
-            {/* Desktop Payment Table (hidden sm:block) */}
-            <div className="hidden sm:block overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-zinc-200 text-zinc-500 uppercase text-xs font-bold">
-                    <th className="py-2.5 px-3">Date</th>
-                    <th className="py-2.5 px-3">Amount Paid</th>
-                    <th className="py-2.5 px-3">Payment Mode</th>
-                    <th className="py-2.5 px-3">Receipt / Reference</th>
-                    <th className="py-2.5 px-3">Recorded By</th>
-                    <th className="py-2.5 px-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100">
-                  {paymentHistoryItems.length > 0 ? (
-                    paymentHistoryItems.map(item => {
-                      const meta = item.metadata;
-                      const amount = item.amount || meta?.amount || 0;
-                      const dateStr = item.createdAt ? item.createdAt.split('T')[0] : 'Verified';
-                      const mode = meta?.paymentMethod || 'UPI';
-                      const refStr = meta?.receiptNumber || meta?.reference || item.relatedRecordId || 'Verified';
-                      const recordedBy = item.performedByName || 'Studio Owner';
-
-                      return (
-                        <tr key={item.historyId} className="hover:bg-zinc-50">
-                          <td className="py-3 px-3 font-medium text-zinc-900">
-                            {dateStr}
-                          </td>
-                          <td className="py-3 px-3 font-bold text-emerald-700">
+                    return (
+                      <div key={item.historyId} className="p-4 rounded-xl border border-zinc-200/90 bg-zinc-50/70 space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-zinc-500">{dateStr}</span>
+                          <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold">
+                            {mode}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg font-bold text-emerald-700 font-display">
                             ₹{amount.toLocaleString('en-IN')}
-                          </td>
-                          <td className="py-3 px-3">
-                            <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold">
-                              {mode}
-                            </span>
-                          </td>
-                          <td className="py-3 px-3 font-mono text-zinc-600">
-                            {refStr}
-                          </td>
-                          <td className="py-3 px-3 text-zinc-600">
-                            {recordedBy}
-                          </td>
-                          <td className="py-3 px-3 text-right">
-                            <button
-                              onClick={() => handleGenerateReceipt(amount)}
-                              className="px-2.5 py-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-100 text-xs sm:text-sm font-semibold text-zinc-700 cursor-pointer"
-                            >
-                              View Receipt
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : verifiedPaymentsReceived > 0 ? (
-                    <tr className="hover:bg-zinc-50">
-                      <td className="py-3 px-3 font-medium text-zinc-900">
-                        {booking.financials?.advanceReceivedDate ? booking.financials.advanceReceivedDate.split('T')[0] : booking.mainEventDate || 'Verified'}
-                      </td>
-                      <td className="py-3 px-3 font-bold text-emerald-700">
+                          </span>
+                          <span className="font-mono text-xs text-zinc-500">{refStr}</span>
+                        </div>
+                        <div className="pt-2 border-t border-zinc-200/70 flex justify-end">
+                          <button
+                            onClick={() => handleGenerateReceipt(amount)}
+                            className="w-full min-h-[44px] py-2 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-xs font-bold text-zinc-800 cursor-pointer touch-manipulation active:scale-98 flex items-center justify-center gap-1.5"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-zinc-600" />
+                            <span>View Official Receipt</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : verifiedPaymentsReceived > 0 ? (
+                  <div className="p-4 rounded-xl border border-zinc-200/90 bg-zinc-50/70 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-zinc-500">{booking.mainEventDate || 'Verified'}</span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold">
+                        UPI / Digital
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-bold text-emerald-700 font-display">
                         ₹{verifiedPaymentsReceived.toLocaleString('en-IN')}
-                      </td>
-                      <td className="py-3 px-3">
-                        <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold">
-                          UPI / Digital
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 font-mono text-zinc-600">
-                        ADV-{booking.bookingNumber}
-                      </td>
-                      <td className="py-3 px-3 text-zinc-600">
-                        Studio Owner
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <button
-                          onClick={() => handleGenerateReceipt(verifiedPaymentsReceived)}
-                          className="px-2.5 py-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-100 text-xs sm:text-sm font-semibold text-zinc-700 cursor-pointer"
-                        >
-                          View Receipt
-                        </button>
-                      </td>
+                      </span>
+                      <span className="font-mono text-xs text-zinc-500">ADV-{booking.bookingNumber}</span>
+                    </div>
+                    <div className="pt-2 border-t border-zinc-200/70 flex justify-end">
+                      <button
+                        onClick={() => handleGenerateReceipt(verifiedPaymentsReceived)}
+                        className="w-full min-h-[44px] py-2 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-xs font-bold text-zinc-800 cursor-pointer touch-manipulation active:scale-98 flex items-center justify-center gap-1.5"
+                      >
+                        <FileText className="w-3.5 h-3.5 text-zinc-600" />
+                        <span>View Official Receipt</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-6 text-center text-zinc-400 text-xs bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
+                    No payments recorded yet. Tap "+ Add Payment" above.
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop Payment Table (hidden sm:block) */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-zinc-200 text-zinc-500 uppercase text-xs font-bold">
+                      <th className="py-2.5 px-3">Date</th>
+                      <th className="py-2.5 px-3">Amount Paid</th>
+                      <th className="py-2.5 px-3">Payment Mode</th>
+                      <th className="py-2.5 px-3">Receipt / Reference</th>
+                      <th className="py-2.5 px-3">Recorded By</th>
+                      <th className="py-2.5 px-3 text-right">Action</th>
                     </tr>
-                  ) : (
-                    <tr>
-                      <td colSpan={6} className="py-8 text-center text-zinc-400 text-xs">
-                        No payments recorded yet. Tap "+ Add Payment" to record client advance.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {paymentHistoryItems.length > 0 ? (
+                      paymentHistoryItems.map(item => {
+                        const meta = item.metadata;
+                        const amount = item.amount || meta?.amount || 0;
+                        const dateStr = item.createdAt ? item.createdAt.split('T')[0] : 'Verified';
+                        const mode = meta?.paymentMethod || 'UPI';
+                        const refStr = meta?.receiptNumber || meta?.reference || item.relatedRecordId || 'Verified';
+                        const recordedBy = item.performedByName || 'Studio Owner';
+
+                        return (
+                          <tr key={item.historyId} className="hover:bg-zinc-50">
+                            <td className="py-3 px-3 font-medium text-zinc-900">
+                              {dateStr}
+                            </td>
+                            <td className="py-3 px-3 font-bold text-emerald-700">
+                              ₹{amount.toLocaleString('en-IN')}
+                            </td>
+                            <td className="py-3 px-3">
+                              <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold">
+                                {mode}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 font-mono text-zinc-600">
+                              {refStr}
+                            </td>
+                            <td className="py-3 px-3 text-zinc-600">
+                              {recordedBy}
+                            </td>
+                            <td className="py-3 px-3 text-right">
+                              <button
+                                onClick={() => handleGenerateReceipt(amount)}
+                                className="px-2.5 py-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-100 text-xs sm:text-sm font-semibold text-zinc-700 cursor-pointer"
+                              >
+                                View Receipt
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : verifiedPaymentsReceived > 0 ? (
+                      <tr className="hover:bg-zinc-50">
+                        <td className="py-3 px-3 font-medium text-zinc-900">
+                          {booking.financials?.advanceReceivedDate ? booking.financials.advanceReceivedDate.split('T')[0] : booking.mainEventDate || 'Verified'}
+                        </td>
+                        <td className="py-3 px-3 font-bold text-emerald-700">
+                          ₹{verifiedPaymentsReceived.toLocaleString('en-IN')}
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold">
+                            UPI / Digital
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 font-mono text-zinc-600">
+                          ADV-{booking.bookingNumber}
+                        </td>
+                        <td className="py-3 px-3 text-zinc-600">
+                          Studio Owner
+                        </td>
+                        <td className="py-3 px-3 text-right">
+                          <button
+                            onClick={() => handleGenerateReceipt(verifiedPaymentsReceived)}
+                            className="px-2.5 py-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-100 text-xs sm:text-sm font-semibold text-zinc-700 cursor-pointer"
+                          >
+                            View Receipt
+                          </button>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-zinc-400 text-xs">
+                          No payments recorded yet. Tap "+ Add Payment" to record client advance.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
+      {/* SECTION 6: DELIVERABLES & WORK */}
+      <div id="section-deliverables" className="bg-white rounded-2xl border border-zinc-200/90 shadow-2xs overflow-hidden transition-all">
+        <button
+          type="button"
+          onClick={() => toggleSection('deliverables')}
+          className="w-full min-h-[56px] px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between text-left cursor-pointer hover:bg-zinc-50/80 transition-colors touch-manipulation"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 border border-orange-200/60 flex items-center justify-center shrink-0">
+              <PackageCheck className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm sm:text-base font-bold text-zinc-900 font-display">6. Deliverables & Work</span>
+                <span className="hidden sm:inline-block text-xs font-medium text-zinc-500 bg-zinc-100 px-2.5 py-0.5 rounded-full truncate">
+                  {completedCount} of {checklistItems.length} Done ({completionPercentage}%)
+                </span>
+              </div>
+              <span className="block text-xs text-zinc-500 font-normal truncate sm:hidden">
+                {completedCount} of {checklistItems.length} Done ({completionPercentage}%)
+              </span>
+            </div>
+          </div>
+          <ChevronDown className={`w-5 h-5 transition-transform duration-200 shrink-0 ${expandedSections.deliverables ? 'rotate-180 text-orange-600' : 'text-zinc-400'}`} />
+        </button>
 
-      {/* SECTION 3: WORK & DELIVERY CHECKLIST */}
-      {activeSection === 'delivery' && (
-        <div className="space-y-6">
-          <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-5">
+        {expandedSections.deliverables && (
+          <div className="p-4 sm:p-5 border-t border-zinc-100 space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-3">
               <div>
-                <h3 className="text-sm font-bold text-zinc-900 font-display">
+                <h4 className="text-sm font-bold text-zinc-900 font-display">
                   Deliverables Checklist & Production Progress
-                </h3>
+                </h4>
                 <p className="text-xs text-zinc-400 mt-0.5">
                   Track photography and video fulfillment items for this booking
                 </p>
               </div>
 
-              <div className="flex items-center gap-2.5">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Fast Multi-Select Modal Trigger */}
                 <button
+                  type="button"
+                  onClick={() => setIsDeliverablesSelectorOpen(true)}
+                  className="min-h-[44px] px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 transition-all"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>+ Quick Multi-Select</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => setShowAddCustomDel(!showAddCustomDel)}
-                  className="min-h-[44px] px-4 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-xs font-bold text-zinc-700 flex items-center gap-1.5 cursor-pointer touch-manipulation active:scale-95"
+                  className="min-h-[44px] px-3.5 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-xs font-bold text-zinc-700 flex items-center gap-1.5 cursor-pointer touch-manipulation active:scale-95"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Add Deliverable</span>
+                  <span>Custom Item</span>
                 </button>
-                <span className="text-xs font-bold text-zinc-700">
-                  {completedCount} / {checklistItems.length} Done ({completionPercentage}%)
-                </span>
+              </div>
+            </div>
+
+            {/* Visual Progress Bar & Summary */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-bold text-zinc-700">
+                <span>Production Fulfillment</span>
+                <span>{completedCount} / {checklistItems.length} Done ({completionPercentage}%)</span>
+              </div>
+              <div className="w-full h-2.5 bg-zinc-100 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                  style={{ width: `${completionPercentage}%` }}
+                />
               </div>
             </div>
 
@@ -1878,16 +2415,6 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 </div>
               </div>
             )}
-
-            {/* Visual Progress Bar */}
-            <div className="space-y-1.5">
-              <div className="w-full h-2.5 bg-zinc-100 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-300"
-                  style={{ width: `${completionPercentage}%` }}
-                />
-              </div>
-            </div>
 
             {/* Checklist Items */}
             <div className="space-y-2.5">
@@ -1966,145 +2493,333 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
               })}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-
-      {/* SECTION 4: NOTES & MESSAGES */}
-      {activeSection === 'messages' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Customer & Internal Notes */}
-            <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
-              <h3 className="text-sm font-bold text-zinc-900 font-display border-b border-zinc-100 pb-2">
-                Customer & Internal Notes
-              </h3>
-
-              {/* Customer Requests */}
-              <div className="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200 space-y-1">
-                <span className="text-xs font-bold text-amber-900 uppercase tracking-wider block">
-                  Customer Special Requests & Family Preferences
+      {/* SECTION 7: ALBUM & PRODUCTION */}
+      <div id="section-album" className="bg-white rounded-2xl border border-zinc-200/90 shadow-2xs overflow-hidden transition-all">
+        <button
+          type="button"
+          onClick={() => toggleSection('album')}
+          className="w-full min-h-[56px] px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between text-left cursor-pointer hover:bg-zinc-50/80 transition-colors touch-manipulation"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 border border-orange-200/60 flex items-center justify-center shrink-0">
+              <BookOpen className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm sm:text-base font-bold text-zinc-900 font-display">7. Album & Production</span>
+                <span className="hidden sm:inline-block text-xs font-medium text-zinc-500 bg-zinc-100 px-2.5 py-0.5 rounded-full truncate">
+                  {albumFormData.size} • {albumFormData.sheets} Sheets • {albumFormData.albumType}
                 </span>
-                <p className="text-sm text-zinc-700">
-                  {booking.description || 'No special requests submitted by client.'}
-                </p>
+              </div>
+              <span className="block text-xs text-zinc-500 font-normal truncate sm:hidden">
+                {albumFormData.size} • {albumFormData.sheets} Sheets
+              </span>
+            </div>
+          </div>
+          <ChevronDown className={`w-5 h-5 transition-transform duration-200 shrink-0 ${expandedSections.album ? 'rotate-180 text-orange-600' : 'text-zinc-400'}`} />
+        </button>
+
+        {expandedSections.album && (
+          <div className="p-4 sm:p-5 border-t border-zinc-100 space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
+              <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Photo Album & Print Production Specifications</span>
+              <span className="text-xs text-zinc-400 font-medium">Auto-saves on change</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs sm:text-sm">
+              <div>
+                <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Album Type & Style</label>
+                <select
+                  value={albumFormData.albumType}
+                  onChange={e => handleUpdateAlbumSpecs({ albumType: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px] cursor-pointer"
+                >
+                  <option value="Premium Flush Mount Acrylic">Premium Flush Mount Acrylic</option>
+                  <option value="Fine Art Leatherette Box Set">Fine Art Leatherette Box Set</option>
+                  <option value="Velvet Touch Royal Photobook">Velvet Touch Royal Photobook</option>
+                  <option value="Classic Hardcover Matte">Classic Hardcover Matte</option>
+                  <option value="Mini Parent Pocket Album">Mini Parent Pocket Album</option>
+                </select>
               </div>
 
-              {/* Add Internal Note */}
-              <form onSubmit={handleAddInternalNote} className="space-y-2 pt-2">
-                <label className="text-xs sm:text-sm font-bold text-zinc-700 block">
-                  + Add Internal Studio / Crew Note
-                </label>
-                <textarea
-                  rows={2}
-                  value={newInternalNote}
-                  onChange={e => setNewInternalNote(e.target.value)}
-                  placeholder="e.g. Lens requirements, drone permit, client requested warm grading..."
-                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-sm text-zinc-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-zinc-900"
-                />
-                <button
-                  type="submit"
-                  className="w-full sm:w-auto min-h-[48px] sm:min-h-[40px] px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-xl text-sm font-bold cursor-pointer touch-manipulation active:scale-95 transition-all shadow-2xs"
+              <div>
+                <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Album Size</label>
+                <select
+                  value={albumFormData.size}
+                  onChange={e => handleUpdateAlbumSpecs({ size: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px] cursor-pointer"
                 >
-                  Save Internal Note
-                </button>
-              </form>
-
-              {/* Notes list */}
-              <div className="space-y-2 pt-2">
-                {(booking.notes || []).map((n, idx) => (
-                  <div key={n.id || idx} className="p-3 rounded-xl border border-zinc-200 bg-zinc-50 text-sm space-y-1">
-                    <div className="flex items-center justify-between text-xs text-zinc-500">
-                      <span className="font-semibold text-zinc-700">{n.createdByName || 'Studio'}</span>
-                      <span>{n.createdAt ? n.createdAt.split('T')[0] : ''}</span>
-                    </div>
-                    <p className="text-zinc-800 leading-normal">{n.content}</p>
-                  </div>
-                ))}
+                  <option value="12x36">12x36 (Wide Panoramic)</option>
+                  <option value="12x30">12x30 (Standard Wedding)</option>
+                  <option value="10x24">10x24 (Compact Wedding)</option>
+                  <option value="12x18">12x18 (Square/Portrait)</option>
+                  <option value="8x12">8x12 (Parent / Baby Album)</option>
+                </select>
               </div>
             </div>
 
-            {/* Ready-to-Send WhatsApp Messages */}
-            <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
-                <div className="flex items-center gap-2">
-                  <MessageCircle className="w-4 h-4 text-emerald-600" />
-                  <h3 className="text-base font-bold text-zinc-900 font-display">
-                    Ready-to-Send WhatsApp Messages
-                  </h3>
-                </div>
-                <span className="text-xs text-zinc-400 font-medium">Click-to-Chat</span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-xs sm:text-sm">
+              <div>
+                <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Number of Sheets / Pages</label>
+                <input
+                  type="number"
+                  min="10"
+                  max="120"
+                  value={albumFormData.sheets}
+                  onChange={e => handleUpdateAlbumSpecs({ sheets: Number(e.target.value) })}
+                  className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px]"
+                  placeholder="e.g. 35 Sheets"
+                />
               </div>
 
-              {/* Template Selectors */}
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { id: 'booking_confirmation', label: '1. Confirmation' },
-                  { id: 'payment_receipt', label: '2. Payment Receipt' },
-                  { id: 'event_reminder', label: '3. Event Reminder' },
-                  { id: 'delivery_ready', label: '4. Delivery Ready' }
-                ].map(tmpl => (
-                  <button
-                    key={tmpl.id}
-                    onClick={() => setActiveWhatsAppTemplate(tmpl.id as any)}
-                    className={`min-h-[48px] px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all text-left cursor-pointer border touch-manipulation active:scale-98 ${
-                      activeWhatsAppTemplate === tmpl.id
-                        ? 'bg-emerald-50 text-emerald-900 border-emerald-300 shadow-2xs'
-                        : 'bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100'
-                    }`}
-                  >
-                    {tmpl.label}
-                  </button>
-                ))}
+              <div>
+                <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Number of Copies</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={albumFormData.copies}
+                  onChange={e => handleUpdateAlbumSpecs({ copies: Number(e.target.value) })}
+                  className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px]"
+                  placeholder="e.g. 2 Copies"
+                />
               </div>
 
-              {/* Live Preview of Message */}
-              <div className="p-3.5 bg-zinc-50 border border-zinc-200 rounded-xl space-y-2">
-                <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">
-                  Message Preview for {booking.customerPhone}
-                </span>
-                <pre className="text-xs sm:text-sm font-sans text-zinc-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-zinc-200 max-h-48 overflow-y-auto">
-                  {activeWhatsAppText}
-                </pre>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <a
-                  href={activeWhatsAppUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 min-h-[50px] sm:min-h-[44px] px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer touch-manipulation active:scale-98"
+              <div>
+                <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Paper Finish</label>
+                <select
+                  value={albumFormData.paperFinish}
+                  onChange={e => handleUpdateAlbumSpecs({ paperFinish: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px] cursor-pointer"
                 >
-                  <Send className="w-4 h-4" />
-                  <span>Send on WhatsApp</span>
-                </a>
+                  <option value="Velvet Matte">Velvet Matte</option>
+                  <option value="Metallic Non-Tearable">Metallic Non-Tearable</option>
+                  <option value="Silk Matte Luster">Silk Matte Luster</option>
+                  <option value="Ultra Gloss HD">Ultra Gloss HD</option>
+                  <option value="Fine Art Museum Canvas">Fine Art Museum Canvas</option>
+                </select>
+              </div>
+            </div>
 
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(activeWhatsAppText);
-                    showToast('Message copied to clipboard!');
-                  }}
-                  className="min-h-[50px] sm:min-h-[44px] px-4 py-3 rounded-xl border border-zinc-200 hover:bg-zinc-100 text-zinc-700 text-sm sm:text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer touch-manipulation active:scale-98"
-                  title="Copy Text"
-                >
-                  <Copy className="w-4 h-4" />
-                  <span>Copy Message</span>
-                </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs sm:text-sm">
+              <div>
+                <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Printing Lab / Vendor</label>
+                <input
+                  type="text"
+                  value={albumFormData.printingVendor}
+                  onChange={e => handleUpdateAlbumSpecs({ printingVendor: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px]"
+                  placeholder="e.g. Shreeji Color Lab / Canvera"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-zinc-500 font-bold uppercase tracking-wider block mb-1">Box Engraving & Packaging Notes</label>
+                <input
+                  type="text"
+                  value={albumFormData.notes}
+                  onChange={e => handleUpdateAlbumSpecs({ notes: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px]"
+                  placeholder="e.g. Wooden box laser engraving with couple name"
+                />
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* SECTION 5: COMPLETE HISTORY */}
-      {activeSection === 'history' && (
-        <CompleteBookingHistoryTab
-          booking={booking}
-          onRefresh={() => setRefreshKey(k => k + 1)}
-          onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
-        />
-      )}
+      {/* SECTION 8: NOTES & COMMUNICATION */}
+      <div id="section-notes" className="bg-white rounded-2xl border border-zinc-200/90 shadow-2xs overflow-hidden transition-all">
+        <button
+          type="button"
+          onClick={() => toggleSection('notes')}
+          className="w-full min-h-[56px] px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between text-left cursor-pointer hover:bg-zinc-50/80 transition-colors touch-manipulation"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 border border-orange-200/60 flex items-center justify-center shrink-0">
+              <MessageCircle className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm sm:text-base font-bold text-zinc-900 font-display">8. Notes & Communication</span>
+                <span className="hidden sm:inline-block text-xs font-medium text-zinc-500 bg-zinc-100 px-2.5 py-0.5 rounded-full truncate">
+                  {(booking.notes || []).length} Notes • WhatsApp Ready
+                </span>
+              </div>
+              <span className="block text-xs text-zinc-500 font-normal truncate sm:hidden">
+                {(booking.notes || []).length} Notes • WhatsApp Ready
+              </span>
+            </div>
+          </div>
+          <ChevronDown className={`w-5 h-5 transition-transform duration-200 shrink-0 ${expandedSections.notes ? 'rotate-180 text-orange-600' : 'text-zinc-400'}`} />
+        </button>
+
+        {expandedSections.notes && (
+          <div className="p-4 sm:p-5 border-t border-zinc-100 space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {/* Customer & Internal Notes */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-bold text-zinc-900 font-display border-b border-zinc-100 pb-2">
+                  Customer & Internal Production Notes
+                </h4>
+
+                {/* Customer Requests */}
+                <div className="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200 space-y-1">
+                  <span className="text-xs font-bold text-amber-900 uppercase tracking-wider block">
+                    Customer Special Requests & Preferences
+                  </span>
+                  <p className="text-sm text-zinc-700">
+                    {booking.description || 'No special requests submitted by client.'}
+                  </p>
+                </div>
+
+                {/* Add Internal Note */}
+                <form onSubmit={handleAddInternalNote} className="space-y-2 pt-1">
+                  <label className="text-xs sm:text-sm font-bold text-zinc-700 block">
+                    + Add Internal Studio / Crew Note
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={newInternalNote}
+                    onChange={e => setNewInternalNote(e.target.value)}
+                    placeholder="e.g. Lens requirements, drone permit, warm grading..."
+                    className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-sm text-zinc-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-zinc-900"
+                  />
+                  <button
+                    type="submit"
+                    className="w-full sm:w-auto min-h-[48px] sm:min-h-[40px] px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-xl text-sm font-bold cursor-pointer touch-manipulation active:scale-95 transition-all shadow-2xs"
+                  >
+                    Save Internal Note
+                  </button>
+                </form>
+
+                {/* Notes list */}
+                <div className="space-y-2 pt-2">
+                  {(booking.notes || []).map((n, idx) => (
+                    <div key={n.id || idx} className="p-3 rounded-xl border border-zinc-200 bg-zinc-50 text-sm space-y-1">
+                      <div className="flex items-center justify-between text-xs text-zinc-500">
+                        <span className="font-semibold text-zinc-700">{n.createdByName || 'Studio'}</span>
+                        <span>{n.createdAt ? n.createdAt.split('T')[0] : ''}</span>
+                      </div>
+                      <p className="text-zinc-800 leading-normal">{n.content}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Ready-to-Send WhatsApp Messages */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-emerald-600" />
+                    <h4 className="text-sm font-bold text-zinc-900 font-display">
+                      Ready-to-Send WhatsApp Messages
+                    </h4>
+                  </div>
+                  <span className="text-xs text-zinc-400 font-medium">Click-to-Chat</span>
+                </div>
+
+                {/* Template Selectors */}
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: 'booking_confirmation', label: '1. Confirmation' },
+                    { id: 'payment_receipt', label: '2. Payment Receipt' },
+                    { id: 'event_reminder', label: '3. Event Reminder' },
+                    { id: 'delivery_ready', label: '4. Delivery Ready' }
+                  ].map(tmpl => (
+                    <button
+                      key={tmpl.id}
+                      onClick={() => setActiveWhatsAppTemplate(tmpl.id as any)}
+                      className={`min-h-[48px] px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all text-left cursor-pointer border touch-manipulation active:scale-98 ${
+                        activeWhatsAppTemplate === tmpl.id
+                          ? 'bg-emerald-50 text-emerald-900 border-emerald-300 shadow-2xs'
+                          : 'bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100'
+                      }`}
+                    >
+                      {tmpl.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Live Preview of Message */}
+                <div className="p-3.5 bg-zinc-50 border border-zinc-200 rounded-xl space-y-2">
+                  <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider block">
+                    Message Preview for {booking.customerPhone}
+                  </span>
+                  <pre className="text-xs sm:text-sm font-sans text-zinc-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-zinc-200 max-h-44 overflow-y-auto">
+                    {activeWhatsAppText}
+                  </pre>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <a
+                    href={activeWhatsAppUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 min-h-[50px] sm:min-h-[44px] px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer touch-manipulation active:scale-98"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>Send on WhatsApp</span>
+                  </a>
+
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(activeWhatsAppText);
+                      showToast('Message copied to clipboard!');
+                    }}
+                    className="min-h-[50px] sm:min-h-[44px] px-4 py-3 rounded-xl border border-zinc-200 hover:bg-zinc-100 text-zinc-700 text-sm sm:text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer touch-manipulation active:scale-98"
+                    title="Copy Text"
+                  >
+                    <Copy className="w-4 h-4" />
+                    <span>Copy Message</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* SECTION 9: COMPLETE HISTORY */}
+      <div id="section-history" className="bg-white rounded-2xl border border-zinc-200/90 shadow-2xs overflow-hidden transition-all">
+        <button
+          type="button"
+          onClick={() => toggleSection('history')}
+          className="w-full min-h-[56px] px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between text-left cursor-pointer hover:bg-zinc-50/80 transition-colors touch-manipulation"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 border border-orange-200/60 flex items-center justify-center shrink-0">
+              <History className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm sm:text-base font-bold text-zinc-900 font-display">9. Complete History</span>
+                <span className="hidden sm:inline-block text-xs font-medium text-zinc-500 bg-zinc-100 px-2.5 py-0.5 rounded-full truncate">
+                  Audit Trail & Price Logs
+                </span>
+              </div>
+              <span className="block text-xs text-zinc-500 font-normal truncate sm:hidden">
+                Audit Trail & Price Logs
+              </span>
+            </div>
+          </div>
+          <ChevronDown className={`w-5 h-5 transition-transform duration-200 shrink-0 ${expandedSections.history ? 'rotate-180 text-orange-600' : 'text-zinc-400'}`} />
+        </button>
+
+        {expandedSections.history && (
+          <div className="p-4 sm:p-5 border-t border-zinc-100">
+            <CompleteBookingHistoryTab
+              booking={booking}
+              onRefresh={() => setRefreshKey(k => k + 1)}
+              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+            />
+          </div>
+        )}
+      </div>
 
       {/* MODAL 1: ADD PAYMENT */}
       {isPaymentModalOpen && (
@@ -2552,6 +3267,14 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
           </div>
         </div>
       )}
+
+      {/* Fast Deliverables Multi-Select Modal */}
+      <DeliverablesSelectorModal
+        isOpen={isDeliverablesSelectorOpen}
+        onClose={() => setIsDeliverablesSelectorOpen(false)}
+        onApply={handleApplyDeliverables}
+        initialSelectedIds={checklistItems.map(i => i.id)}
+      />
 
     </div>
   );

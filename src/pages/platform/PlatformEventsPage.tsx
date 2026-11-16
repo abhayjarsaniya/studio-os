@@ -62,9 +62,6 @@ export const PlatformEventsPage: React.FC = () => {
             <Calendar className="w-7 h-7 text-indigo-600" />
             Global Studio Events Directory
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Platform-wide management view across all photography studios, sub-events, assigned crew and external suppliers.
-          </p>
         </div>
 
         <div className="flex items-center gap-3">

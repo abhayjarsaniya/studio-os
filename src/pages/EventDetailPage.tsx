@@ -206,7 +206,7 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
               {event.name}
             </h1>
             <p className="text-xs text-zinc-500">
-              Created on {formatDate(event.createdAt)} • Tenant Partition: {currentStudio.tenantId}
+              Created on {formatDate(event.createdAt)}
             </p>
           </div>
 

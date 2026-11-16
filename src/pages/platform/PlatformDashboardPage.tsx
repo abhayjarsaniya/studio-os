@@ -43,9 +43,6 @@ export const PlatformDashboardPage: React.FC = () => {
         <h1 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
           Platform Master Admin Dashboard
         </h1>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Macro SaaS operations, Monthly Recurring Revenue (MRR @ ₹500/mo), subscriber retention, and governance.
-        </p>
       </div>
 
       {/* Primary KPI Grid (Clickable) */}

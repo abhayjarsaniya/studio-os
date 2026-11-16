@@ -328,9 +328,6 @@ export const CreateBookingPage: React.FC = () => {
             <CalendarDays className="w-6 h-6 text-emerald-600" />
             Create New Event Booking
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            6-step fast-track workflow for booking photography, cinematics, crew assignments, and payment terms.
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

@@ -129,9 +129,6 @@ export const RolesPage: React.FC = () => {
               <h1 className="text-xl sm:text-2xl font-bold text-zinc-900">
                 Advanced Roles & Permissions (RBAC)
               </h1>
-              <p className="text-xs sm:text-sm text-zinc-500">
-                Configure module privileges across 24 modules, resource scopes, field restrictions and custom overrides.
-              </p>
             </div>
           </div>
         </div>

@@ -24,9 +24,6 @@ export const PlatformFeaturesPage: React.FC = () => {
           <Sliders className="w-7 h-7 text-indigo-600" />
           Platform Feature Catalog & Global Kill Switches
         </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Control global availability of studio modules, plan feature assignments, and system-wide maintenance toggles.
-        </p>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">

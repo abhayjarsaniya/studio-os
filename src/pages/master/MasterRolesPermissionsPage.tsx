@@ -138,9 +138,6 @@ export const MasterRolesPermissionsPage: React.FC = () => {
           <h1 className="text-2xl font-black text-zinc-900 font-display tracking-tight mt-1">
             Global Roles & Permission Matrix
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Define system baseline rules and lock mandatory policies. Every studio inherits these defaults unless overridden.
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

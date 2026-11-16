@@ -132,9 +132,6 @@ export const MasterAccountsPage: React.FC = () => {
             <span className="text-xs text-zinc-500">Global Account Directory</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 font-display tracking-tight mt-1">Platform Account Directory</h1>
-          <p className="text-sm text-zinc-600 mt-1">
-            Centralized directory of all Master Admins, Studio Owners, Employees, and External Suppliers across the platform.
-          </p>
         </div>
 
         <button

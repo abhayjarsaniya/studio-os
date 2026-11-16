@@ -244,9 +244,6 @@ export const CreateQuotationPage: React.FC = () => {
             <FileText className="w-6 h-6 text-indigo-600" />
             Create Quotation & Proposal
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Build professional photography price quotes with automatic PDF generation, line-item pricing, and one-click booking conversion.
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
