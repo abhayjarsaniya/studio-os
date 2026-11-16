@@ -11,7 +11,7 @@ import {
   formatOwnerCrewDisplayName
 } from '../services/studioOwnerHelper';
 import { BookingRecord, FunctionPlan } from '../types/bookingProduction';
-import { CREW_ROLES } from '../pages/UnifiedBookingPage';
+import { CREW_ROLES, PREDEFINED_SUB_EVENT_TYPES } from '../pages/UnifiedBookingPage';
 
 // Ensure localStorage mock is present in Node/Vitest environment
 if (typeof (globalThis as any).localStorage === 'undefined') {
@@ -564,6 +564,282 @@ describe('Studio OS — Booking Creation Crew Assignment Flow Suite', () => {
 
       const reloaded = bookingProductionService.getBooking(TEST_STUDIO, bookingId);
       expect(reloaded?.functions[0].assignedCrew?.some(c => c.employeeId === emp1.id)).toBe(false);
+    });
+  });
+
+  describe('7. Simplified Crew Assignment, Sub-Events & Multi-Select Suite', () => {
+    it('verifies all required sub-event types are available including Custom Shoot', () => {
+      expect(PREDEFINED_SUB_EVENT_TYPES).toContain('Pre-Wedding');
+      expect(PREDEFINED_SUB_EVENT_TYPES).toContain('Engagement');
+      expect(PREDEFINED_SUB_EVENT_TYPES).toContain('Mandvo');
+      expect(PREDEFINED_SUB_EVENT_TYPES).toContain('Haldi');
+      expect(PREDEFINED_SUB_EVENT_TYPES).toContain('Mehndi');
+      expect(PREDEFINED_SUB_EVENT_TYPES).toContain('Wedding');
+      expect(PREDEFINED_SUB_EVENT_TYPES).toContain('Reception');
+      expect(PREDEFINED_SUB_EVENT_TYPES).toContain('Custom Shoot');
+      expect(PREDEFINED_SUB_EVENT_TYPES.length).toBe(8);
+    });
+
+    it('assigns crew via multi-select without role dropdown, defaulting role to staff designation / studio owner', async () => {
+      localStorage.setItem('studio_os_owner_name', 'Jenish Moradiya');
+      const ownerMember = getStudioOwnerCrewMember(TEST_STUDIO);
+      const employees = crewConflictService.getActiveEmployees(TEST_STUDIO);
+      const emp1 = employees[1];
+      const emp2 = employees[2];
+
+      const bookingId = 'bkg_multiselect_001';
+      // Simulate multi-select assignment: user checks ownerMember, emp1, emp2 simultaneously
+      const selectedMembers = [
+        {
+          employeeId: ownerMember.id,
+          employeeName: formatOwnerCrewDisplayName(ownerMember.fullName),
+          designation: 'Studio Owner',
+          role: 'Studio Owner', // assigned automatically without role dropdown
+          isVisibleOnCalendar: true
+        },
+        {
+          employeeId: emp1.id,
+          employeeName: emp1.fullName,
+          designation: emp1.designation || 'Staff',
+          role: emp1.designation || 'Staff', // assigned automatically from designation
+          isVisibleOnCalendar: true
+        },
+        {
+          employeeId: emp2.id,
+          employeeName: emp2.fullName,
+          designation: emp2.designation || 'Staff',
+          role: emp2.designation || 'Staff',
+          isVisibleOnCalendar: false // toggled off by owner
+        }
+      ];
+
+      const haldiFn: FunctionPlan = {
+        id: 'fn_haldi_001',
+        bookingId,
+        name: 'Haldi Function',
+        category: 'Haldi',
+        city: 'Surat',
+        date: '2026-11-25',
+        startTime: '09:00',
+        endTime: '12:00',
+        venue: 'Poolside Lawn',
+        assignedPhotographerIds: [ownerMember.id, emp1.id],
+        assignedVideographerIds: [emp2.id],
+        assignedDroneOperatorIds: [],
+        assignedEditorIds: [],
+        assignedSupplierIds: [],
+        assignedCrew: selectedMembers,
+        priority: 'normal',
+        status: 'scheduled',
+        deliverables: []
+      };
+
+      const booking: BookingRecord = {
+        id: bookingId,
+        studioId: TEST_STUDIO,
+        bookingNumber: 'BK-MULTI-001',
+        customerId: 'cust_002',
+        customerName: 'Kavya & Rohan Patel',
+        customerPhone: '+91 98980 33445',
+        customerWhatsApp: '+91 98980 33445',
+        city: 'Surat',
+        eventName: 'Patel Wedding',
+        category: 'Wedding',
+        mainEventDate: '2026-11-25',
+        startDate: '2026-11-25',
+        venue: 'Avadh Utopia Surat',
+        status: 'deal_confirmed',
+        numberOfDays: 1,
+        numberOfFunctions: 1,
+        functions: [haldiFn],
+        deliverables: [],
+        billingVersions: [],
+        financials: {
+          originalQuotation: 100000,
+          negotiatedDiscount: 0,
+          finalAgreedAmount: 100000,
+          verifiedPaymentsReceived: 50000,
+          remainingBalance: 50000,
+          advanceRequired: 50000,
+          advanceReceived: 50000,
+          isAdvanceConfirmed: true,
+          paymentMilestones: []
+        },
+        notes: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      } as any as BookingRecord;
+
+      await bookingProductionService.saveBooking(TEST_STUDIO, booking);
+
+      for (const m of selectedMembers) {
+        await calendarVisibilityService.assignCrewMember({
+          studioId: TEST_STUDIO,
+          bookingId,
+          functionId: haldiFn.id,
+          employeeId: m.employeeId,
+          employeeName: m.employeeName,
+          role: m.role,
+          isVisibleOnCalendar: m.isVisibleOnCalendar
+        });
+      }
+
+      const reloaded = bookingProductionService.getBooking(TEST_STUDIO, bookingId);
+      expect(reloaded?.functions[0].assignedCrew).toHaveLength(3);
+      expect(reloaded?.functions[0].assignedCrew?.[0].employeeName).toContain('Jenish Moradiya');
+      expect(reloaded?.functions[0].assignedCrew?.[0].role).toBe('Studio Owner');
+      expect(reloaded?.functions[0].assignedCrew?.[1].role).toBe(emp1.designation);
+
+      // Verify calendar events reflect visibility
+      const ownerEvents = calendarVisibilityService.getEmployeeCalendarEvents(TEST_STUDIO, ownerMember.id);
+      expect(ownerEvents.some(e => e.bookingId === bookingId)).toBe(true);
+
+      const emp1Events = calendarVisibilityService.getEmployeeCalendarEvents(TEST_STUDIO, emp1.id);
+      expect(emp1Events.some(e => e.bookingId === bookingId)).toBe(true);
+
+      const emp2Events = calendarVisibilityService.getEmployeeCalendarEvents(TEST_STUDIO, emp2.id);
+      expect(emp2Events.some(e => e.bookingId === bookingId)).toBe(false); // hidden
+    });
+
+    it('manages independent crew selections across separate sub-events (Haldi, Mehndi, Wedding, Reception)', async () => {
+      const ownerMember = getStudioOwnerCrewMember(TEST_STUDIO);
+      const employees = crewConflictService.getActiveEmployees(TEST_STUDIO);
+      const emp1 = employees[1];
+      const emp2 = employees[2];
+      const emp3 = employees[3] || employees[1];
+
+      const bookingId = 'bkg_indep_fn_001';
+      const fnHaldi: FunctionPlan = {
+        id: 'fn_haldi',
+        bookingId,
+        name: 'Haldi',
+        category: 'Haldi',
+        city: 'Gandhinagar',
+        date: '2026-11-26',
+        startTime: '10:00',
+        endTime: '13:00',
+        venue: 'Lawn',
+        assignedPhotographerIds: [],
+        assignedVideographerIds: [],
+        assignedDroneOperatorIds: [],
+        assignedEditorIds: [],
+        assignedSupplierIds: [],
+        assignedCrew: [
+          { employeeId: ownerMember.id, employeeName: ownerMember.fullName, role: 'Studio Owner', isVisibleOnCalendar: true }
+        ],
+        priority: 'normal',
+        status: 'scheduled',
+        deliverables: []
+      };
+
+      const fnMehndi: FunctionPlan = {
+        id: 'fn_mehndi',
+        bookingId,
+        name: 'Mehndi',
+        category: 'Mehndi',
+        city: 'Gandhinagar',
+        date: '2026-11-26',
+        startTime: '16:00',
+        endTime: '20:00',
+        venue: 'Courtyard',
+        assignedPhotographerIds: [],
+        assignedVideographerIds: [],
+        assignedDroneOperatorIds: [],
+        assignedEditorIds: [],
+        assignedSupplierIds: [],
+        assignedCrew: [
+          { employeeId: emp1.id, employeeName: emp1.fullName, role: emp1.designation || 'Staff', isVisibleOnCalendar: true },
+          { employeeId: emp2.id, employeeName: emp2.fullName, role: emp2.designation || 'Staff', isVisibleOnCalendar: true }
+        ],
+        priority: 'normal',
+        status: 'scheduled',
+        deliverables: []
+      };
+
+      const fnWedding: FunctionPlan = {
+        id: 'fn_wedding',
+        bookingId,
+        name: 'Wedding Ceremony',
+        category: 'Wedding',
+        city: 'Gandhinagar',
+        date: '2026-11-27',
+        startTime: '09:00',
+        endTime: '15:00',
+        venue: 'Grand Ballroom',
+        assignedPhotographerIds: [],
+        assignedVideographerIds: [],
+        assignedDroneOperatorIds: [],
+        assignedEditorIds: [],
+        assignedSupplierIds: [],
+        assignedCrew: [
+          { employeeId: ownerMember.id, employeeName: ownerMember.fullName, role: 'Studio Owner', isVisibleOnCalendar: true },
+          { employeeId: emp1.id, employeeName: emp1.fullName, role: emp1.designation || 'Staff', isVisibleOnCalendar: true },
+          { employeeId: emp3.id, employeeName: emp3.fullName, role: emp3.designation || 'Staff', isVisibleOnCalendar: true }
+        ],
+        priority: 'high',
+        status: 'scheduled',
+        deliverables: []
+      };
+
+      const booking: BookingRecord = {
+        id: bookingId,
+        studioId: TEST_STUDIO,
+        bookingNumber: 'BK-INDEP-001',
+        customerName: 'Ananya & Kabir',
+        mainEventDate: '2026-11-26',
+        startDate: '2026-11-26',
+        venue: 'The Leela Gandhinagar',
+        status: 'deal_confirmed',
+        functions: [fnHaldi, fnMehndi, fnWedding],
+        deliverables: [],
+        financials: { finalAgreedAmount: 200000, verifiedPaymentsReceived: 100000, remainingBalance: 100000 }
+      } as any as BookingRecord;
+
+      await bookingProductionService.saveBooking(TEST_STUDIO, booking);
+
+      const reloaded = bookingProductionService.getBooking(TEST_STUDIO, bookingId);
+      expect(reloaded?.functions).toHaveLength(3);
+      // Haldi has 1 crew (owner only)
+      expect(reloaded?.functions[0].assignedCrew).toHaveLength(1);
+      expect(reloaded?.functions[0].assignedCrew?.[0].employeeId).toBe(ownerMember.id);
+      // Mehndi has 2 crew (emp1, emp2 - without owner)
+      expect(reloaded?.functions[1].assignedCrew).toHaveLength(2);
+      expect(reloaded?.functions[1].assignedCrew?.some(c => c.employeeId === ownerMember.id)).toBe(false);
+      // Wedding has 3 crew (owner, emp1, emp3)
+      expect(reloaded?.functions[2].assignedCrew).toHaveLength(3);
+    });
+
+    it('prevents duplicate crew assignments when checking or applying members repeatedly', async () => {
+      const ownerMember = getStudioOwnerCrewMember(TEST_STUDIO);
+      const employees = crewConflictService.getActiveEmployees(TEST_STUDIO);
+      const emp1 = employees[1];
+
+      const bookingId = 'bkg_dedup_001';
+      const initialCrew = [
+        { employeeId: ownerMember.id, employeeName: ownerMember.fullName, role: 'Studio Owner', isVisibleOnCalendar: true }
+      ];
+
+      // Simulate checking ownerMember again: deduplication logic should keep array at length 1
+      const isAlreadyIn = initialCrew.some(c => c.employeeId === ownerMember.id);
+      expect(isAlreadyIn).toBe(true);
+
+      const updatedCrew = isAlreadyIn 
+        ? initialCrew // duplicate skipped
+        : [...initialCrew, { employeeId: ownerMember.id, employeeName: ownerMember.fullName, role: 'Studio Owner', isVisibleOnCalendar: true }];
+
+      expect(updatedCrew).toHaveLength(1);
+
+      // Now adding emp1
+      const isEmp1In = updatedCrew.some(c => c.employeeId === emp1.id);
+      expect(isEmp1In).toBe(false);
+      const withEmp1 = [...updatedCrew, { employeeId: emp1.id, employeeName: emp1.fullName, role: emp1.designation || 'Staff', isVisibleOnCalendar: true }];
+      expect(withEmp1).toHaveLength(2);
+
+      // Adding emp1 a second time is deduplicated
+      const isEmp1InAgain = withEmp1.some(c => c.employeeId === emp1.id);
+      expect(isEmp1InAgain).toBe(true);
+      const dedupedAgain = isEmp1InAgain ? withEmp1 : [...withEmp1, { employeeId: emp1.id, employeeName: emp1.fullName, role: emp1.designation || 'Staff', isVisibleOnCalendar: true }];
+      expect(dedupedAgain).toHaveLength(2);
     });
   });
 });

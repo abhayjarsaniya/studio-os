@@ -143,9 +143,8 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
   const debounceTimerRef = useRef<any>(null);
 
   const [isCrewModalOpen, setIsCrewModalOpen] = useState(false);
-  const [selectedCrewEmployeeId, setSelectedCrewEmployeeId] = useState('');
+  const [selectedCrewEmployeeIds, setSelectedCrewEmployeeIds] = useState<string[]>([]);
   const [selectedCrewFunctionId, setSelectedCrewFunctionId] = useState<string>('all');
-  const [selectedCrewRole, setSelectedCrewRole] = useState('Lead Photographer');
   const [crewModalVisibleOnCalendar, setCrewModalVisibleOnCalendar] = useState(true);
   const [crewConflictWarn, setCrewConflictWarn] = useState<CrewConflictInfo | null>(null);
   const [allowCrewConflictOverride, setAllowCrewConflictOverride] = useState(false);
@@ -512,20 +511,15 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
     setIsEventFormOpen(true);
   };
 
-  // Handle Add Crew Member with Conflict Detection and Smart Calendar Visibility
+  // Handle Add Crew Member with Multi-Select Checkboxes, Conflict Detection, and Smart Calendar Visibility
   const handleAssignCrew = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedCrewEmployeeId) return;
-
-    const roster = crewConflictService.getActiveEmployees(studioId);
-    const emp = roster.find(e => e.id === selectedCrewEmployeeId) || employees.find(e => e.id === selectedCrewEmployeeId);
-    if (!emp) return;
-
-    // Check conflict warning if not overridden
-    if (crewConflictWarn?.hasConflict && !allowCrewConflictOverride) {
-      alert(`Scheduling Warning: ${crewConflictWarn.warningMessage}\nPlease check "Allow Overlap" to confirm.`);
+    if (selectedCrewEmployeeIds.length === 0) {
+      alert('Please check at least one team member or Studio Owner.');
       return;
     }
+
+    const roster = crewConflictService.getActiveEmployees(studioId);
 
     if (!booking.functions || booking.functions.length === 0) {
       booking.functions = [{
@@ -556,34 +550,42 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
     const fnsToAssign = targetFunctions.length > 0 ? targetFunctions : [booking.functions[0]];
 
-    firestoreService.setStatus('saving', 'Assigning crew member...');
-    for (const fn of fnsToAssign) {
-      await calendarVisibilityService.assignCrewMember(
-        studioId,
-        booking.id,
-        fn.id,
-        {
-          employeeId: emp.id,
-          employeeName: emp.fullName,
-          designation: emp.designation,
-          department: emp.department,
-          role: selectedCrewRole,
-          contact: emp.phone || ''
-        },
-        crewModalVisibleOnCalendar,
-        'Studio Owner'
-      );
+    firestoreService.setStatus('saving', 'Assigning crew members...');
+    for (const empId of selectedCrewEmployeeIds) {
+      const emp = roster.find(e => e.id === empId) || employees.find(e => e.id === empId);
+      if (!emp) continue;
+
+      const isOwner = isStudioOwnerId(emp.id, studioId) || emp.fullName.includes('(Studio Owner)');
+      const defaultRole = isOwner ? 'Studio Owner' : (emp.designation || 'Crew Member');
+
+      for (const fn of fnsToAssign) {
+        await calendarVisibilityService.assignCrewMember(
+          studioId,
+          booking.id,
+          fn.id,
+          {
+            employeeId: emp.id,
+            employeeName: emp.fullName,
+            designation: isOwner ? 'Studio Owner' : (emp.designation || 'Crew Member'),
+            department: isOwner ? 'Management' : (emp.department || 'Production'),
+            role: defaultRole,
+            contact: emp.phone || ''
+          },
+          crewModalVisibleOnCalendar,
+          'Studio Owner'
+        );
+      }
     }
     firestoreService.setStatus('saved', 'Crew assignment saved');
 
     setIsCrewModalOpen(false);
-    setSelectedCrewEmployeeId('');
+    setSelectedCrewEmployeeIds([]);
     setSelectedCrewFunctionId('all');
     setCrewConflictWarn(null);
     setAllowCrewConflictOverride(false);
     setRefreshKey(k => k + 1);
     const scopeLabel = selectedCrewFunctionId === 'all' ? 'entire booking' : 'selected function';
-    showToast(`${emp.fullName} assigned as ${selectedCrewRole} for ${scopeLabel} (${crewModalVisibleOnCalendar ? 'Visible on calendar' : 'Hidden from calendar'})`);
+    showToast(`Assigned ${selectedCrewEmployeeIds.length} team members for ${scopeLabel} (${crewModalVisibleOnCalendar ? 'Visible on calendar' : 'Hidden from calendar'})`);
   };
 
   const handleToggleVisibility = async (empId: string, fnId: string, currentVisible: boolean) => {
@@ -846,7 +848,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
   }, [studioId, booking, refreshKey]);
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto pb-24 font-sans animate-in fade-in duration-150">
+    <div className="space-y-6 max-w-7xl w-full mx-auto pb-24 font-sans animate-in fade-in duration-150 px-3.5 sm:px-6 lg:px-8">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-5 right-5 z-50 bg-zinc-900 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
@@ -1435,7 +1437,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
               <button
                 onClick={() => {
-                  setSelectedCrewEmployeeId('');
+                  setSelectedCrewEmployeeIds([]);
                   setCrewModalVisibleOnCalendar(true);
                   setIsCrewModalOpen(true);
                 }}
@@ -2359,23 +2361,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 </label>
                 <select
                   value={selectedCrewFunctionId}
-                  onChange={e => {
-                    const fnId = e.target.value;
-                    setSelectedCrewFunctionId(fnId);
-                    if (selectedCrewEmployeeId) {
-                      const targetFn = (booking.functions || []).find(f => f.id === fnId);
-                      const targetDate = targetFn?.date || booking.mainEventDate || booking.startDate || '';
-                      const warn = crewConflictService.checkConflict(
-                        studioId,
-                        selectedCrewEmployeeId,
-                        targetDate,
-                        targetFn?.startTime || '10:00',
-                        targetFn?.endTime || '18:00',
-                        booking.id
-                      );
-                      setCrewConflictWarn(warn.hasConflict ? warn : null);
-                    }
-                  }}
+                  onChange={e => setSelectedCrewFunctionId(e.target.value)}
                   className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-sm text-zinc-900 focus:bg-white min-h-[48px]"
                 >
                   <option value="all">Entire Booking — All Wedding Functions</option>
@@ -2387,68 +2373,58 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 </select>
               </div>
 
-              <div>
-                <label className="text-sm font-semibold text-zinc-700 block mb-1">Select Crew Member</label>
-                <select
-                  value={selectedCrewEmployeeId}
-                  onChange={e => {
-                    const empId = e.target.value;
-                    setSelectedCrewEmployeeId(empId);
-                    setAllowCrewConflictOverride(false);
-                    if (empId) {
-                      const emp = crewConflictService.getActiveEmployees(studioId).find(x => x.id === empId);
-                      if (emp && isStudioOwnerId(emp.id, studioId)) {
-                        setSelectedCrewRole('Lead Photographer');
-                      }
-                      const targetFn = (booking.functions || []).find(f => f.id === selectedCrewFunctionId);
-                      const targetDate = targetFn?.date || booking.mainEventDate || booking.startDate || '';
-                      const warn = crewConflictService.checkConflict(
-                        studioId,
-                        empId,
-                        targetDate,
-                        targetFn?.startTime || '10:00',
-                        targetFn?.endTime || '18:00',
-                        booking.id
-                      );
-                      setCrewConflictWarn(warn.hasConflict ? warn : null);
-                    } else {
-                      setCrewConflictWarn(null);
-                    }
-                  }}
-                  className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-sm text-zinc-900 focus:bg-white min-h-[48px]"
-                  required
-                >
-                  <option value="">-- Choose crew member --</option>
+              {/* Multi-Select Checkboxes for Crew (No Role Dropdown) */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold text-zinc-700 block">
+                    Select Crew Members ({selectedCrewEmployeeIds.length} checked)
+                  </label>
+                  <span className="text-xs text-zinc-400">Multi-select checkboxes</span>
+                </div>
+                <div className="max-h-60 overflow-y-auto space-y-1.5 p-2 bg-zinc-50 border border-zinc-200 rounded-xl">
                   {crewConflictService.getActiveEmployees(studioId).map(emp => {
                     const isOwner = isStudioOwnerId(emp.id, studioId) || emp.fullName.includes('(Studio Owner)');
+                    const isChecked = selectedCrewEmployeeIds.includes(emp.id);
+
                     return (
-                      <option key={emp.id} value={emp.id}>
-                        {isOwner ? emp.fullName : `${emp.fullName} (${emp.designation || emp.roleName || 'Staff'})`}
-                      </option>
+                      <label
+                        key={emp.id}
+                        className={`flex items-center gap-3 p-2.5 rounded-lg border transition-all cursor-pointer ${
+                          isChecked
+                            ? 'bg-orange-50 border-orange-300 text-orange-950 font-bold shadow-2xs'
+                            : 'bg-white border-zinc-200 hover:border-zinc-300 text-zinc-700'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedCrewEmployeeIds(prev => [...prev, emp.id]);
+                            } else {
+                              setSelectedCrewEmployeeIds(prev => prev.filter(id => id !== emp.id));
+                            }
+                          }}
+                          className="w-4 h-4 text-orange-600 rounded cursor-pointer accent-orange-600 shrink-0"
+                        />
+                        <div className="min-w-0 flex-1 truncate">
+                          <div className="flex items-center gap-1.5 truncate">
+                            {isOwner && <span>👑</span>}
+                            <span className="text-xs sm:text-sm font-bold truncate">{emp.fullName}</span>
+                            {isOwner && (
+                              <span className="px-1.5 py-0.2 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 shrink-0">
+                                Owner
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-xs text-zinc-500 font-normal truncate block">
+                            {emp.designation || (isOwner ? 'Studio Owner' : 'Staff')} • {emp.department || 'Production'}
+                          </span>
+                        </div>
+                      </label>
                     );
                   })}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-zinc-700 block mb-1">Assigned Role</label>
-                <select
-                  value={selectedCrewRole}
-                  onChange={e => setSelectedCrewRole(e.target.value)}
-                  className="w-full p-3 sm:p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-sm text-zinc-900 focus:bg-white min-h-[48px]"
-                >
-                  <option value="Lead Photographer">Lead Photographer</option>
-                  <option value="Photographer">Photographer</option>
-                  <option value="Candid Photographer">Candid Photographer</option>
-                  <option value="Cinematographer">Cinematographer</option>
-                  <option value="Videographer">Videographer</option>
-                  <option value="Drone Operator">Drone Operator</option>
-                  <option value="Photo Editor">Photo Editor</option>
-                  <option value="Video Editor">Video Editor</option>
-                  <option value="Album Designer">Album Designer</option>
-                  <option value="Assistant">Assistant</option>
-                  <option value="Production Assistant">Production Assistant</option>
-                </select>
+                </div>
               </div>
 
               {/* Calendar Visibility setting */}
@@ -2480,9 +2456,10 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs cursor-pointer active:scale-95 transition-all"
+                  disabled={selectedCrewEmployeeIds.length === 0}
+                  className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs cursor-pointer active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Assign Member
+                  Assign {selectedCrewEmployeeIds.length > 0 ? `${selectedCrewEmployeeIds.length} Crew Member(s)` : 'Crew'}
                 </button>
               </div>
             </form>

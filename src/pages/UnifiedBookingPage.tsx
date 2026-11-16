@@ -47,7 +47,10 @@ import {
   Eye,
   EyeOff,
   AlertTriangle,
-  Crown
+  Crown,
+  X,
+  ChevronDown,
+  Check
 } from 'lucide-react';
 import { useOutsideClick } from '../hooks/useOutsideClick';
 
@@ -105,16 +108,18 @@ const DEFAULT_LINE_ITEMS: PackageLineItem[] = [
   { id: 'item_4', name: 'Aerial Drone Cinematographer', category: 'drone', description: '4K aerial views & grand entry shots', qty: 1, rate: 15000 }
 ];
 
-const PREDEFINED_FUNCTION_TYPES = [
-  'Pre-Wedding Shoot',
+export const PREDEFINED_SUB_EVENT_TYPES = [
+  'Pre-Wedding',
   'Engagement',
-  'Mandvo / Pithi',
-  'Haldi & Mehndi',
-  'Sangeet Night',
-  'Wedding Ceremony',
-  'Reception Party',
-  'Cocktail / After-Party'
-];
+  'Mandvo',
+  'Haldi',
+  'Mehndi',
+  'Wedding',
+  'Reception',
+  'Custom Shoot'
+] as const;
+
+export const PREDEFINED_FUNCTION_TYPES = PREDEFINED_SUB_EVENT_TYPES;
 
 export const UnifiedBookingPage: React.FC = () => {
   const { customers, setActiveTab, openPdfViewer } = useApp();
@@ -179,13 +184,21 @@ export const UnifiedBookingPage: React.FC = () => {
     }
   }, [venue]);
 
+  // Step 3: Sub-Event Selection & Search State
+  const [isSubEventPickerOpen, setIsSubEventPickerOpen] = useState(false);
+  const [subEventSearchQuery, setSubEventSearchQuery] = useState('');
+  const [customSubEventName, setCustomSubEventName] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const subEventPickerRef = useRef<HTMLDivElement>(null);
+
+  useOutsideClick(subEventPickerRef, () => {
+    setIsSubEventPickerOpen(false);
+    setShowCustomInput(false);
+    setSubEventSearchQuery('');
+  }, isSubEventPickerOpen);
+
   // Step 4: Crew Assignment State
-  const [selectedCrewFunctionId, setSelectedCrewFunctionId] = useState<string>('fn_1');
-  const [selectedCrewEmployeeId, setSelectedCrewEmployeeId] = useState<string>('');
-  const [selectedCrewRole, setSelectedCrewRole] = useState<string>('Lead Photographer');
-  const [crewVisibleOnCalendar, setCrewVisibleOnCalendar] = useState<boolean>(true);
-  const [crewConflictWarn, setCrewConflictWarn] = useState<CrewConflictInfo | null>(null);
-  const [allowCrewConflictOverride, setAllowCrewConflictOverride] = useState<boolean>(false);
+  const [selectedCrewFunctionId, setSelectedCrewFunctionId] = useState<string>('all');
   const [crewAssignmentNotice, setCrewAssignmentNotice] = useState<string | null>(null);
   const [activeFunctionTab, setActiveFunctionTab] = useState<string>('all');
 
@@ -196,43 +209,6 @@ export const UnifiedBookingPage: React.FC = () => {
   const ownerProfile = useMemo(() => {
     return getStudioOwnerProfile(studioId);
   }, [studioId]);
-
-  // Real-time conflict checking when employee, target function, or dates change
-  useEffect(() => {
-    if (!selectedCrewEmployeeId) {
-      setCrewConflictWarn(null);
-      setAllowCrewConflictOverride(false);
-      return;
-    }
-
-    const targetFn = selectedCrewFunctionId === 'all'
-      ? functions[0]
-      : functions.find(f => f.id === selectedCrewFunctionId) || functions[0];
-
-    const fnDate = targetFn?.date || eventDate;
-    const fnStartTime = targetFn?.startTime || '10:00';
-    const fnEndTime = targetFn?.endTime || '18:00';
-
-    if (!fnDate) {
-      setCrewConflictWarn(null);
-      return;
-    }
-
-    const conflict = crewConflictService.checkConflict(
-      studioId,
-      selectedCrewEmployeeId,
-      fnDate,
-      fnStartTime,
-      fnEndTime
-    );
-
-    if (conflict.hasConflict) {
-      setCrewConflictWarn(conflict);
-    } else {
-      setCrewConflictWarn(null);
-      setAllowCrewConflictOverride(false);
-    }
-  }, [selectedCrewEmployeeId, selectedCrewFunctionId, functions, eventDate, studioId]);
 
   // Keep selectedCrewFunctionId valid
   useEffect(() => {
@@ -300,14 +276,16 @@ export const UnifiedBookingPage: React.FC = () => {
     setCustomerSearch('');
   };
 
-  // Add Function
-  const handleAddFunction = (fnName: string = 'New Function') => {
-    const newId = `fn_${Date.now()}`;
+  // Add Sub-Event
+  const handleAddSubEvent = (eventType: string) => {
+    const trimmed = eventType.trim();
+    if (!trimmed) return;
+    const newId = `fn_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     setFunctions(prev => [
       ...prev,
       {
         id: newId,
-        name: fnName,
+        name: trimmed,
         date: eventDate || '',
         startTime: '10:00',
         endTime: '14:00',
@@ -317,7 +295,13 @@ export const UnifiedBookingPage: React.FC = () => {
       }
     ]);
     setSelectedCrewFunctionId(newId);
+    setIsSubEventPickerOpen(false);
+    setShowCustomInput(false);
+    setSubEventSearchQuery('');
+    setCustomSubEventName('');
   };
+
+  const handleAddFunction = handleAddSubEvent;
 
   const handleRemoveFunction = (id: string) => {
     if (functions.length <= 1) return;
@@ -327,70 +311,108 @@ export const UnifiedBookingPage: React.FC = () => {
     }
   };
 
-  // Crew Assignment Handlers
-  const handleAddCrewAssignment = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!selectedCrewEmployeeId) {
-      alert('Please select a team member or Studio Owner from the list.');
-      return;
-    }
+  // Check if a member is currently assigned to a function
+  const isMemberAssignedToFunction = (fn: BookingFunctionState, empId: string) => {
+    return (fn.assignedCrew || []).some(c => 
+      c.employeeId === empId || (isStudioOwnerId(empId, studioId) && isStudioOwnerId(c.employeeId, studioId))
+    );
+  };
 
-    const emp = activeEmployees.find(e => e.id === selectedCrewEmployeeId);
-    if (!emp) return;
-
-    if (crewConflictWarn?.hasConflict && !allowCrewConflictOverride) {
-      alert(`Scheduling Conflict: ${crewConflictWarn.warningMessage}\nPlease check "Allow overlapping assignment" to confirm.`);
-      return;
-    }
-
-    const isOwner = isStudioOwnerId(emp.id, studioId) || Boolean((emp as any).isStudioOwner);
+  // Toggle crew member assignment for an individual sub-event via multi-select checkbox (no role dropdown)
+  const handleToggleCrewMemberForFunction = (fnId: string, emp: { id: string; fullName: string; designation?: string; department?: string; phone?: string; isStudioOwner?: boolean }) => {
+    const isOwner = isStudioOwnerId(emp.id, studioId) || Boolean(emp.isStudioOwner);
     const employeeName = isOwner ? formatOwnerCrewDisplayName(emp.fullName) : emp.fullName;
+    const defaultRole = isOwner ? 'Studio Owner' : (emp.designation || 'Crew Member');
 
-    const newMember: FunctionCrewMember = {
-      id: `asgn_${Date.now()}_${emp.id}`,
-      employeeId: emp.id,
-      employeeName,
-      designation: emp.designation || (isOwner ? 'Studio Owner' : 'Crew Member'),
-      department: emp.department || (isOwner ? 'Management' : 'Production'),
-      role: selectedCrewRole,
-      contact: emp.phone || '',
-      isVisibleOnCalendar: crewVisibleOnCalendar,
-      isStudioOwner: Boolean(isOwner)
-    };
+    setFunctions(prev => prev.map(fn => {
+      if (fn.id !== fnId) return fn;
+
+      const existing = fn.assignedCrew || [];
+      const isAlreadyAssigned = existing.some(c => 
+        c.employeeId === emp.id || (isOwner && isStudioOwnerId(c.employeeId, studioId))
+      );
+
+      if (isAlreadyAssigned) {
+        return {
+          ...fn,
+          assignedCrew: existing.filter(c => 
+            c.employeeId !== emp.id && !(isOwner && isStudioOwnerId(c.employeeId, studioId))
+          )
+        };
+      } else {
+        const newMember: FunctionCrewMember = {
+          id: `asgn_${fn.id}_${emp.id}_${Date.now()}`,
+          employeeId: emp.id,
+          employeeName,
+          designation: isOwner ? 'Studio Owner' : (emp.designation || 'Crew Member'),
+          department: isOwner ? 'Management' : (emp.department || 'Production'),
+          role: defaultRole,
+          contact: emp.phone || '',
+          isVisibleOnCalendar: true,
+          isStudioOwner: Boolean(isOwner)
+        };
+        return {
+          ...fn,
+          assignedCrew: [...existing, newMember]
+        };
+      }
+    }));
+  };
+
+  // Step 4: Toggle crew member for target function(s) (All or specific function)
+  const handleToggleCrewMemberStep4 = (emp: { id: string; fullName: string; designation?: string; department?: string; phone?: string; isStudioOwner?: boolean }) => {
+    const isOwner = isStudioOwnerId(emp.id, studioId) || Boolean(emp.isStudioOwner);
+    const employeeName = isOwner ? formatOwnerCrewDisplayName(emp.fullName) : emp.fullName;
+    const defaultRole = isOwner ? 'Studio Owner' : (emp.designation || 'Crew Member');
+
+    const targetFns = selectedCrewFunctionId === 'all'
+      ? functions
+      : functions.filter(f => f.id === selectedCrewFunctionId);
+
+    const allAssigned = targetFns.every(fn => isMemberAssignedToFunction(fn, emp.id));
 
     setFunctions(prev => prev.map(fn => {
       const isTarget = selectedCrewFunctionId === 'all' || fn.id === selectedCrewFunctionId;
       if (!isTarget) return fn;
 
-      const existingCrew = fn.assignedCrew || [];
-      const existsIdx = existingCrew.findIndex(c => 
-        c.employeeId === emp.id || (isOwner && isStudioOwnerId(c.employeeId, studioId))
-      );
-
-      if (existsIdx >= 0) {
-        const updated = [...existingCrew];
-        updated[existsIdx] = {
-          ...updated[existsIdx],
-          role: selectedCrewRole,
-          isVisibleOnCalendar: crewVisibleOnCalendar
-        };
-        return { ...fn, assignedCrew: updated };
-      } else {
+      const existing = fn.assignedCrew || [];
+      if (allAssigned) {
         return {
           ...fn,
-          assignedCrew: [...existingCrew, { ...newMember, id: `asgn_${fn.id}_${emp.id}` }]
+          assignedCrew: existing.filter(c => 
+            c.employeeId !== emp.id && !(isOwner && isStudioOwnerId(c.employeeId, studioId))
+          )
+        };
+      } else {
+        const alreadyIn = existing.some(c => 
+          c.employeeId === emp.id || (isOwner && isStudioOwnerId(c.employeeId, studioId))
+        );
+        if (alreadyIn) return fn;
+        const newMember: FunctionCrewMember = {
+          id: `asgn_${fn.id}_${emp.id}_${Date.now()}`,
+          employeeId: emp.id,
+          employeeName,
+          designation: isOwner ? 'Studio Owner' : (emp.designation || 'Crew Member'),
+          department: isOwner ? 'Management' : (emp.department || 'Production'),
+          role: defaultRole,
+          contact: emp.phone || '',
+          isVisibleOnCalendar: true,
+          isStudioOwner: Boolean(isOwner)
+        };
+        return {
+          ...fn,
+          assignedCrew: [...existing, newMember]
         };
       }
     }));
 
-    // Reset picker
-    setSelectedCrewEmployeeId('');
-    setCrewConflictWarn(null);
-    setAllowCrewConflictOverride(false);
-    setCrewAssignmentNotice(`Assigned ${employeeName} as ${selectedCrewRole}.`);
-    setTimeout(() => setCrewAssignmentNotice(null), 3500);
+    const actionText = allAssigned ? 'Removed' : 'Assigned';
+    const targetText = selectedCrewFunctionId === 'all' ? `all ${functions.length} functions` : (functions.find(f => f.id === selectedCrewFunctionId)?.name || 'function');
+    setCrewAssignmentNotice(`${actionText} ${employeeName} for ${targetText}.`);
+    setTimeout(() => setCrewAssignmentNotice(null), 3000);
   };
 
+  // Remove crew member from a specific function
   const handleRemoveCrewMember = (fnId: string, empId: string) => {
     setFunctions(prev => prev.map(fn => {
       if (fn.id !== fnId) return fn;
@@ -403,6 +425,7 @@ export const UnifiedBookingPage: React.FC = () => {
     }));
   };
 
+  // Toggle calendar visibility for a specific member in a function
   const handleToggleCrewVisibility = (fnId: string, empId: string) => {
     setFunctions(prev => prev.map(fn => {
       if (fn.id !== fnId) return fn;
@@ -418,21 +441,7 @@ export const UnifiedBookingPage: React.FC = () => {
     }));
   };
 
-  const handleChangeCrewRole = (fnId: string, empId: string, newRole: string) => {
-    setFunctions(prev => prev.map(fn => {
-      if (fn.id !== fnId) return fn;
-      return {
-        ...fn,
-        assignedCrew: (fn.assignedCrew || []).map(c => {
-          if (c.employeeId === empId || (isStudioOwnerId(empId, studioId) && isStudioOwnerId(c.employeeId, studioId))) {
-            return { ...c, role: newRole };
-          }
-          return c;
-        })
-      };
-    }));
-  };
-
+  // Assign Studio Owner to all functions in 1 tap
   const handleAssignOwnerToAll = () => {
     const ownerMember = activeEmployees[0] || getStudioOwnerCrewMember(studioId);
     const ownerName = formatOwnerCrewDisplayName(ownerMember.fullName);
@@ -445,7 +454,7 @@ export const UnifiedBookingPage: React.FC = () => {
           ...fn,
           assignedCrew: existing.map(c => 
             isStudioOwnerId(c.employeeId, studioId) 
-              ? { ...c, role: 'Lead Photographer', isVisibleOnCalendar: true } 
+              ? { ...c, role: 'Studio Owner', isVisibleOnCalendar: true } 
               : c
           )
         };
@@ -460,7 +469,7 @@ export const UnifiedBookingPage: React.FC = () => {
             employeeName: ownerName,
             designation: 'Studio Owner',
             department: 'Management',
-            role: 'Lead Photographer',
+            role: 'Studio Owner',
             contact: ownerMember.phone || '',
             isVisibleOnCalendar: true,
             isStudioOwner: true
@@ -469,11 +478,12 @@ export const UnifiedBookingPage: React.FC = () => {
       };
     }));
 
-    setCrewAssignmentNotice(`Studio Owner assigned as Lead Photographer across all ${functions.length} functions.`);
-    setTimeout(() => setCrewAssignmentNotice(null), 3500);
+    setCrewAssignmentNotice(`Studio Owner (${ownerName}) assigned across all ${functions.length} functions.`);
+    setTimeout(() => setCrewAssignmentNotice(null), 3000);
   };
 
-  const handleCopyCrewFromFunction = (fromFnId: string, toFnId: string) => {
+  // Apply a specific function's crew across all sub-events
+  const handleCopyCrewFromFunction = (fromFnId: string, toFnId?: string) => {
     const sourceFn = functions.find(f => f.id === fromFnId);
     if (!sourceFn || !sourceFn.assignedCrew || sourceFn.assignedCrew.length === 0) {
       alert('Selected source function has no assigned crew to copy.');
@@ -481,18 +491,23 @@ export const UnifiedBookingPage: React.FC = () => {
     }
 
     setFunctions(prev => prev.map(fn => {
-      if (fn.id !== toFnId) return fn;
+      if (toFnId) {
+        if (fn.id !== toFnId) return fn;
+      } else {
+        if (fn.id === fromFnId) return fn;
+      }
       return {
         ...fn,
         assignedCrew: sourceFn.assignedCrew.map(c => ({
           ...c,
-          id: `asgn_${toFnId}_${c.employeeId}_${Date.now()}`
+          id: `asgn_${fn.id}_${c.employeeId}_${Date.now()}`
         }))
       };
     }));
 
-    setCrewAssignmentNotice(`Copied ${sourceFn.assignedCrew.length} crew members to ${functions.find(f => f.id === toFnId)?.name}.`);
-    setTimeout(() => setCrewAssignmentNotice(null), 3500);
+    const destinationLabel = toFnId ? (functions.find(f => f.id === toFnId)?.name || 'target function') : `all ${functions.length} functions`;
+    setCrewAssignmentNotice(`Copied ${sourceFn.assignedCrew.length} crew members to ${destinationLabel}.`);
+    setTimeout(() => setCrewAssignmentNotice(null), 3000);
   };
 
   // Add Line Item
@@ -784,7 +799,7 @@ export const UnifiedBookingPage: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-5xl mx-auto pb-24 space-y-6">
+    <div className="max-w-7xl w-full mx-auto pb-24 space-y-6 px-3.5 sm:px-6 lg:px-8">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -1108,134 +1123,426 @@ export const UnifiedBookingPage: React.FC = () => {
             </div>
           )}
 
-          {/* STEP 3: FUNCTIONS */}
+          {/* STEP 3: FUNCTIONS & SUB-EVENTS */}
           {currentStep === 3 && (
-            <div className="space-y-5 animate-in fade-in duration-150">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-3">
+            <div className="space-y-6 animate-in fade-in duration-150">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-100 pb-4">
                 <div>
-                  <h3 className="text-base font-bold text-zinc-900 font-display">Step 3 — Functions & Sub-Events</h3>
-                  <p className="text-xs text-zinc-500">Add unlimited functions with individual dates, venues and schedule times.</p>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-100 text-orange-800 border border-orange-200">
+                      Functions & Sub-Events
+                    </span>
+                    <span className="text-xs text-zinc-500 font-medium">
+                      {functions.length} {functions.length === 1 ? 'Sub-Event' : 'Sub-Events Configured'}
+                    </span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold text-zinc-900 font-display mt-1">
+                    Step 3 — Sub-Events & Crew Allocation
+                  </h3>
+                  <p className="text-xs sm:text-sm text-zinc-500">
+                    Add wedding functions with schedule, venue, and assign dedicated crew members with calendar visibility controls.
+                  </p>
                 </div>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-xs text-zinc-400 font-bold uppercase mr-1">Quick Add:</span>
-                  {PREDEFINED_FUNCTION_TYPES.slice(0, 4).map(fn => (
-                    <button
-                      type="button"
-                      key={fn}
-                      onClick={() => handleAddFunction(fn)}
-                      className="px-2 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-semibold"
-                    >
-                      + {fn}
-                    </button>
-                  ))}
+
+                <div className="relative" ref={subEventPickerRef}>
                   <button
                     type="button"
-                    onClick={() => handleAddFunction('Custom Function')}
-                    className="px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold"
+                    onClick={() => {
+                      setIsSubEventPickerOpen(prev => !prev);
+                      setSubEventSearchQuery('');
+                      setShowCustomInput(false);
+                    }}
+                    className="w-full sm:w-auto min-h-[46px] sm:min-h-[42px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs sm:text-sm shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    + Custom
+                    <Plus className="w-4 h-4 stroke-[2.5]" />
+                    <span>+ Add Sub-Event</span>
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${isSubEventPickerOpen ? 'rotate-180' : ''}`} />
                   </button>
-                </div>
-              </div>
 
-              <div className="space-y-3">
-                {functions.map((fn, idx) => (
-                  <div key={fn.id} className="p-4 rounded-2xl border border-zinc-200 bg-zinc-50/50 space-y-3 text-xs">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-lg bg-orange-500 text-white font-bold text-xs flex items-center justify-center">
-                          #{idx + 1}
-                        </span>
+                  {/* Searchable Sub-Event Dropdown / Mobile Bottom Sheet */}
+                  {isSubEventPickerOpen && (
+                    <div className="fixed inset-x-0 bottom-0 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 z-50 bg-white rounded-t-3xl sm:rounded-2xl border border-zinc-200 shadow-2xl p-4 sm:p-5 w-full sm:w-80 md:w-96 space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-150 max-h-[85vh] overflow-y-auto">
+                      <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
+                        <div>
+                          <h4 className="text-sm font-bold text-zinc-900 font-display">Add Sub-Event / Function</h4>
+                          <p className="text-xs text-zinc-500">Choose type or type custom shoot</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsSubEventPickerOpen(false)}
+                          className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 cursor-pointer"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Search Input */}
+                      <div className="relative">
+                        <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <input
                           type="text"
-                          value={fn.name}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setFunctions(prev => prev.map(f => f.id === fn.id ? { ...f, name: val } : f));
-                          }}
-                          placeholder="Function Name (e.g. Sangeet)"
-                          className="font-bold text-zinc-900 bg-transparent border-b border-zinc-300 focus:border-zinc-900 focus:outline-none px-1"
+                          value={subEventSearchQuery}
+                          onChange={(e) => setSubEventSearchQuery(e.target.value)}
+                          placeholder="Search (e.g. Haldi, Pre-Wedding, Mehndi)..."
+                          autoFocus
+                          className="w-full pl-9 pr-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50 focus:bg-white text-base sm:text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-orange-500 min-h-[42px] sm:min-h-[38px]"
                         />
                       </div>
 
-                      {functions.length > 1 && (
+                      {/* Filtered List of Predefined Types */}
+                      <div className="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto pt-1">
+                        {PREDEFINED_SUB_EVENT_TYPES
+                          .filter(t => t !== 'Custom Shoot')
+                          .filter(t => t.toLowerCase().includes(subEventSearchQuery.toLowerCase()))
+                          .map((evtType) => (
+                            <button
+                              key={evtType}
+                              type="button"
+                              onClick={() => handleAddSubEvent(evtType)}
+                              className="px-3 py-2.5 rounded-xl border border-zinc-200/90 bg-zinc-50/70 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-950 font-bold text-xs text-zinc-800 text-left transition-all active:scale-95 cursor-pointer flex items-center justify-between min-h-[42px]"
+                            >
+                              <span>{evtType}</span>
+                              <Plus className="w-3.5 h-3.5 text-zinc-400" />
+                            </button>
+                          ))}
+                      </div>
+
+                      {/* Custom Shoot Option */}
+                      <div className="pt-2 border-t border-zinc-100">
+                        {showCustomInput ? (
+                          <div className="space-y-2">
+                            <label className="block text-xs font-bold uppercase text-zinc-500">Custom Shoot Name</label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={customSubEventName}
+                                onChange={(e) => setCustomSubEventName(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleAddSubEvent(customSubEventName || 'Custom Shoot');
+                                  }
+                                }}
+                                placeholder="e.g. Sangeet Night, Cocktail, Maternity"
+                                className="flex-1 px-3 py-2 rounded-xl border border-zinc-200 text-base sm:text-xs text-zinc-900 min-h-[40px] focus:outline-none focus:ring-2 focus:ring-orange-500"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleAddSubEvent(customSubEventName || 'Custom Shoot')}
+                                className="px-3 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs min-h-[40px] cursor-pointer"
+                              >
+                                Add
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setShowCustomInput(true)}
+                            className="w-full py-2.5 px-3 rounded-xl border border-dashed border-orange-300 bg-orange-50/60 hover:bg-orange-100/70 text-orange-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer min-h-[40px]"
+                          >
+                            <Plus className="w-3.5 h-3.5 text-orange-600" />
+                            <span>+ Custom Shoot / Function</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* If search query has no match, offer quick add as custom */}
+                      {subEventSearchQuery.trim() && !PREDEFINED_SUB_EVENT_TYPES.some(t => t.toLowerCase() === subEventSearchQuery.toLowerCase()) && (
                         <button
                           type="button"
-                          onClick={() => handleRemoveFunction(fn.id)}
-                          className="p-1 rounded-lg text-rose-500 hover:bg-rose-50"
+                          onClick={() => handleAddSubEvent(subEventSearchQuery)}
+                          className="w-full p-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs text-center transition-colors cursor-pointer"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          + Add "{subEventSearchQuery}" as Sub-Event
                         </button>
                       )}
                     </div>
+                  )}
+                </div>
+              </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                      <div>
-                        <label className="block text-xs font-bold uppercase text-zinc-400 mb-0.5">Date</label>
-                        <input
-                          type="date"
-                          value={fn.date}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setFunctions(prev => prev.map(f => f.id === fn.id ? { ...f, date: val } : f));
-                          }}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-white font-mono text-xs"
-                        />
+              {/* Notice Toast */}
+              {crewAssignmentNotice && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 animate-in fade-in duration-150">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{crewAssignmentNotice}</span>
+                </div>
+              )}
+
+              {/* Sub-Events List */}
+              <div className="space-y-5">
+                {functions.map((fn, idx) => {
+                  const ownerMember = activeEmployees[0] || getStudioOwnerCrewMember(studioId);
+                  const ownerDisplayName = formatOwnerCrewDisplayName(ownerProfile.name || ownerMember.fullName);
+                  const isOwnerAssigned = isMemberAssignedToFunction(fn, ownerMember.id);
+                  const otherEmployees = activeEmployees.filter(e => !isStudioOwnerId(e.id, studioId));
+
+                  return (
+                    <div key={fn.id} className="p-4 sm:p-5 rounded-2xl border border-zinc-200/90 bg-white shadow-2xs space-y-4 text-xs">
+                      {/* Sub-Event Header */}
+                      <div className="flex items-center justify-between gap-3 border-b border-zinc-100 pb-3">
+                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                          <span className="w-7 h-7 rounded-xl bg-orange-500 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                            #{idx + 1}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <input
+                              type="text"
+                              value={fn.name}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setFunctions(prev => prev.map(f => f.id === fn.id ? { ...f, name: val } : f));
+                              }}
+                              placeholder="Sub-Event Name (e.g. Haldi Ceremony)"
+                              className="font-bold text-sm sm:text-base text-zinc-900 bg-transparent border-b border-dashed border-zinc-300 hover:border-zinc-400 focus:border-orange-500 focus:outline-none px-1 py-0.5 w-full max-w-md"
+                            />
+                            <span className="text-xs text-zinc-400 block font-normal">Click title to edit name</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {functions.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveFunction(fn.id)}
+                              className="p-2 rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                              title="Delete this sub-event"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-bold uppercase text-zinc-400 mb-0.5">Start Time</label>
-                        <input
-                          type="time"
-                          value={fn.startTime}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setFunctions(prev => prev.map(f => f.id === fn.id ? { ...f, startTime: val } : f));
-                          }}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-white font-mono text-xs"
-                        />
+                      {/* Editable Fields Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold uppercase text-zinc-400 mb-1">Date</label>
+                          <input
+                            type="date"
+                            value={fn.date}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setFunctions(prev => prev.map(f => f.id === fn.id ? { ...f, date: val } : f));
+                            }}
+                            className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white font-mono text-base sm:text-xs text-zinc-800"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold uppercase text-zinc-400 mb-1">Start Time</label>
+                          <input
+                            type="time"
+                            value={fn.startTime}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setFunctions(prev => prev.map(f => f.id === fn.id ? { ...f, startTime: val } : f));
+                            }}
+                            className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white font-mono text-base sm:text-xs text-zinc-800"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold uppercase text-zinc-400 mb-1">End Time</label>
+                          <input
+                            type="time"
+                            value={fn.endTime}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setFunctions(prev => prev.map(f => f.id === fn.id ? { ...f, endTime: val } : f));
+                            }}
+                            className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white font-mono text-base sm:text-xs text-zinc-800"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold uppercase text-zinc-400 mb-1">Venue</label>
+                          <input
+                            type="text"
+                            value={fn.venue}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setFunctions(prev => prev.map(f => f.id === fn.id ? { ...f, venue: val } : f));
+                            }}
+                            placeholder={venue || 'Function venue'}
+                            className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-base sm:text-xs text-zinc-800"
+                          />
+                        </div>
                       </div>
 
-                      <div className="sm:col-span-2">
-                        <label className="block text-xs font-bold uppercase text-zinc-400 mb-0.5">Venue</label>
+                      {/* Notes Input */}
+                      <div>
+                        <label className="block text-xs font-bold uppercase text-zinc-400 mb-1">Sub-Event Notes / Instructions</label>
                         <input
                           type="text"
-                          value={fn.venue}
+                          value={fn.notes}
                           onChange={(e) => {
                             const val = e.target.value;
-                            setFunctions(prev => prev.map(f => f.id === fn.id ? { ...f, venue: val } : f));
+                            setFunctions(prev => prev.map(f => f.id === fn.id ? { ...f, notes: val } : f));
                           }}
-                          placeholder={venue || 'Function venue'}
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-white text-xs"
+                          placeholder="e.g. Drone clearance required, bride grand entry at 11:30 AM"
+                          className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-base sm:text-xs text-zinc-800"
                         />
                       </div>
-                    </div>
 
-                    {/* Crew Assigned Quick Info */}
-                    <div className="flex items-center justify-between pt-2.5 border-t border-zinc-200/70 text-xs">
-                      <div className="flex items-center gap-1.5 text-zinc-600">
-                        <Users className="w-3.5 h-3.5 text-orange-600" />
-                        <span>Assigned Crew: <strong className="text-zinc-900">{fn.assignedCrew?.length || 0} members</strong></span>
-                        {fn.assignedCrew && fn.assignedCrew.length > 0 && (
-                          <span className="text-zinc-500 truncate max-w-xs hidden sm:inline">
-                            ({fn.assignedCrew.map(c => c.employeeName.split(' ')[0]).join(', ')})
-                          </span>
+                      {/* Independent Crew Assignment Section inside each Sub-Event card */}
+                      <div className="pt-3 border-t border-zinc-200/80 space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Users className="w-4 h-4 text-orange-600" />
+                            <h4 className="text-xs sm:text-sm font-bold text-zinc-900">
+                              Assigned Crew ({fn.assignedCrew?.length || 0})
+                            </h4>
+                            <span className="text-xs text-zinc-400 hidden sm:inline">• Multi-select checkboxes</span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {functions.length > 1 && (fn.assignedCrew?.length || 0) > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => handleCopyCrewFromFunction(fn.id)}
+                                className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                                title="Apply this crew assignment across all other sub-events in 1 click"
+                              >
+                                <span>⚡ Apply to All Sub-Events</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Multi-Select Crew Checkbox Grid (No Role Dropdown) */}
+                        <div className="p-3 bg-zinc-50 rounded-xl border border-zinc-200/80 space-y-2">
+                          <p className="text-xs font-bold uppercase text-zinc-400">
+                            Check to assign or unassign team members (Role dropdown removed — designation assigned automatically):
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                            {/* Studio Owner Checkbox */}
+                            <label className={`flex items-center gap-2 p-2 rounded-xl border transition-all cursor-pointer ${
+                              isOwnerAssigned
+                                ? 'bg-amber-50/90 border-amber-300 text-amber-950 font-bold shadow-2xs'
+                                : 'bg-white border-zinc-200 hover:border-zinc-300 text-zinc-700'
+                            }`}>
+                              <input
+                                type="checkbox"
+                                checked={isOwnerAssigned}
+                                onChange={() => handleToggleCrewMemberForFunction(fn.id, {
+                                  id: ownerMember.id,
+                                  fullName: ownerDisplayName,
+                                  designation: 'Studio Owner',
+                                  department: 'Management',
+                                  phone: ownerMember.phone || '',
+                                  isStudioOwner: true
+                                })}
+                                className="w-4 h-4 text-orange-600 rounded cursor-pointer accent-orange-600 shrink-0"
+                              />
+                              <div className="min-w-0 flex items-center gap-1.5 truncate">
+                                <span>👑</span>
+                                <span className="text-xs truncate">{ownerDisplayName}</span>
+                                <span className="px-1.5 py-0.2 rounded-full text-xs font-bold bg-amber-200/80 text-amber-900 shrink-0">Owner</span>
+                              </div>
+                            </label>
+
+                            {/* Active Employees Checkboxes */}
+                            {otherEmployees.map(emp => {
+                              const isAssigned = isMemberAssignedToFunction(fn, emp.id);
+                              return (
+                                <label key={emp.id} className={`flex items-center gap-2 p-2 rounded-xl border transition-all cursor-pointer ${
+                                  isAssigned
+                                    ? 'bg-orange-50/80 border-orange-300 text-orange-950 font-bold shadow-2xs'
+                                    : 'bg-white border-zinc-200 hover:border-zinc-300 text-zinc-700'
+                                }`}>
+                                  <input
+                                    type="checkbox"
+                                    checked={isAssigned}
+                                    onChange={() => handleToggleCrewMemberForFunction(fn.id, emp)}
+                                    className="w-4 h-4 text-orange-600 rounded cursor-pointer accent-orange-600 shrink-0"
+                                  />
+                                  <div className="min-w-0 truncate">
+                                    <span className="text-xs truncate block">{emp.fullName}</span>
+                                    <span className="text-xs text-zinc-400 font-normal truncate block">{emp.designation || 'Staff'}</span>
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Selected Crew List for this Sub-Event with Show/Hide & Remove */}
+                        {fn.assignedCrew && fn.assignedCrew.length > 0 ? (
+                          <div className="space-y-2 pt-1">
+                            <p className="text-xs font-bold uppercase text-zinc-400">Assigned Crew for {fn.name}:</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {fn.assignedCrew.map((member) => (
+                                <div key={member.employeeId} className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white border border-zinc-200 shadow-2xs">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
+                                      member.isStudioOwner ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-orange-100 text-orange-800'
+                                    }`}>
+                                      {member.isStudioOwner ? '👑' : member.employeeName.charAt(0)}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span className="font-bold text-xs sm:text-sm text-zinc-900 truncate">{member.employeeName}</span>
+                                        {member.isStudioOwner && (
+                                          <span className="px-1.5 py-0.2 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                            Owner
+                                          </span>
+                                        )}
+                                      </div>
+                                      <span className="text-xs text-zinc-500 truncate block">{member.designation}</span>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    {/* Individual Calendar Visibility Toggle */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToggleCrewVisibility(fn.id, member.employeeId)}
+                                      className={`min-h-[30px] px-2 py-1 rounded-lg border text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                                        member.isVisibleOnCalendar
+                                          ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                                          : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100'
+                                      }`}
+                                      title={member.isVisibleOnCalendar ? 'Visible on employee calendar. Click to hide.' : 'Hidden from calendar. Click to show.'}
+                                    >
+                                      {member.isVisibleOnCalendar ? (
+                                        <>
+                                          <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                                          <span>Show</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <EyeOff className="w-3.5 h-3.5 text-amber-600" />
+                                          <span>Hide</span>
+                                        </>
+                                      )}
+                                    </button>
+
+                                    {/* Remove Button */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveCrewMember(fn.id, member.employeeId)}
+                                      className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                      title="Remove from this sub-event"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-zinc-400 italic">
+                            No crew members assigned yet. Check members above to assign to {fn.name}.
+                          </p>
                         )}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedCrewFunctionId(fn.id);
-                          setCurrentStep(4);
-                        }}
-                        className="px-2.5 py-1 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer"
-                      >
-                        <span>Assign Crew</span>
-                        <ChevronRight className="w-3 h-3" />
-                      </button>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -1258,7 +1565,7 @@ export const UnifiedBookingPage: React.FC = () => {
                     Step 4 — Team & Crew Assignment
                   </h3>
                   <p className="text-xs sm:text-sm text-zinc-500">
-                    Assign studio crew members and yourself to each individual wedding function. Choose roles, manage calendar visibility, and resolve scheduling conflicts.
+                    Assign studio crew members and yourself to each individual wedding function using multi-select checkboxes. Roles are mapped directly from staff designations.
                   </p>
                 </div>
 
@@ -1267,7 +1574,7 @@ export const UnifiedBookingPage: React.FC = () => {
                     type="button"
                     onClick={handleAssignOwnerToAll}
                     className="min-h-[42px] px-3.5 py-1.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs active:scale-95"
-                    title="Assign Studio Owner as Lead Photographer to all functions in 1 tap"
+                    title="Assign Studio Owner across all functions in 1 tap"
                   >
                     <Crown className="w-3.5 h-3.5 text-amber-700" />
                     <span>+ Assign Studio Owner to All</span>
@@ -1283,160 +1590,105 @@ export const UnifiedBookingPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Assignment Form Card */}
+              {/* Assignment Form Card (Multi-Select Checkboxes, No Role Dropdown) */}
               <div className="bg-zinc-50/80 border border-zinc-200/90 rounded-2xl p-4 sm:p-5 space-y-4">
-                <div className="flex items-center justify-between border-b border-zinc-200/60 pb-2">
-                  <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-700 flex items-center gap-1.5">
-                    <Plus className="w-4 h-4 text-orange-600" />
-                    <span>New Crew Member Assignment</span>
-                  </h4>
-                  <span className="text-xs text-zinc-400">
-                    {activeEmployees.length} Available Staff & Owner
-                  </span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-200/60 pb-2">
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-700 flex items-center gap-1.5">
+                      <Users className="w-4 h-4 text-orange-600" />
+                      <span>Quick Multi-Select Crew Allocation</span>
+                    </h4>
+                    <p className="text-xs text-zinc-500">Check or uncheck crew members to update assignments instantly</p>
+                  </div>
+
+                  {/* Target Function Selector */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase text-zinc-500 shrink-0">Target:</span>
+                    <select
+                      value={selectedCrewFunctionId}
+                      onChange={(e) => setSelectedCrewFunctionId(e.target.value)}
+                      className="px-3 py-1.5 rounded-xl border border-zinc-300 bg-white text-base sm:text-xs text-zinc-800 font-bold focus:outline-none focus:ring-2 focus:ring-orange-500 min-h-[40px] cursor-pointer"
+                    >
+                      {functions.length > 1 && (
+                        <option value="all">⚡ All {functions.length} Functions (Simultaneous)</option>
+                      )}
+                      {functions.map(fn => (
+                        <option key={fn.id} value={fn.id}>
+                          {fn.name} ({fn.date || eventDate || 'Date TBD'})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
-                <form onSubmit={handleAddCrewAssignment} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {/* 1. Target Function Selector */}
-                    <div>
-                      <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">
-                        Function / Event <span className="text-rose-500">*</span>
-                      </label>
-                      <select
-                        value={selectedCrewFunctionId}
-                        onChange={(e) => setSelectedCrewFunctionId(e.target.value)}
-                        className="w-full px-3 py-2.5 rounded-xl border border-zinc-300 bg-white text-base sm:text-xs text-zinc-800 font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 min-h-[46px] sm:min-h-[40px]"
-                      >
-                        {functions.length > 1 && (
-                          <option value="all">⚡ All {functions.length} Functions (Simultaneous)</option>
-                        )}
-                        {functions.map(fn => (
-                          <option key={fn.id} value={fn.id}>
-                            {fn.name} ({fn.date || eventDate || 'Date TBD'})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                {/* Multi-Select Checkboxes (Owner + Staff) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                  {(() => {
+                    const ownerMember = activeEmployees[0] || getStudioOwnerCrewMember(studioId);
+                    const ownerDisplayName = formatOwnerCrewDisplayName(ownerProfile.name || ownerMember.fullName);
+                    const targetFns = selectedCrewFunctionId === 'all'
+                      ? functions
+                      : functions.filter(f => f.id === selectedCrewFunctionId);
+                    const isOwnerAssigned = targetFns.length > 0 && targetFns.every(fn => isMemberAssignedToFunction(fn, ownerMember.id));
+                    const otherEmployees = activeEmployees.filter(e => !isStudioOwnerId(e.id, studioId));
 
-                    {/* 2. Crew Member Selector (With Studio Owner Prominently Listed) */}
-                    <div>
-                      <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">
-                        Select Person <span className="text-rose-500">*</span>
-                      </label>
-                      <select
-                        value={selectedCrewEmployeeId}
-                        onChange={(e) => setSelectedCrewEmployeeId(e.target.value)}
-                        className="w-full px-3 py-2.5 rounded-xl border border-zinc-300 bg-white text-base sm:text-xs text-zinc-800 font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 min-h-[46px] sm:min-h-[40px]"
-                      >
-                        <option value="">-- Choose Team Member / Owner --</option>
-                        {activeEmployees.map(emp => {
-                          const isOwner = isStudioOwnerId(emp.id, studioId) || Boolean((emp as any).isStudioOwner);
+                    return (
+                      <>
+                        {/* Studio Owner Checkbox */}
+                        <label className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                          isOwnerAssigned
+                            ? 'bg-amber-50/90 border-amber-300 text-amber-950 font-bold shadow-2xs'
+                            : 'bg-white border-zinc-200 hover:border-zinc-300 text-zinc-700'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={isOwnerAssigned}
+                            onChange={() => handleToggleCrewMemberStep4({
+                              id: ownerMember.id,
+                              fullName: ownerDisplayName,
+                              designation: 'Studio Owner',
+                              department: 'Management',
+                              phone: ownerMember.phone || '',
+                              isStudioOwner: true
+                            })}
+                            className="w-4 h-4 text-orange-600 rounded cursor-pointer accent-orange-600 shrink-0"
+                          />
+                          <div className="min-w-0 truncate">
+                            <div className="flex items-center gap-1.5 truncate">
+                              <span>👑</span>
+                              <span className="text-xs sm:text-sm font-bold truncate">{ownerDisplayName}</span>
+                              <span className="px-1.5 py-0.2 rounded-full text-xs font-bold bg-amber-200/80 text-amber-900 shrink-0">Owner</span>
+                            </div>
+                            <span className="text-xs text-zinc-500 font-normal truncate block">Studio Owner • Management</span>
+                          </div>
+                        </label>
+
+                        {/* Active Employees Checkboxes */}
+                        {otherEmployees.map(emp => {
+                          const isAssigned = targetFns.length > 0 && targetFns.every(fn => isMemberAssignedToFunction(fn, emp.id));
                           return (
-                            <option key={emp.id} value={emp.id}>
-                              {isOwner 
-                                ? `👑 ${formatOwnerCrewDisplayName(emp.fullName)} — Studio Owner` 
-                                : `${emp.fullName} — ${emp.designation || 'Staff'} (${emp.department || 'Studio'})`}
-                            </option>
+                            <label key={emp.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                              isAssigned
+                                ? 'bg-orange-50/80 border-orange-300 text-orange-950 font-bold shadow-2xs'
+                                : 'bg-white border-zinc-200 hover:border-zinc-300 text-zinc-700'
+                            }`}>
+                              <input
+                                type="checkbox"
+                                checked={isAssigned}
+                                onChange={() => handleToggleCrewMemberStep4(emp)}
+                                className="w-4 h-4 text-orange-600 rounded cursor-pointer accent-orange-600 shrink-0"
+                              />
+                              <div className="min-w-0 truncate">
+                                <span className="text-xs sm:text-sm font-bold truncate block">{emp.fullName}</span>
+                                <span className="text-xs text-zinc-500 font-normal truncate block">{emp.designation || 'Staff'} ({emp.department || 'Studio'})</span>
+                              </div>
+                            </label>
                           );
                         })}
-                      </select>
-                    </div>
-
-                    {/* 3. Responsibility / Role Selector */}
-                    <div>
-                      <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">
-                        Responsibility / Role <span className="text-rose-500">*</span>
-                      </label>
-                      <select
-                        value={selectedCrewRole}
-                        onChange={(e) => setSelectedCrewRole(e.target.value)}
-                        className="w-full px-3 py-2.5 rounded-xl border border-zinc-300 bg-white text-base sm:text-xs text-zinc-800 font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 min-h-[46px] sm:min-h-[40px]"
-                      >
-                        {CREW_ROLES.map(role => (
-                          <option key={role} value={role}>{role}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* 4. Calendar Visibility Switch */}
-                    <div>
-                      <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">
-                        Calendar Visibility
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => setCrewVisibleOnCalendar(prev => !prev)}
-                        className={`w-full px-3 py-2.5 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer transition-all min-h-[46px] sm:min-h-[40px] ${
-                          crewVisibleOnCalendar 
-                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs' 
-                            : 'bg-amber-50 text-amber-800 border-amber-300'
-                        }`}
-                      >
-                        {crewVisibleOnCalendar ? (
-                          <>
-                            <Eye className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>Show on Calendar</span>
-                          </>
-                        ) : (
-                          <>
-                            <EyeOff className="w-4 h-4 text-amber-600 shrink-0" />
-                            <span>Hide from Calendar</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Real-Time Conflict Warning Banner */}
-                  {crewConflictWarn && (
-                    <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-xl space-y-2 animate-in fade-in duration-150">
-                      <div className="flex items-start gap-2.5">
-                        <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                        <div className="space-y-1">
-                          <p className="text-xs sm:text-sm font-bold text-amber-900">
-                            Scheduling Conflict Detected for {crewConflictWarn.employeeName}
-                          </p>
-                          <p className="text-xs text-amber-800">
-                            {crewConflictWarn.warningMessage}
-                          </p>
-                          {crewConflictWarn.conflictingEventName && (
-                            <p className="text-xs text-amber-700 font-mono">
-                              Overlap: {crewConflictWarn.conflictingEventName} ({crewConflictWarn.conflictingDate} {crewConflictWarn.conflictingStartTime}-{crewConflictWarn.conflictingEndTime}) at {crewConflictWarn.conflictingVenue}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="pt-2 border-t border-amber-200/80 flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="crewOverlapCheck"
-                          checked={allowCrewConflictOverride}
-                          onChange={(e) => setAllowCrewConflictOverride(e.target.checked)}
-                          className="w-4 h-4 text-orange-600 accent-orange-600 rounded cursor-pointer"
-                        />
-                        <label htmlFor="crewOverlapCheck" className="text-xs font-bold text-amber-900 cursor-pointer">
-                          I understand the schedule overlap. Allow assignment anyway (Studio Owner Override).
-                        </label>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-end gap-3 pt-1">
-                    <button
-                      type="submit"
-                      disabled={!selectedCrewEmployeeId}
-                      className="w-full sm:w-auto min-h-[48px] sm:min-h-[42px] px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs sm:text-sm shadow-xs transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
-                    >
-                      <Plus className="w-4 h-4 stroke-[2.5]" />
-                      <span>
-                        {selectedCrewFunctionId === 'all' 
-                          ? `Assign to All ${functions.length} Functions` 
-                          : `Assign to ${functions.find(f => f.id === selectedCrewFunctionId)?.name || 'Function'}`}
-                      </span>
-                    </button>
-                  </div>
-                </form>
+                      </>
+                    );
+                  })()}
+                </div>
               </div>
 
               {/* Multiple Functions Filter Pills */}
@@ -1556,7 +1808,7 @@ export const UnifiedBookingPage: React.FC = () => {
                               No crew members assigned to {fn.name} yet.
                             </p>
                             <p className="text-xs text-zinc-400">
-                              Use the form above to assign team members or the Studio Owner to this function.
+                              Check team members above to assign to this sub-event.
                             </p>
                           </div>
                         ) : (
@@ -1565,7 +1817,7 @@ export const UnifiedBookingPage: React.FC = () => {
                               <thead>
                                 <tr className="border-b border-zinc-200 text-zinc-400 uppercase font-bold text-xs bg-zinc-50/50">
                                   <th className="py-2.5 px-3 rounded-l-lg">Team Member</th>
-                                  <th className="py-2.5 px-3">Responsibility</th>
+                                  <th className="py-2.5 px-3">Designation</th>
                                   <th className="py-2.5 px-3">Calendar Visibility</th>
                                   <th className="py-2.5 px-3 text-right rounded-r-lg">Action</th>
                                 </tr>
@@ -1595,23 +1847,17 @@ export const UnifiedBookingPage: React.FC = () => {
                                             )}
                                           </div>
                                           <span className="text-zinc-500 text-xs block truncate">
-                                            {member.designation} ({member.department})
+                                            {member.department}
                                           </span>
                                         </div>
                                       </div>
                                     </td>
 
-                                    {/* Role selector in-line */}
+                                    {/* Designation (No Role Dropdown) */}
                                     <td className="py-3 px-3">
-                                      <select
-                                        value={member.role}
-                                        onChange={(e) => handleChangeCrewRole(fn.id, member.employeeId, e.target.value)}
-                                        className="px-2.5 py-1 rounded-lg border border-zinc-200 bg-white font-semibold text-xs text-orange-950 focus:ring-1 focus:ring-orange-500 cursor-pointer"
-                                      >
-                                        {CREW_ROLES.map(r => (
-                                          <option key={r} value={r}>{r}</option>
-                                        ))}
-                                      </select>
+                                      <span className="font-semibold text-xs text-zinc-800">
+                                        {member.designation || (member.isStudioOwner ? 'Studio Owner' : 'Crew Member')}
+                                      </span>
                                     </td>
 
                                     {/* Calendar Visibility Toggle Button */}

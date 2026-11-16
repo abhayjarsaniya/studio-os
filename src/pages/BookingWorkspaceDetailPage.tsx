@@ -165,6 +165,7 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
 
     const isOwner = isStudioOwnerId(emp.id, studioId) || emp.fullName.includes('(Studio Owner)');
     const displayName = isOwner ? formatOwnerCrewDisplayName(emp.fullName) : emp.fullName;
+    const defaultRole = isOwner ? 'Studio Owner' : (emp.designation || 'Crew Member');
 
     await calendarVisibilityService.assignCrewMember({
       studioId,
@@ -174,7 +175,7 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
       employeeName: displayName,
       designation: emp.designation,
       department: emp.department,
-      role: assignedRole,
+      role: defaultRole,
       contact: emp.phone || '',
       isVisibleOnCalendar: crewModalVisibleOnCalendar,
       assignedBy: 'Studio Owner',
@@ -190,7 +191,7 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
     );
 
     if (existingIdx >= 0) {
-      selectedFunctionForCrew.assignedCrew[existingIdx].role = assignedRole;
+      selectedFunctionForCrew.assignedCrew[existingIdx].role = defaultRole;
       (selectedFunctionForCrew.assignedCrew[existingIdx] as any).isVisibleOnCalendar = crewModalVisibleOnCalendar;
     } else {
       selectedFunctionForCrew.assignedCrew.push({
@@ -349,7 +350,7 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
   ];
 
   return (
-    <div className="space-y-5 pb-24 max-w-6xl mx-auto">
+    <div className="space-y-5 pb-24 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8">
       {/* Toast */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-zinc-900 text-white font-semibold text-xs px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom duration-150">
@@ -1017,27 +1018,6 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
                       </option>
                     );
                   })}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Role for this Shoot</label>
-                <select
-                  value={assignedRole}
-                  onChange={(e) => setAssignedRole(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-xs"
-                >
-                  <option value="Lead Photographer">Lead Photographer</option>
-                  <option value="Candid Photographer">Candid Photographer</option>
-                  <option value="Traditional Photographer">Traditional Photographer</option>
-                  <option value="Cinematographer">Cinematographer</option>
-                  <option value="Traditional Videographer">Traditional Videographer</option>
-                  <option value="Drone Operator">Drone Operator</option>
-                  <option value="Photo Editor">Photo Editor</option>
-                  <option value="Video Editor">Video Editor</option>
-                  <option value="Album Designer">Album Designer</option>
-                  <option value="Assistant">Assistant</option>
-                  <option value="Production Assistant">Production Assistant</option>
                 </select>
               </div>
 
