@@ -113,7 +113,8 @@ const MainLayout: React.FC = () => {
       case 'dashboard':
         return <DashboardPage />;
       case 'history':
-        return <HistoryBookingsPage />;
+      case 'bookings':
+        return <BookingsWorkspacePage />;
       case 'create-booking':
       case 'new-booking':
         return <UnifiedBookingPage />;
@@ -121,8 +122,6 @@ const MainLayout: React.FC = () => {
         return <CrewMembersPage />;
       case 'create-quotation':
         return <CreateQuotationPage />;
-      case 'bookings':
-        return <BookingsWorkspacePage />;
       case 'deliveries':
         if (!checkFeatureAccess('deliverables') && !checkFeatureAccess('advanced_delivery')) {
           return renderDisabledFeatureNotice('Advanced Delivery Tracking');

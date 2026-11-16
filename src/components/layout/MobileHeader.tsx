@@ -11,7 +11,8 @@ import {
   X, 
   LayoutDashboard, 
   Calendar, 
-  History,
+  BookOpen,
+  Plus,
   PlusCircle, 
   Users, 
   LogOut,
@@ -32,7 +33,7 @@ export const MobileHeader: React.FC = () => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   const enabledFeatures = CENTRAL_FEATURE_REGISTRY.filter(f => {
-    if (['dashboard', 'calendar', 'history'].includes(f.route) || f.id === 'crew') return false;
+    if (['dashboard', 'calendar', 'history', 'bookings'].includes(f.route) || f.id === 'crew' || f.id === 'bookings') return false;
     const access = featureVisibilityService.evaluateFeature(currentStudio.id || 'std_demo_royal', f.id, currentUser.role === 'owner');
     return access.accessible && access.visibleInNav;
   });
@@ -125,74 +126,78 @@ export const MobileHeader: React.FC = () => {
             {/* Nav list */}
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5 touch-scroll">
               <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider px-3 py-1">Core Modules</div>
-              
+              {/* Primary Action: New Booking */}
+              <div className="pb-2">
+                <button
+                  onClick={() => {
+                    setActiveTab('create-booking');
+                    setMobileDrawerOpen(false);
+                    window.location.hash = '#/app/bookings/new';
+                  }}
+                  className="w-full min-h-[48px] px-4 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 touch-manipulation bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-md shadow-orange-500/25 border border-orange-400/30 cursor-pointer active:scale-[0.98] transition-all"
+                >
+                  <Plus className="w-4 h-4 text-white stroke-[2.5]" />
+                  <span>+ New Booking</span>
+                </button>
+              </div>
+
+              {/* 1. Dashboard */}
               <button
                 onClick={() => {
                   setActiveTab('dashboard');
                   setMobileDrawerOpen(false);
                   window.location.hash = '#/app/dashboard';
                 }}
-                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 touch-manipulation ${
-                  activeTab === 'dashboard' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
+                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 touch-manipulation transition-colors ${
+                  activeTab === 'dashboard' ? 'text-orange-600 font-bold bg-orange-50/60' : 'text-zinc-700 hover:bg-zinc-100/70'
                 }`}
               >
-                <LayoutDashboard className="w-4 h-4" />
+                <LayoutDashboard className="w-4 h-4 text-zinc-600" />
                 <span>Dashboard</span>
               </button>
 
+              {/* 2. Calendar */}
               <button
                 onClick={() => {
                   setActiveTab('calendar');
                   setMobileDrawerOpen(false);
                   window.location.hash = '#/app/calendar';
                 }}
-                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 touch-manipulation ${
-                  activeTab === 'calendar' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
+                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 touch-manipulation transition-colors ${
+                  activeTab === 'calendar' ? 'text-orange-600 font-bold bg-orange-50/60' : 'text-zinc-700 hover:bg-zinc-100/70'
                 }`}
               >
-                <Calendar className="w-4 h-4" />
+                <Calendar className="w-4 h-4 text-zinc-600" />
                 <span>Calendar</span>
               </button>
 
+              {/* 3. Bookings (Replaces separate History Bookings) */}
               <button
                 onClick={() => {
-                  setActiveTab('history');
+                  setActiveTab('bookings');
                   setMobileDrawerOpen(false);
-                  window.location.hash = '#/app/history';
+                  window.location.hash = '#/app/bookings';
                 }}
-                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 touch-manipulation ${
-                  activeTab === 'history' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
+                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 touch-manipulation transition-colors ${
+                  activeTab === 'bookings' || activeTab === 'history' ? 'text-orange-600 font-bold bg-orange-50/60' : 'text-zinc-700 hover:bg-zinc-100/70'
                 }`}
               >
-                <History className="w-4 h-4 text-amber-600" />
-                <span>History Bookings</span>
+                <BookOpen className="w-4 h-4 text-zinc-600" />
+                <span>Bookings</span>
               </button>
 
-              <button
-                onClick={() => {
-                  setActiveTab('create-booking');
-                  setMobileDrawerOpen(false);
-                  window.location.hash = '#/app/bookings/new';
-                }}
-                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 touch-manipulation ${
-                  activeTab === 'create-booking' || activeTab === 'new-booking' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
-                }`}
-              >
-                <PlusCircle className="w-4 h-4 text-emerald-600" />
-                <span>New Event Booking</span>
-              </button>
-
+              {/* 4. Crew Members */}
               <button
                 onClick={() => {
                   setActiveTab('crew');
                   setMobileDrawerOpen(false);
                   window.location.hash = '#/app/crew';
                 }}
-                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 touch-manipulation ${
-                  activeTab === 'crew' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-xs' : 'text-zinc-700 hover:bg-orange-50/50'
+                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 touch-manipulation transition-colors ${
+                  activeTab === 'crew' ? 'text-orange-600 font-bold bg-orange-50/60' : 'text-zinc-700 hover:bg-zinc-100/70'
                 }`}
               >
-                <Users className="w-4 h-4 text-indigo-600" />
+                <Users className="w-4 h-4 text-zinc-600" />
                 <span>Crew Members</span>
               </button>
 

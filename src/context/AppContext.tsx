@@ -397,7 +397,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } else if (hash.startsWith('#/app/events')) {
       setActiveTabState('events');
       setEventRouteState({ mode: 'list' });
-    } else if (hash.startsWith('#/app/bookings')) {
+    } else if (hash.startsWith('#/app/history') || hash.startsWith('#/app/bookings')) {
       setActiveTabState('bookings');
     } else if (hash.startsWith('#/app/deliveries')) {
       setActiveTabState('deliveries');
@@ -407,8 +407,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setActiveTabState('tasks');
     } else if (hash.startsWith('#/app/calendar')) {
       setActiveTabState('calendar');
-    } else if (hash.startsWith('#/app/history')) {
-      setActiveTabState('history');
     } else if (hash.startsWith('#/app/team')) {
       setActiveTabState('team');
     } else if (hash.startsWith('#/app/suppliers')) {

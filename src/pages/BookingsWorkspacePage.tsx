@@ -164,6 +164,10 @@ export const BookingsWorkspacePage: React.FC = () => {
         );
       }
       return true;
+    }).sort((a, b) => {
+      const dateA = a.createdAt || a.mainEventDate || a.startDate || '';
+      const dateB = b.createdAt || b.mainEventDate || b.startDate || '';
+      return dateB.localeCompare(dateA);
     });
   }, [bookings, statusFilter, searchTerm, todayStr]);
 
@@ -406,6 +410,12 @@ export const BookingsWorkspacePage: React.FC = () => {
             </div>
           </div>
         ))}
+
+        {filteredBookings.length === 0 && (
+          <div className="bg-white rounded-2xl border border-zinc-200/90 p-8 text-center text-zinc-400 text-sm">
+            No bookings matching your search or filters.
+          </div>
+        )}
       </div>
 
       {/* DESKTOP TABLE VIEW (Hidden on mobile) */}
