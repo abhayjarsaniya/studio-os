@@ -67,7 +67,7 @@ export const PlatformStudioCreatePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto pb-12">
+    <div className="w-full space-y-4 sm:space-y-6 pb-12">
       {/* Top Breadcrumb */}
       <div className="flex items-center justify-between">
         <button

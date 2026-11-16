@@ -461,9 +461,9 @@ export const CrewMembersPage: React.FC = () => {
   }, [selectedCrew, events]);
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="w-full space-y-4 sm:space-y-5 pb-20">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
@@ -471,17 +471,17 @@ export const CrewMembersPage: React.FC = () => {
             </span>
             <span className="text-xs text-zinc-500">{stats.active} of {stats.total} Active</span>
           </div>
-          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight mt-1 font-display">
+          <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight mt-1 font-display">
             Crew Members & Collaborators
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-zinc-500 mt-0.5 hidden sm:block">
             Full employee lifecycle: add, view, edit, password reset, event assignment, deactivation, and safe archival.
           </p>
         </div>
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
+          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-base sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
         >
           <Plus className="w-4 h-4 text-white" />
           <span>Add Employee</span>
@@ -489,7 +489,7 @@ export const CrewMembersPage: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3">
         <div className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-zinc-500 uppercase">Total Crew</span>

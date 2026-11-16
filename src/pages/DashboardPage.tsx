@@ -167,9 +167,9 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl w-full mx-auto pb-24 font-sans px-3.5 sm:px-6 lg:px-8">
+    <div className="space-y-4 sm:space-y-5 w-full pb-20 font-sans">
       {/* 1. Compact Dashboard Header (No duplicate studio branding — already in top header) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-zinc-200/90 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 sm:p-5 rounded-2xl border border-zinc-200/90 shadow-2xs">
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -182,7 +182,7 @@ export const DashboardPage: React.FC = () => {
               <span>{todayFormatted}</span>
             </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight font-heading mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight font-heading mt-1">
             Dashboard Overview
           </h1>
         </div>
@@ -192,7 +192,7 @@ export const DashboardPage: React.FC = () => {
             setActiveTab('create-booking');
             window.location.hash = '#/app/bookings/new';
           }}
-          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-sm tracking-tight shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98] flex items-center justify-center gap-2"
+          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-base sm:text-sm tracking-tight shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98] flex items-center justify-center gap-2"
         >
           <Plus className="w-4 h-4 text-white shrink-0 stroke-[2.5]" />
           <span>+ New Booking</span>
@@ -200,22 +200,22 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* 2. Exactly 4 Key Indicator Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Indicator 1: Upcoming Bookings */}
         <div 
           onClick={() => {
             setActiveTab('bookings');
             window.location.hash = '#/app/bookings';
           }}
-          className="bg-white p-4 sm:p-5 rounded-2xl border border-zinc-200/90 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
+          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-zinc-200/90 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between text-zinc-500">
-            <span className="text-xs font-semibold text-zinc-600 font-sans">Upcoming Bookings</span>
+            <span className="text-xs sm:text-sm font-semibold text-zinc-700 font-sans">Upcoming Bookings</span>
             <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-105 transition-transform">
               <Calendar className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3">
+          <div className="mt-2.5 sm:mt-3">
             <div className="text-2xl sm:text-3xl font-extrabold text-zinc-900 font-tabular tabular-nums tracking-tight">
               {upcomingBookings.length}
             </div>
@@ -229,7 +229,7 @@ export const DashboardPage: React.FC = () => {
             setActiveTab('bookings');
             window.location.hash = '#/app/bookings';
           }}
-          className="bg-white p-4 sm:p-5 rounded-2xl border border-zinc-200/90 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
+          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-zinc-200/90 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between text-zinc-500">
             <span className="text-xs sm:text-sm font-semibold text-zinc-700 font-sans">Confirmed Bookings</span>
@@ -237,7 +237,7 @@ export const DashboardPage: React.FC = () => {
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3">
+          <div className="mt-2.5 sm:mt-3">
             <div className="text-2xl sm:text-3xl font-extrabold text-zinc-900 font-tabular tabular-nums tracking-tight">
               {confirmedBookingsCount}
             </div>
@@ -251,7 +251,7 @@ export const DashboardPage: React.FC = () => {
             setActiveTab('bookings');
             window.location.hash = '#/app/bookings';
           }}
-          className="bg-white p-4 sm:p-5 rounded-2xl border border-zinc-200/90 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
+          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-zinc-200/90 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between text-zinc-500">
             <span className="text-xs sm:text-sm font-semibold text-zinc-700 font-sans">Pending Payments</span>
@@ -259,8 +259,8 @@ export const DashboardPage: React.FC = () => {
               <IndianRupee className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3">
-            <div className="text-xl sm:text-2xl font-extrabold text-rose-600 font-tabular tabular-nums tracking-tight truncate">
+          <div className="mt-2.5 sm:mt-3">
+            <div className="text-2xl sm:text-3xl font-extrabold text-rose-600 font-tabular tabular-nums tracking-tight truncate">
               ₹{pendingPaymentsTotal.toLocaleString('en-IN')}
             </div>
             <p className="text-xs text-zinc-500 mt-0.5 font-sans">Receivable client balance</p>
@@ -273,7 +273,7 @@ export const DashboardPage: React.FC = () => {
             setActiveTab('bookings');
             window.location.hash = '#/app/bookings';
           }}
-          className="bg-white p-4 sm:p-5 rounded-2xl border border-zinc-200/90 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
+          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-zinc-200/90 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between text-zinc-500">
             <span className="text-xs sm:text-sm font-semibold text-zinc-700 font-sans">Pending Deliveries</span>
@@ -281,7 +281,7 @@ export const DashboardPage: React.FC = () => {
               <PackageCheck className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3">
+          <div className="mt-2.5 sm:mt-3">
             <div className="text-2xl sm:text-3xl font-extrabold text-zinc-900 font-tabular tabular-nums tracking-tight">
               {pendingDeliveries.length}
             </div>
@@ -291,15 +291,15 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* 3. Actionable Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Left Column (2 cols): Today's Events & Upcoming Bookings */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {/* Section 1: Today's Events */}
-          <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-3">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+          <div className="bg-white rounded-2xl border border-zinc-200/90 p-3.5 sm:p-5 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-2.5 sm:pb-3">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-emerald-600" />
-                <h2 className="text-base sm:text-lg font-bold text-zinc-900 font-heading">Today's Events</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-zinc-900 font-heading">Today's Events</h2>
               </div>
               <span className="text-xs sm:text-sm font-semibold text-zinc-500 font-sans">
                 {todayEvents.length > 0 ? `${todayEvents.length} Shoots Today` : 'None Scheduled'}
@@ -312,11 +312,11 @@ export const DashboardPage: React.FC = () => {
                   <div 
                     key={ev.id}
                     onClick={() => openBookingWorkspace(ev.id)}
-                    className="p-3.5 rounded-xl border border-zinc-200/80 bg-zinc-50/60 hover:bg-zinc-100/80 transition-all cursor-pointer flex items-center justify-between gap-3"
+                    className="p-3 sm:p-3.5 rounded-xl border border-zinc-200/80 bg-zinc-50/60 hover:bg-zinc-100/80 transition-all cursor-pointer flex items-center justify-between gap-3"
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-sm sm:text-base font-bold text-zinc-900 truncate font-heading">{ev.eventName}</h3>
+                        <h3 className="text-base sm:text-base font-bold text-zinc-900 truncate font-heading">{ev.eventName}</h3>
                         {getStatusBadge(ev.status)}
                       </div>
                       <p className="text-xs sm:text-sm text-zinc-600 mt-0.5 font-sans">
@@ -345,18 +345,18 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           {/* Section 2: Upcoming Bookings (Next 5) */}
-          <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-3">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+          <div className="bg-white rounded-2xl border border-zinc-200/90 p-3.5 sm:p-5 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-2.5 sm:pb-3">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-blue-600" />
-                <h2 className="text-base sm:text-lg font-bold text-zinc-900 font-heading">Upcoming Bookings</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-zinc-900 font-heading">Upcoming Bookings</h2>
               </div>
               <button
                 onClick={() => {
                   setActiveTab('bookings');
                   window.location.hash = '#/app/bookings';
                 }}
-                className="text-xs sm:text-sm font-semibold text-zinc-500 hover:text-zinc-900 flex items-center gap-1 cursor-pointer font-sans"
+                className="text-xs sm:text-sm font-semibold text-zinc-500 hover:text-zinc-900 flex items-center gap-1 cursor-pointer font-sans min-h-[44px] sm:min-h-[auto]"
               >
                 <span>View All ({bookings.length})</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -368,11 +368,11 @@ export const DashboardPage: React.FC = () => {
                 <div
                   key={b.id}
                   onClick={() => openBookingWorkspace(b.id)}
-                  className="p-3.5 rounded-xl border border-zinc-200/80 hover:border-zinc-300 hover:bg-zinc-50/70 transition-all cursor-pointer flex items-center justify-between gap-3 group"
+                  className="p-3 sm:p-3.5 rounded-xl border border-zinc-200/80 hover:border-zinc-300 hover:bg-zinc-50/70 transition-all cursor-pointer flex items-center justify-between gap-3 group"
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm sm:text-base font-bold text-zinc-900 truncate group-hover:text-orange-600 transition-colors font-heading">
+                      <span className="text-base sm:text-base font-bold text-zinc-900 truncate group-hover:text-orange-600 transition-colors font-heading">
                         {b.customerName}
                       </span>
                       {getStatusBadge(b.status)}
@@ -386,7 +386,7 @@ export const DashboardPage: React.FC = () => {
                   </div>
 
                   <div className="text-right shrink-0">
-                    <div className="text-sm sm:text-base font-bold text-zinc-900 font-tabular tabular-nums">
+                    <div className="text-base sm:text-base font-bold text-zinc-900 font-tabular tabular-nums">
                       ₹{(b.financials?.finalAgreedAmount || 0).toLocaleString('en-IN')}
                     </div>
                     {(b.financials?.remainingBalance || 0) > 0 ? (
@@ -412,13 +412,13 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Right Column (1 col): Pending Work & Quick Actions */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Section 3: Pending Work */}
-          <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-3">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+          <div className="bg-white rounded-2xl border border-zinc-200/90 p-3.5 sm:p-5 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-2.5 sm:pb-3">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-500" />
-                <h2 className="text-base sm:text-lg font-bold text-zinc-900 font-heading">Pending Work</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-zinc-900 font-heading">Pending Work</h2>
               </div>
               <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-sans">
                 Action Required
@@ -440,7 +440,7 @@ export const DashboardPage: React.FC = () => {
                       {item.deadline}
                     </span>
                   </div>
-                  <h4 className="text-sm font-bold text-zinc-900 truncate font-heading">{item.title}</h4>
+                  <h4 className="text-sm sm:text-base font-bold text-zinc-900 truncate font-heading">{item.title}</h4>
                   <p className="text-xs text-zinc-500 truncate font-sans">{item.subtitle}</p>
                 </div>
               ))}
@@ -454,8 +454,8 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           {/* Section 4: Quick Actions */}
-          <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-2xs space-y-3">
-            <h2 className="text-sm font-bold text-zinc-900 font-heading border-b border-zinc-100 pb-2">
+          <div className="bg-white rounded-2xl border border-zinc-200/90 p-3.5 sm:p-5 shadow-2xs space-y-3">
+            <h2 className="text-base sm:text-lg font-bold text-zinc-900 font-heading border-b border-zinc-100 pb-2">
               Studio Quick Actions
             </h2>
 
@@ -465,7 +465,7 @@ export const DashboardPage: React.FC = () => {
                   setActiveTab('create-booking');
                   window.location.hash = '#/app/bookings/new';
                 }}
-                className="w-full min-h-[48px] px-4 py-2.5 rounded-xl bg-orange-50/80 hover:bg-orange-100 text-orange-950 border border-orange-200/80 text-sm font-semibold flex items-center justify-between transition-all cursor-pointer shadow-2xs touch-manipulation active:scale-[0.98]"
+                className="w-full min-h-[50px] sm:min-h-[46px] px-4 py-2.5 rounded-xl bg-orange-50/80 hover:bg-orange-100 text-orange-950 border border-orange-200/80 text-base sm:text-sm font-semibold flex items-center justify-between transition-all cursor-pointer shadow-2xs touch-manipulation active:scale-[0.98]"
               >
                 <div className="flex items-center gap-2.5">
                   <Plus className="w-4 h-4 text-orange-600 shrink-0" />
@@ -479,7 +479,7 @@ export const DashboardPage: React.FC = () => {
                   setActiveTab('bookings');
                   window.location.hash = '#/app/bookings';
                 }}
-                className="w-full min-h-[48px] px-4 py-2.5 rounded-xl border border-zinc-200/90 hover:bg-zinc-50 hover:border-zinc-300 text-zinc-800 text-sm font-semibold flex items-center justify-between transition-all cursor-pointer touch-manipulation active:scale-[0.98] shadow-2xs"
+                className="w-full min-h-[50px] sm:min-h-[46px] px-4 py-2.5 rounded-xl border border-zinc-200/90 hover:bg-zinc-50 hover:border-zinc-300 text-zinc-800 text-base sm:text-sm font-semibold flex items-center justify-between transition-all cursor-pointer touch-manipulation active:scale-[0.98] shadow-2xs"
               >
                 <div className="flex items-center gap-2.5">
                   <PackageCheck className="w-4 h-4 text-zinc-600" />
@@ -493,7 +493,7 @@ export const DashboardPage: React.FC = () => {
                   setActiveTab('calendar');
                   window.location.hash = '#/app/calendar';
                 }}
-                className="w-full min-h-[48px] px-4 py-2.5 rounded-xl border border-zinc-200/90 hover:bg-zinc-50 hover:border-zinc-300 text-zinc-800 text-sm font-semibold flex items-center justify-between transition-all cursor-pointer touch-manipulation active:scale-[0.98] shadow-2xs"
+                className="w-full min-h-[50px] sm:min-h-[46px] px-4 py-2.5 rounded-xl border border-zinc-200/90 hover:bg-zinc-50 hover:border-zinc-300 text-zinc-800 text-base sm:text-sm font-semibold flex items-center justify-between transition-all cursor-pointer touch-manipulation active:scale-[0.98] shadow-2xs"
               >
                 <div className="flex items-center gap-2.5">
                   <Calendar className="w-4 h-4 text-zinc-600" />
@@ -507,7 +507,7 @@ export const DashboardPage: React.FC = () => {
                   setActiveTab('crew');
                   window.location.hash = '#/app/crew';
                 }}
-                className="w-full min-h-[48px] px-4 py-2.5 rounded-xl border border-zinc-200/90 hover:bg-zinc-50 hover:border-zinc-300 text-zinc-800 text-sm font-semibold flex items-center justify-between transition-all cursor-pointer touch-manipulation active:scale-[0.98] shadow-2xs"
+                className="w-full min-h-[50px] sm:min-h-[46px] px-4 py-2.5 rounded-xl border border-zinc-200/90 hover:bg-zinc-50 hover:border-zinc-300 text-zinc-800 text-base sm:text-sm font-semibold flex items-center justify-between transition-all cursor-pointer touch-manipulation active:scale-[0.98] shadow-2xs"
               >
                 <div className="flex items-center gap-2.5">
                   <Users className="w-4 h-4 text-zinc-600" />

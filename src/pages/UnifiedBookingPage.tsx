@@ -799,9 +799,9 @@ export const UnifiedBookingPage: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-7xl w-full mx-auto pb-24 space-y-6 px-3.5 sm:px-6 lg:px-8">
+    <div className="w-full pb-20 space-y-4 sm:space-y-5">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -812,7 +812,7 @@ export const UnifiedBookingPage: React.FC = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight mt-1 font-display">
             New Event Booking & Quotation
           </h1>
-          <p className="text-sm text-zinc-600 mt-1">
+          <p className="text-sm text-zinc-600 mt-1 hidden sm:block">
             Progressive workflow: customer, event schedule, team allocation, package, and confirmation.
           </p>
         </div>
@@ -822,14 +822,14 @@ export const UnifiedBookingPage: React.FC = () => {
             setActiveTab('dashboard');
             window.location.hash = '#/app/dashboard';
           }}
-          className="text-xs font-semibold text-zinc-500 hover:text-zinc-900 self-start sm:self-auto cursor-pointer"
+          className="text-xs sm:text-sm font-semibold text-zinc-500 hover:text-zinc-900 self-start sm:self-auto cursor-pointer min-h-[40px] inline-flex items-center"
         >
           Cancel & Return
         </button>
       </div>
 
       {/* 8-Step Progress Stepper */}
-      <div className="bg-white p-3 rounded-2xl border border-zinc-200/80 shadow-xs overflow-x-auto">
+      <div className="bg-white p-3 rounded-2xl border border-zinc-200/80 shadow-xs overflow-x-auto touch-scroll">
         <div className="flex items-center justify-between min-w-[700px] px-2">
           {steps.map((st, i) => {
             const isCurrent = currentStep === st.num;
@@ -840,7 +840,7 @@ export const UnifiedBookingPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setCurrentStep(st.num)}
-                  className="flex items-center gap-2 group cursor-pointer"
+                  className="flex items-center gap-2 group cursor-pointer min-h-[44px]"
                 >
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs transition-all ${
                     isCurrent 
@@ -870,7 +870,7 @@ export const UnifiedBookingPage: React.FC = () => {
 
       {/* SUCCESS SCREEN */}
       {successBookingId && (
-        <div className="bg-white rounded-3xl border border-emerald-200 p-8 shadow-lg text-center space-y-4 animate-in fade-in zoom-in-95 duration-200">
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-emerald-200 p-6 sm:p-8 shadow-lg text-center space-y-4 animate-in fade-in zoom-in-95 duration-200">
           <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
             <CheckCircle2 className="w-8 h-8" />
           </div>
@@ -887,13 +887,13 @@ export const UnifiedBookingPage: React.FC = () => {
                 setActiveTab('bookings');
                 window.location.hash = `#/app/bookings/${successBookingId}`;
               }}
-              className="px-5 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-sm shadow-xs transition-all active:scale-95 cursor-pointer min-h-[48px]"
+              className="px-5 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-base sm:text-sm shadow-xs transition-all active:scale-95 cursor-pointer min-h-[50px] sm:min-h-[48px]"
             >
               Open Booking Workspace →
             </button>
             <button
               onClick={handleGeneratePdf}
-              className="px-4 py-3 rounded-xl border border-zinc-200 hover:bg-zinc-100 font-semibold text-sm flex items-center gap-1.5 min-h-[48px]"
+              className="px-4 py-3 rounded-xl border border-zinc-200 hover:bg-zinc-100 font-semibold text-base sm:text-sm flex items-center gap-1.5 min-h-[50px] sm:min-h-[48px]"
             >
               <Printer className="w-4 h-4" />
               <span>Print Quotation PDF</span>
@@ -904,7 +904,7 @@ export const UnifiedBookingPage: React.FC = () => {
 
       {/* FORM BODY */}
       {!successBookingId && (
-        <div className="bg-white rounded-3xl border border-zinc-200/90 p-6 sm:p-8 shadow-xs">
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-zinc-200/90 p-4 sm:p-6 lg:p-7 shadow-xs">
           {/* STEP 1: CUSTOMER */}
           {currentStep === 1 && (
             <div className="space-y-5 animate-in fade-in duration-150">

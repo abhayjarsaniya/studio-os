@@ -87,7 +87,7 @@ export const MasterStudioCreatePage: React.FC = () => {
   } : null;
 
   return (
-    <div className="space-y-6 max-w-4xl pb-20">
+    <div className="w-full space-y-4 sm:space-y-6 pb-20">
       {/* Handover Modal */}
       {handoverData && (
         <StudioHandoverModal

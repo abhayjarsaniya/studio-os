@@ -55,7 +55,7 @@ export const TasksPage: React.FC = () => {
   const pendingCount = tasks.filter(t => t.status !== 'Completed' && t.status !== 'Done' && t.status !== 'Cancelled').length;
 
   return (
-    <div className="space-y-5 max-w-7xl mx-auto">
+    <div className="w-full space-y-4 sm:space-y-5 pb-20">
       {/* Top Banner & Title Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>

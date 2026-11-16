@@ -296,17 +296,17 @@ export const EmployeeDashboardPage: React.FC = () => {
       </div>
 
       {/* Main Workspace */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-6 pb-24 sm:pb-8">
+      <main className="flex-1 w-full px-3 py-3 sm:px-5 sm:py-5 space-y-4 sm:space-y-5 pb-24 sm:pb-8">
         {/* Welcome & Attendance Shift Card */}
-        <div className="p-6 rounded-3xl bg-white border border-zinc-200/90 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm relative overflow-hidden">
+        <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-zinc-200/90 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 shadow-sm relative overflow-hidden">
           <div className="space-y-1">
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
               Daily Shift Check-In
             </span>
-            <h1 className="text-xl sm:text-2xl font-black text-zinc-900 tracking-tight font-display">
+            <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight font-display">
               Today's Schedule & Attendance
             </h1>
-            <p className="text-xs text-zinc-500 max-w-xl">
+            <p className="text-xs sm:text-sm text-zinc-500 max-w-xl">
               Mark your presence, inspect assigned shoot call times, and report task completions.
             </p>
           </div>
@@ -315,7 +315,7 @@ export const EmployeeDashboardPage: React.FC = () => {
             {metrics.attendanceStatus === 'not_marked' && (
               <button
                 onClick={handleCheckIn}
-                className="w-full sm:w-auto min-h-[52px] sm:min-h-[48px] px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
+                className="w-full sm:w-auto min-h-[52px] sm:min-h-[48px] px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
               >
                 <LogIn className="w-5 h-5 sm:w-4 sm:h-4" />
                 <span>Mark Attendance / Check In</span>

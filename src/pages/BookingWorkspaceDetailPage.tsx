@@ -350,7 +350,7 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
   ];
 
   return (
-    <div className="space-y-5 pb-24 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8">
+    <div className="space-y-4 sm:space-y-5 pb-20 w-full">
       {/* Toast */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-zinc-900 text-white font-semibold text-xs px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom duration-150">

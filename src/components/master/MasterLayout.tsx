@@ -94,9 +94,9 @@ export const MasterLayout: React.FC<{ children: React.ReactNode }> = ({ children
           </div>
         </header>
 
-        {/* Scrollable Page Body */}
-        <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8 bg-zinc-50/70 text-zinc-900">
-          <div className="max-w-7xl mx-auto">
+        {/* Scrollable Page Body - comfortable responsive gutters */}
+        <main className="flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-5 lg:px-6 lg:py-6 bg-zinc-50/70 text-zinc-900">
+          <div className="w-full">
             {children}
           </div>
         </main>

@@ -31,7 +31,7 @@ export const PlatformDashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-12">
+    <div className="w-full space-y-4 sm:space-y-6 pb-12">
       {/* Page Header */}
       <div>
         <div className="flex items-center gap-2">

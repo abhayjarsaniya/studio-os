@@ -207,9 +207,9 @@ export const BookingsWorkspacePage: React.FC = () => {
 
   // ALL BOOKINGS LIST VIEW
   return (
-    <div className="space-y-6 pb-20 max-w-7xl w-full mx-auto font-sans px-3.5 sm:px-6 lg:px-8">
+    <div className="space-y-4 sm:space-y-5 pb-20 w-full font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs">
@@ -220,7 +220,7 @@ export const BookingsWorkspacePage: React.FC = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight mt-1 font-display">
             Bookings Directory
           </h1>
-          <p className="text-sm text-zinc-600 mt-1">
+          <p className="text-sm text-zinc-600 mt-1 hidden sm:block">
             Select any booking to manage customer details, payments, delivery checklists, and WhatsApp messages in one workspace.
           </p>
         </div>
@@ -230,7 +230,7 @@ export const BookingsWorkspacePage: React.FC = () => {
             setActiveTab('create-booking');
             window.location.hash = '#/app/bookings/new';
           }}
-          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-sm tracking-tight shadow-md shadow-orange-500/25 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98] flex items-center justify-center gap-2"
+          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-base sm:text-sm tracking-tight shadow-md shadow-orange-500/25 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98] flex items-center justify-center gap-2"
         >
           <Plus className="w-4 h-4 text-white shrink-0 stroke-[2.5]" />
           <span>+ New Booking</span>
@@ -238,20 +238,20 @@ export const BookingsWorkspacePage: React.FC = () => {
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="bg-white border border-zinc-200/90 rounded-2xl p-4 shadow-2xs space-y-3">
+      <div className="bg-white border border-zinc-200/90 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-3">
         <div className="relative w-full">
-          <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3.5 sm:top-3" />
+          <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-4 sm:top-3" />
           <input
             type="text"
             placeholder="Search by customer name, mobile phone, booking ID, or event name..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 sm:py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-zinc-900 min-h-[48px] sm:min-h-[42px]"
+            className="w-full pl-10 pr-4 py-3 sm:py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-sm text-zinc-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-zinc-900 min-h-[48px] sm:min-h-[42px]"
           />
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs touch-scroll">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs sm:text-sm touch-scroll">
           {[
             { id: 'all', label: 'All Bookings', count: bookings.length },
             { 
@@ -283,7 +283,7 @@ export const BookingsWorkspacePage: React.FC = () => {
             <button
               key={f.id}
               onClick={() => setStatusFilter(f.id)}
-              className={`min-h-[44px] sm:min-h-[36px] px-4 py-2 sm:px-3.5 sm:py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 touch-manipulation active:scale-95 ${
+              className={`min-h-[44px] sm:min-h-[36px] px-3.5 sm:px-3 py-2 sm:py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 touch-manipulation active:scale-95 text-xs sm:text-sm ${
                 statusFilter === f.id
                   ? 'bg-orange-500 text-white shadow-xs'
                   : 'bg-zinc-100/80 text-zinc-600 hover:bg-orange-50/60 hover:text-orange-950'
@@ -306,7 +306,7 @@ export const BookingsWorkspacePage: React.FC = () => {
           <div
             key={b.id}
             onClick={() => handleOpenBooking(b.id)}
-            className="bg-white rounded-2xl border border-zinc-200 p-4 shadow-2xs space-y-3 active:scale-[0.99] transition-all cursor-pointer"
+            className="bg-white rounded-2xl border border-zinc-200 p-3.5 shadow-2xs space-y-3 active:scale-[0.99] transition-all cursor-pointer"
           >
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -323,7 +323,7 @@ export const BookingsWorkspacePage: React.FC = () => {
                       e.stopPropagation();
                       setDeletingBooking(b);
                     }}
-                    className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-xl flex items-center justify-center text-zinc-400 hover:text-rose-600 hover:bg-rose-50 border border-zinc-200 transition-colors cursor-pointer touch-manipulation active:scale-95"
+                    className="min-w-[48px] min-h-[48px] w-12 h-12 rounded-xl flex items-center justify-center text-zinc-400 hover:text-rose-600 hover:bg-rose-50 border border-zinc-200 transition-colors cursor-pointer touch-manipulation active:scale-95"
                     title="Delete booking"
                     aria-label={`Delete booking ${b.bookingNumber}`}
                   >
@@ -347,18 +347,18 @@ export const BookingsWorkspacePage: React.FC = () => {
             <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
               <div>
                 <span className="text-xs text-zinc-500 block">Agreed Amount</span>
-                <span className="text-sm sm:text-base font-bold text-zinc-900 font-tabular tabular-nums">
+                <span className="text-base font-bold text-zinc-900 font-tabular tabular-nums">
                   ₹{(b.financials?.finalAgreedAmount || 0).toLocaleString('en-IN')}
                 </span>
               </div>
               <div className="text-right">
                 <span className="text-xs text-zinc-500 block">Balance Due</span>
                 {(b.financials?.remainingBalance || 0) > 0 ? (
-                  <span className="text-sm sm:text-base font-bold text-rose-600 font-tabular tabular-nums">
+                  <span className="text-base font-bold text-rose-600 font-tabular tabular-nums">
                     ₹{(b.financials?.remainingBalance || 0).toLocaleString('en-IN')}
                   </span>
                 ) : (
-                  <span className="text-sm sm:text-base font-bold text-emerald-600">Paid</span>
+                  <span className="text-base font-bold text-emerald-600">Paid</span>
                 )}
               </div>
             </div>

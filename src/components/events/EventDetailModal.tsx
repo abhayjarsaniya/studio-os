@@ -652,13 +652,13 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsAddPaymentOpen(false)}
-                  className="px-3 py-1.5 font-bold text-zinc-600 hover:bg-zinc-100 rounded-xl"
+                  className="min-h-[48px] px-4 py-2 font-bold text-zinc-600 hover:bg-zinc-100 rounded-xl cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl"
+                  className="min-h-[48px] px-5 py-2 font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl cursor-pointer shadow-sm active:scale-98"
                 >
                   Record Payment
                 </button>

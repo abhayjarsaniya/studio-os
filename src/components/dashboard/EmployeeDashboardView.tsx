@@ -74,7 +74,7 @@ export const EmployeeDashboardView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5 max-w-7xl mx-auto">
+    <div className="space-y-4 sm:space-y-5 w-full">
       {/* Welcome Banner */}
       <div className="p-5 sm:p-6 rounded-3xl bg-white border border-zinc-200/90 text-zinc-900 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
         <div className="space-y-1">

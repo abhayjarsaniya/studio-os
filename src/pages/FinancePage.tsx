@@ -184,17 +184,17 @@ export const FinancePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50/50 pb-20">
+    <div className="min-h-screen bg-zinc-50/50 pb-20 w-full">
       {/* Top Header */}
-      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-zinc-200 px-4 sm:px-8 py-4">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-zinc-200 px-3.5 sm:px-6 py-4">
+        <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-xl bg-zinc-900 text-white flex items-center justify-center font-bold">
                 ₹
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight font-display">
                   Finance & Billing
                 </h1>
                 <p className="text-sm text-zinc-600 mt-0.5">
@@ -238,7 +238,7 @@ export const FinancePage: React.FC = () => {
         </div>
 
         {/* Sub-Navigation & Filters Bar */}
-        <div className="max-w-7xl mx-auto mt-4 pt-3 border-t border-zinc-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="w-full mt-4 pt-3 border-t border-zinc-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Sub-Tabs */}
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
             {[
@@ -298,7 +298,7 @@ export const FinancePage: React.FC = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-6">
+      <div className="w-full pt-4 sm:pt-6">
         {/* ========================================================= */}
         {/* TAB 1: FINANCE DASHBOARD                                  */}
         {/* ========================================================= */}

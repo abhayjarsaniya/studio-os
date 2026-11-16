@@ -24,7 +24,7 @@ export const MasterSettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl pb-20">
+    <div className="w-full space-y-4 sm:space-y-6 pb-20">
       {/* Toast Alert */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-amber-500 text-zinc-950 font-bold px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2">

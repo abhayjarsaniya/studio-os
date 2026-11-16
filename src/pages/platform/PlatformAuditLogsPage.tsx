@@ -20,7 +20,7 @@ export const PlatformAuditLogsPage: React.FC = () => {
   }, [searchTerm, refreshTrigger]);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="w-full space-y-4 sm:space-y-6 pb-12">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">

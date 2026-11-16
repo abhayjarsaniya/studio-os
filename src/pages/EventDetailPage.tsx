@@ -154,7 +154,7 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
   const isMultiDay = event.endDate && event.endDate !== event.startDate;
 
   return (
-    <div className="space-y-6 max-w-7xl w-full mx-auto pb-12 px-3.5 sm:px-6 lg:px-8">
+    <div className="w-full space-y-4 sm:space-y-6 pb-12">
       {/* Back button & Action Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <button

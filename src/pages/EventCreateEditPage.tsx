@@ -253,7 +253,7 @@ export const EventCreateEditPage: React.FC<EventCreateEditPageProps> = ({ eventI
   };
 
   return (
-    <div className="max-w-7xl w-full mx-auto space-y-6 pb-16 px-3.5 sm:px-6 lg:px-8">
+    <div className="w-full space-y-4 sm:space-y-6 pb-16">
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
         <button
