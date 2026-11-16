@@ -13,7 +13,8 @@ import {
   AlertTriangle,
   Edit3,
   ExternalLink,
-  Users
+  Users,
+  X
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { NewBookingButton } from '../components/common/NewBookingButton';
@@ -23,10 +24,24 @@ import { StudioEvent } from '../types';
 import { BookingRecord } from '../types/bookingProduction';
 import { bookingProductionService } from '../services/bookingProductionService';
 import { calendarVisibilityService } from '../services/calendarVisibilityService';
+import { crewConflictService } from '../services/crewConflictService';
 import { getStudioOwnerProfile, isStudioOwnerId } from '../services/studioOwnerHelper';
 import { THEME } from '../utils/theme';
 
 type CalendarViewMode = 'month' | 'week' | 'day';
+
+// Helper for colored event dots in calendar date cells
+const getEventDotColor = (category?: string): string => {
+  const cat = (category || '').toLowerCase();
+  if (cat.includes('pre-wedding') || cat.includes('pre wedding')) return 'bg-amber-500';
+  if (cat.includes('wedding')) return 'bg-orange-500';
+  if (cat.includes('engagement') || cat.includes('ring')) return 'bg-rose-500';
+  if (cat.includes('haldi') || cat.includes('mehndi') || cat.includes('sangeet') || cat.includes('mandvo')) return 'bg-yellow-500';
+  if (cat.includes('reception')) return 'bg-purple-500';
+  if (cat.includes('corporate') || cat.includes('commercial')) return 'bg-blue-500';
+  if (cat.includes('birthday') || cat.includes('baby') || cat.includes('maternity')) return 'bg-emerald-500';
+  return 'bg-orange-500';
+};
 
 export const CalendarPage: React.FC = () => {
   const { events, setSelectedEventId, setIsEventFormOpen, setEditingEvent } = useApp();
@@ -250,32 +265,38 @@ export const CalendarPage: React.FC = () => {
   const formattedSelectedDayStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
   const dayEvents = combinedCalendarEvents.filter(e => e.startDate === formattedSelectedDayStr);
 
-  // Check crew conflicts on the selected day
-  const crewConflictsOnSelectedDay = useMemo(() => {
-    if (dayEvents.length < 2) return [];
+  // Background crew conflict detection per event (Requirement 1: subtle popover without persistent warning banner)
+  const [activeConflictInfo, setActiveConflictInfo] = useState<{
+    eventId: string;
+    eventName: string;
+    conflicts: { memberName: string; conflictingEventName: string; conflictingTime: string }[];
+  } | null>(null);
 
-    const conflicts: string[] = [];
-    const memberAssignments: Record<string, { eventName: string; time: string }[]> = {};
+  const getEventConflicts = (event: StudioEvent | any) => {
+    const team = event.assignedTeamIds || [];
+    if (team.length === 0 || dayEvents.length < 2) return [];
 
-    dayEvents.forEach(ev => {
-      const team = ev.assignedTeamIds || [];
-      team.forEach(mId => {
-        if (!memberAssignments[mId]) memberAssignments[mId] = [];
-        memberAssignments[mId].push({
-          eventName: ev.name,
-          time: `${ev.startTime || '10:00'} - ${ev.endTime || '18:00'}`
-        });
+    const activeEmployees = crewConflictService.getActiveEmployees(studioId);
+    const conflicts: { memberName: string; conflictingEventName: string; conflictingTime: string }[] = [];
+
+    dayEvents.forEach(otherEv => {
+      if (otherEv.id === event.id) return;
+      const otherTeam = otherEv.assignedTeamIds || [];
+      team.forEach((mId: string) => {
+        if (otherTeam.includes(mId)) {
+          const emp = activeEmployees.find(e => e.id === mId);
+          const memberName = emp?.name || (isStudioOwnerId(mId) ? getStudioOwnerProfile(studioId).name : 'Crew Member');
+          conflicts.push({
+            memberName,
+            conflictingEventName: otherEv.name || 'Other Shoot',
+            conflictingTime: `${otherEv.startTime || '10:00'} - ${otherEv.endTime || '18:00'}`
+          });
+        }
       });
     });
 
-    Object.entries(memberAssignments).forEach(([mId, asgns]) => {
-      if (asgns.length > 1) {
-        conflicts.push(`Crew member is assigned to ${asgns.length} overlapping shoots today (${asgns.map(a => a.eventName).join(' & ')}).`);
-      }
-    });
-
     return conflicts;
-  }, [dayEvents]);
+  };
 
   // Handle click on a date cell in month view (Requirement 5)
   const handleDateClick = (dayNumber: number) => {
@@ -353,9 +374,6 @@ export const CalendarPage: React.FC = () => {
               {combinedCalendarEvents.length} Shoots
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">
-            Overview of photography bookings, crew allocations and multi-event schedules
-          </p>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
@@ -473,10 +491,10 @@ export const CalendarPage: React.FC = () => {
               </div>
 
               {/* Days Grid */}
-              <div className="grid grid-cols-7 gap-1.5">
+              <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
                 {daysArray.map((day, idx) => {
                   if (day === null) {
-                    return <div key={`empty-${idx}`} className="h-16 sm:h-22 rounded-xl bg-zinc-50/50" />;
+                    return <div key={`empty-${idx}`} className="aspect-square sm:aspect-auto sm:h-22 rounded-xl bg-zinc-50/50" />;
                   }
 
                   const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -489,7 +507,7 @@ export const CalendarPage: React.FC = () => {
                     <div
                       key={`day-${day}`}
                       onClick={() => handleDateClick(day)}
-                      className={`h-16 sm:h-22 p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+                      className={`aspect-square sm:aspect-auto sm:h-22 p-1 sm:p-2 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
                         isSelected
                           ? 'border-orange-500 bg-orange-50/70 ring-2 ring-orange-500/40'
                           : isToday
@@ -497,40 +515,74 @@ export const CalendarPage: React.FC = () => {
                           : 'border-zinc-200 hover:border-orange-300 hover:bg-orange-50/20'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className={`text-[15px] sm:text-base md:text-[17px] ${
-                          isSelected ? 'text-orange-950 font-black' : isToday ? 'text-orange-800 font-bold' : 'text-zinc-800 font-bold'
+                      {/* Mobile View: Clean Square Date Cell with Centered Number & Colored Dots */}
+                      <div className="flex sm:hidden flex-col items-center justify-between h-full py-0.5">
+                        <span className={`text-xs sm:text-sm font-bold ${
+                          isSelected ? 'text-orange-950 font-black' : isToday ? 'text-orange-800' : 'text-zinc-800'
                         }`}>
                           {day}
                         </span>
-                        {isToday && (
-                          <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-orange-200 text-orange-900 hidden sm:inline">
-                            Today
-                          </span>
-                        )}
-                        {hasMultiple && (
-                          <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-800 border border-orange-200">
-                            {eventsOnDay.length} shoots
-                          </span>
-                        )}
+                        <div className="flex items-center justify-center gap-1 flex-wrap max-w-full px-0.5 min-h-[10px]">
+                          {eventsOnDay.slice(0, 3).map((ev, i) => (
+                            <span
+                              key={i}
+                              className={`w-1.5 h-1.5 rounded-full shrink-0 ${getEventDotColor(ev.category)}`}
+                              title={`${ev.name || ev.category}`}
+                            />
+                          ))}
+                          {eventsOnDay.length > 3 && (
+                            <span className="text-[12px] font-bold text-zinc-500 leading-none">
+                              +{eventsOnDay.length - 3}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Event Badges */}
-                      <div className="space-y-1 overflow-hidden">
-                        {eventsOnDay.slice(0, 2).map(ev => (
-                          <div
-                            key={ev.id}
-                            className={`text-xs sm:text-[13px] font-semibold px-1 sm:px-1.5 py-0.5 rounded truncate border ${getCategoryBadgeColor(ev.category)}`}
-                            title={`${ev.name} (${ev.category})`}
-                          >
-                            {ev.name || ev.category}
-                          </div>
-                        ))}
-                        {eventsOnDay.length > 2 && (
-                          <div className="text-xs text-orange-700 font-bold px-1">
-                            +{eventsOnDay.length - 2} more
-                          </div>
-                        )}
+                      {/* Desktop View (sm and up) */}
+                      <div className="hidden sm:flex flex-col justify-between h-full">
+                        <div className="flex items-center justify-between">
+                          <span className={`text-[15px] sm:text-base md:text-[17px] ${
+                            isSelected ? 'text-orange-950 font-black' : isToday ? 'text-orange-800 font-bold' : 'text-zinc-800 font-bold'
+                          }`}>
+                            {day}
+                          </span>
+                          {isToday && (
+                            <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-orange-200 text-orange-900">
+                              Today
+                            </span>
+                          )}
+                          {hasMultiple && (
+                            <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-0.5">
+                                {eventsOnDay.slice(0, 3).map((ev, i) => (
+                                  <span key={i} className={`w-1.5 h-1.5 rounded-full ${getEventDotColor(ev.category)}`} />
+                                ))}
+                              </div>
+                              <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-800 border border-orange-200">
+                                {eventsOnDay.length} shoots
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Event Badges */}
+                        <div className="space-y-1 overflow-hidden mt-1">
+                          {eventsOnDay.slice(0, 2).map(ev => (
+                            <div
+                              key={ev.id}
+                              className={`text-xs sm:text-[13px] font-semibold px-1.5 py-0.5 rounded truncate border flex items-center gap-1 ${getCategoryBadgeColor(ev.category)}`}
+                              title={`${ev.name} (${ev.category})`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${getEventDotColor(ev.category)}`} />
+                              <span className="truncate">{ev.name || ev.category}</span>
+                            </div>
+                          ))}
+                          {eventsOnDay.length > 2 && (
+                            <div className="text-xs text-orange-700 font-bold px-1">
+                              +{eventsOnDay.length - 2} more
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
@@ -659,85 +711,97 @@ export const CalendarPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Crew Conflict Warning Banner if multiple events share crew */}
-          {crewConflictsOnSelectedDay.length > 0 && (
-            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm space-y-1.5 shadow-2xs">
-              <div className="font-bold flex items-center gap-1.5 text-amber-800">
-                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>Crew Scheduling Conflict Detected</span>
-              </div>
-              {crewConflictsOnSelectedDay.map((msg, i) => (
-                <p key={i} className="text-xs sm:text-[13px] leading-relaxed text-amber-900/90">{msg}</p>
-              ))}
-            </div>
-          )}
-
           {/* Day's Event List */}
           <div className="space-y-3 max-h-[500px] overflow-y-auto">
-            {dayEvents.map(ev => (
-              <div
-                key={ev.id}
-                className="p-3.5 rounded-xl border border-zinc-200 hover:border-orange-200 transition-all space-y-2.5 bg-zinc-50/50 hover:bg-orange-50/10"
-              >
-                <div className="flex items-center justify-between">
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${getCategoryBadgeColor(ev.category)}`}>
-                    {ev.category}
-                  </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full border ${getStatusBadgeColor(ev.status)}`}>
-                    {ev.status}
-                  </span>
-                </div>
+            {dayEvents.map(ev => {
+              const eventConflicts = getEventConflicts(ev as unknown as StudioEvent);
 
-                <div>
-                  <h4 className="text-sm sm:text-base font-bold text-zinc-900">{ev.name}</h4>
-                  <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">{ev.customerName} • {ev.customerPhone}</p>
-                </div>
-
-                <div className="text-xs sm:text-sm text-zinc-600 space-y-1 pt-1 border-t border-zinc-200/60">
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-zinc-400" />
-                    <span>{formatTime(ev.startTime)} - {formatTime(ev.endTime)}</span>
+              return (
+                <div
+                  key={ev.id}
+                  className="p-3.5 rounded-xl border border-zinc-200 hover:border-orange-200 transition-all space-y-2.5 bg-zinc-50/50 hover:bg-orange-50/10"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${getCategoryBadgeColor(ev.category)}`}>
+                      {ev.category}
+                    </span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full border ${getStatusBadgeColor(ev.status)}`}>
+                      {ev.status}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1.5 truncate">
-                    <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                    <span className="truncate">{ev.venue}, {ev.venueCity}</span>
+
+                  <div>
+                    <h4 className="text-sm sm:text-base font-bold text-zinc-900">{ev.name}</h4>
+                    <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">{ev.customerName} • {ev.customerPhone}</p>
+                  </div>
+
+                  <div className="text-xs sm:text-sm text-zinc-600 space-y-1 pt-1 border-t border-zinc-200/60">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                      <span>{formatTime(ev.startTime)} - {formatTime(ev.endTime)}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 truncate">
+                      <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                      <span className="truncate">{ev.venue}, {ev.venueCity}</span>
+                    </div>
+                  </div>
+
+                  {/* Assigned Crew Indicators & Subtle Conflict Info */}
+                  {ev.assignedTeamIds && ev.assignedTeamIds.length > 0 && (
+                    <div className="flex items-center justify-between gap-1.5 text-xs text-zinc-500 pt-1 border-t border-zinc-200/60 flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                        <span>{ev.assignedTeamIds.length} team members assigned</span>
+                      </div>
+                      {eventConflicts.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveConflictInfo({
+                              eventId: ev.id,
+                              eventName: ev.name,
+                              conflicts: eventConflicts
+                            });
+                          }}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200 transition-colors cursor-pointer shrink-0"
+                          title="View schedule conflict details"
+                          aria-label="View conflict details"
+                        >
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                          <span>Conflict Info</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Actions: Open Booking Workspace & Edit Event */}
+                  <div className="pt-2 border-t border-zinc-200/60 flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        window.location.hash = `#/app/bookings/${ev.id}`;
+                      }}
+                      className="flex-1 min-h-[48px] sm:min-h-[42px] py-2 px-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-sm sm:text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 transition-all"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span>Workspace</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setEditingEvent(ev as unknown as StudioEvent);
+                        setIsEventFormOpen(true);
+                      }}
+                      className="min-h-[48px] sm:min-h-[42px] py-2 px-4 rounded-xl border border-zinc-200 hover:border-orange-300 hover:bg-orange-50/40 text-zinc-700 text-sm sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                      title="Edit Event Details"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      <span>Edit</span>
+                    </button>
                   </div>
                 </div>
-
-                {/* Assigned Crew Indicators */}
-                {ev.assignedTeamIds && ev.assignedTeamIds.length > 0 && (
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-                    <Users className="w-3.5 h-3.5 text-orange-500" />
-                    <span>{ev.assignedTeamIds.length} team members assigned</span>
-                  </div>
-                )}
-
-                {/* Actions: Open Booking Workspace & Edit Event */}
-                <div className="pt-2 border-t border-zinc-200/60 flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      window.location.hash = `#/app/bookings/${ev.id}`;
-                    }}
-                    className="flex-1 min-h-[48px] sm:min-h-[42px] py-2 px-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-sm sm:text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 transition-all"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    <span>Workspace</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setEditingEvent(ev as unknown as StudioEvent);
-                      setIsEventFormOpen(true);
-                    }}
-                    className="min-h-[48px] sm:min-h-[42px] py-2 px-4 rounded-xl border border-zinc-200 hover:border-orange-300 hover:bg-orange-50/40 text-zinc-700 text-sm sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
-                    title="Edit Event Details"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                    <span>Edit</span>
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
 
             {dayEvents.length === 0 && (
               <div className="p-8 text-center text-xs text-zinc-400 space-y-2">
@@ -764,6 +828,66 @@ export const CalendarPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Subtle Crew Conflict Overlap Details Popover / Modal (Requirement 1) */}
+      {activeConflictInfo && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in"
+          onClick={() => setActiveConflictInfo(null)}
+        >
+          <div 
+            className="bg-white rounded-2xl border border-zinc-200/90 shadow-xl max-w-sm w-full p-4.5 space-y-3"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-100">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center">
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                </div>
+                <h4 className="text-sm font-bold text-zinc-900 font-display">Crew Schedule Overlap</h4>
+              </div>
+              <button
+                onClick={() => setActiveConflictInfo(null)}
+                className="min-w-[32px] min-h-[32px] rounded-lg hover:bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-zinc-700 cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2 text-xs text-zinc-600">
+              <p>
+                Shoot: <strong className="text-zinc-900">{activeConflictInfo.eventName}</strong>
+              </p>
+              <p className="text-zinc-500">
+                The following crew member(s) have concurrent assignments on {formatDate(formattedSelectedDayStr)}:
+              </p>
+              <div className="space-y-1.5 pt-1">
+                {activeConflictInfo.conflicts.map((c, i) => (
+                  <div key={i} className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/70 space-y-0.5">
+                    <div className="font-bold text-amber-950 flex items-center justify-between">
+                      <span>{c.memberName}</span>
+                      <span className="text-[12px] font-semibold text-amber-800 font-mono">{c.conflictingTime}</span>
+                    </div>
+                    <div className="text-amber-800 text-[12px]">
+                      Conflicting Shoot: <strong className="text-amber-950">{c.conflictingEventName}</strong>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-zinc-100 flex justify-end">
+              <button
+                onClick={() => setActiveConflictInfo(null)}
+                className="min-h-[36px] px-3.5 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-xs font-bold text-zinc-800 cursor-pointer transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

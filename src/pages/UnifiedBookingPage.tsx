@@ -812,9 +812,6 @@ export const UnifiedBookingPage: React.FC = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight mt-1 font-display">
             New Event Booking & Quotation
           </h1>
-          <p className="text-sm text-zinc-600 mt-1 hidden sm:block">
-            Progressive workflow: customer, event schedule, team allocation, package, and confirmation.
-          </p>
         </div>
 
         <button

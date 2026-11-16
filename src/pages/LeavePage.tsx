@@ -69,9 +69,6 @@ export const LeavePage: React.FC = () => {
               {leaveRequests.length} Total Records
             </span>
           </div>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Time-off requests, approval workflows, annual leave allowances and crew availability calendar
-          </p>
         </div>
 
         <Button

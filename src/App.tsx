@@ -204,8 +204,8 @@ const MainLayout: React.FC = () => {
         {/* Mobile Header */}
         <MobileHeader />
 
-        {/* Scrollable Page Body - responsive gutters without excessive desktop margins */}
-        <main className="flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4 lg:px-6 lg:py-5 pb-32 sm:pb-8 touch-scroll min-w-0">
+        {/* Scrollable Page Body - responsive gutters (16-20px mobile padding) without excessive desktop margins */}
+        <main className="flex-1 overflow-y-auto px-4 py-3 sm:px-5 sm:py-4 lg:px-6 lg:py-5 pb-32 sm:pb-8 touch-scroll min-w-0">
           {renderActivePage()}
         </main>
 

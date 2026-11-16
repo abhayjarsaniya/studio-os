@@ -80,9 +80,6 @@ export const PlatformSubscriptionsPage: React.FC = () => {
             <Layers className="w-7 h-7 text-indigo-600" />
             SaaS Subscription Lifecycle Management
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Authoritative multi-tenant subscription states, agreed price preservation, atomic state transitions, and renewals.
-          </p>
         </div>
 
         <div className="text-xs font-semibold text-slate-500 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs self-start sm:self-auto">

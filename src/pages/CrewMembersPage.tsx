@@ -474,9 +474,6 @@ export const CrewMembersPage: React.FC = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight mt-1 font-display">
             Crew Members & Collaborators
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-500 mt-0.5 hidden sm:block">
-            Full employee lifecycle: add, view, edit, password reset, event assignment, deactivation, and safe archival.
-          </p>
         </div>
 
         <button

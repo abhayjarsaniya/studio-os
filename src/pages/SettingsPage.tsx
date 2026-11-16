@@ -188,9 +188,6 @@ export const SettingsPage: React.FC = () => {
           <h2 className="text-2xl font-bold tracking-tight text-zinc-900 font-display">
             Studio Profile & Settings
           </h2>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Manage your studio contact details, security credentials, and system settings.
-          </p>
         </div>
 
         <button

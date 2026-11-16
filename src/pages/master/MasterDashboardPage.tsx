@@ -54,9 +54,6 @@ export const MasterDashboardPage: React.FC = () => {
           <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 font-display tracking-tight mt-1">
             Platform Master Overview
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Real-time multi-studio performance, subscription MRR, consolidated financials, and global governance.
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

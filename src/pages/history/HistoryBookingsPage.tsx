@@ -224,9 +224,6 @@ export const HistoryBookingsPage: React.FC = () => {
                 Shreeji Studio
               </span>
             </div>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              All customers, bookings, quotations, payments, invoices and delivery history in one place.
-            </p>
           </div>
         </div>
 

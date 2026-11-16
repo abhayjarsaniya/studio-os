@@ -306,9 +306,6 @@ export const EmployeeDashboardPage: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight font-display">
               Today's Schedule & Attendance
             </h1>
-            <p className="text-xs sm:text-sm text-zinc-500 max-w-xl">
-              Mark your presence, inspect assigned shoot call times, and report task completions.
-            </p>
           </div>
 
           <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto">

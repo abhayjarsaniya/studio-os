@@ -89,9 +89,6 @@ export const PlatformStudioCreatePage: React.FC = () => {
           <Building2 className="w-7 h-7 text-indigo-600" />
           Create New Photography Studio Tenant
         </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Provisions an isolated multi-tenant photography studio and creates the Studio Owner credentials. Master Admin cannot add studio staff.
-        </p>
       </div>
 
       {/* Creation Form */}

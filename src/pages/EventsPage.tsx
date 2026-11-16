@@ -164,9 +164,6 @@ export const EventsPage: React.FC = () => {
               {filteredEvents.length} Total
             </span>
           </div>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Active tenant: <strong className="text-zinc-800">{currentStudio.name}</strong> • Multi-view shoot manager
-          </p>
         </div>
 
         {/* View Switchers & Create CTA */}

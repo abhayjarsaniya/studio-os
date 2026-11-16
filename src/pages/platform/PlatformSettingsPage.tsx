@@ -26,9 +26,6 @@ export const PlatformSettingsPage: React.FC = () => {
           <Settings className="w-7 h-7 text-indigo-600" />
           Platform System & SaaS Configuration
         </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Global defaults for trial duration, grace periods, gateway verification secrets, and platform policies.
-        </p>
       </div>
 
       {savedSuccess && (

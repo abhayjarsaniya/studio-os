@@ -183,9 +183,6 @@ export const CustomersPage: React.FC = () => {
               {filteredCustomers.length} Clients
             </span>
           </div>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Complete photography client directory, lead pipelines, scheduled follow-ups, and WhatsApp communications
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

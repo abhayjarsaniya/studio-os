@@ -74,9 +74,6 @@ export const MasterReportsPage: React.FC = () => {
           <h1 className="text-2xl font-black text-zinc-900 font-display tracking-tight mt-1">
             Consolidated Platform Reports
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Cross-studio financial audits, shoot volume analytics, supplier utilization, and executive summaries.
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

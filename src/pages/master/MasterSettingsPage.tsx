@@ -44,9 +44,6 @@ export const MasterSettingsPage: React.FC = () => {
           <h1 className="text-2xl font-black text-zinc-900 font-display tracking-tight mt-1">
             Master Platform Settings
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Global system parameters, security policies, and default SaaS provisioning rules.
-          </p>
         </div>
 
         <button

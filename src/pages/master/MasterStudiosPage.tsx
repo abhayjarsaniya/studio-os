@@ -146,9 +146,6 @@ export const MasterStudiosPage: React.FC = () => {
           <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 font-display tracking-tight mt-1">
             Global Studio Directory ({studios.length})
           </h1>
-          <p className="text-sm text-zinc-600 mt-1">
-            Inspect studio subscriptions, team headcounts, booking activity, and manage individual studio access.
-          </p>
         </div>
 
         <button

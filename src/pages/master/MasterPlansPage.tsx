@@ -86,9 +86,6 @@ export const MasterPlansPage: React.FC = () => {
           <h1 className="text-2xl font-black text-zinc-900 font-display tracking-tight mt-1">
             Subscription Plans Management
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Configure platform pricing tiers, storage quotas, employee limits, and feature entitlements.
-          </p>
         </div>
 
         <button

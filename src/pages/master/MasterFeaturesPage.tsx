@@ -77,9 +77,6 @@ export const MasterFeaturesPage: React.FC = () => {
           <h1 className="text-xl sm:text-2xl font-black text-zinc-900 font-display tracking-tight mt-1">
             Feature Management & Multi-Studio Matrix
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Resolution hierarchy: Tier 1 Global → Tier 2 Plan Entitlement → Tier 3 Master Studio Override → Tier 4 Studio Preference → Tier 5 Role Access.
-          </p>
         </div>
 
         {/* Tab Toggle: Global vs By Studio */}

@@ -49,9 +49,6 @@ export const NotificationsPage: React.FC = () => {
               {notifications.filter(n => !n.read).length} Unread
             </span>
           </div>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Operational updates, live shoot check-ins, advance payments and tasks
-          </p>
         </div>
 
         <Button

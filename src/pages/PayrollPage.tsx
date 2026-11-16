@@ -160,9 +160,6 @@ export const PayrollPage: React.FC = () => {
               Admin Only
             </span>
           </div>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Process monthly studio payroll, manage staff compensation packages, record bank transfers and export financial audit logs
-          </p>
         </div>
 
         {canManagePayroll && (

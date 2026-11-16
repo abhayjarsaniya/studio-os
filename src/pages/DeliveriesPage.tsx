@@ -123,9 +123,6 @@ export const DeliveriesPage: React.FC = () => {
           <h1 className="text-2xl font-black text-zinc-900 tracking-tight mt-1">
             Deliveries & Production Checklist ({deliverables.length})
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Track photos, videos, albums, and digital galleries from shoot completion to client delivery.
-          </p>
         </div>
 
         <button

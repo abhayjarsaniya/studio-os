@@ -56,9 +56,6 @@ export const PlatformSupportPage: React.FC = () => {
             <LifeBuoy className="w-7 h-7 text-indigo-600" />
             Support Tickets & Studio Assistance
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Resolve studio operational inquiries, billing questions, technical assistance, and authorized time-limited grants.
-          </p>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">

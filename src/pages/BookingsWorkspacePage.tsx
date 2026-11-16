@@ -220,9 +220,6 @@ export const BookingsWorkspacePage: React.FC = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight mt-1 font-display">
             Bookings Directory
           </h1>
-          <p className="text-sm text-zinc-600 mt-1 hidden sm:block">
-            Select any booking to manage customer details, payments, delivery checklists, and WhatsApp messages in one workspace.
-          </p>
         </div>
 
         <button

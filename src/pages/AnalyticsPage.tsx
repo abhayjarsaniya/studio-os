@@ -67,9 +67,6 @@ export const AnalyticsPage: React.FC = () => {
             <BarChart3 className="w-7 h-7 text-indigo-600" />
             Analytics & Business Intelligence
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Authoritative, multi-dimensional operational metrics & real-time insights for {currentStudio?.name}
-          </p>
         </div>
 
         <button

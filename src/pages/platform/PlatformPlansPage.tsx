@@ -127,9 +127,6 @@ export const PlatformPlansPage: React.FC = () => {
             <CreditCard className="w-7 h-7 text-indigo-600" />
             SaaS Subscription Plans Manager
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Configure flat per-studio SaaS tiers, grace periods, quotas, and automated price versioning.
-          </p>
         </div>
 
         {canAdmin('manage_plans') && (

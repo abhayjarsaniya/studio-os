@@ -102,9 +102,6 @@ export const PlatformStudiosPage: React.FC = () => {
             <Building2 className="w-7 h-7 text-indigo-600" />
             Photography Studios Management
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Centralized directory of all registered photography studio tenants, lifecycle status, and subscription health.
-          </p>
         </div>
 
         <div className="flex items-center gap-3">

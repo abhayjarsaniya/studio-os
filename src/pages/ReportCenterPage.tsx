@@ -154,9 +154,6 @@ export const ReportCenterPage: React.FC = () => {
             <FileSpreadsheet className="w-7 h-7 text-indigo-600" />
             Report Center & Data Export
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Generate, customize, and export secure studio reports with formula injection protection
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

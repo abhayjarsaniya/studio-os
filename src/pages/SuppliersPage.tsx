@@ -135,9 +135,6 @@ export const SuppliersPage: React.FC = () => {
             <Truck className="w-7 h-7 text-indigo-600" />
             External Suppliers & Specialized Crew
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Manage 17 external supplier categories: Drone Pilots, LED Walls, Audio Engineers, Frame Manufacturers, Album Printers and Rental Houses.
-          </p>
         </div>
 
         <div className="flex items-center gap-3">
