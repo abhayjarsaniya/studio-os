@@ -478,7 +478,7 @@ export const CrewMembersPage: React.FC = () => {
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-base sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
+          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-3 sm:py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-base sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
         >
           <Plus className="w-4 h-4 text-white" />
           <span>Add Employee</span>

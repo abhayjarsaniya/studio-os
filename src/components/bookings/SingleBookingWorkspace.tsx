@@ -1306,8 +1306,8 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
             }}
             className={`min-h-[48px] px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap touch-manipulation active:scale-95 ${
               expandedSections[sec.id]
-                ? 'bg-orange-500 text-white shadow-xs font-bold'
-                : 'text-zinc-600 hover:text-zinc-900 hover:bg-orange-50/40 bg-white border border-zinc-200/70'
+                ? 'bg-zinc-900 text-white shadow-xs font-bold'
+                : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 bg-white border border-zinc-200/70'
             }`}
           >
             {sec.icon}
@@ -1317,7 +1317,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
       </div>
 
       {/* Auto-Save & Accordion Controls Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-orange-50/70 border border-orange-200/90 rounded-2xl p-3.5 shadow-2xs">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-zinc-50 border border-zinc-200/90 rounded-2xl p-3.5 shadow-2xs">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
           <span className="text-xs sm:text-sm font-bold text-zinc-800">Instant Actions & Auto-Save Active</span>
@@ -1821,7 +1821,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   setCrewModalVisibleOnCalendar(true);
                   setIsCrewModalOpen(true);
                 }}
-                className="w-full sm:w-auto min-h-[44px] px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 transition-all"
+                className="w-full sm:w-auto min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 transition-all"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Assign Crew</span>
@@ -2001,8 +2001,8 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   - ₹{negotiatedDiscount.toLocaleString('en-IN')}
                 </span>
               </div>
-              <div className="p-3.5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-2xs">
-                <span className="text-xs text-orange-100 font-bold uppercase tracking-wider block">Final Agreed Package Fee</span>
+              <div className="p-3.5 rounded-xl bg-zinc-900 text-white shadow-2xs">
+                <span className="text-xs text-zinc-400 font-bold uppercase tracking-wider block">Final Agreed Package Fee</span>
                 <span className="text-lg sm:text-xl font-extrabold text-white mt-1 block font-display">
                   ₹{finalAgreedAmount.toLocaleString('en-IN')}
                 </span>
@@ -2072,8 +2072,8 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 </span>
               </div>
 
-              <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-2xs">
-                <span className="text-xs text-orange-100 font-bold uppercase tracking-wider block">Final Agreed Amount</span>
+              <div className="p-3 rounded-xl bg-zinc-900 text-white shadow-2xs">
+                <span className="text-xs text-zinc-400 font-bold uppercase tracking-wider block">Final Agreed Amount</span>
                 <span className="text-base sm:text-lg font-extrabold text-white mt-1 block font-display">
                   ₹{finalAgreedAmount.toLocaleString('en-IN')}
                 </span>
@@ -2328,7 +2328,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsDeliverablesSelectorOpen(true)}
-                  className="min-h-[44px] px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 transition-all"
+                  className="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 transition-all"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>+ Quick Multi-Select</span>
@@ -2690,7 +2690,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   />
                   <button
                     type="submit"
-                    className="w-full sm:w-auto min-h-[48px] sm:min-h-[40px] px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-xl text-sm font-bold cursor-pointer touch-manipulation active:scale-95 transition-all shadow-2xs"
+                    className="w-full sm:w-auto min-h-[48px] sm:min-h-[40px] px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-sm font-bold cursor-pointer touch-manipulation active:scale-95 transition-all shadow-2xs"
                   >
                     Save Internal Note
                   </button>
@@ -3025,7 +3025,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs cursor-pointer active:scale-95 transition-all"
+                  className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs cursor-pointer active:scale-95 transition-all"
                 >
                   Save Changes
                 </button>
@@ -3172,7 +3172,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                 <button
                   type="submit"
                   disabled={selectedCrewEmployeeIds.length === 0}
-                  className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs cursor-pointer active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl shadow-xs text-sm sm:text-xs cursor-pointer active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Assign {selectedCrewEmployeeIds.length > 0 ? `${selectedCrewEmployeeIds.length} Crew Member(s)` : 'Crew'}
                 </button>

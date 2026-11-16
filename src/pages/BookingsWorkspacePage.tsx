@@ -27,7 +27,8 @@ import {
   Trash2,
   Loader2,
   AlertCircle,
-  X
+  X,
+  ChevronDown
 } from 'lucide-react';
 
 export const BookingsWorkspacePage: React.FC = () => {
@@ -212,7 +213,7 @@ export const BookingsWorkspacePage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-2xs">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-zinc-100 border border-zinc-200 text-zinc-700">
               Studio Workspace
             </span>
             <span className="text-xs text-zinc-500 font-medium">{bookings.length} Bookings Registered</span>
@@ -247,8 +248,52 @@ export const BookingsWorkspacePage: React.FC = () => {
           />
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs sm:text-sm touch-scroll">
+        {/* Mobile Filter Dropdown (sm:hidden) */}
+        <div className="sm:hidden relative w-full">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full min-h-[48px] px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-sm font-bold text-zinc-800 focus:outline-none focus:bg-white focus:ring-2 focus:ring-zinc-900 appearance-none cursor-pointer pr-10 shadow-2xs"
+            aria-label="Filter bookings by status"
+          >
+            {[
+              { id: 'all', label: 'All Bookings', count: bookings.length },
+              { 
+                id: 'upcoming', 
+                label: 'Upcoming', 
+                count: bookings.filter(b => (b.mainEventDate || b.startDate || '') >= todayStr && b.status !== 'completed' && b.status !== 'cancelled').length 
+              },
+              { 
+                id: 'confirmed', 
+                label: 'Confirmed', 
+                count: bookings.filter(b => ['deal_confirmed', 'advance_received', 'event_scheduled', 'confirmed'].includes(b.status)).length 
+              },
+              { 
+                id: 'in_progress', 
+                label: 'In Progress', 
+                count: bookings.filter(b => ['in_production', 'editing', 'delivery_in_progress'].includes(b.status)).length 
+              },
+              { 
+                id: 'completed', 
+                label: 'Completed', 
+                count: bookings.filter(b => b.status === 'completed' || b.status === 'fully_delivered').length 
+              },
+              { 
+                id: 'pending_payment', 
+                label: 'Pending Payment', 
+                count: bookings.filter(b => (b.financials?.remainingBalance || 0) > 0).length 
+              }
+            ].map(tab => (
+              <option key={tab.id} value={tab.id}>
+                {tab.label} ({tab.count})
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="w-4 h-4 text-zinc-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </div>
+
+        {/* Desktop Filter Pills (hidden sm:flex) */}
+        <div className="hidden sm:flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs sm:text-sm touch-scroll">
           {[
             { id: 'all', label: 'All Bookings', count: bookings.length },
             { 
@@ -259,7 +304,7 @@ export const BookingsWorkspacePage: React.FC = () => {
             { 
               id: 'confirmed', 
               label: 'Confirmed', 
-              count: bookings.filter(b => ['deal_confirmed', 'advance_received', 'event_scheduled'].includes(b.status)).length 
+              count: bookings.filter(b => ['deal_confirmed', 'advance_received', 'event_scheduled', 'confirmed'].includes(b.status)).length 
             },
             { 
               id: 'in_progress', 
@@ -282,13 +327,13 @@ export const BookingsWorkspacePage: React.FC = () => {
               onClick={() => setStatusFilter(f.id)}
               className={`min-h-[44px] sm:min-h-[36px] px-3.5 sm:px-3 py-2 sm:py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 touch-manipulation active:scale-95 text-xs sm:text-sm ${
                 statusFilter === f.id
-                  ? 'bg-orange-500 text-white shadow-xs'
-                  : 'bg-zinc-100/80 text-zinc-600 hover:bg-orange-50/60 hover:text-orange-950'
+                  ? 'bg-zinc-900 text-white shadow-xs'
+                  : 'bg-zinc-100 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200'
               }`}
             >
               <span>{f.label}</span>
-              <span className={`text-xs px-1.5 py-0.2 rounded-full ${
-                statusFilter === f.id ? 'bg-white/20 text-white' : 'bg-zinc-200 text-zinc-700'
+              <span className={`text-xs px-1.5 py-0.2 rounded-full font-bold ${
+                statusFilter === f.id ? 'bg-zinc-800 text-zinc-200' : 'bg-zinc-200/80 text-zinc-600'
               }`}>
                 {f.count}
               </span>

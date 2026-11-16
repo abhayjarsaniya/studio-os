@@ -931,9 +931,8 @@ export const UnifiedBookingPage: React.FC = () => {
           {/* STEP 1: CUSTOMER */}
           {currentStep === 1 && (
             <div className="space-y-5 animate-in fade-in duration-150">
-              <div className="border-b border-zinc-100 pb-3">
+              <div className="border-b border-zinc-100 pb-2.5">
                 <h3 className="text-base font-bold text-zinc-900 font-display">Step 1 — Customer Information</h3>
-                <p className="text-xs text-zinc-500">Search existing customer by phone number or enter a new customer record.</p>
               </div>
 
               {/* Duplicate Prevention Search */}
@@ -1054,9 +1053,8 @@ export const UnifiedBookingPage: React.FC = () => {
           {/* STEP 2: EVENT */}
           {currentStep === 2 && (
             <div className="space-y-5 animate-in fade-in duration-150">
-              <div className="border-b border-zinc-100 pb-3">
+              <div className="border-b border-zinc-100 pb-2.5">
                 <h3 className="text-base font-bold text-zinc-900 font-display">Step 2 — Event Particulars</h3>
-                <p className="text-xs text-zinc-500">Define the main photography assignment, date, venue, and delivery timeline.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -1163,9 +1161,6 @@ export const UnifiedBookingPage: React.FC = () => {
                   <h3 className="text-base sm:text-lg font-bold text-zinc-900 font-display mt-1">
                     Step 3 — Sub-Events & Crew Allocation
                   </h3>
-                  <p className="text-xs sm:text-sm text-zinc-500">
-                    Add wedding functions with schedule, venue, and assign dedicated crew members with calendar visibility controls.
-                  </p>
                 </div>
 
                 <div className="relative" ref={subEventPickerRef}>
@@ -1176,7 +1171,7 @@ export const UnifiedBookingPage: React.FC = () => {
                       setSubEventSearchQuery('');
                       setShowCustomInput(false);
                     }}
-                    className="w-full sm:w-auto min-h-[46px] sm:min-h-[42px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs sm:text-sm shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full sm:w-auto min-h-[46px] sm:min-h-[42px] px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs sm:text-sm shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Plus className="w-4 h-4 stroke-[2.5]" />
                     <span>+ Add Sub-Event</span>
@@ -1587,9 +1582,6 @@ export const UnifiedBookingPage: React.FC = () => {
                   <h3 className="text-base sm:text-lg font-bold text-zinc-900 font-display mt-1">
                     Step 4 — Team & Crew Assignment
                   </h3>
-                  <p className="text-xs sm:text-sm text-zinc-500">
-                    Assign studio crew members and yourself to each individual wedding function using multi-select checkboxes. Roles are mapped directly from staff designations.
-                  </p>
                 </div>
 
                 <div className="flex items-center gap-2 self-start sm:self-auto">
@@ -1618,10 +1610,9 @@ export const UnifiedBookingPage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-200/60 pb-2">
                   <div>
                     <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-700 flex items-center gap-1.5">
-                      <Users className="w-4 h-4 text-orange-600" />
+                      <Users className="w-4 h-4 text-zinc-600" />
                       <span>Quick Multi-Select Crew Allocation</span>
                     </h4>
-                    <p className="text-xs text-zinc-500">Check or uncheck crew members to update assignments instantly</p>
                   </div>
 
                   {/* Target Function Selector */}
@@ -1936,10 +1927,9 @@ export const UnifiedBookingPage: React.FC = () => {
           {/* STEP 5: PACKAGE */}
           {currentStep === 5 && (
             <div className="space-y-5 animate-in fade-in duration-150">
-              <div className="border-b border-zinc-100 pb-3 flex items-center justify-between">
+              <div className="border-b border-zinc-100 pb-2.5 flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-bold text-zinc-900 font-display">Step 5 — Photography Package & Line Items</h3>
-                  <p className="text-xs text-zinc-500">Configure photography, cinematography, drone, and editing items with rates.</p>
                 </div>
                 <div className="text-right">
                   <span className="text-xs text-zinc-400 uppercase font-bold block">Package Subtotal</span>
@@ -2195,9 +2185,8 @@ export const UnifiedBookingPage: React.FC = () => {
           {/* STEP 7: PRICE */}
           {currentStep === 7 && (
             <div className="space-y-5 animate-in fade-in duration-150">
-              <div className="border-b border-zinc-100 pb-3">
+              <div className="border-b border-zinc-100 pb-2.5">
                 <h3 className="text-base font-bold text-zinc-900 font-display">Step 7 — Pricing & Negotiated Terms</h3>
-                <p className="text-xs text-zinc-500">Calculate package total, apply negotiated discounts, and log initial token payment.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
@@ -2231,26 +2220,26 @@ export const UnifiedBookingPage: React.FC = () => {
               </div>
 
               {/* Total Settlement Card */}
-              <div className="p-5 rounded-2xl bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md">
+              <div className="p-5 rounded-2xl bg-zinc-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md border border-zinc-800">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-orange-100">Final Agreed Booking Amount</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">Final Agreed Booking Amount</span>
                   <div className="text-3xl font-black font-mono tracking-tight mt-0.5 text-white">
                     ₹{finalNegotiatedAmount.toLocaleString('en-IN')}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 border-t sm:border-t-0 sm:border-l border-orange-400/40 pt-3 sm:pt-0 sm:pl-6 text-xs">
+                <div className="flex items-center gap-4 border-t sm:border-t-0 sm:border-l border-zinc-800 pt-3 sm:pt-0 sm:pl-6 text-xs">
                   <div>
-                    <span className="text-xs text-orange-100 uppercase block">Advance Received</span>
+                    <span className="text-xs text-zinc-400 uppercase block">Advance Received</span>
                     <input
                       type="number"
                       value={advancePayment}
                       onChange={(e) => setAdvancePayment(parseInt(e.target.value) || 0)}
-                      className="w-28 px-2 py-1 rounded-lg bg-orange-700/60 border border-orange-300 text-white font-mono font-bold text-sm mt-0.5 placeholder-orange-200"
+                      className="w-28 px-2.5 py-1 rounded-lg bg-zinc-800 border border-zinc-700 text-white font-mono font-bold text-sm mt-0.5"
                     />
                   </div>
                   <div>
-                    <span className="text-xs text-orange-100 uppercase block">Remaining Balance</span>
+                    <span className="text-xs text-zinc-400 uppercase block">Remaining Balance</span>
                     <div className="text-base font-bold font-mono text-amber-400 mt-1.5">
                       ₹{remainingBalance.toLocaleString('en-IN')}
                     </div>
@@ -2263,9 +2252,8 @@ export const UnifiedBookingPage: React.FC = () => {
           {/* STEP 8: REVIEW & ACTIONS */}
           {currentStep === 8 && (
             <div className="space-y-6 animate-in fade-in duration-150">
-              <div className="border-b border-zinc-100 pb-3">
+              <div className="border-b border-zinc-100 pb-2.5">
                 <h3 className="text-base font-bold text-zinc-900 font-display">Step 8 — Review, Generate Quotation & Confirm</h3>
-                <p className="text-xs text-zinc-500">Preview quotation, review crew allocations across all functions, and confirm deal into production.</p>
               </div>
 
               {/* Summary overview */}

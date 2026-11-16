@@ -14,7 +14,8 @@ import {
   Edit3,
   ExternalLink,
   Users,
-  X
+  X,
+  ChevronDown
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { NewBookingButton } from '../components/common/NewBookingButton';
@@ -370,19 +371,68 @@ export const CalendarPage: React.FC = () => {
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 font-display">
               Studio Shoot Calendar
             </h2>
-            <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold shadow-2xs">
+            <span className="text-xs px-2.5 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700 font-semibold shadow-2xs">
               {combinedCalendarEvents.length} Shoots
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+        {/* Mobile Compact Controls (sm:hidden) */}
+        <div className="flex sm:hidden items-center justify-between gap-2 w-full">
+          {/* Dropdown 1: All Shoots / My Shoots */}
+          <div className="relative flex-1">
+            <select
+              value={ownerScheduleFilter}
+              onChange={(e) => setOwnerScheduleFilter(e.target.value as 'all' | 'mine')}
+              className="w-full min-h-[48px] px-3 py-2.5 rounded-xl bg-white border border-zinc-200 text-xs font-bold text-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 shadow-2xs appearance-none cursor-pointer pr-8"
+              aria-label="Filter Shoots"
+            >
+              <option value="all">All Shoots ({combinedCalendarEvents.length})</option>
+              <option value="mine">My Shoots</option>
+            </select>
+            <ChevronDown className="w-4 h-4 text-zinc-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+
+          {/* Dropdown 2: Month / Week / Day View */}
+          <div className="relative flex-1">
+            <select
+              value={viewMode}
+              onChange={(e) => setViewMode(e.target.value as CalendarViewMode)}
+              className="w-full min-h-[48px] px-3 py-2.5 rounded-xl bg-white border border-zinc-200 text-xs font-bold text-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 shadow-2xs appearance-none cursor-pointer pr-8"
+              aria-label="Calendar View Mode"
+            >
+              <option value="month">Month View</option>
+              <option value="week">Week View</option>
+              <option value="day">Day View</option>
+            </select>
+            <ChevronDown className="w-4 h-4 text-zinc-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+
+          {/* Compact Plus (+) Button for Mobile (48–56px touch target, Shiny Orange signature) */}
+          <button
+            type="button"
+            onClick={() => {
+              setEditingEvent(null);
+              setIsEventFormOpen(true);
+            }}
+            className="min-w-[48px] min-h-[48px] w-12 h-12 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white flex items-center justify-center shadow-md shadow-orange-500/25 active:scale-95 transition-all cursor-pointer shrink-0 border border-orange-400/30"
+            aria-label="New Booking"
+            title="Create New Booking"
+          >
+            <Plus className="w-5 h-5 text-white stroke-[2.5]" />
+          </button>
+        </div>
+
+        {/* Desktop Controls (hidden sm:flex) */}
+        <div className="hidden sm:flex items-center gap-2 sm:gap-2.5 flex-wrap">
           {/* Studio Owner Schedule Filter (Requirement 3: Owner personal calendar visibility) */}
           <div className="flex items-center p-1 bg-zinc-100 rounded-xl text-xs sm:text-sm font-semibold border border-zinc-200/70">
             <button
               onClick={() => setOwnerScheduleFilter('all')}
               className={`min-h-[44px] sm:min-h-[38px] px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                ownerScheduleFilter === 'all' ? 'bg-orange-500 text-white shadow-2xs font-bold' : 'text-zinc-600 hover:text-zinc-900'
+                ownerScheduleFilter === 'all'
+                  ? 'bg-white text-zinc-900 shadow-2xs font-bold border border-zinc-200/80'
+                  : 'text-zinc-600 hover:text-zinc-900'
               }`}
             >
               All Shoots
@@ -390,7 +440,9 @@ export const CalendarPage: React.FC = () => {
             <button
               onClick={() => setOwnerScheduleFilter('mine')}
               className={`min-h-[44px] sm:min-h-[38px] px-3.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                ownerScheduleFilter === 'mine' ? 'bg-orange-500 text-white shadow-2xs font-bold' : 'text-zinc-600 hover:text-zinc-900'
+                ownerScheduleFilter === 'mine'
+                  ? 'bg-white text-zinc-900 shadow-2xs font-bold border border-zinc-200/80 text-orange-600'
+                  : 'text-zinc-600 hover:text-zinc-900'
               }`}
             >
               <UserCheck className="w-3.5 h-3.5" />
@@ -403,7 +455,9 @@ export const CalendarPage: React.FC = () => {
             <button
               onClick={() => setViewMode('month')}
               className={`min-h-[44px] sm:min-h-[38px] px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                viewMode === 'month' ? 'bg-orange-500 text-white shadow-2xs font-bold' : 'text-zinc-600 hover:text-zinc-900'
+                viewMode === 'month'
+                  ? 'bg-white text-zinc-900 shadow-2xs font-bold border border-zinc-200/80'
+                  : 'text-zinc-600 hover:text-zinc-900'
               }`}
             >
               Month
@@ -411,7 +465,9 @@ export const CalendarPage: React.FC = () => {
             <button
               onClick={() => setViewMode('week')}
               className={`min-h-[44px] sm:min-h-[38px] px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                viewMode === 'week' ? 'bg-orange-500 text-white shadow-2xs font-bold' : 'text-zinc-600 hover:text-zinc-900'
+                viewMode === 'week'
+                  ? 'bg-white text-zinc-900 shadow-2xs font-bold border border-zinc-200/80'
+                  : 'text-zinc-600 hover:text-zinc-900'
               }`}
             >
               Week
@@ -419,7 +475,9 @@ export const CalendarPage: React.FC = () => {
             <button
               onClick={() => setViewMode('day')}
               className={`min-h-[44px] sm:min-h-[38px] px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
-                viewMode === 'day' ? 'bg-orange-500 text-white shadow-2xs font-bold' : 'text-zinc-600 hover:text-zinc-900'
+                viewMode === 'day'
+                  ? 'bg-white text-zinc-900 shadow-2xs font-bold border border-zinc-200/80'
+                  : 'text-zinc-600 hover:text-zinc-900'
               }`}
             >
               Day
@@ -656,7 +714,7 @@ export const CalendarPage: React.FC = () => {
                 </span>
                 <button
                   onClick={handleCreateBookingForDay}
-                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs sm:text-sm font-bold shadow-2xs cursor-pointer active:scale-95 transition-all"
+                  className="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs sm:text-sm font-bold shadow-2xs cursor-pointer active:scale-95 transition-all"
                 >
                   + Add Shoot on this Day
                 </button>
@@ -704,9 +762,9 @@ export const CalendarPage: React.FC = () => {
               <h3 className="text-base font-bold text-zinc-900 font-display">
                 {monthNames[currentMonth]} {selectedDay}, {currentYear}
               </h3>
-              <p className="text-xs text-orange-700 font-medium">{dayEvents.length} Shoots Scheduled</p>
+              <p className="text-xs text-zinc-500 font-medium">{dayEvents.length} Shoots Scheduled</p>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-orange-50 border border-orange-200/80 flex items-center justify-center text-orange-600">
+            <div className="w-9 h-9 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-700">
               <CalendarIcon className="w-4 h-4" />
             </div>
           </div>
@@ -781,7 +839,7 @@ export const CalendarPage: React.FC = () => {
                       onClick={() => {
                         window.location.hash = `#/app/bookings/${ev.id}`;
                       }}
-                      className="flex-1 min-h-[48px] sm:min-h-[42px] py-2 px-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-sm sm:text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 transition-all"
+                      className="flex-1 min-h-[48px] sm:min-h-[42px] py-2 px-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-sm sm:text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 transition-all"
                     >
                       <ExternalLink className="w-4 h-4" />
                       <span>Workspace</span>
