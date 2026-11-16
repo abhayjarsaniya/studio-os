@@ -162,6 +162,7 @@ export interface FunctionPlan {
   bookingId: string;
   name: string; // e.g. 'Mandvo', 'Haldi', 'Wedding Ceremony'
   category: string;
+  orderIndex?: number;
   date: string;
   startTime: string;
   endTime: string;
@@ -180,6 +181,9 @@ export interface FunctionPlan {
     employeeName: string;
     role: string;
     contact?: string;
+    isVisibleOnCalendar?: boolean;
+    designation?: string;
+    department?: string;
   }>;
 
   // Deliverables specific to this function

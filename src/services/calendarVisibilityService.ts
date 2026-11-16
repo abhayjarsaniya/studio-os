@@ -483,8 +483,14 @@ export class CalendarVisibilityService {
             assignedCrew: (bkg as any).crew || []
           }];
 
+      const isOwner = isStudioOwnerId(employeeId, studioId);
+
       fns.forEach((fn: any) => {
-        const assignedMember = (fn.assignedCrew || []).find((c: any) => c.employeeId === employeeId || c.id === employeeId);
+        const assignedMember = (fn.assignedCrew || []).find((c: any) => 
+          c.employeeId === employeeId || 
+          c.id === employeeId || 
+          (isOwner && isStudioOwnerId(c.employeeId, studioId))
+        );
         if (!assignedMember) return; // Employee is not assigned to this function
 
         // Check visibility
@@ -518,8 +524,10 @@ export class CalendarVisibilityService {
     const legacyEvents = TenantStore.get<StudioEvent>(studioId, 'events') || [];
     legacyEvents.forEach(evt => {
       if (result.some(r => r.bookingId === evt.id)) return;
+      const isOwner = isStudioOwnerId(employeeId, studioId);
       const isAssigned = (evt.assignedTeamIds || []).includes(employeeId) ||
-        (evt.detailedAssignments || []).some(a => a.memberId === employeeId);
+        (isOwner && (evt.assignedTeamIds || []).some(id => isStudioOwnerId(id, studioId))) ||
+        (evt.detailedAssignments || []).some(a => a.memberId === employeeId || (isOwner && isStudioOwnerId(a.memberId, studioId)));
 
       if (!isAssigned) return;
 

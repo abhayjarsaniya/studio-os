@@ -39,8 +39,15 @@ import {
   X,
   ListTodo,
   DollarSign,
-  Share2
+  Share2,
+  Eye,
+  EyeOff,
+  Trash2,
+  Crown
 } from 'lucide-react';
+import { crewConflictService, CrewConflictInfo } from '../services/crewConflictService';
+import { calendarVisibilityService } from '../services/calendarVisibilityService';
+import { isStudioOwnerId, formatOwnerCrewDisplayName } from '../services/studioOwnerHelper';
 
 export type WorkspaceTab = 
   | 'overview' 
@@ -81,6 +88,13 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
   const [selectedFunctionForCrew, setSelectedFunctionForCrew] = useState<FunctionPlan | null>(null);
   const [assignedEmployeeId, setAssignedEmployeeId] = useState('');
   const [assignedRole, setAssignedRole] = useState('Lead Photographer');
+  const [crewModalVisibleOnCalendar, setCrewModalVisibleOnCalendar] = useState(true);
+  const [crewConflictWarn, setCrewConflictWarn] = useState<CrewConflictInfo | null>(null);
+  const [allowCrewConflictOverride, setAllowCrewConflictOverride] = useState(false);
+
+  const activeRoster = useMemo(() => {
+    return crewConflictService.getActiveEmployees(studioId);
+  }, [studioId]);
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -137,28 +151,98 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
   };
 
   // Assign Crew to Function
-  const handleAssignCrew = (e: React.FormEvent) => {
+  const handleAssignCrew = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeBooking || !selectedFunctionForCrew || !assignedEmployeeId) return;
 
-    const emp = employees.find(e => e.id === assignedEmployeeId);
+    const emp = activeRoster.find(e => e.id === assignedEmployeeId);
     if (!emp) return;
+
+    if (crewConflictWarn?.hasConflict && !allowCrewConflictOverride) {
+      alert(`Scheduling Warning: ${crewConflictWarn.warningMessage}\nPlease check "Allow Overlap" to confirm.`);
+      return;
+    }
+
+    const isOwner = isStudioOwnerId(emp.id, studioId) || emp.fullName.includes('(Studio Owner)');
+    const displayName = isOwner ? formatOwnerCrewDisplayName(emp.fullName) : emp.fullName;
+
+    await calendarVisibilityService.assignCrewMember({
+      studioId,
+      bookingId: activeBooking.id,
+      functionId: selectedFunctionForCrew.id,
+      employeeId: emp.id,
+      employeeName: displayName,
+      designation: emp.designation,
+      department: emp.department,
+      role: assignedRole,
+      contact: emp.phone || '',
+      isVisibleOnCalendar: crewModalVisibleOnCalendar,
+      assignedBy: 'Studio Owner',
+      allowConflictOverride: true
+    });
 
     if (!selectedFunctionForCrew.assignedCrew) {
       selectedFunctionForCrew.assignedCrew = [];
     }
 
-    selectedFunctionForCrew.assignedCrew.push({
-      employeeId: emp.id,
-      employeeName: emp.fullName,
-      role: assignedRole,
-      contact: emp.phone || ''
-    });
+    const existingIdx = selectedFunctionForCrew.assignedCrew.findIndex(c => 
+      c.employeeId === emp.id || (isOwner && isStudioOwnerId(c.employeeId, studioId))
+    );
+
+    if (existingIdx >= 0) {
+      selectedFunctionForCrew.assignedCrew[existingIdx].role = assignedRole;
+      (selectedFunctionForCrew.assignedCrew[existingIdx] as any).isVisibleOnCalendar = crewModalVisibleOnCalendar;
+    } else {
+      selectedFunctionForCrew.assignedCrew.push({
+        employeeId: emp.id,
+        employeeName: displayName,
+        role: assignedRole,
+        contact: emp.phone || '',
+        isVisibleOnCalendar: crewModalVisibleOnCalendar
+      } as any);
+    }
 
     bookingProductionService.saveBooking(studioId, activeBooking);
     setCrewAssignModalOpen(false);
+    setAssignedEmployeeId('');
+    setCrewConflictWarn(null);
+    setAllowCrewConflictOverride(false);
     setRefreshKey(k => k + 1);
-    showToast(`${emp.fullName} assigned to ${selectedFunctionForCrew.name}`);
+    showToast(`${displayName} assigned to ${selectedFunctionForCrew.name}`);
+  };
+
+  // Remove Crew from Function
+  const handleRemoveCrewMember = async (fnId: string, empId: string) => {
+    if (!activeBooking) return;
+    await calendarVisibilityService.unassignCrewMember(studioId, activeBooking.id, fnId, empId);
+    const targetFn = activeBooking.functions?.find(f => f.id === fnId);
+    if (targetFn && targetFn.assignedCrew) {
+      targetFn.assignedCrew = targetFn.assignedCrew.filter(c => 
+        c.employeeId !== empId && !(isStudioOwnerId(empId, studioId) && isStudioOwnerId(c.employeeId, studioId))
+      );
+    }
+    bookingProductionService.saveBooking(studioId, activeBooking);
+    setRefreshKey(k => k + 1);
+    showToast('Crew member removed from function.');
+  };
+
+  // Toggle Crew Visibility on Function
+  const handleToggleCrewVisibility = async (fnId: string, empId: string, currentVisible: boolean) => {
+    if (!activeBooking) return;
+    const nextVisible = !currentVisible;
+    await calendarVisibilityService.setEmployeeCalendarVisibility(studioId, activeBooking.id, empId, fnId, nextVisible);
+    const targetFn = activeBooking.functions?.find(f => f.id === fnId);
+    if (targetFn && targetFn.assignedCrew) {
+      const item = targetFn.assignedCrew.find(c => 
+        c.employeeId === empId || (isStudioOwnerId(empId, studioId) && isStudioOwnerId(c.employeeId, studioId))
+      );
+      if (item) {
+        (item as any).isVisibleOnCalendar = nextVisible;
+      }
+    }
+    bookingProductionService.saveBooking(studioId, activeBooking);
+    setRefreshKey(k => k + 1);
+    showToast(nextVisible ? 'Visible on employee personal calendar.' : 'Hidden from employee calendar.');
   };
 
   // Generate Receipt PDF
@@ -542,25 +626,65 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
                 {(!fn.assignedCrew || fn.assignedCrew.length === 0) ? (
                   <p className="text-zinc-400 italic text-xs">No crew members mapped to this shoot yet.</p>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-1">
-                    {fn.assignedCrew.map((c, i) => (
-                      <div key={i} className="p-2.5 rounded-xl bg-white border border-zinc-200 flex items-center justify-between">
-                        <div>
-                          <strong className="text-zinc-900 block">{c.employeeName}</strong>
-                          <span className="text-xs text-zinc-500">{c.role}</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1">
+                    {fn.assignedCrew.map((c, i) => {
+                      const isOwner = isStudioOwnerId(c.employeeId, studioId) || c.employeeName.includes('(Studio Owner)');
+                      const isVisible = (c as any).isVisibleOnCalendar !== false;
+
+                      return (
+                        <div key={i} className="p-3 rounded-xl bg-white border border-zinc-200 flex flex-col justify-between gap-2 shadow-2xs">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <strong className="text-zinc-900 block text-xs sm:text-sm">{c.employeeName}</strong>
+                                {isOwner && (
+                                  <span className="px-1.5 py-0.2 rounded text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                    Owner
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-xs text-orange-700 font-semibold">{c.role}</span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCrewMember(fn.id, c.employeeId)}
+                              title="Remove assignment"
+                              className="p-1 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          <div className="pt-2 border-t border-zinc-100 flex items-center justify-between gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleCrewVisibility(fn.id, c.employeeId, isVisible)}
+                              className={`px-2 py-0.5 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+                                isVisible 
+                                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                                  : 'bg-zinc-100 text-zinc-600 border border-zinc-200'
+                              }`}
+                              title={isVisible ? 'Visible on personal calendar (tap to hide)' : 'Hidden from calendar (tap to show)'}
+                            >
+                              {isVisible ? <Eye className="w-3 h-3 text-emerald-600" /> : <EyeOff className="w-3 h-3 text-zinc-400" />}
+                              <span>{isVisible ? 'Visible' : 'Hidden'}</span>
+                            </button>
+
+                            {c.contact && (
+                              <a
+                                href={`https://wa.me/${c.contact.replace(/[^0-9]/g, '')}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded transition-colors"
+                              >
+                                WhatsApp
+                              </a>
+                            )}
+                          </div>
                         </div>
-                        {c.contact && (
-                          <a
-                            href={`https://wa.me/${c.contact.replace(/[^0-9]/g, '')}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded"
-                          >
-                            WhatsApp
-                          </a>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -861,32 +985,97 @@ export const BookingWorkspaceDetailPage: React.FC<BookingWorkspaceDetailPageProp
 
             <form onSubmit={handleAssignCrew} className="space-y-3">
               <div>
-                <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Select Team Member *</label>
+                <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Select Team Member / Owner *</label>
                 <select
                   required
                   value={assignedEmployeeId}
-                  onChange={(e) => setAssignedEmployeeId(e.target.value)}
+                  onChange={(e) => {
+                    const empId = e.target.value;
+                    setAssignedEmployeeId(empId);
+                    if (empId && selectedFunctionForCrew) {
+                      const warn = crewConflictService.checkConflict(
+                        studioId,
+                        empId,
+                        selectedFunctionForCrew.date,
+                        selectedFunctionForCrew.startTime || '10:00',
+                        selectedFunctionForCrew.endTime || '18:00',
+                        activeBooking?.id
+                      );
+                      setCrewConflictWarn(warn.hasConflict ? warn : null);
+                    } else {
+                      setCrewConflictWarn(null);
+                    }
+                  }}
                   className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white"
                 >
                   <option value="">-- Choose crew member --</option>
-                  {employees.map(emp => (
-                    <option key={emp.id} value={emp.id}>
-                      {emp.fullName} ({emp.designation} - {emp.department})
-                    </option>
-                  ))}
+                  {activeRoster.map(emp => {
+                    const isOwner = isStudioOwnerId(emp.id, studioId) || emp.fullName.includes('(Studio Owner)');
+                    return (
+                      <option key={emp.id} value={emp.id}>
+                        {isOwner ? `👑 ${emp.fullName}` : `${emp.fullName} (${emp.designation || emp.roleName || 'Staff'})`}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
               <div>
                 <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Role for this Shoot</label>
-                <input
-                  type="text"
+                <select
                   value={assignedRole}
                   onChange={(e) => setAssignedRole(e.target.value)}
-                  placeholder="e.g. Candid Photographer / Drone Operator"
-                  className="w-full px-3 py-2 rounded-xl border border-zinc-200"
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-xs"
+                >
+                  <option value="Lead Photographer">Lead Photographer</option>
+                  <option value="Candid Photographer">Candid Photographer</option>
+                  <option value="Traditional Photographer">Traditional Photographer</option>
+                  <option value="Cinematographer">Cinematographer</option>
+                  <option value="Traditional Videographer">Traditional Videographer</option>
+                  <option value="Drone Operator">Drone Operator</option>
+                  <option value="Photo Editor">Photo Editor</option>
+                  <option value="Video Editor">Video Editor</option>
+                  <option value="Album Designer">Album Designer</option>
+                  <option value="Assistant">Assistant</option>
+                  <option value="Production Assistant">Production Assistant</option>
+                </select>
+              </div>
+
+              {/* Calendar Visibility */}
+              <div className="p-3 rounded-xl bg-orange-50/60 border border-orange-200/80 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-zinc-900 block text-xs">Employee Calendar Visibility</span>
+                  <span className="text-xs text-zinc-500 block">Show event on employee's personal schedule</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={crewModalVisibleOnCalendar}
+                  onChange={(e) => setCrewModalVisibleOnCalendar(e.target.checked)}
+                  className="w-4 h-4 accent-orange-600 rounded cursor-pointer"
                 />
               </div>
+
+              {/* Conflict Warning */}
+              {crewConflictWarn && (
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 space-y-1.5 text-xs">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-800">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Scheduling Conflict Detected!</span>
+                  </div>
+                  <p className="text-xs text-amber-800 leading-relaxed">
+                    {crewConflictWarn.warningMessage}
+                  </p>
+                  <label className="flex items-center gap-2 pt-1 font-bold text-amber-900 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={allowCrewConflictOverride}
+                      onChange={(e) => setAllowCrewConflictOverride(e.target.checked)}
+                      className="w-4 h-4 accent-amber-600 rounded"
+                    />
+                    <span>Allow Overlap (Confirm overlapping assignment)</span>
+                  </label>
+                </div>
+              )}
 
               <div className="pt-3 flex items-center justify-end gap-2 border-t border-zinc-100">
                 <button
