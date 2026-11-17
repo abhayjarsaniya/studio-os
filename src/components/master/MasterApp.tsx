@@ -29,7 +29,6 @@ const MasterRouter: React.FC = () => {
   const renderContent = () => {
     switch (masterRoute) {
       case 'dashboard':
-      case 'analytics':
         return <MasterDashboardPage />;
       case 'studios':
         return <MasterStudiosPage />;
@@ -51,8 +50,20 @@ const MasterRouter: React.FC = () => {
         return <MasterRolesPermissionsPage />;
       case 'features':
         return <MasterFeaturesPage />;
+      case 'customer-reports':
+        return <MasterReportsPage initialReportId="customer_volume" />;
+      case 'analytics':
+        return <MasterReportsPage initialReportId="platform_revenue" />;
+      case 'team-reports':
+        return <MasterReportsPage initialReportId="employee_statistics" />;
+      case 'payroll':
+        return <MasterReportsPage initialReportId="financial_audit" />;
+      case 'suppliers':
+        return <MasterReportsPage initialReportId="supplier_utilization" />;
       case 'reports':
         return <MasterReportsPage />;
+      case 'notifications':
+        return <MasterAuditLogsPage />;
       case 'audit-logs':
         return <MasterAuditLogsPage />;
       case 'settings':

@@ -12,7 +12,8 @@ import {
   ShieldCheck, 
   LogOut,
   Settings as SettingsIcon,
-  X
+  X,
+  Crown
 } from 'lucide-react';
 import { SettingsPage } from '../../pages/SettingsPage';
 import { NewBookingButton } from '../common/NewBookingButton';
@@ -208,6 +209,13 @@ export const DesktopSidebar: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-0.5 shrink-0">
+              <a
+                href="#/master/login"
+                title="Platform Master Admin Console"
+                className="min-h-[44px] min-w-[44px] p-2 rounded-lg text-amber-500 hover:text-amber-600 hover:bg-amber-50 transition-colors cursor-pointer flex items-center justify-center"
+              >
+                <Crown className="w-4 h-4" />
+              </a>
               <button
                 onClick={() => setIsSettingsModalOpen(true)}
                 title="Studio Profile & Password Settings"

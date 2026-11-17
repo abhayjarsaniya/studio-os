@@ -19,12 +19,22 @@ import {
   BarChart2
 } from 'lucide-react';
 
-export const MasterReportsPage: React.FC = () => {
+interface MasterReportsPageProps {
+  initialReportId?: MasterReportType;
+}
+
+export const MasterReportsPage: React.FC<MasterReportsPageProps> = ({ initialReportId }) => {
   const { allStudios } = useMemo(() => {
     return { allStudios: masterAdminService.getAllStudios() };
   }, []);
 
-  const [selectedReportId, setSelectedReportId] = useState<MasterReportType>('platform_revenue');
+  const [selectedReportId, setSelectedReportId] = useState<MasterReportType>(initialReportId || 'platform_revenue');
+
+  React.useEffect(() => {
+    if (initialReportId) {
+      setSelectedReportId(initialReportId);
+    }
+  }, [initialReportId]);
   const [selectedStudioFilter, setSelectedStudioFilter] = useState<string>('all');
   const [dateRangeFilter, setDateRangeFilter] = useState<string>('all_time');
   const [toastMessage, setToastMessage] = useState<string | null>(null);

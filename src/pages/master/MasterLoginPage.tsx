@@ -100,6 +100,17 @@ export const MasterLoginPage: React.FC = () => {
           </div>
         )}
 
+        <div className="mb-4 p-3 rounded-xl bg-amber-50/80 border border-amber-200/70 text-amber-900 text-xs leading-relaxed">
+          <div className="font-bold flex items-center gap-1.5 text-amber-800 mb-1">
+            <Crown className="w-3.5 h-3.5 text-amber-600" />
+            <span>Master Admin Access</span>
+          </div>
+          <div className="text-zinc-600 space-y-0.5">
+            <div>User: <strong className="text-zinc-900 font-mono">masteradmin</strong> or <strong className="text-zinc-900 font-mono">admin@studio-os.com</strong></div>
+            <div>Password: <strong className="text-zinc-900 font-mono">MasterAdmin@2026</strong></div>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-zinc-700 mb-1">Email / Username</label>
@@ -158,8 +169,23 @@ export const MasterLoginPage: React.FC = () => {
           </button>
         </form>
 
-        <div className="mt-6 pt-4 border-t border-zinc-100 text-center text-xs text-zinc-400">
-          Studio OS Multi-Studio Master Platform • Level 1 Access Only
+        <div className="mt-6 pt-4 border-t border-zinc-100 flex flex-col items-center gap-2.5 text-xs text-zinc-500">
+          <div className="flex items-center gap-3">
+            <a
+              href="#/studio/login"
+              className="text-zinc-600 hover:text-zinc-900 font-semibold underline underline-offset-2 transition-colors cursor-pointer"
+            >
+              Studio Owner Login
+            </a>
+            <span className="text-zinc-300">•</span>
+            <a
+              href="#/employee/login"
+              className="text-zinc-600 hover:text-zinc-900 font-semibold underline underline-offset-2 transition-colors cursor-pointer"
+            >
+              Employee Portal
+            </a>
+          </div>
+          <span className="text-xs text-zinc-400">Studio OS Multi-Studio Master Platform • Level 1 Access Only</span>
         </div>
       </div>
 

@@ -89,10 +89,20 @@ export const MasterAdminProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setMasterRouteState('roles-permissions');
     } else if (hash.startsWith('#/master/features')) {
       setMasterRouteState('features');
+    } else if (hash.startsWith('#/master/customer-reports')) {
+      setMasterRouteState('customer-reports');
     } else if (hash.startsWith('#/master/analytics')) {
       setMasterRouteState('analytics');
+    } else if (hash.startsWith('#/master/team-reports')) {
+      setMasterRouteState('team-reports');
+    } else if (hash.startsWith('#/master/payroll')) {
+      setMasterRouteState('payroll');
+    } else if (hash.startsWith('#/master/suppliers')) {
+      setMasterRouteState('suppliers');
     } else if (hash.startsWith('#/master/reports')) {
       setMasterRouteState('reports');
+    } else if (hash.startsWith('#/master/notifications')) {
+      setMasterRouteState('notifications');
     } else if (hash.startsWith('#/master/audit-logs')) {
       setMasterRouteState('audit-logs');
     } else if (hash.startsWith('#/master/settings')) {
@@ -150,9 +160,33 @@ export const MasterAdminProvider: React.FC<{ children: React.ReactNode }> = ({ c
 };
 
 export const useMasterAdmin = (): MasterAdminContextType => {
-  const ctx = useContext(MasterAdminContext);
+  let ctx: MasterAdminContextType | undefined;
+  try {
+    ctx = useContext(MasterAdminContext);
+  } catch {
+    ctx = undefined;
+  }
   if (!ctx) {
-    throw new Error('useMasterAdmin must be used within MasterAdminProvider');
+    return {
+      currentAdmin: DEFAULT_MASTER_ADMIN,
+      canMaster: () => true,
+      masterRoute: 'dashboard',
+      setMasterRoute: (route: string) => {
+        window.location.hash = `#/master/${route}`;
+      },
+      selectedStudioId: null,
+      setSelectedStudioId: () => {},
+      filterState: {
+        dateRange: 'all_time',
+        studioId: 'all',
+        city: 'all',
+        studioStatus: 'all',
+        eventCategory: 'all'
+      },
+      setFilterState: () => {},
+      refreshTrigger: 0,
+      triggerRefresh: () => {}
+    };
   }
   return ctx;
 };

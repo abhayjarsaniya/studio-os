@@ -9,6 +9,7 @@ import { StudioLoginPage } from './pages/StudioLoginPage';
 import { EmployeeLoginPage } from './pages/EmployeeLoginPage';
 import { EmployeeDashboardPage } from './pages/EmployeeDashboardPage';
 import { MasterLoginPage } from './pages/master/MasterLoginPage';
+import { MasterAdminProvider } from './context/MasterAdminContext';
 import { unifiedAuthService } from './services/unifiedAuthService';
 import { portalAccountProvisionService } from './services/portalAccountProvisionService';
 
@@ -287,10 +288,12 @@ export function App() {
   const ownerSession = unifiedAuthService.getStudioOwnerSession();
 
   // 1. Master Admin Login Route
-  if (currentRoute === '#/master/login') {
+  if (currentRoute === '#/master/login' || currentRoute.startsWith('#/master/login')) {
     return (
       <ErrorBoundary fallbackTitle="Master Admin Login Error">
-        <MasterLoginPage />
+        <MasterAdminProvider>
+          <MasterLoginPage />
+        </MasterAdminProvider>
       </ErrorBoundary>
     );
   }
@@ -298,33 +301,14 @@ export function App() {
   // 2. Master Admin Platform Portal (Protected)
   if (currentRoute.startsWith('#/master') || currentRoute.startsWith('#/platform')) {
     if (!masterSession) {
-      if (employeeSession) {
-        // Prevent URL tampering: Employee cannot access Master Admin
-        if (typeof window !== 'undefined') window.location.hash = '#/employee/dashboard';
-        return (
-          <ErrorBoundary fallbackTitle="Employee Workspace Error">
-            <EmployeeDashboardPage />
-          </ErrorBoundary>
-        );
+      if (typeof window !== 'undefined' && window.location.hash !== '#/master/login') {
+        window.location.hash = '#/master/login';
       }
-      if (ownerSession) {
-        // Prevent URL tampering: Owner cannot access Master Admin platform settings
-        if (typeof window !== 'undefined') window.location.hash = '#/app/dashboard';
-        return (
-          <ErrorBoundary fallbackTitle="Studio OS Workspace Error">
-            <StudioProvider>
-              <AppProvider>
-                <MainLayout />
-              </AppProvider>
-            </StudioProvider>
-          </ErrorBoundary>
-        );
-      }
-      // Unauthenticated -> redirect to Master Login
-      if (typeof window !== 'undefined') window.location.hash = '#/master/login';
       return (
         <ErrorBoundary fallbackTitle="Master Admin Login Error">
-          <MasterLoginPage />
+          <MasterAdminProvider>
+            <MasterLoginPage />
+          </MasterAdminProvider>
         </ErrorBoundary>
       );
     }

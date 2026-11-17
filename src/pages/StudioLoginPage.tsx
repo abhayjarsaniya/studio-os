@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { unifiedAuthService } from '../services/unifiedAuthService';
-import { Lock, User, ArrowRight, ShieldCheck, Camera, Check, Eye, EyeOff } from 'lucide-react';
+import { Lock, User, ArrowRight, ShieldCheck, Camera, Check, Eye, EyeOff, Crown } from 'lucide-react';
 import { ForgotPasswordModal } from '../components/auth/ForgotPasswordModal';
 
 export const StudioLoginPage: React.FC = () => {
@@ -167,8 +167,24 @@ export const StudioLoginPage: React.FC = () => {
           </button>
         </form>
 
-        <div className="mt-6 pt-4 border-t border-zinc-100 text-center text-xs text-zinc-400">
-          Studio OS Multi-Tenant Photography ERP • Independent Studio Access
+        <div className="mt-6 pt-4 border-t border-zinc-100 flex flex-col items-center gap-2.5 text-xs text-zinc-500">
+          <div className="flex items-center gap-3">
+            <a
+              href="#/employee/login"
+              className="text-zinc-600 hover:text-zinc-900 font-semibold underline underline-offset-2 transition-colors cursor-pointer"
+            >
+              Employee Portal
+            </a>
+            <span className="text-zinc-300">•</span>
+            <a
+              href="#/master/login"
+              className="text-amber-600 hover:text-amber-700 font-bold underline underline-offset-2 flex items-center gap-1 transition-colors cursor-pointer"
+            >
+              <Crown className="w-3.5 h-3.5 text-amber-500" />
+              <span>Platform Master Admin</span>
+            </a>
+          </div>
+          <span className="text-xs text-zinc-400">Studio OS Multi-Tenant Photography ERP • Independent Studio Access</span>
         </div>
       </div>
 

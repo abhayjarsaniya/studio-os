@@ -1,0 +1,4700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Studio OS — Complete Photography Studio Management System Brochure</title>
+  
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
+
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: #334155;
+        background-color: #f1f5f9;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .text-orange { color: #ea580c !important; }
+      .text-slate { color: #0f172a !important; }
+      .text-amber { color: #d97706 !important; }
+      .text-green { color: #16a34a !important; }
+      .text-rose { color: #e11d48 !important; }
+      .text-blue { color: #2563eb !important; }
+      .font-bold { font-weight: 700 !important; }
+      .font-mono { font-family: 'JetBrains Mono', monospace !important; }
+
+      .page {
+        width: 210mm;
+        height: 297mm;
+        page-break-after: always;
+        page-break-inside: avoid;
+        overflow: hidden;
+        padding: 14mm 16mm 12mm 16mm;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: #ffffff;
+        position: relative;
+      }
+
+      /* HEADER & FOOTER */
+      .page-header {
+        height: 10mm;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1.5px solid #fed7aa;
+        padding-bottom: 2mm;
+        font-size: 8.5pt;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .header-logo-badge {
+        display: flex;
+        align-items: center;
+      }
+
+      .header-brand {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        color: #ea580c;
+        font-size: 9pt;
+      }
+
+      .header-divider {
+        color: #cbd5e1;
+      }
+
+      .header-category {
+        font-weight: 600;
+        color: #64748b;
+        font-size: 8pt;
+        letter-spacing: 0.3px;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .header-section-pill {
+        background: #fff7ed;
+        color: #ea580c;
+        border: 1px solid #fed7aa;
+        padding: 1.5px 6px;
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 7.5pt;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      .header-section-title {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 8pt;
+        letter-spacing: 0.3px;
+      }
+
+      .page-body {
+        flex: 1;
+        padding: 4mm 0 3mm 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 3.5mm;
+      }
+
+      .page-footer {
+        height: 8mm;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 2mm;
+        font-size: 8pt;
+        color: #64748b;
+      }
+
+      .footer-left {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .footer-title {
+        font-weight: 600;
+        color: #475569;
+      }
+
+      .footer-dot {
+        color: #ea580c;
+      }
+
+      .footer-page-pill {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        color: #ea580c;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        padding: 1.5px 7px;
+        border-radius: 4px;
+        font-size: 7.5pt;
+      }
+
+      /* TYPOGRAPHY */
+      .content-header-block {
+        margin-bottom: 1mm;
+      }
+
+      .section-kicker {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 7.5pt;
+        font-weight: 700;
+        color: #ea580c;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 1mm;
+      }
+
+      .section-heading {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 15.5pt;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.25;
+        letter-spacing: -0.3px;
+        margin-bottom: 1.5mm;
+      }
+
+      .section-lead {
+        font-size: 8.8pt;
+        line-height: 1.45;
+        color: #475569;
+      }
+
+      .module-benefit-box {
+        background: #f8fafc;
+        border-left: 3.5px solid #ea580c;
+        padding: 2.2mm 3.5mm;
+        border-radius: 0 6px 6px 0;
+        font-size: 8pt;
+        line-height: 1.35;
+        color: #1e293b;
+        margin-top: auto;
+      }
+
+      .code-pill {
+        font-family: 'JetBrains Mono', monospace;
+        background: #f1f5f9;
+        color: #0f172a;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 7.5pt;
+        border: 1px solid #cbd5e1;
+      }
+
+      /* TABLES */
+      .table-container {
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .table-header-title {
+        background: #f8fafc;
+        padding: 2mm 3mm;
+        font-size: 7.5pt;
+        font-weight: 700;
+        color: #475569;
+        font-family: 'JetBrains Mono', monospace;
+        border-bottom: 1px solid #e2e8f0;
+        letter-spacing: 0.5px;
+      }
+
+      .brochure-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 8pt;
+        text-align: left;
+      }
+
+      .brochure-table th {
+        background: #f1f5f9;
+        color: #334155;
+        font-weight: 700;
+        padding: 2mm 2.8mm;
+        border-bottom: 1px solid #cbd5e1;
+        font-size: 7.5pt;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      .brochure-table td {
+        padding: 2mm 2.8mm;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+        vertical-align: middle;
+      }
+
+      .brochure-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      /* BADGES */
+      .badge-status-green {
+        background: #dcfce7;
+        color: #15803d;
+        padding: 1.5px 6px;
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 7pt;
+      }
+
+      .badge-status-blue {
+        background: #dbeafe;
+        color: #1d4ed8;
+        padding: 1.5px 6px;
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 7pt;
+      }
+
+      .badge-status-amber {
+        background: #fef3c7;
+        color: #b45309;
+        padding: 1.5px 6px;
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 7pt;
+      }
+
+      /* PAGE 1: COVER */
+      .page-cover {
+        padding: 16mm 18mm 16mm 18mm;
+        background: #ffffff;
+      }
+
+      .cover-top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #ea580c;
+        padding-bottom: 4mm;
+      }
+
+      .cover-brand-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .cover-brand-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 15pt;
+        font-weight: 800;
+        letter-spacing: 1px;
+        color: #0f172a;
+      }
+
+      .cover-brand-subtitle {
+        font-size: 7.5pt;
+        font-weight: 700;
+        letter-spacing: 1px;
+        color: #ea580c;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      .cover-edition-tag {
+        background: #0f172a;
+        color: #ffffff;
+        padding: 2mm 3.5mm;
+        border-radius: 4px;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 7.5pt;
+        letter-spacing: 0.5px;
+      }
+
+      .cover-hero-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 6mm 0;
+      }
+
+      .cover-category-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        color: #ea580c;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 8pt;
+        padding: 1.5mm 3.5mm;
+        border-radius: 20px;
+        width: fit-content;
+        margin-bottom: 4mm;
+      }
+
+      .badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #ea580c;
+      }
+
+      .cover-main-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 38pt;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -1.2px;
+        line-height: 1.05;
+        margin-bottom: 2mm;
+      }
+
+      .cover-main-subtitle {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 16pt;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 4mm;
+      }
+
+      .cover-tagline-box {
+        background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+        padding: 3mm 5mm;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 4mm;
+        box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
+      }
+
+      .cover-tagline-quote {
+        font-size: 26pt;
+        color: rgba(255, 255, 255, 0.5);
+        font-family: serif;
+        line-height: 1;
+      }
+
+      .cover-tagline-text {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 13pt;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: 0.3px;
+      }
+
+      .cover-lead-description {
+        font-size: 9.5pt;
+        line-height: 1.55;
+        color: #334155;
+        margin-bottom: 5mm;
+      }
+
+      .cover-modules-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5mm;
+      }
+
+      .cover-mod-pill {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.5mm 3mm;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .mod-icon {
+        font-size: 14pt;
+      }
+
+      .mod-info strong {
+        display: block;
+        font-size: 8pt;
+        color: #0f172a;
+        font-weight: 700;
+      }
+
+      .mod-info span {
+        display: block;
+        font-size: 7pt;
+        color: #64748b;
+      }
+
+      .cover-bottom-bar {
+        border-top: 1.5px solid #e2e8f0;
+        padding-top: 4mm;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4mm;
+      }
+
+      .cover-meta-col .meta-label {
+        display: block;
+        font-size: 6.5pt;
+        font-weight: 700;
+        color: #94a3b8;
+        font-family: 'JetBrains Mono', monospace;
+        margin-bottom: 1mm;
+      }
+
+      .cover-meta-col .meta-val {
+        font-size: 8pt;
+        font-weight: 600;
+        color: #1e293b;
+      }
+
+      /* PAGE 2: SUMMARY & TOC */
+      .summary-pillars-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2.5mm;
+        margin-bottom: 3mm;
+      }
+
+      .pillar-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.5mm;
+      }
+
+      .pillar-icon-box {
+        font-size: 13pt;
+        margin-bottom: 1.5mm;
+      }
+
+      .pillar-card h4 {
+        font-size: 8.5pt;
+        color: #0f172a;
+        margin-bottom: 1mm;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+      }
+
+      .pillar-card p {
+        font-size: 7.2pt;
+        line-height: 1.35;
+        color: #64748b;
+      }
+
+      .toc-container {
+        border: 1px solid #fed7aa;
+        background: #fffaf5;
+        border-radius: 8px;
+        padding: 3.5mm 4mm;
+      }
+
+      .toc-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1.5px solid #fed7aa;
+        padding-bottom: 2mm;
+        margin-bottom: 2.5mm;
+      }
+
+      .toc-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 11pt;
+        color: #0f172a;
+        font-weight: 800;
+      }
+
+      .toc-edition {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 7.5pt;
+        color: #ea580c;
+        font-weight: 700;
+      }
+
+      .toc-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4mm;
+      }
+
+      .toc-item {
+        display: flex;
+        align-items: center;
+        padding: 1.2mm 0;
+        border-bottom: 1px dashed #fed7aa;
+        font-size: 7.8pt;
+      }
+
+      .toc-num {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        color: #ea580c;
+        width: 18px;
+      }
+
+      .toc-text {
+        flex: 1;
+        font-weight: 600;
+        color: #1e293b;
+      }
+
+      .toc-page {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 600;
+        color: #64748b;
+        font-size: 7.2pt;
+      }
+
+      /* PAGE 3: WHAT IS STUDIO OS */
+      .hub-spoke-card {
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 3mm 3.5mm;
+      }
+
+      .hub-header {
+        text-align: center;
+        margin-bottom: 3mm;
+      }
+
+      .hub-badge {
+        display: inline-block;
+        background: #fff7ed;
+        color: #ea580c;
+        border: 1px solid #fed7aa;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.5pt;
+        font-weight: 700;
+        padding: 1px 5px;
+        border-radius: 3px;
+        margin-bottom: 1mm;
+      }
+
+      .hub-header h3 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 11pt;
+        color: #0f172a;
+        font-weight: 800;
+      }
+
+      .hub-header p {
+        font-size: 7.8pt;
+        color: #64748b;
+      }
+
+      .hub-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2mm;
+      }
+
+      .hub-leaf {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2mm 2.5mm;
+        display: flex;
+        gap: 6px;
+        align-items: flex-start;
+      }
+
+      .hub-leaf-icon {
+        font-size: 11pt;
+      }
+
+      .hub-leaf-content strong {
+        display: block;
+        font-size: 7.8pt;
+        color: #0f172a;
+      }
+
+      .hub-leaf-content span {
+        display: block;
+        font-size: 6.8pt;
+        color: #64748b;
+        line-height: 1.3;
+      }
+
+      .comparison-contrast-box {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3mm;
+      }
+
+      .contrast-col {
+        border-radius: 6px;
+        padding: 2.8mm 3.5mm;
+      }
+
+      .old-way {
+        background: #fff1f2;
+        border: 1px solid #fecdd3;
+      }
+
+      .new-way {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+      }
+
+      .contrast-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 7pt;
+        font-weight: 800;
+        margin-bottom: 2mm;
+      }
+
+      .old-tag { color: #e11d48; }
+      .new-tag { color: #16a34a; }
+
+      .contrast-col ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 1.2mm;
+      }
+
+      .contrast-col li {
+        font-size: 7.5pt;
+        line-height: 1.35;
+        position: relative;
+        padding-left: 12px;
+      }
+
+      .old-way li::before {
+        content: "×";
+        color: #e11d48;
+        font-weight: bold;
+        position: absolute;
+        left: 0;
+      }
+
+      .new-way li::before {
+        content: "✓";
+        color: #16a34a;
+        font-weight: bold;
+        position: absolute;
+        left: 0;
+      }
+
+      /* PAGE 4: 9 PROBLEMS */
+      .problems-grid-3x3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5mm;
+      }
+
+      .problem-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.5mm 3mm;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .prob-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 1.5mm;
+      }
+
+      .prob-num {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 7.5pt;
+        font-weight: 800;
+        background: #fee2e2;
+        color: #dc2626;
+        padding: 1px 4px;
+        border-radius: 3px;
+      }
+
+      .prob-header h4 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 8.5pt;
+        color: #0f172a;
+      }
+
+      .prob-desc {
+        font-size: 7.2pt;
+        line-height: 1.35;
+        color: #64748b;
+        margin-bottom: 2mm;
+      }
+
+      .prob-solution {
+        background: #f0fdf4;
+        border-left: 2px solid #16a34a;
+        padding: 1.5mm 2mm;
+        font-size: 7pt;
+        line-height: 1.3;
+        color: #166534;
+        border-radius: 0 4px 4px 0;
+      }
+
+      /* PAGE 5: ACCORDION ENGINE */
+      .accordion-engine-container {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 3mm;
+        background: #f8fafc;
+      }
+
+      .accordion-intro-banner {
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 2mm;
+        margin-bottom: 2.5mm;
+      }
+
+      .banner-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 7.5pt;
+        font-weight: 800;
+        color: #ea580c;
+        margin-bottom: 0.5mm;
+      }
+
+      .accordion-intro-banner p {
+        font-size: 7.5pt;
+        color: #64748b;
+      }
+
+      .sections-list-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2mm;
+      }
+
+      .sec-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.2mm 2.8mm;
+        display: flex;
+        gap: 8px;
+      }
+
+      .highlight-sec {
+        background: #fff7ed;
+        border-color: #fed7aa;
+      }
+
+      .sec-num {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 8pt;
+        font-weight: 800;
+        color: #64748b;
+      }
+
+      .sec-body strong {
+        display: block;
+        font-size: 7.8pt;
+        color: #0f172a;
+        margin-bottom: 0.5mm;
+      }
+
+      .sec-body p {
+        font-size: 6.8pt;
+        line-height: 1.3;
+        color: #64748b;
+      }
+
+      .feature-callout-strip {
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 6px;
+        padding: 2.2mm 3.5mm;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 7.8pt;
+        color: #9a3412;
+      }
+
+      /* PAGE 6: DASHBOARD */
+      .dashboard-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2.5mm;
+      }
+
+      .kpi-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.5mm 3mm;
+      }
+
+      .kpi-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.8pt;
+        font-weight: 700;
+        color: #64748b;
+        display: block;
+        margin-bottom: 1mm;
+      }
+
+      .kpi-value {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 13pt;
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 0.8mm;
+      }
+
+      .kpi-sub {
+        font-size: 6.8pt;
+        color: #94a3b8;
+      }
+
+      .dashboard-sections-split {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 3mm;
+      }
+
+      .dash-col-feed, .dash-col-alerts {
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.5mm 3mm;
+        background: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        gap: 2mm;
+      }
+
+      .dash-block-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 1.5mm;
+      }
+
+      .dash-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.5pt;
+        font-weight: 700;
+        background: #e0f2fe;
+        color: #0369a1;
+        padding: 1px 5px;
+        border-radius: 3px;
+      }
+
+      .alert-badge {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+
+      .dash-block-header h4 {
+        font-size: 8.5pt;
+        color: #0f172a;
+      }
+
+      .event-feed-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2mm 2.5mm;
+        display: flex;
+        gap: 8px;
+      }
+
+      .feed-time-col {
+        border-right: 1px solid #f1f5f9;
+        padding-right: 6px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .time-main {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 7.8pt;
+        color: #ea580c;
+      }
+
+      .time-tag {
+        font-size: 6pt;
+        color: #94a3b8;
+        font-weight: 600;
+      }
+
+      .feed-info-col strong {
+        display: block;
+        font-size: 7.8pt;
+        color: #0f172a;
+      }
+
+      .feed-info-col p {
+        font-size: 7pt;
+        color: #64748b;
+        margin-bottom: 1mm;
+      }
+
+      .crew-mini-pill {
+        display: flex;
+        gap: 6px;
+        font-size: 6.8pt;
+        color: #475569;
+        background: #f8fafc;
+        padding: 1px 4px;
+        border-radius: 3px;
+      }
+
+      .alert-item-box {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-left-width: 3px;
+        border-radius: 4px;
+        padding: 1.8mm 2.5mm;
+        display: flex;
+        gap: 6px;
+      }
+
+      .border-amber { border-left-color: #d97706; }
+      .border-rose { border-left-color: #e11d48; }
+      .border-blue { border-left-color: #2563eb; }
+
+      .alert-icon { font-size: 10pt; }
+
+      .alert-text strong {
+        display: block;
+        font-size: 7.5pt;
+        color: #0f172a;
+      }
+
+      .alert-text p {
+        font-size: 6.8pt;
+        color: #64748b;
+        line-height: 1.3;
+      }
+
+      /* PAGE 7: WEDDING FUNCTIONS */
+      .wedding-flow-illustration {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.5mm;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .wf-step {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .wf-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #ea580c;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 7.5pt;
+        font-weight: 700;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      .wf-content strong {
+        display: block;
+        font-size: 7.5pt;
+        color: #0f172a;
+      }
+
+      .wf-content span {
+        display: block;
+        font-size: 6.5pt;
+        color: #64748b;
+      }
+
+      .wf-arrow {
+        color: #cbd5e1;
+        font-weight: bold;
+        font-size: 10pt;
+      }
+
+      .features-split-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3mm;
+      }
+
+      .feature-detail-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.8mm 3.2mm;
+      }
+
+      .feature-detail-card h4 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 9pt;
+        color: #0f172a;
+        margin-bottom: 1.2mm;
+      }
+
+      .feature-detail-card p {
+        font-size: 7.5pt;
+        line-height: 1.4;
+        color: #64748b;
+        margin-bottom: 2mm;
+      }
+
+      .card-tag-list {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+      }
+
+      .card-tag-list span {
+        background: #f1f5f9;
+        color: #475569;
+        font-size: 6.8pt;
+        font-weight: 600;
+        padding: 1px 5px;
+        border-radius: 3px;
+      }
+
+      /* PAGE 8: CREW & CONFLICTS */
+      .crew-features-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5mm;
+      }
+
+      .crew-feat-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.5mm;
+      }
+
+      .feat-icon-bubble {
+        font-size: 12pt;
+        margin-bottom: 1mm;
+      }
+
+      .crew-feat-card h4 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 8.5pt;
+        color: #0f172a;
+        margin-bottom: 1mm;
+      }
+
+      .crew-feat-card p {
+        font-size: 7pt;
+        line-height: 1.35;
+        color: #64748b;
+      }
+
+      .conflict-engine-box {
+        background: #fffaf5;
+        border: 1.5px solid #fed7aa;
+        border-radius: 8px;
+        padding: 3mm 3.5mm;
+      }
+
+      .conflict-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.5pt;
+        font-weight: 700;
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+        padding: 1px 5px;
+        border-radius: 3px;
+        display: inline-block;
+        margin-bottom: 1mm;
+      }
+
+      .conflict-header h3 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 10.5pt;
+        color: #0f172a;
+      }
+
+      .conflict-header p {
+        font-size: 7.5pt;
+        color: #64748b;
+        margin-bottom: 2mm;
+      }
+
+      .conflict-workflow-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2mm;
+      }
+
+      .cw-step {
+        background: #ffffff;
+        border: 1px solid #fed7aa;
+        border-radius: 4px;
+        padding: 1.8mm 2.2mm;
+      }
+
+      .cw-num {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6pt;
+        font-weight: 800;
+        color: #ea580c;
+        display: block;
+        margin-bottom: 0.5mm;
+      }
+
+      .cw-step strong {
+        display: block;
+        font-size: 7.2pt;
+        color: #0f172a;
+        margin-bottom: 0.5mm;
+      }
+
+      .cw-step p {
+        font-size: 6.5pt;
+        line-height: 1.3;
+        color: #64748b;
+      }
+
+      .sample-crew-roster-preview {
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .roster-preview-header {
+        background: #f8fafc;
+        padding: 1.5mm 3mm;
+        font-size: 7pt;
+        font-weight: 700;
+        color: #475569;
+        font-family: 'JetBrains Mono', monospace;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .roster-item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.8mm 3mm;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 7.8pt;
+      }
+
+      .roster-item-row:last-child { border-bottom: none; }
+      .conflict-row { background: #fffbeb; }
+
+      .role-sub {
+        display: block;
+        font-size: 6.8pt;
+        color: #64748b;
+      }
+
+      .vis-pill {
+        font-size: 7pt;
+        background: #f1f5f9;
+        padding: 1px 5px;
+        border-radius: 3px;
+        color: #475569;
+      }
+
+      /* PAGE 9: CALENDAR */
+      .calendar-modes-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5mm;
+      }
+
+      .cal-mode-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.5mm;
+      }
+
+      .mode-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 1mm;
+      }
+
+      .mode-icon { font-size: 12pt; }
+
+      .cal-mode-card h4 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 8.5pt;
+        color: #0f172a;
+      }
+
+      .cal-mode-card p {
+        font-size: 7.2pt;
+        line-height: 1.35;
+        color: #64748b;
+      }
+
+      .mobile-cal-feature-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 2.8mm 3.5mm;
+      }
+
+      .mcf-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.5pt;
+        font-weight: 700;
+        background: #e0e7ff;
+        color: #4338ca;
+        padding: 1px 5px;
+        border-radius: 3px;
+        display: inline-block;
+        margin-bottom: 0.8mm;
+      }
+
+      .mcf-header h3 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 10.5pt;
+        color: #0f172a;
+      }
+
+      .mcf-header p {
+        font-size: 7.5pt;
+        color: #64748b;
+        margin-bottom: 2mm;
+      }
+
+      .mcf-controls-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2.5mm;
+      }
+
+      .mcf-item strong {
+        display: block;
+        font-size: 7.5pt;
+        color: #0f172a;
+        margin-bottom: 0.5mm;
+      }
+
+      .mcf-item p {
+        font-size: 6.8pt;
+        color: #64748b;
+        line-height: 1.3;
+      }
+
+      .cal-mockup-container {
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .cal-mockup-header {
+        background: #0f172a;
+        color: #ffffff;
+        padding: 2mm 3mm;
+        display: flex;
+        justify-content: space-between;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 7pt;
+      }
+
+      .cal-dates-strip {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        background: #ffffff;
+      }
+
+      .cal-day-cell {
+        border-right: 1px solid #f1f5f9;
+        padding: 2mm;
+        min-height: 18mm;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5mm;
+      }
+
+      .cal-day-cell:last-child { border-right: none; }
+      .cal-busy { background: #fffaf5; }
+      .cal-peak { background: #fff1f2; }
+
+      .cal-d-num {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 7pt;
+        font-weight: 700;
+        color: #475569;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 1mm;
+      }
+
+      .cal-badge-event {
+        font-size: 6.5pt;
+        padding: 1.5px 3px;
+        border-radius: 3px;
+        background: #f1f5f9;
+        color: #334155;
+        font-weight: 600;
+      }
+
+      .bg-orange { background: #ffedd5; color: #9a3412; }
+      .bg-blue { background: #e0f2fe; color: #0369a1; }
+
+      /* PAGE 10: PACKAGES & QUOTES */
+      .packages-architecture-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5mm;
+      }
+
+      .pkg-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.5mm;
+      }
+
+      .pkg-icon { font-size: 13pt; margin-bottom: 1mm; }
+
+      .pkg-card h4 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 8.5pt;
+        color: #0f172a;
+        margin-bottom: 1mm;
+      }
+
+      .pkg-card p {
+        font-size: 7pt;
+        line-height: 1.35;
+        color: #64748b;
+      }
+
+      .quote-sample-container {
+        border: 1px solid #fed7aa;
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 3mm 3.5mm;
+      }
+
+      .quote-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #fed7aa;
+        padding-bottom: 2mm;
+        margin-bottom: 2mm;
+      }
+
+      .quote-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.5pt;
+        color: #ea580c;
+        font-weight: 700;
+      }
+
+      .quote-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 10.5pt;
+        color: #0f172a;
+      }
+
+      .status-confirmed-tag {
+        background: #dcfce7;
+        color: #15803d;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 7pt;
+        font-weight: 700;
+        padding: 1.5px 6px;
+        border-radius: 4px;
+      }
+
+      .quote-line-items {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5mm;
+        margin-bottom: 2.5mm;
+      }
+
+      .q-line-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5mm 0;
+        border-bottom: 1px dashed #f1f5f9;
+      }
+
+      .q-item-name strong {
+        display: block;
+        font-size: 7.8pt;
+        color: #0f172a;
+      }
+
+      .q-item-name span {
+        font-size: 6.8pt;
+        color: #64748b;
+      }
+
+      .q-item-price {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 8pt;
+        font-weight: 700;
+        color: #334155;
+      }
+
+      .quote-totals-box {
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 6px;
+        padding: 2mm 3mm;
+        display: flex;
+        flex-direction: column;
+        gap: 1mm;
+      }
+
+      .q-total-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 7.5pt;
+      }
+
+      .concession-row {
+        color: #b45309;
+        font-weight: 600;
+      }
+
+      .grand-total-row {
+        border-top: 1px solid #fed7aa;
+        padding-top: 1.5mm;
+        margin-top: 0.5mm;
+        font-size: 8.5pt;
+      }
+
+      /* PAGE 11: PAYMENTS */
+      .milestones-flow-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2mm;
+      }
+
+      .m-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2mm;
+      }
+
+      .m-card-final {
+        background: #fff7ed;
+        border-color: #fed7aa;
+      }
+
+      .m-step {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6pt;
+        font-weight: 800;
+        color: #ea580c;
+        display: block;
+        margin-bottom: 0.5mm;
+      }
+
+      .m-card h4 {
+        font-size: 7.8pt;
+        color: #0f172a;
+        margin-bottom: 0.5mm;
+      }
+
+      .m-amt {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9.5pt;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 0.5mm;
+      }
+
+      .m-desc {
+        font-size: 6.5pt;
+        line-height: 1.25;
+        color: #64748b;
+        display: block;
+      }
+
+      .ledger-container {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .ledger-header-row {
+        background: #f8fafc;
+        padding: 2mm 3mm;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .ledger-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.5pt;
+        color: #ea580c;
+        font-weight: 700;
+      }
+
+      .ledger-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 9pt;
+        color: #0f172a;
+      }
+
+      .tag-advance {
+        background: #dcfce7;
+        color: #15803d;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.8pt;
+        font-weight: 700;
+        padding: 1.5px 5px;
+        border-radius: 3px;
+      }
+
+      .ledger-stats-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .l-stat {
+        padding: 2mm 3mm;
+        border-right: 1px solid #f1f5f9;
+      }
+
+      .l-stat:last-child { border-right: none; }
+
+      .l-stat-lbl {
+        display: block;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6pt;
+        color: #64748b;
+        margin-bottom: 0.5mm;
+      }
+
+      .l-stat-val {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10.5pt;
+        font-weight: 800;
+        color: #0f172a;
+      }
+
+      .pending-row { background: #fff1f2; }
+
+      /* PAGE 12: DELIVERABLES */
+      .pipeline-stages-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.8mm;
+      }
+
+      .pipeline-stage-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 1.8mm 2.8mm;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .stage-final {
+        background: #fffaf5;
+        border-color: #fed7aa;
+      }
+
+      .stage-num-col {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11pt;
+        font-weight: 800;
+        color: #94a3b8;
+        width: 22px;
+      }
+
+      .stage-info-col {
+        flex: 1;
+      }
+
+      .stage-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5mm;
+      }
+
+      .stage-top strong {
+        font-size: 7.8pt;
+        color: #0f172a;
+      }
+
+      .offset-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.8pt;
+        font-weight: 700;
+        background: #f1f5f9;
+        color: #475569;
+        padding: 1px 5px;
+        border-radius: 3px;
+      }
+
+      .bg-orange-light {
+        background: #ffedd5;
+        color: #c2410c;
+      }
+
+      .stage-info-col p {
+        font-size: 6.8pt;
+        color: #64748b;
+        line-height: 1.3;
+      }
+
+      /* PAGE 13: ALBUMS */
+      .album-specs-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2mm;
+      }
+
+      .spec-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.2mm;
+      }
+
+      .spec-icon { font-size: 12pt; margin-bottom: 1mm; }
+
+      .spec-card h4 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 8pt;
+        color: #0f172a;
+        margin-bottom: 1.5mm;
+      }
+
+      .spec-tags {
+        display: flex;
+        flex-direction: column;
+        gap: 1mm;
+      }
+
+      .spec-tags span {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        font-size: 6.5pt;
+        padding: 1px 4px;
+        border-radius: 3px;
+        color: #475569;
+      }
+
+      .album-fulfillment-container {
+        border: 1px solid #fed7aa;
+        background: #fffaf5;
+        border-radius: 8px;
+        padding: 2.8mm 3mm;
+      }
+
+      .af-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.5pt;
+        font-weight: 700;
+        color: #ea580c;
+      }
+
+      .af-header h3 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 10pt;
+        color: #0f172a;
+        margin-bottom: 2mm;
+      }
+
+      .af-steps-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .af-step-box {
+        background: #ffffff;
+        border: 1px solid #fed7aa;
+        border-radius: 4px;
+        padding: 1.8mm 2mm;
+        text-align: center;
+        width: 14%;
+      }
+
+      .af-step-final {
+        background: #ffedd5;
+      }
+
+      .af-num {
+        display: block;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 7.5pt;
+        font-weight: 800;
+        color: #ea580c;
+      }
+
+      .af-step-box strong {
+        display: block;
+        font-size: 6.8pt;
+        color: #0f172a;
+        margin-bottom: 0.5mm;
+      }
+
+      .af-step-box span {
+        display: block;
+        font-size: 5.8pt;
+        color: #64748b;
+        line-height: 1.2;
+      }
+
+      .af-arr {
+        color: #fed7aa;
+        font-weight: bold;
+        font-size: 9pt;
+      }
+
+      .album-example-banner {
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .aeb-title {
+        background: #0f172a;
+        color: #ffffff;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.8pt;
+        padding: 1.5mm 3mm;
+      }
+
+      .aeb-content {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        background: #f8fafc;
+        padding: 2mm 3mm;
+        font-size: 7pt;
+      }
+
+      /* PAGE 14: WHATSAPP */
+      .whatsapp-features-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3mm;
+      }
+
+      .wa-feature-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.8mm 3.2mm;
+      }
+
+      .wa-card-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 1.5mm;
+      }
+
+      .wa-icon-box { font-size: 13pt; }
+
+      .wa-card-header h4 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 8.5pt;
+        color: #0f172a;
+      }
+
+      .wa-feature-card p {
+        font-size: 7.2pt;
+        line-height: 1.35;
+        color: #64748b;
+        margin-bottom: 2mm;
+      }
+
+      .wa-feature-card ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 1mm;
+      }
+
+      .wa-feature-card li {
+        font-size: 7pt;
+        color: #334155;
+        position: relative;
+        padding-left: 12px;
+      }
+
+      .wa-feature-card li::before {
+        content: "•";
+        color: #16a34a;
+        position: absolute;
+        left: 0;
+        font-weight: bold;
+      }
+
+      .wa-mockup-container {
+        border: 1px solid #bbf7d0;
+        background: #f0fdf4;
+        border-radius: 8px;
+        padding: 3mm 3.5mm;
+      }
+
+      .wa-mockup-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid #bbf7d0;
+        padding-bottom: 1.8mm;
+        margin-bottom: 2mm;
+      }
+
+      .wa-avatar { font-size: 13pt; }
+
+      .wa-sender-info strong {
+        display: block;
+        font-size: 8pt;
+        color: #14532d;
+      }
+
+      .wa-sender-info span {
+        font-size: 6.8pt;
+        color: #16a34a;
+      }
+
+      .wa-status-pill {
+        margin-left: auto;
+        background: #22c55e;
+        color: #ffffff;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.5pt;
+        font-weight: 700;
+        padding: 1.5px 5px;
+        border-radius: 3px;
+      }
+
+      .wa-bubble-content {
+        background: #ffffff;
+        border: 1px solid #dcfce7;
+        border-radius: 6px;
+        padding: 2.5mm 3mm;
+        font-size: 7.5pt;
+        color: #1e293b;
+        line-height: 1.4;
+      }
+
+      .wa-data-block {
+        background: #f8fafc;
+        border-left: 2px solid #22c55e;
+        padding: 1.5mm 2mm;
+        margin: 1.5mm 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8mm;
+        font-size: 7pt;
+      }
+
+      /* PAGE 15: EMPLOYEES */
+      .employee-portal-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5mm;
+      }
+
+      .emp-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.5mm;
+      }
+
+      .emp-icon { font-size: 12pt; margin-bottom: 1mm; }
+
+      .emp-card h4 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 8.5pt;
+        color: #0f172a;
+        margin-bottom: 1mm;
+      }
+
+      .emp-card p {
+        font-size: 7pt;
+        line-height: 1.35;
+        color: #64748b;
+      }
+
+      .privacy-engine-box {
+        border: 1.5px solid #cbd5e1;
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 3mm 3.5mm;
+      }
+
+      .privacy-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.5pt;
+        font-weight: 700;
+        background: #f1f5f9;
+        color: #475569;
+        padding: 1px 5px;
+        border-radius: 3px;
+        display: inline-block;
+        margin-bottom: 0.8mm;
+      }
+
+      .privacy-header h3 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 10.5pt;
+        color: #0f172a;
+      }
+
+      .privacy-header p {
+        font-size: 7.5pt;
+        color: #64748b;
+        margin-bottom: 2mm;
+      }
+
+      .privacy-rules-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2.5mm;
+      }
+
+      .pr-rule {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+      }
+
+      .pr-icon { font-size: 11pt; }
+
+      .pr-info strong {
+        display: block;
+        font-size: 7.5pt;
+        color: #0f172a;
+        margin-bottom: 0.5mm;
+      }
+
+      .pr-info p {
+        font-size: 6.8pt;
+        color: #64748b;
+        line-height: 1.3;
+      }
+
+      /* PAGE 16: AUDIT & BI */
+      .audit-trail-spotlight {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 2.8mm 3.5mm;
+        background: #f8fafc;
+      }
+
+      .ats-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.5pt;
+        font-weight: 700;
+        color: #ea580c;
+      }
+
+      .ats-header h3 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 10pt;
+        color: #0f172a;
+      }
+
+      .ats-header p {
+        font-size: 7.2pt;
+        color: #64748b;
+        margin-bottom: 2mm;
+      }
+
+      .audit-log-sample {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5mm;
+      }
+
+      .log-entry {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-left: 2.5px solid #ea580c;
+        border-radius: 4px;
+        padding: 1.5mm 2.5mm;
+        font-size: 7pt;
+      }
+
+      .log-time {
+        font-family: 'JetBrains Mono', monospace;
+        color: #94a3b8;
+        font-size: 6.5pt;
+        margin-right: 6px;
+      }
+
+      .log-user {
+        font-weight: 700;
+        color: #0f172a;
+        margin-right: 6px;
+      }
+
+      .bi-metrics-container {
+        border: 1px solid #fed7aa;
+        background: #fffaf5;
+        border-radius: 8px;
+        padding: 2.8mm 3.5mm;
+      }
+
+      .bi-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.5pt;
+        font-weight: 700;
+        color: #ea580c;
+      }
+
+      .bi-header h3 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 10pt;
+        color: #0f172a;
+        margin-bottom: 2mm;
+      }
+
+      .bi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2mm;
+      }
+
+      .bi-card {
+        background: #ffffff;
+        border: 1px solid #fed7aa;
+        border-radius: 6px;
+        padding: 2mm;
+      }
+
+      .bi-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6pt;
+        font-weight: 700;
+        color: #64748b;
+        margin-bottom: 0.5mm;
+      }
+
+      .bi-val {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 11pt;
+        font-weight: 800;
+        margin-bottom: 0.5mm;
+      }
+
+      .bi-card p {
+        font-size: 6.2pt;
+        color: #64748b;
+        line-height: 1.25;
+      }
+
+      /* PAGE 17: LIFECYCLE & COMPARISON */
+      .lifecycle-steps-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 2mm;
+      }
+
+      .lc-step {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 1.8mm 2mm;
+      }
+
+      .lc-step-final {
+        background: #fff7ed;
+        border-color: #fed7aa;
+      }
+
+      .lc-idx {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.5pt;
+        font-weight: 800;
+        color: #64748b;
+        display: block;
+        margin-bottom: 0.5mm;
+      }
+
+      .lc-step strong {
+        display: block;
+        font-size: 7.2pt;
+        color: #0f172a;
+        margin-bottom: 0.5mm;
+      }
+
+      .lc-step p {
+        font-size: 6.2pt;
+        line-height: 1.25;
+        color: #64748b;
+      }
+
+      .value-comparison-container {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .vcc-title {
+        background: #0f172a;
+        color: #ffffff;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 7.2pt;
+        padding: 1.8mm 3mm;
+      }
+
+      .bg-rose-tint { background: #fff1f2; }
+      .bg-green-tint { background: #f0fdf4; }
+
+      /* PAGE 18: ARCHITECTURE & CONCLUSION */
+      .roles-breakdown-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5mm;
+      }
+
+      .role-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.5mm;
+      }
+
+      .role-icon { font-size: 13pt; margin-bottom: 1mm; }
+
+      .role-box h4 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 8.5pt;
+        color: #0f172a;
+        margin-bottom: 1mm;
+      }
+
+      .role-box p {
+        font-size: 7pt;
+        line-height: 1.35;
+        color: #64748b;
+      }
+
+      .tech-specs-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3mm;
+      }
+
+      .spec-col {
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 2.5mm 3mm;
+        background: #ffffff;
+      }
+
+      .spec-col-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 1.5mm;
+      }
+
+      .spec-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #ea580c;
+      }
+
+      .spec-col-header h4 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 8.2pt;
+        color: #0f172a;
+      }
+
+      .spec-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 1.2mm;
+      }
+
+      .spec-list li {
+        font-size: 7pt;
+        line-height: 1.35;
+        color: #334155;
+      }
+
+      .conclusion-banner {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-radius: 8px;
+        padding: 4.5mm 5mm;
+        color: #ffffff;
+      }
+
+      .conc-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 7pt;
+        font-weight: 700;
+        color: #ea580c;
+        margin-bottom: 1mm;
+        letter-spacing: 1px;
+      }
+
+      .conc-headline {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 13.5pt;
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: -0.3px;
+        line-height: 1.2;
+        margin-bottom: 2mm;
+      }
+
+      .conc-body {
+        font-size: 8pt;
+        line-height: 1.45;
+        color: #cbd5e1;
+        margin-bottom: 3.5mm;
+      }
+
+      .conc-contact-row {
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        padding-top: 2.5mm;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 3mm;
+      }
+
+      .cc-item .cc-lbl {
+        display: block;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6pt;
+        color: #94a3b8;
+        margin-bottom: 0.5mm;
+      }
+
+      .cc-item .cc-val {
+        font-size: 7.5pt;
+        font-weight: 600;
+        color: #f8fafc;
+      }
+    </style>
+    
+</head>
+<body>
+  
+    <div class="page page-cover">
+      <div class="cover-top-bar">
+        <div class="cover-brand-row">
+          <div class="cover-logo-mark">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="14.31" y1="8" x2="20.05" y2="17.94"/>
+              <line x1="9.69" y1="8" x2="21.17" y2="8"/>
+              <line x1="7.38" y1="12" x2="13.12" y2="2.06"/>
+              <line x1="9.69" y1="16" x2="3.95" y2="6.06"/>
+              <line x1="14.31" y1="16" x2="2.83" y2="16"/>
+              <line x1="16.62" y1="12" x2="10.88" y2="21.94"/>
+            </svg>
+          </div>
+          <div>
+            <div class="cover-brand-title">STUDIO OS</div>
+            <div class="cover-brand-subtitle">PHOTOGRAPHY BUSINESS OPERATING SYSTEM</div>
+          </div>
+        </div>
+        <div class="cover-edition-tag">COMMERCIAL EDITION • 2026</div>
+      </div>
+
+      <div class="cover-hero-content">
+        <div class="cover-category-badge">
+          <span class="badge-dot"></span>
+          ENTERPRISE-GRADE CLOUD PLATFORM FOR PHOTO & CINEMA STUDIOS
+        </div>
+
+        <h1 class="cover-main-title">
+          Studio <span class="text-orange">OS</span>
+        </h1>
+
+        <div class="cover-main-subtitle">
+          Complete Photography Studio Management System
+        </div>
+
+        <div class="cover-tagline-box">
+          <div class="cover-tagline-quote">“</div>
+          <div class="cover-tagline-text">
+            Your Studio. Your Team. Every Booking. One Place.
+          </div>
+        </div>
+
+        <p class="cover-lead-description">
+          A centralized, customer-first operating platform designed specifically for professional wedding photography, cinematography, and creative studios. Eliminate fragmented spreadsheets, messy paper registers, and lost WhatsApp messages. Unify client bookings, multi-day wedding functions, crew allocation, quotations, payment ledgers, 7-stage deliverables, and album printing in one elegant workspace.
+        </p>
+
+        <!-- Feature Highlight Pills Grid -->
+        <div class="cover-modules-grid">
+          <div class="cover-mod-pill">
+            <span class="mod-icon">📋</span>
+            <div class="mod-info">
+              <strong>Single Booking Workspace</strong>
+              <span>9-section customer hub</span>
+            </div>
+          </div>
+          <div class="cover-mod-pill">
+            <span class="mod-icon">💍</span>
+            <div class="mod-info">
+              <strong>Multi-Event Functions</strong>
+              <span>Haldi, Sangeet, Wedding, Reception</span>
+            </div>
+          </div>
+          <div class="cover-mod-pill">
+            <span class="mod-icon">👥</span>
+            <div class="mod-info">
+              <strong>Smart Crew Allocation</strong>
+              <span>Owner assignment & conflict check</span>
+            </div>
+          </div>
+          <div class="cover-mod-pill">
+            <span class="mod-icon">📅</span>
+            <div class="mod-info">
+              <strong>Interactive Studio Calendar</strong>
+              <span>Month, Week, Day & My Shoots</span>
+            </div>
+          </div>
+          <div class="cover-mod-pill">
+            <span class="mod-icon">💼</span>
+            <div class="mod-info">
+              <strong>Commercial Quotations</strong>
+              <span>Itemized packages & scope</span>
+            </div>
+          </div>
+          <div class="cover-mod-pill">
+            <span class="mod-icon">₹</span>
+            <div class="mod-info">
+              <strong>Financial Ledgers</strong>
+              <span>Advance, balance due & receipts</span>
+            </div>
+          </div>
+          <div class="cover-mod-pill">
+            <span class="mod-icon">🎬</span>
+            <div class="mod-info">
+              <strong>7-Stage Deliverables</strong>
+              <span>RAW backup to final handover</span>
+            </div>
+          </div>
+          <div class="cover-mod-pill">
+            <span class="mod-icon">📖</span>
+            <div class="mod-info">
+              <strong>Photobook Management</strong>
+              <span>Sizes, sheets, covers & print lab</span>
+            </div>
+          </div>
+          <div class="cover-mod-pill">
+            <span class="mod-icon">💬</span>
+            <div class="mod-info">
+              <strong>WhatsApp Engine</strong>
+              <span>Instant click-to-chat call sheets</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cover-bottom-bar">
+        <div class="cover-meta-col">
+          <span class="meta-label">DOCUMENT TYPE</span>
+          <span class="meta-val">Full SaaS Product Brochure & Capability Specification</span>
+        </div>
+        <div class="cover-meta-col">
+          <span class="meta-label">TARGET AUDIENCE</span>
+          <span class="meta-val">Studio Owners, Executive Producers & Studio Managers</span>
+        </div>
+        <div class="cover-meta-col">
+          <span class="meta-label">SECURITY LEVEL</span>
+          <span class="meta-val">Multi-Tenant Cloud • Role-Based Access Control</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 01</span>
+            <span class="header-section-title">TABLE OF CONTENTS & EXECUTIVE SUMMARY</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">EXECUTIVE OVERVIEW</div>
+          <h2 class="section-heading">Built for High-Growth Photography Studios</h2>
+          <p class="section-lead">
+            The photography and wedding cinema industry has transformed. Today's studios manage dozens of multi-day wedding commissions simultaneously, coordinating cinematographers, candid photographers, drone pilots, editors, and album print labs. Studio OS provides the structured backbone necessary to scale gracefully without operational chaos.
+          </p>
+        </div>
+
+        <div class="summary-pillars-grid">
+          <div class="pillar-card">
+            <div class="pillar-icon-box">🏛️</div>
+            <h4>Single Source of Truth</h4>
+            <p>One unified customer record holds every event, date, venue, assigned team member, payment milestone, and editing checklist.</p>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon-box">⚡</div>
+            <h4>Zero Scheduling Errors</h4>
+            <p>Intelligent background conflict detection alerts you instantly if a lead photographer or drone pilot is booked on overlapping functions.</p>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon-box">💰</div>
+            <h4>Complete Cash Flow Clarity</h4>
+            <p>Know exactly what is booked, how much advance was received, and which clients have pending balance dues before handover.</p>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-icon-box">📱</div>
+            <h4>Mobile-First for Field Teams</h4>
+            <p>Studio owners and shooting crew access real-time schedules and call sheets from mobile phones at wedding venues.</p>
+          </div>
+        </div>
+
+        <div class="toc-container">
+          <div class="toc-title-row">
+            <h3 class="toc-title">Table of Contents</h3>
+            <span class="toc-edition">18 Comprehensive Sections</span>
+          </div>
+
+          <div class="toc-grid">
+            <div class="toc-col">
+              <div class="toc-item">
+                <span class="toc-num">01</span>
+                <span class="toc-text">Cover & Executive Overview</span>
+                <span class="toc-page">Pages 1–2</span>
+              </div>
+              <div class="toc-item">
+                <span class="toc-num">02</span>
+                <span class="toc-text">What Is Studio OS? — Centralized Architecture</span>
+                <span class="toc-page">Page 3</span>
+              </div>
+              <div class="toc-item">
+                <span class="toc-num">03</span>
+                <span class="toc-text">9 Critical Problems Studio Owners Face</span>
+                <span class="toc-page">Page 4</span>
+              </div>
+              <div class="toc-item">
+                <span class="toc-num">04</span>
+                <span class="toc-text">Core Engine: The Single Booking Workspace</span>
+                <span class="toc-page">Page 5</span>
+              </div>
+              <div class="toc-item">
+                <span class="toc-num">05</span>
+                <span class="toc-text">Module 1: Studio Command Dashboard</span>
+                <span class="toc-page">Page 6</span>
+              </div>
+              <div class="toc-item">
+                <span class="toc-num">06</span>
+                <span class="toc-text">Module 2: Multi-Event & Wedding Functions</span>
+                <span class="toc-page">Page 7</span>
+              </div>
+              <div class="toc-item">
+                <span class="toc-num">07</span>
+                <span class="toc-text">Module 3: Crew Assignment & Conflict Engine</span>
+                <span class="toc-page">Page 8</span>
+              </div>
+              <div class="toc-item">
+                <span class="toc-num">08</span>
+                <span class="toc-text">Module 4: Interactive Calendar & Schedule Planning</span>
+                <span class="toc-page">Page 9</span>
+              </div>
+              <div class="toc-item">
+                <span class="toc-num">09</span>
+                <span class="toc-text">Module 5: Packages, Quotations & Pricing</span>
+                <span class="toc-page">Page 10</span>
+              </div>
+            </div>
+
+            <div class="toc-col">
+              <div class="toc-item">
+                <span class="toc-num">10</span>
+                <span class="toc-text">Module 6: Financial Ledgers & Cash Flow Tracking</span>
+                <span class="toc-page">Page 11</span>
+              </div>
+              <div class="toc-item">
+                <span class="toc-num">11</span>
+                <span class="toc-text">Module 7: Deliverables & 7-Stage Post-Production</span>
+                <span class="toc-page">Page 12</span>
+              </div>
+              <div class="toc-item">
+                <span class="toc-num">12</span>
+                <span class="toc-text">Module 8: Album Management & Print Lab Tracking</span>
+                <span class="toc-page">Page 13</span>
+              </div>
+              <div class="toc-item">
+                <span class="toc-num">13</span>
+                <span class="toc-text">Module 9: WhatsApp Click-to-Chat & Call Sheets</span>
+                <span class="toc-page">Page 14</span>
+              </div>
+              <div class="toc-item">
+                <span class="toc-num">14</span>
+                <span class="toc-text">Module 10: Dedicated Employee Portal & Field Privacy</span>
+                <span class="toc-page">Page 15</span>
+              </div>
+              <div class="toc-item">
+                <span class="toc-num">15</span>
+                <span class="toc-text">Module 11: Audit Trail & Business Analytics</span>
+                <span class="toc-page">Page 16</span>
+              </div>
+              <div class="toc-item">
+                <span class="toc-num">16</span>
+                <span class="toc-text">10-Step Customer Lifecycle & Before/After Value</span>
+                <span class="toc-page">Page 17</span>
+              </div>
+              <div class="toc-item">
+                <span class="toc-num">17</span>
+                <span class="toc-text">Architecture, Security & Getting Started</span>
+                <span class="toc-page">Page 18</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 2 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 02</span>
+            <span class="header-section-title">PLATFORM CONCEPT & ARCHITECTURE</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">WHAT IS STUDIO OS?</div>
+          <h2 class="section-heading">The Central Operating System for Studios</h2>
+          <p class="section-lead">
+            Studio OS is a centralized cloud management platform engineered specifically for professional photography and videography studios. It replaces the messy tangle of notebooks, spreadsheets, generic calendar apps, and fragmented WhatsApp chats with a single, highly structured system.
+          </p>
+        </div>
+
+        <div class="hub-spoke-card">
+          <div class="hub-header">
+            <div class="hub-badge">CORE DESIGN PRINCIPLE</div>
+            <h3>The Customer-Centric Hub</h3>
+            <p>In traditional setups, information is scattered across 5 different apps. In Studio OS, everything anchors to the customer and their master booking.</p>
+          </div>
+
+          <div class="hub-grid">
+            <div class="hub-leaf">
+              <div class="hub-leaf-icon">📞</div>
+              <div class="hub-leaf-content">
+                <strong>Customer Inquiries</strong>
+                <span>Contact details, source, event requirements & notes</span>
+              </div>
+            </div>
+            <div class="hub-leaf">
+              <div class="hub-leaf-icon">💍</div>
+              <div class="hub-leaf-content">
+                <strong>Wedding Functions</strong>
+                <span>Multiple dates, timings, venues & call times</span>
+              </div>
+            </div>
+            <div class="hub-leaf">
+              <div class="hub-leaf-icon">👥</div>
+              <div class="hub-leaf-content">
+                <strong>Crew Allocation</strong>
+                <span>Owner self-assignment, crew & conflict checks</span>
+              </div>
+            </div>
+            <div class="hub-leaf">
+              <div class="hub-leaf-icon">💼</div>
+              <div class="hub-leaf-content">
+                <strong>Packages & Quotes</strong>
+                <span>Itemized services, deliverables & negotiated pricing</span>
+              </div>
+            </div>
+            <div class="hub-leaf">
+              <div class="hub-leaf-icon">₹</div>
+              <div class="hub-leaf-content">
+                <strong>Financial Milestones</strong>
+                <span>Advances received, payment modes & remaining balances</span>
+              </div>
+            </div>
+            <div class="hub-leaf">
+              <div class="hub-leaf-icon">🎞️</div>
+              <div class="hub-leaf-content">
+                <strong>7-Stage Deliverables</strong>
+                <span>RAW backup, photo culling, video editing & handover</span>
+              </div>
+            </div>
+            <div class="hub-leaf">
+              <div class="hub-leaf-icon">📖</div>
+              <div class="hub-leaf-content">
+                <strong>Album Production</strong>
+                <span>Sizes, sheet counts, covers, proofing & lab printing</span>
+              </div>
+            </div>
+            <div class="hub-leaf">
+              <div class="hub-leaf-icon">💬</div>
+              <div class="hub-leaf-content">
+                <strong>WhatsApp Comms</strong>
+                <span>Click-to-chat confirmations, call sheets & reminders</span>
+              </div>
+            </div>
+            <div class="hub-leaf">
+              <div class="hub-leaf-icon">🛡️</div>
+              <div class="hub-leaf-content">
+                <strong>History & Audit Trail</strong>
+                <span>Immutable logs of every edit, payment & status shift</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comparison-contrast-box">
+          <div class="contrast-col old-way">
+            <div class="contrast-tag old-tag">WITHOUT STUDIO OS (DISCONNECTED CHAOS)</div>
+            <ul>
+              <li>Client details locked inside WhatsApp message threads.</li>
+              <li>Wedding dates written in paper registers that cannot be searched.</li>
+              <li>Crew members repeatedly asking "Which camera gear and which venue?"</li>
+              <li>Uncollected final payments because nobody tracked the balance due.</li>
+              <li>Deliverables forgotten in editing queues for 6+ months.</li>
+            </ul>
+          </div>
+          <div class="contrast-col new-way">
+            <div class="contrast-tag new-tag">WITH STUDIO OS (ORGANIZED ORDER)</div>
+            <ul>
+              <li>Every team member sees their exact schedule on their own mobile phone.</li>
+              <li>Double-bookings prevented automatically with real-time conflict warnings.</li>
+              <li>Agreed package pricing, advances, and remaining balances tracked to the rupee.</li>
+              <li>Every deliverable stage tracked from RAW verification to physical album delivery.</li>
+              <li>Immediate, searchable booking records accessible in 2 seconds.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 3 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 03</span>
+            <span class="header-section-title">PAIN POINTS & OPERATIONAL BOTTLENECKS</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">CHALLENGES SOLVED</div>
+          <h2 class="section-heading">The 9 Problems Studio Owners Face Daily</h2>
+          <p class="section-lead">
+            Photography studio owners are passionate visual artists, but running a studio involves high-stakes logistics, demanding clients, and multi-team coordination. Here is how Studio OS cures the top nine operational headaches:
+          </p>
+        </div>
+
+        <div class="problems-grid-3x3">
+          <div class="problem-card">
+            <div class="prob-header">
+              <span class="prob-num">01</span>
+              <h4>Paper Diaries & Sheets</h4>
+            </div>
+            <p class="prob-desc">Client notes scribbled on paper diaries or Google Sheets get lost, torn, or overwritten by staff.</p>
+            <div class="prob-solution"><strong>Studio OS Solution:</strong> Centralized digital booking records searchable by client, date, or phone.</div>
+          </div>
+
+          <div class="problem-card">
+            <div class="prob-header">
+              <span class="prob-num">02</span>
+              <h4>Forgotten Inquiries</h4>
+            </div>
+            <p class="prob-desc">High-value wedding leads go cold because the studio owner forgets to follow up with a formal quotation.</p>
+            <div class="prob-solution"><strong>Studio OS Solution:</strong> Structured quotation statuses tracking Draft, Sent, Negotiation, and Confirmed.</div>
+          </div>
+
+          <div class="problem-card">
+            <div class="prob-header">
+              <span class="prob-num">03</span>
+              <h4>Double-Booking Crew</h4>
+            </div>
+            <p class="prob-desc">Assigning the same senior candid photographer or drone pilot to two weddings on the same auspicious date.</p>
+            <div class="prob-solution"><strong>Studio OS Solution:</strong> Instant scheduling conflict alert checks all functions and flags clashes.</div>
+          </div>
+
+          <div class="problem-card">
+            <div class="prob-header">
+              <span class="prob-num">04</span>
+              <h4>Losing Track of Balances</h4>
+            </div>
+            <p class="prob-desc">Delivering wedding photos and albums without realizing the client still owes ₹35,000 in balance dues.</p>
+            <div class="prob-solution"><strong>Studio OS Solution:</strong> Prominent balance due badges and milestone payment ledgers.</div>
+          </div>
+
+          <div class="problem-card">
+            <div class="prob-header">
+              <span class="prob-num">05</span>
+              <h4>Crew Role Confusion</h4>
+            </div>
+            <p class="prob-desc">Crew members showing up late or asking who is shooting traditional versus candid moments.</p>
+            <div class="prob-solution"><strong>Studio OS Solution:</strong> Exact role allocations and call sheets dispatched directly to mobile.</div>
+          </div>
+
+          <div class="problem-card">
+            <div class="prob-header">
+              <span class="prob-num">06</span>
+              <h4>Missed Editing Deadlines</h4>
+            </div>
+            <p class="prob-desc">Post-production backlogs causing anxious brides to call repeatedly asking when their teaser is ready.</p>
+            <div class="prob-solution"><strong>Studio OS Solution:</strong> 7-stage deliverables checklist with target offset days and stage progress.</div>
+          </div>
+
+          <div class="problem-card">
+            <div class="prob-header">
+              <span class="prob-num">07</span>
+              <h4>Chaotic Album Approvals</h4>
+            </div>
+            <p class="prob-desc">Album layout designs sit unapproved for months due to lack of a structured revision workflow.</p>
+            <div class="prob-solution"><strong>Studio OS Solution:</strong> Dedicated album tracker monitoring selection, design draft, and printing lab status.</div>
+          </div>
+
+          <div class="problem-card">
+            <div class="prob-header">
+              <span class="prob-num">08</span>
+              <h4>WhatsApp Search Fatigue</h4>
+            </div>
+            <p class="prob-desc">Spending 15 minutes scrolling through 500 WhatsApp chats just to find a client's wedding hall address.</p>
+            <div class="prob-solution"><strong>Studio OS Solution:</strong> One-tap access to venue, Google Map link, and customer contact info.</div>
+          </div>
+
+          <div class="problem-card">
+            <div class="prob-header">
+              <span class="prob-num">09</span>
+              <h4>Business Blind Spots</h4>
+            </div>
+            <p class="prob-desc">Studio owners not knowing their annual booked revenue, outstanding receivables, or seasonal shoot volume.</p>
+            <div class="prob-solution"><strong>Studio OS Solution:</strong> Real-time dashboard analytics providing total booking value and cash health.</div>
+          </div>
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 4 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 04</span>
+            <span class="header-section-title">CORE ENGINE ARCHITECTURE</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">SIGNATURE FEATURE</div>
+          <h2 class="section-heading">The Single Booking Workspace</h2>
+          <p class="section-lead">
+            At the heart of Studio OS lies the Single Booking Workspace (<code class="code-pill">SingleBookingWorkspace.tsx</code>). Instead of jumping through 10 separate tabs, everything related to a client booking is organized inside 9 structured, collapsible sections with instant auto-save.
+          </p>
+        </div>
+
+        <div class="accordion-engine-container">
+          <div class="accordion-intro-banner">
+            <div class="banner-title">9-SECTION COLLAPSIBLE ACCORDION SUITE</div>
+            <p>Every critical operation happens within one cohesive screen with finger-friendly mobile touch targets (48px) and zero refresh delays.</p>
+          </div>
+
+          <div class="sections-list-grid">
+            <div class="sec-card">
+              <div class="sec-num">01</div>
+              <div class="sec-body">
+                <strong>Overview & Client Details</strong>
+                <p>Booking ID, primary customer name, phone, email, event title, category, and master status.</p>
+              </div>
+            </div>
+
+            <div class="sec-card">
+              <div class="sec-num">02</div>
+              <div class="sec-body">
+                <strong>Wedding Functions & Sub-Events</strong>
+                <p>Haldi, Mehndi, Sangeet, Wedding, Reception with independent dates, venues, and timings.</p>
+              </div>
+            </div>
+
+            <div class="sec-card">
+              <div class="sec-num">03</div>
+              <div class="sec-body">
+                <strong>Crew Assignment & Conflict Engine</strong>
+                <p>Assign photographers, cinematographers, drone operators, and the studio owner with conflict checks.</p>
+              </div>
+            </div>
+
+            <div class="sec-card">
+              <div class="sec-num">04</div>
+              <div class="sec-body">
+                <strong>Packages & Photography Scope</strong>
+                <p>Configured service bundles (Traditional, Candid, Drone, Pre-Wedding) and package inclusions.</p>
+              </div>
+            </div>
+
+            <div class="sec-card">
+              <div class="sec-num">05</div>
+              <div class="sec-body">
+                <strong>Quotations & Proposals</strong>
+                <p>Itemized commercial estimates, negotiation tracking, and formal PDF quotation exports.</p>
+              </div>
+            </div>
+
+            <div class="sec-card">
+              <div class="sec-num">06</div>
+              <div class="sec-body">
+                <strong>Financial Milestones & Payment Ledgers</strong>
+                <p>Total agreed value, advance collected, installment dates, payment methods, and balance due.</p>
+              </div>
+            </div>
+
+            <div class="sec-card">
+              <div class="sec-num">07</div>
+              <div class="sec-body">
+                <strong>7-Stage Deliverables Checklist</strong>
+                <p>RAW backup verification, photo selection, color grading, video teaser, full film, and handover.</p>
+              </div>
+            </div>
+
+            <div class="sec-card">
+              <div class="sec-num">08</div>
+              <div class="sec-body">
+                <strong>Album Specifications & Print Lab</strong>
+                <p>Photobook sizes (12x36, 12x30), sheet counts (20–50), cover materials, proofing, and lab tracking.</p>
+              </div>
+            </div>
+
+            <div class="sec-card highlight-sec">
+              <div class="sec-num text-orange">09</div>
+              <div class="sec-body">
+                <strong class="text-orange">Complete History & Audit Trail</strong>
+                <p>Immutable log of every edit, payment entry, crew shift, and status update with user and timestamp.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-callout-strip">
+          <div class="strip-icon">⚡</div>
+          <div class="strip-content">
+            <strong>Instant Autosave & Real-Time Sync:</strong> Changes made by the studio owner or production team persist immediately to the cloud database with zero risk of accidental data loss.
+          </div>
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 5 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 05</span>
+            <span class="header-section-title">MODULE 1: STUDIO COMMAND DASHBOARD</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">MODULE BREAKDOWN</div>
+          <h2 class="section-heading">Studio Command Dashboard</h2>
+          <p class="section-lead">
+            The Dashboard is the studio owner's daily command cockpit. It gives an immediate, clear overview of the studio's active workload, today's shoot schedules, cash flow status, and deliverables requiring urgent attention.
+          </p>
+        </div>
+
+        <!-- Metric KPI Cards Row -->
+        <div class="dashboard-kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">TODAY'S SHOOTS</span>
+            <div class="kpi-value text-orange">3 Active</div>
+            <span class="kpi-sub">Field crew dispatched</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">CONFIRMED BOOKINGS</span>
+            <div class="kpi-value text-slate">25 Events</div>
+            <span class="kpi-sub">Scheduled for season</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">PENDING ADVANCES</span>
+            <div class="kpi-value text-amber">₹1.45 Lakh</div>
+            <span class="kpi-sub">Awaiting confirmation</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">PENDING DELIVERIES</span>
+            <div class="kpi-value text-blue">8 Batches</div>
+            <span class="kpi-sub">In editing & album lab</span>
+          </div>
+        </div>
+
+        <div class="dashboard-sections-split">
+          <!-- Left Column: Today's Action Feed -->
+          <div class="dash-col-feed">
+            <div class="dash-block-header">
+              <span class="dash-badge">LIVE SCHEDULE</span>
+              <h4>Today's Events & Shoot Dispatch</h4>
+            </div>
+
+            <div class="event-feed-card">
+              <div class="feed-time-col">
+                <span class="time-main">09:00 AM</span>
+                <span class="time-tag">MORNING</span>
+              </div>
+              <div class="feed-info-col">
+                <strong>Patel Family Wedding — Mandvo & Haldi</strong>
+                <p>Shankus Water Park & Resort, Mehsana</p>
+                <div class="crew-mini-pill">
+                  <span>📸 Lead: Studio Owner (Rajesh)</span>
+                  <span>🎥 Video: Amit S.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="event-feed-card">
+              <div class="feed-time-col">
+                <span class="time-main">04:30 PM</span>
+                <span class="time-tag">EVENING</span>
+              </div>
+              <div class="feed-info-col">
+                <strong>Shah & Mehta Grand Sangeet Night</strong>
+                <p>The Grand Bhagwati, SG Highway, Ahmedabad</p>
+                <div class="crew-mini-pill">
+                  <span>📸 Candid: Vikram P.</span>
+                  <span>🚁 Drone: Hardik J.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Critical Attention Needed -->
+          <div class="dash-col-alerts">
+            <div class="dash-block-header">
+              <span class="dash-badge alert-badge">ATTENTION REQUIRED</span>
+              <h4>Actionable Items</h4>
+            </div>
+
+            <div class="alert-item-box border-amber">
+              <div class="alert-icon">⚠️</div>
+              <div class="alert-text">
+                <strong>Unassigned Crew on Upcoming Event</strong>
+                <p>Desai Pre-Wedding Shoot scheduled in 4 days has no assigned candid photographer.</p>
+              </div>
+            </div>
+
+            <div class="alert-item-box border-rose">
+              <div class="alert-icon">💳</div>
+              <div class="alert-text">
+                <strong>Milestone Payment Due Before Handover</strong>
+                <p>Sharma Wedding album printed and ready. Balance due: ₹24,000.</p>
+              </div>
+            </div>
+
+            <div class="alert-item-box border-blue">
+              <div class="alert-icon">🎞️</div>
+              <div class="alert-text">
+                <strong>Photo Selection Awaiting Client</strong>
+                <p>Selection gallery sent 12 days ago for Joshi Wedding. Follow-up recommended.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="module-benefit-box">
+          <strong>Key Studio Owner Benefit:</strong> Start every morning with 100% operational certainty. In 30 seconds, know exactly where every camera is pointing, what money is coming in, and what editing work must be delivered today.
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 6 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 06</span>
+            <span class="header-section-title">MODULE 2: WEDDING FUNCTIONS & SUB-EVENTS</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">MODULE BREAKDOWN</div>
+          <h2 class="section-heading">Multi-Event & Wedding Function Management</h2>
+          <p class="section-lead">
+            Indian weddings and high-end celebrations are never single-day shoots. They span multiple ceremonies across multiple days, venues, and cities. Studio OS models this reality with dedicated sub-event architecture.
+          </p>
+        </div>
+
+        <div class="wedding-flow-illustration">
+          <div class="wf-step">
+            <div class="wf-dot">1</div>
+            <div class="wf-content">
+              <strong>Pre-Wedding</strong>
+              <span>Scenic Outdoor Location</span>
+            </div>
+          </div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step">
+            <div class="wf-dot">2</div>
+            <div class="wf-content">
+              <strong>Haldi & Mandvo</strong>
+              <span>Home / Banquet Lawn</span>
+            </div>
+          </div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step">
+            <div class="wf-dot">3</div>
+            <div class="wf-content">
+              <strong>Sangeet & Garba</strong>
+              <span>Auditorium / Grand Ballroom</span>
+            </div>
+          </div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step">
+            <div class="wf-dot">4</div>
+            <div class="wf-content">
+              <strong>Wedding Ceremony</strong>
+              <span>Temple / Palace Resort</span>
+            </div>
+          </div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step">
+            <div class="wf-dot">5</div>
+            <div class="wf-content">
+              <strong>Reception Dinner</strong>
+              <span>5-Star Hotel Banquet</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="features-split-grid">
+          <div class="feature-detail-card">
+            <h4>Independent Dates, Times & Venues</h4>
+            <p>Every function within the master booking has its own date, start time, end time, and call time. Venue addresses and city locations are stored cleanly so crew know precisely where to report.</p>
+            <div class="card-tag-list">
+              <span>Specific Call Times</span>
+              <span>Google Maps Integration</span>
+              <span>City & Address Fields</span>
+            </div>
+          </div>
+
+          <div class="feature-detail-card">
+            <h4>Function-Specific Crew Allocation</h4>
+            <p>Different ceremonies require different artistic setups. Assign 2 traditional photographers to the Haldi, but dispatch 2 candid specialists, 2 cinematographers, and a drone operator to the Sangeet.</p>
+            <div class="card-tag-list">
+              <span>Independent Crew Lists</span>
+              <span>Custom Role Assignment</span>
+              <span>No Cross-Contamination</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sample Function Breakdown Table -->
+        <div class="table-container">
+          <div class="table-header-title">REAL-WORLD WEDDING FUNCTION BREAKDOWN IN STUDIO OS</div>
+          <table class="brochure-table">
+            <thead>
+              <tr>
+                <th>Function Name</th>
+                <th>Date & Time</th>
+                <th>Venue & Location</th>
+                <th>Assigned Crew Setup</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Pre-Wedding Shoot</strong></td>
+                <td>12 Nov • 06:00 AM</td>
+                <td>Punit Van & Dandi Kutir, Gandhinagar</td>
+                <td>1 Candid Photo, 1 Cinematographer</td>
+                <td><span class="badge-status-green">Completed</span></td>
+              </tr>
+              <tr>
+                <td><strong>Ganesh Sthapana & Haldi</strong></td>
+                <td>20 Nov • 08:30 AM</td>
+                <td>Patel Farm, Mehsana</td>
+                <td>Owner (Rajesh), 1 Traditional Photo</td>
+                <td><span class="badge-status-blue">Scheduled</span></td>
+              </tr>
+              <tr>
+                <td><strong>Grand Sangeet & Musical Eve</strong></td>
+                <td>21 Nov • 06:30 PM</td>
+                <td>The Grand Bhagwati, Ahmedabad</td>
+                <td>2 Candid, 2 Cinema, 1 Drone, Owner</td>
+                <td><span class="badge-status-blue">Scheduled</span></td>
+              </tr>
+              <tr>
+                <td><strong>Wedding Ceremony (Lagna)</strong></td>
+                <td>22 Nov • 09:00 AM</td>
+                <td>Shankus Water Park & Resort</td>
+                <td>Complete Studio Team (6 Crew)</td>
+                <td><span class="badge-status-blue">Scheduled</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="module-benefit-box">
+          <strong>Key Studio Owner Benefit:</strong> Keep multi-day wedding logistics organized under one master booking number without creating duplicate customer files or losing track of who is shooting which ceremony.
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 7 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 07</span>
+            <span class="header-section-title">MODULE 3: CREW ASSIGNMENT & CONFLICT ENGINE</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">MODULE BREAKDOWN</div>
+          <h2 class="section-heading">Smart Crew Allocation & Conflict Engine</h2>
+          <p class="section-lead">
+            Managing full-time employees, freelance cinematographers, and drone operators during peak wedding season is notoriously difficult. Studio OS features a multi-select crew allocation system backed by an intelligent background conflict engine.
+          </p>
+        </div>
+
+        <div class="crew-features-row">
+          <div class="crew-feat-card">
+            <div class="feat-icon-bubble">👥</div>
+            <h4>Multi-Select Crew Checkboxes</h4>
+            <p>Select multiple crew members simultaneously with a single tap. Removable badges allow quick adjustments on mobile or desktop without tedious dropdown scrolling.</p>
+          </div>
+
+          <div class="crew-feat-card">
+            <div class="feat-icon-bubble">👑</div>
+            <h4>Studio Owner Self-Assignment</h4>
+            <p>Studio owners frequently shoot lead portraits or supervise senior wedding ceremonies. Studio OS lists the Studio Owner's real name as an assignable team member.</p>
+          </div>
+
+          <div class="crew-feat-card">
+            <div class="feat-icon-bubble">👁️</div>
+            <h4>Individual Calendar Visibility</h4>
+            <p>Control whether each assigned crew member sees the shoot on their personal calendar. Toggle Show/Hide visibility with a single click to keep schedules uncluttered.</p>
+          </div>
+        </div>
+
+        <!-- The Conflict Detection Engine In-Depth -->
+        <div class="conflict-engine-box">
+          <div class="conflict-header">
+            <div class="conflict-badge">CRITICAL SAFETY SHIELD</div>
+            <h3>Intelligent Scheduling Conflict Engine</h3>
+            <p>Studio OS continuously evaluates all event dates, call times, and team allocations in the background.</p>
+          </div>
+
+          <div class="conflict-workflow-grid">
+            <div class="cw-step">
+              <span class="cw-num">STEP 1</span>
+              <strong>Background Overlap Scan</strong>
+              <p>When assigning crew to an event or sub-event, the engine scans all other bookings for that studio on the same date.</p>
+            </div>
+            <div class="cw-step">
+              <span class="cw-num">STEP 2</span>
+              <strong>Subtle Conflict Icon</strong>
+              <p>If a member is already booked, Studio OS displays a subtle amber/red warning icon directly beside their name.</p>
+            </div>
+            <div class="cw-step">
+              <span class="cw-num">STEP 3</span>
+              <strong>Detailed Conflict Popover</strong>
+              <p>Tapping the icon reveals the conflicting booking ID, event title, venue, and overlapping hours.</p>
+            </div>
+            <div class="cw-step">
+              <span class="cw-num">STEP 4</span>
+              <strong>Owner Operational Discretion</strong>
+              <p>Warnings are informative and non-blocking—allowing owners to make emergency overrides when timing permits.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="sample-crew-roster-preview">
+          <div class="roster-preview-header">SAMPLE CREW ASSIGNMENT WITH VISIBILITY & CONFLICT MONITOR</div>
+          <div class="roster-item-row">
+            <div class="roster-col-member">
+              <strong>Rajesh Jarsaniya (Studio Owner)</strong>
+              <span class="role-sub">Master Lead & Director</span>
+            </div>
+            <div class="roster-col-status">
+              <span class="badge-status-green">Available • No Conflicts</span>
+            </div>
+            <div class="roster-col-vis">
+              <span class="vis-pill">👁️ Calendar: Visible</span>
+            </div>
+          </div>
+          <div class="roster-item-row conflict-row">
+            <div class="roster-col-member">
+              <strong>Amit Sharma (Senior Cinematographer)</strong>
+              <span class="role-sub">Sony FX3 Cinema Specialist</span>
+            </div>
+            <div class="roster-col-status">
+              <span class="badge-status-amber">⚠️ Conflict: Booked 04:00 PM (Shah Sangeet)</span>
+            </div>
+            <div class="roster-col-vis">
+              <span class="vis-pill">👁️ Calendar: Visible</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="module-benefit-box">
+          <strong>Key Studio Owner Benefit:</strong> Never face the embarrassment of a missing photographer on a wedding day. You have 100% confidence that every crew member is scheduled, notified, and conflict-free.
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 8 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 08</span>
+            <span class="header-section-title">MODULE 4: CALENDAR & SCHEDULE PLANNING</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">MODULE BREAKDOWN</div>
+          <h2 class="section-heading">Interactive Calendar & Schedule Planning</h2>
+          <p class="section-lead">
+            The Studio OS Calendar is an interactive scheduling hub built to handle the intense seasonality of the photography business. It visualizes studio shoot density, auspicious wedding dates, and team availability across Month, Week, and Day views.
+          </p>
+        </div>
+
+        <div class="calendar-modes-grid">
+          <div class="cal-mode-card">
+            <div class="mode-header">
+              <span class="mode-icon">📅</span>
+              <h4>Month Grid View</h4>
+            </div>
+            <p>Bird's-eye view of monthly capacity. Color-coded booking badges show event categories (Wedding, Pre-Wedding, Corporate) and highlight peak weekend shoot concentrations.</p>
+          </div>
+
+          <div class="cal-mode-card">
+            <div class="mode-header">
+              <span class="mode-icon">⏱️</span>
+              <h4>7-Day Week Schedule</h4>
+            </div>
+            <p>Hour-by-hour timeline view essential for managing wedding weekends where 4+ different crews are moving across different venues and cities throughout the day.</p>
+          </div>
+
+          <div class="cal-mode-card">
+            <div class="mode-header">
+              <span class="mode-icon">📋</span>
+              <h4>Day Agenda Dispatch</h4>
+            </div>
+            <p>Granular breakdown of today's shoots, reporting times, equipment prep notes, and crew departure schedules for immediate morning dispatch.</p>
+          </div>
+        </div>
+
+        <!-- Mobile Optimization Highlight -->
+        <div class="mobile-cal-feature-box">
+          <div class="mcf-header">
+            <span class="mcf-badge">MOBILE-OPTIMIZED UI</span>
+            <h3>Compact Mobile Calendar Controls</h3>
+            <p>Designed for studio owners and photographers checking dates while on location or during bride-and-groom consultations.</p>
+          </div>
+
+          <div class="mcf-controls-grid">
+            <div class="mcf-item">
+              <strong>All Shoots vs. My Shoots:</strong>
+              <p>Compact dropdown lets the studio owner switch between the studio-wide master schedule and their own personal shoots instantly.</p>
+            </div>
+            <div class="mcf-item">
+              <strong>View Selector Dropdown:</strong>
+              <p>Clean, finger-friendly selector replaces bulky horizontal tabs on small phone screens (320px–430px).</p>
+            </div>
+            <div class="mcf-item">
+              <strong>48px Touch Targets:</strong>
+              <p>Comfortable navigation arrows for previous/next month navigation without accidental mis-taps.</p>
+            </div>
+            <div class="mcf-item">
+              <strong>Zero Red Conflict Panels:</strong>
+              <p>Replaced loud warning banners with clean, discreet conflict badges to keep the calendar calm and professional.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendar Mockup Card -->
+        <div class="cal-mockup-container">
+          <div class="cal-mockup-header">
+            <span>NOVEMBER 2026 — STUDIO CALENDAR OVERVIEW</span>
+            <span>SHOWING 27 SCHEDULED SHOOTS</span>
+          </div>
+          <div class="cal-dates-strip">
+            <div class="cal-day-cell">
+              <span class="cal-d-num">18 Wed</span>
+              <span class="cal-badge-event">Patel Haldi</span>
+            </div>
+            <div class="cal-day-cell">
+              <span class="cal-d-num">19 Thu</span>
+              <span class="cal-badge-event">Patel Mehndi</span>
+            </div>
+            <div class="cal-day-cell cal-busy">
+              <span class="cal-d-num">20 Fri</span>
+              <span class="cal-badge-event bg-orange">Shah Sangeet</span>
+              <span class="cal-badge-event bg-blue">Desai Pre-Wed</span>
+            </div>
+            <div class="cal-day-cell cal-peak">
+              <span class="cal-d-num">21 Sat (Peak)</span>
+              <span class="cal-badge-event bg-orange">Patel Wedding</span>
+              <span class="cal-badge-event bg-orange">Shah Reception</span>
+              <span class="cal-badge-event bg-blue">Mehta Haldi</span>
+            </div>
+            <div class="cal-day-cell">
+              <span class="cal-d-num">22 Sun</span>
+              <span class="cal-badge-event bg-orange">Mehta Wedding</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="module-benefit-box">
+          <strong>Key Studio Owner Benefit:</strong> Instant calendar clarity prevents double-booking peak dates and allows you to confidently quote prospective clients during phone consultations.
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 9 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 09</span>
+            <span class="header-section-title">MODULE 5: PACKAGES & COMMERCIAL PRICING</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">MODULE BREAKDOWN</div>
+          <h2 class="section-heading">Packages, Quotations & Commercial Pricing</h2>
+          <p class="section-lead">
+            High-ticket photography commissions require transparent scopes and professional quotations. Studio OS eliminates ambiguous pricing by structuring packages, itemized quotes, and commercial concessions.
+          </p>
+        </div>
+
+        <div class="packages-architecture-grid">
+          <div class="pkg-card">
+            <div class="pkg-icon">📦</div>
+            <h4>Configured Service Packages</h4>
+            <p>Pre-configure standard photography bundles such as Traditional Photography, Candid Cinematography, Drone Aerials, Pre-Wedding Shoots, and Premium Flush Mount Photobooks.</p>
+          </div>
+
+          <div class="pkg-card">
+            <div class="pkg-icon">📑</div>
+            <h4>Itemized Quotation Proposals</h4>
+            <p>Generate clear, professional quotations detailing the number of shooting hours, crew members per function, deliverables, and payment terms to prevent scope misunderstandings.</p>
+          </div>
+
+          <div class="pkg-card">
+            <div class="pkg-icon">🤝</div>
+            <h4>Negotiation & Concession Logs</h4>
+            <p>Track client price discussions with full transparency. Record original Quoted Amount versus Final Agreed Value, logging formal concession reasons ("Referral discount", "Seasonal promo").</p>
+          </div>
+        </div>
+
+        <!-- Sample Quotation Breakdown Display -->
+        <div class="quote-sample-container">
+          <div class="quote-header-row">
+            <div>
+              <span class="quote-badge">FORMAL QUOTATION BREAKDOWN</span>
+              <h3 class="quote-title">Royal Gujarati Wedding Cinema & Photography Package</h3>
+            </div>
+            <div class="quote-status-box">
+              <span class="status-confirmed-tag">CONFIRMED DEAL</span>
+            </div>
+          </div>
+
+          <div class="quote-line-items">
+            <div class="q-line-item">
+              <div class="q-item-name">
+                <strong>Traditional Photography & 4K Videography</strong>
+                <span>All 4 wedding functions (Mandvo, Haldi, Wedding, Reception) with 2 cameras</span>
+              </div>
+              <div class="q-item-price">₹1,20,000</div>
+            </div>
+
+            <div class="q-line-item">
+              <div class="q-item-name">
+                <strong>Premium Candid Photography & Cinematic Film</strong>
+                <span>Senior candid photographer + Sony FX3 Cinema camera with 4K color grade</span>
+              </div>
+              <div class="q-item-price">₹1,50,000</div>
+            </div>
+
+            <div class="q-line-item">
+              <div class="q-item-name">
+                <strong>Aerial Drone Coverage (DJI Mavic 3 Cine)</strong>
+                <span>Outdoor Barat procession, venue aerials, and couple sunset portraits</span>
+              </div>
+              <div class="q-item-price">₹35,000</div>
+            </div>
+
+            <div class="q-line-item">
+              <div class="q-item-name">
+                <strong>2x Premium Velvet Photobooks (12" x 36", 40 Sheets / 80 Pages)</strong>
+                <span>Lustre metallic finish with acrylic glass cover & presentation briefcase</span>
+              </div>
+              <div class="q-item-price">₹45,000</div>
+            </div>
+          </div>
+
+          <div class="quote-totals-box">
+            <div class="q-total-row">
+              <span>Standard Quoted Total:</span>
+              <span class="font-mono">₹3,50,000</span>
+            </div>
+            <div class="q-total-row concession-row">
+              <span>Client Negotiation Concession (Early-Bird Season Offer):</span>
+              <span class="font-mono text-amber">-₹25,000</span>
+            </div>
+            <div class="q-total-row grand-total-row">
+              <strong>Final Agreed Booking Value:</strong>
+              <strong class="font-mono text-orange text-lg">₹3,25,000</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="module-benefit-box">
+          <strong>Key Studio Owner Benefit:</strong> Eliminate disputes over what was included in the package. Every deliverable, camera unit, and agreed discount is documented in writing and linked directly to the booking.
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 10 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 10</span>
+            <span class="header-section-title">MODULE 6: FINANCIAL LEDGERS & CASH FLOW</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">MODULE BREAKDOWN</div>
+          <h2 class="section-heading">Payments, Billing & Cash Flow Tracking</h2>
+          <p class="section-lead">
+            Photography studios frequently struggle with cash flow because balances remain uncollected long after wedding shoots are finished. Studio OS enforces strict financial tracking with milestone-based payment ledgers.
+          </p>
+        </div>
+
+        <!-- 4 Milestone Flow Cards -->
+        <div class="milestones-flow-grid">
+          <div class="m-card">
+            <span class="m-step">MILESTONE 1</span>
+            <h4>Booking Advance</h4>
+            <p class="m-amt">20% – 30%</p>
+            <span class="m-desc">Collected upon contract signing to block peak dates and crew.</span>
+          </div>
+
+          <div class="m-card">
+            <span class="m-step">MILESTONE 2</span>
+            <h4>Shoot-Day Progress</h4>
+            <p class="m-amt">40% – 50%</p>
+            <span class="m-desc">Collected on the primary wedding date prior to final ceremony wrap.</span>
+          </div>
+
+          <div class="m-card">
+            <span class="m-step">MILESTONE 3</span>
+            <h4>Editing & Review</h4>
+            <p class="m-amt">15% – 20%</p>
+            <span class="m-desc">Collected upon client approval of photo selection and video draft.</span>
+          </div>
+
+          <div class="m-card m-card-final">
+            <span class="m-step">MILESTONE 4</span>
+            <h4>Final Handover</h4>
+            <p class="m-amt">Remaining 10%</p>
+            <span class="m-desc">Mandatory clearance before handing over photobooks and master drives.</span>
+          </div>
+        </div>
+
+        <!-- Sample Financial Ledger in Rupee Format -->
+        <div class="ledger-container">
+          <div class="ledger-header-row">
+            <div>
+              <span class="ledger-badge">REAL-TIME FINANCIAL LEDGER</span>
+              <h3 class="ledger-title">Patel Golden Jubilee Celebration (SHR-CAL-2027-012)</h3>
+            </div>
+            <div class="ledger-status-tag">
+              <span class="tag-advance">ADVANCE RECEIVED</span>
+            </div>
+          </div>
+
+          <div class="ledger-stats-strip">
+            <div class="l-stat">
+              <span class="l-stat-lbl">TOTAL AGREED VALUE</span>
+              <span class="l-stat-val">₹38,000</span>
+            </div>
+            <div class="l-stat">
+              <span class="l-stat-lbl">TOTAL RECEIVED</span>
+              <span class="l-stat-val text-green">₹19,000</span>
+            </div>
+            <div class="l-stat">
+              <span class="l-stat-lbl">OUTSTANDING BALANCE</span>
+              <span class="l-stat-val text-rose font-bold">₹19,000</span>
+            </div>
+            <div class="l-stat">
+              <span class="l-stat-lbl">PAYMENT STATUS</span>
+              <span class="l-stat-val text-amber">50% Pending</span>
+            </div>
+          </div>
+
+          <table class="brochure-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Milestone Description</th>
+                <th>Mode</th>
+                <th>Transaction Reference</th>
+                <th>Amount Paid</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>15 Oct 2026</td>
+                <td>Initial Booking Token Advance</td>
+                <td>UPI (GPay)</td>
+                <td><code class="code-pill">UPI/62910394821</code></td>
+                <td><strong>₹10,000</strong></td>
+                <td><span class="badge-status-green">Verified</span></td>
+              </tr>
+              <tr>
+                <td>01 Nov 2026</td>
+                <td>Pre-Event Preparations Advance</td>
+                <td>NEFT Transfer</td>
+                <td><code class="code-pill">HDFC-N94820184</code></td>
+                <td><strong>₹9,000</strong></td>
+                <td><span class="badge-status-green">Verified</span></td>
+              </tr>
+              <tr class="pending-row">
+                <td>Pending Handover</td>
+                <td>Final Balance Due Before Deliverables</td>
+                <td>UPI / Cash</td>
+                <td>—</td>
+                <td class="text-rose font-bold">₹19,000</td>
+                <td><span class="badge-status-amber">Awaiting</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="module-benefit-box">
+          <strong>Key Studio Owner Benefit:</strong> Never deliver physical photobooks, raw hard drives, or 4K master films before verifying payment. Outstanding balances are highlighted in bold red across all booking cards.
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 11 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 11</span>
+            <span class="header-section-title">MODULE 7: DELIVERABLES & POST-PRODUCTION</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">MODULE BREAKDOWN</div>
+          <h2 class="section-heading">Deliverables & 7-Stage Post-Production Pipeline</h2>
+          <p class="section-lead">
+            Post-production bottlenecks cause immense friction between studios and wedding couples. Studio OS implements a standardized 7-stage deliverables tracking engine with target offset days and completion checklists.
+          </p>
+        </div>
+
+        <!-- 7 Stages Vertical/Grid Flow -->
+        <div class="pipeline-stages-container">
+          <div class="pipeline-stage-card">
+            <div class="stage-num-col">01</div>
+            <div class="stage-info-col">
+              <div class="stage-top">
+                <strong>RAW Photo & Video Backup Verified</strong>
+                <span class="offset-tag">Target: Day +1 (Within 24 Hours)</span>
+              </div>
+              <p>Footage dumped from camera memory cards onto local studio NAS and secondary cloud storage. Checksum verified before cards are formatted.</p>
+            </div>
+          </div>
+
+          <div class="pipeline-stage-card">
+            <div class="stage-num-col">02</div>
+            <div class="stage-info-col">
+              <div class="stage-top">
+                <strong>Photo Culling & Selection Link Dispatched</strong>
+                <span class="offset-tag">Target: Day +3</span>
+              </div>
+              <p>Duplicates and blinks removed. Curated photo selection gallery generated and sent to the couple via WhatsApp/Email link.</p>
+            </div>
+          </div>
+
+          <div class="pipeline-stage-card">
+            <div class="stage-num-col">03</div>
+            <div class="stage-info-col">
+              <div class="stage-top">
+                <strong>Customer Photo Selection Received</strong>
+                <span class="offset-tag">Target: Day +10</span>
+              </div>
+              <p>Couple selects their favorite 300–400 photographs for album layout and album cover portraits.</p>
+            </div>
+          </div>
+
+          <div class="pipeline-stage-card">
+            <div class="stage-num-col">04</div>
+            <div class="stage-info-col">
+              <div class="stage-top">
+                <strong>Master Photo Retouching & Color Grading</strong>
+                <span class="offset-tag">Target: Day +20</span>
+              </div>
+              <p>Skin retouching, light corrections, and high-end artistic color grading completed on all selected wedding photographs.</p>
+            </div>
+          </div>
+
+          <div class="pipeline-stage-card">
+            <div class="stage-num-col">05</div>
+            <div class="stage-info-col">
+              <div class="stage-top">
+                <strong>Cinematic Teaser & Instagram Reels Delivered</strong>
+                <span class="offset-tag">Target: Day +7</span>
+              </div>
+              <p>60-second vertical 9:16 wedding teaser edited with licensed audio for immediate social media sharing by the couple.</p>
+            </div>
+          </div>
+
+          <div class="pipeline-stage-card">
+            <div class="stage-num-col">06</div>
+            <div class="stage-info-col">
+              <div class="stage-top">
+                <strong>Full Feature Wedding Cinema Film Delivered</strong>
+                <span class="offset-tag">Target: Day +30</span>
+              </div>
+              <p>30–45 minute documentary edit with multi-camera audio sync, vows, speeches, and color-graded cinematic drone footage.</p>
+            </div>
+          </div>
+
+          <div class="pipeline-stage-card stage-final">
+            <div class="stage-num-col text-orange">07</div>
+            <div class="stage-info-col">
+              <div class="stage-top">
+                <strong class="text-orange">Final Quality Control & Client Handover</strong>
+                <span class="offset-tag bg-orange-light">Target: Day +50</span>
+              </div>
+              <p>Master engraved crystal pendrive loaded with 4K files, printed photobooks verified, balance collected, and booking closed.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="module-benefit-box">
+          <strong>Key Studio Owner Benefit:</strong> Never ask your editors "What happened to the Sharma wedding teaser?" Studio OS displays the real-time stage of every deliverable and flags overdue tasks automatically.
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 12 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 12</span>
+            <span class="header-section-title">MODULE 8: ALBUM MANAGEMENT & PRINT LAB</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">MODULE BREAKDOWN</div>
+          <h2 class="section-heading">Album Management & Print Workflow</h2>
+          <p class="section-lead">
+            Physical photobooks represent the highest-margin, most tangible keepsake for wedding clients. Studio OS includes a dedicated album tracking engine that monitors specifications, design proofs, and print lab fulfillment.
+          </p>
+        </div>
+
+        <!-- Album Specs Grid -->
+        <div class="album-specs-grid">
+          <div class="spec-card">
+            <div class="spec-icon">📐</div>
+            <h4>Album Dimensions</h4>
+            <div class="spec-tags">
+              <span>12" x 36" Panoramic</span>
+              <span>12" x 30" Royale</span>
+              <span>12" x 18" Classic</span>
+              <span>10" x 15" Parent Album</span>
+            </div>
+          </div>
+
+          <div class="spec-card">
+            <div class="spec-icon">📄</div>
+            <h4>Sheet & Page Counts</h4>
+            <div class="spec-tags">
+              <span>20 Sheets (40 Pages)</span>
+              <span>30 Sheets (60 Pages)</span>
+              <span>40 Sheets (80 Pages)</span>
+              <span>50 Sheets (100 Pages)</span>
+            </div>
+          </div>
+
+          <div class="spec-card">
+            <div class="spec-icon">✨</div>
+            <h4>Paper Finishes</h4>
+            <div class="spec-tags">
+              <span>Ultra Lustre</span>
+              <span>Metallic Pearl</span>
+              <span>Silk Matte</span>
+              <span>Feather Velvet</span>
+            </div>
+          </div>
+
+          <div class="spec-card">
+            <div class="spec-icon">🎁</div>
+            <h4>Cover Materials</h4>
+            <div class="spec-tags">
+              <span>Acrylic Glass Portrait</span>
+              <span>Italian Leatherette</span>
+              <span>Royal Velvet Touch</span>
+              <span>Engraved Wooden Box</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6-Step Album Fulfillment Process -->
+        <div class="album-fulfillment-container">
+          <div class="af-header">
+            <span class="af-badge">STEP-BY-STEP WORKFLOW</span>
+            <h3>6-Step Album Production Lifecycle</h3>
+          </div>
+
+          <div class="af-steps-row">
+            <div class="af-step-box">
+              <span class="af-num">1</span>
+              <strong>Photo Selection</strong>
+              <span>Client approves final 350 images</span>
+            </div>
+            <div class="af-arr">→</div>
+            <div class="af-step-box">
+              <span class="af-num">2</span>
+              <strong>Layout Design</strong>
+              <span>Album designer prepares drafts</span>
+            </div>
+            <div class="af-arr">→</div>
+            <div class="af-step-box">
+              <span class="af-num">3</span>
+              <strong>Design Review</strong>
+              <span>Digital proof approved by couple</span>
+            </div>
+            <div class="af-arr">→</div>
+            <div class="af-step-box">
+              <span class="af-num">4</span>
+              <strong>Lab Printing</strong>
+              <span>Sent to professional lab (Canvera/etc.)</span>
+            </div>
+            <div class="af-arr">→</div>
+            <div class="af-step-box">
+              <span class="af-num">5</span>
+              <strong>Physical QA</strong>
+              <span>Studio inspection for color & binding</span>
+            </div>
+            <div class="af-arr">→</div>
+            <div class="af-step-box af-step-final">
+              <span class="af-num">6</span>
+              <strong>Delivery</strong>
+              <span>Handed over with presentation box</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="album-example-banner">
+          <div class="aeb-title">REAL-WORLD PRODUCTION SPECIFICATION RECORD</div>
+          <div class="aeb-content">
+            <div class="aeb-col"><strong>Booking:</strong> Patel Wedding (SHR-CAL-2027-012)</div>
+            <div class="aeb-col"><strong>Album Size:</strong> 12" x 36" Panoramic • 40 Sheets</div>
+            <div class="aeb-col"><strong>Cover Type:</strong> Acrylic Glass with Leather Spine</div>
+            <div class="aeb-col"><strong>Current Status:</strong> <span class="badge-status-blue">At Print Lab (Batch #9482)</span></div>
+          </div>
+        </div>
+
+        <div class="module-benefit-box">
+          <strong>Key Studio Owner Benefit:</strong> Stop losing track of photobook orders at external printing labs. Know exactly when layouts were sent, when proofs were approved, and when albums arrive for delivery.
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 13 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 13</span>
+            <span class="header-section-title">MODULE 9: CUSTOMER COMMUNICATION & WHATSAPP</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">MODULE BREAKDOWN</div>
+          <h2 class="section-heading">WhatsApp Click-to-Chat & Client Communication</h2>
+          <p class="section-lead">
+            Clients and shooting crew do not want another complex portal app. They communicate on WhatsApp. Studio OS integrates directly with WhatsApp using zero-API-cost click-to-chat links (<code class="code-pill">wa.me</code>) pre-formatted with booking data.
+          </p>
+        </div>
+
+        <div class="whatsapp-features-split">
+          <div class="wa-feature-card">
+            <div class="wa-card-header">
+              <div class="wa-icon-box">💬</div>
+              <h4>Zero Cost, Native WhatsApp Links</h4>
+            </div>
+            <p>No expensive third-party messaging API subscriptions or template approval delays. Studio OS generates direct <code class="code-pill">wa.me</code> URLs that open instantly on mobile or WhatsApp Web.</p>
+            <ul>
+              <li>Opens directly in the studio owner's WhatsApp app.</li>
+              <li>Pre-filled with customer names, event dates, and financial figures.</li>
+              <li>Allows personalization before pressing "Send".</li>
+            </ul>
+          </div>
+
+          <div class="wa-feature-card">
+            <div class="wa-card-header">
+              <div class="wa-icon-box">📋</div>
+              <h4>Automated Daily Crew Call Sheets</h4>
+            </div>
+            <p>Generate privacy-scrubbed daily shoot briefs for photographers and cinematographers with a single click.</p>
+            <ul>
+              <li>Event title, function name, and reporting call time.</li>
+              <li>Precise venue address with Google Maps directions.</li>
+              <li>Assigned responsibilities (Candid, Traditional, Drone).</li>
+              <li>Scrubs confidential financials to protect studio pricing.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- WhatsApp Message Mockup Box -->
+        <div class="wa-mockup-container">
+          <div class="wa-mockup-header">
+            <div class="wa-avatar">📸</div>
+            <div class="wa-sender-info">
+              <strong>Shreeji Films & Photography — Booking Notification</strong>
+              <span>Automated WhatsApp Summary Generator</span>
+            </div>
+            <div class="wa-status-pill">ONE-CLICK DISPATCH</div>
+          </div>
+
+          <div class="wa-bubble-content">
+            <p><strong>Namaste Dhirubhai Patel,</strong></p>
+            <p>Thank you for choosing <strong>Shreeji Films and Photography</strong> for your family's special celebration! Here is your confirmed event summary:</p>
+            <div class="wa-data-block">
+              <div>📌 <strong>Event:</strong> Patel Family Golden Jubilee Celebration</div>
+              <div>📅 <strong>Main Date:</strong> 20 March 2027</div>
+              <div>📍 <strong>Venue:</strong> Shankus Water Park & Natural Health Resort, Mehsana</div>
+              <div>💼 <strong>Agreed Package Value:</strong> ₹38,000</div>
+              <div>✅ <strong>Advance Received:</strong> ₹19,000 (Payment Verified)</div>
+              <div>💳 <strong>Balance Remaining:</strong> ₹19,000 (Due prior to final handover)</div>
+            </div>
+            <p>Our photography and cinema team is fully scheduled. We look forward to capturing unforgettable memories!</p>
+          </div>
+        </div>
+
+        <div class="module-benefit-box">
+          <strong>Key Studio Owner Benefit:</strong> Send professional booking summaries, payment receipts, and crew call sheets in 2 seconds without typing repetitive WhatsApp messages on your phone keyboard.
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 14 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 14</span>
+            <span class="header-section-title">MODULE 10: DEDICATED EMPLOYEE PORTAL</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">MODULE BREAKDOWN</div>
+          <h2 class="section-heading">Dedicated Employee Portal & Field Privacy</h2>
+          <p class="section-lead">
+            Field photographers and video editors need immediate access to their shoot schedules and technical instructions without having access to confidential client pricing, profit margins, or other team members' compensation.
+          </p>
+        </div>
+
+        <div class="employee-portal-grid">
+          <div class="emp-card">
+            <div class="emp-icon">🔐</div>
+            <h4>Individual Secure Login</h4>
+            <p>Every employee and freelance crew member has their own authenticated account. Password management is handled securely with mandatory initial reset workflows.</p>
+          </div>
+
+          <div class="emp-card">
+            <div class="emp-icon">📅</div>
+            <h4>Personal "My Shoots" Schedule</h4>
+            <p>Crew members see only the events and wedding functions to which they are assigned. No cluttered studio-wide calendars or irrelevant notifications.</p>
+          </div>
+
+          <div class="emp-card">
+            <div class="emp-icon">📍</div>
+            <h4>Venues, Call Times & Gear Notes</h4>
+            <p>Direct mobile access to reporting times, wedding hall locations, Google Maps links, and specific camera equipment requirements for the day.</p>
+          </div>
+        </div>
+
+        <!-- Privacy Projection Engine Highlight -->
+        <div class="privacy-engine-box">
+          <div class="privacy-header">
+            <div class="privacy-badge">SECURITY BY DESIGN</div>
+            <h3>Financial Privacy Projection Engine</h3>
+            <p>Studio OS automatically filters and sanitizes records based on the user's authenticated role.</p>
+          </div>
+
+          <div class="privacy-rules-grid">
+            <div class="pr-rule">
+              <div class="pr-icon">🚫</div>
+              <div class="pr-info">
+                <strong>Zero Financial Visibility</strong>
+                <p>Employees cannot see total contract value, advance amounts, discounts, or pending customer balances.</p>
+              </div>
+            </div>
+
+            <div class="pr-rule">
+              <div class="pr-icon">🔒</div>
+              <div class="pr-info">
+                <strong>Supplier & Payroll Protection</strong>
+                <p>Team members cannot see agreed fee payouts or contract rates negotiated with other photographers or external suppliers.</p>
+              </div>
+            </div>
+
+            <div class="pr-rule">
+              <div class="pr-icon">🛡️</div>
+              <div class="pr-info">
+                <strong>Customer Contact Masking</strong>
+                <p>Personal customer phone numbers and home addresses can be scrubbed or masked for non-lead crew to prevent unauthorized solicitations.</p>
+              </div>
+            </div>
+
+            <div class="pr-rule">
+              <div class="pr-icon">👁️</div>
+              <div class="pr-info">
+                <strong>Owner-Only Authority</strong>
+                <p>Only the Studio Owner and designated Master Admin hold permission to delete bookings, modify pricing, or alter financial ledgers.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="module-benefit-box">
+          <strong>Key Studio Owner Benefit:</strong> Empower your field team with mobile schedules and call sheets while keeping your commercial pricing, margins, and payroll 100% confidential.
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 15 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 15</span>
+            <span class="header-section-title">MODULE 11: AUDIT TRAIL & BUSINESS INTELLIGENCE</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">MODULE BREAKDOWN</div>
+          <h2 class="section-heading">Complete Audit Trail & Business Intelligence</h2>
+          <p class="section-lead">
+            Studio OS provides complete accountability and deep commercial intelligence. Every action is recorded in an immutable audit trail, while studio-wide analytics help owners make profitable growth decisions.
+          </p>
+        </div>
+
+        <!-- Section 9 Audit Trail Spotlight -->
+        <div class="audit-trail-spotlight">
+          <div class="ats-header">
+            <span class="ats-badge">WORKSPACE SECTION 9</span>
+            <h3>Immutable Audit Trail & Activity Log</h3>
+            <p>Accessible within Section 9 of every booking workspace, providing forensic history of every change.</p>
+          </div>
+
+          <div class="audit-log-sample">
+            <div class="log-entry">
+              <span class="log-time">16 Nov 2026, 04:32 PM</span>
+              <span class="log-user">Rajesh J. (Studio Owner)</span>
+              <span class="log-action">Recorded advance payment of <strong>₹19,000</strong> via UPI (Transaction ID: UPI/62910394821).</span>
+            </div>
+            <div class="log-entry">
+              <span class="log-time">15 Nov 2026, 11:15 AM</span>
+              <span class="log-user">Rajesh J. (Studio Owner)</span>
+              <span class="log-action">Assigned <strong>Amit Sharma</strong> as Senior Cinematographer to Patel Sangeet.</span>
+            </div>
+            <div class="log-entry">
+              <span class="log-time">10 Nov 2026, 02:40 PM</span>
+              <span class="log-user">Rajesh J. (Studio Owner)</span>
+              <span class="log-action">Created booking record for <strong>Dhirubhai Patel</strong> with 3 wedding functions.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Business Intelligence Metrics Grid -->
+        <div class="bi-metrics-container">
+          <div class="bi-header">
+            <span class="bi-badge">BUSINESS ANALYTICS</span>
+            <h3>Key Performance Indicators Tracked</h3>
+          </div>
+
+          <div class="bi-grid">
+            <div class="bi-card">
+              <div class="bi-label">ANNUAL BOOKED REVENUE</div>
+              <div class="bi-val text-orange">₹40.5 Lakhs</div>
+              <p>Total contracted booking value for the current wedding season.</p>
+            </div>
+            <div class="bi-card">
+              <div class="bi-label">CASH COLLECTED</div>
+              <div class="bi-val text-green">₹22.3 Lakhs</div>
+              <p>Verified advances and milestone payments received to date.</p>
+            </div>
+            <div class="bi-card">
+              <div class="bi-label">OUTSTANDING RECEIVABLES</div>
+              <div class="bi-val text-rose">₹18.2 Lakhs</div>
+              <p>Balances scheduled for collection prior to deliverable handovers.</p>
+            </div>
+            <div class="bi-card">
+              <div class="bi-label">AVERAGE BOOKING VALUE (ABV)</div>
+              <div class="bi-val text-blue">₹96,300</div>
+              <p>Average revenue generated per wedding commission.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="module-benefit-box">
+          <strong>Key Studio Owner Benefit:</strong> Stop flying blind on business finances. Know your exact revenue run-rate, pending receivables, and average order value to price upcoming wedding seasons accurately.
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 16 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 16</span>
+            <span class="header-section-title">LIFECYCLE WORKFLOW & BUSINESS VALUE</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">OPERATIONAL BLUEPRINT</div>
+          <h2 class="section-heading">How Studio OS Works — 10-Step Customer Lifecycle</h2>
+          <p class="section-lead">
+            Studio OS transforms high-stress wedding logistics into a calm, repeatable 10-step assembly line from first client contact to final album handover.
+          </p>
+        </div>
+
+        <!-- 10-Step Visual Flowchart -->
+        <div class="lifecycle-steps-grid">
+          <div class="lc-step">
+            <span class="lc-idx">01</span>
+            <strong>Customer Inquiry</strong>
+            <p>Log client names, dates & requirements.</p>
+          </div>
+          <div class="lc-step">
+            <span class="lc-idx">02</span>
+            <strong>Create Booking</strong>
+            <p>Generate master booking number.</p>
+          </div>
+          <div class="lc-step">
+            <span class="lc-idx">03</span>
+            <strong>Add Functions</strong>
+            <p>Set Haldi, Sangeet, Wedding dates & venues.</p>
+          </div>
+          <div class="lc-step">
+            <span class="lc-idx">04</span>
+            <strong>Configure Package</strong>
+            <p>Define photo, cinema, drone & album scope.</p>
+          </div>
+          <div class="lc-step">
+            <span class="lc-idx">05</span>
+            <strong>Crew Allocation</strong>
+            <p>Assign owner & team with conflict check.</p>
+          </div>
+          <div class="lc-step">
+            <span class="lc-idx">06</span>
+            <strong>Record Advance</strong>
+            <p>Log booking token via UPI/NEFT.</p>
+          </div>
+          <div class="lc-step">
+            <span class="lc-idx">07</span>
+            <strong>Shoot & RAW Backup</strong>
+            <p>Execute shoot and verify 24h backup.</p>
+          </div>
+          <div class="lc-step">
+            <span class="lc-idx">08</span>
+            <strong>Post-Production</strong>
+            <p>Culling, color grading & film editing.</p>
+          </div>
+          <div class="lc-step">
+            <span class="lc-idx">09</span>
+            <strong>Final Payment</strong>
+            <p>Collect balance due before album print.</p>
+          </div>
+          <div class="lc-step lc-step-final">
+            <span class="lc-idx text-orange">10</span>
+            <strong class="text-orange">Handover & Archive</strong>
+            <p>Deliver photobook & close booking.</p>
+          </div>
+        </div>
+
+        <!-- Comprehensive Value Comparison Table -->
+        <div class="value-comparison-container">
+          <div class="vcc-title">COMPREHENSIVE VALUE COMPARISON: BEFORE VS. AFTER STUDIO OS</div>
+          <table class="brochure-table">
+            <thead>
+              <tr>
+                <th style="width: 25%;">Studio Workflow Area</th>
+                <th style="width: 37.5%;" class="bg-rose-tint">Traditional Manual Studio</th>
+                <th style="width: 37.5%;" class="bg-green-tint">With Studio OS Platform</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Booking Records</strong></td>
+                <td>Paper diaries & scattered spreadsheets easily lost.</td>
+                <td><strong class="text-green">Single Source of Truth</strong> searchable in 2 seconds.</td>
+              </tr>
+              <tr>
+                <td><strong>Crew Scheduling</strong></td>
+                <td>Endless phone calls; accidental double-bookings.</td>
+                <td><strong class="text-green">Automated conflict warnings</strong> & mobile call sheets.</td>
+              </tr>
+              <tr>
+                <td><strong>Payment Tracking</strong></td>
+                <td>Balances forgotten; awkward debt collection.</td>
+                <td><strong class="text-green">Clear milestone ledgers</strong> & automated balance badges.</td>
+              </tr>
+              <tr>
+                <td><strong>Editing Tracking</strong></td>
+                <td>Deliverables stall; couples complain about delays.</td>
+                <td><strong class="text-green">7-stage tracked pipeline</strong> with offset day targets.</td>
+              </tr>
+              <tr>
+                <td><strong>Client Comms</strong></td>
+                <td>Typing repetitive WhatsApp messages manually.</td>
+                <td><strong class="text-green">One-click formatted WhatsApp</strong> summaries & receipts.</td>
+              </tr>
+              <tr>
+                <td><strong>Business Visibility</strong></td>
+                <td>Guessing revenue and profits at year-end.</td>
+                <td><strong class="text-green">Real-time revenue</strong>, cash collected, and ABV metrics.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="module-benefit-box">
+          <strong>Honest Business Reality:</strong> Studio OS does not promise magical revenue doubling. What it guarantees is rock-solid operational discipline, zero forgotten commitments, and complete peace of mind for the studio owner.
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 17 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+    <div class="page">
+      
+        <div class="page-header">
+          <div class="header-left">
+            <span class="header-logo-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="14.31" y1="8" x2="20.05" y2="17.94"/><line x1="9.69" y1="8" x2="21.17" y2="8"/><line x1="7.38" y1="12" x2="13.12" y2="2.06"/><line x1="9.69" y1="16" x2="3.95" y2="6.06"/><line x1="14.31" y1="16" x2="2.83" y2="16"/><line x1="16.62" y1="12" x2="10.88" y2="21.94"/></svg>
+            </span>
+            <span class="header-brand">STUDIO OS</span>
+            <span class="header-divider">|</span>
+            <span class="header-category">PHOTOGRAPHY STUDIO MANAGEMENT</span>
+          </div>
+          <div class="header-right">
+            <span class="header-section-pill">SECTION 17</span>
+            <span class="header-section-title">ARCHITECTURE, SECURITY & CONCLUSION</span>
+          </div>
+        </div>
+        
+      
+      <div class="page-body">
+        <div class="content-header-block">
+          <div class="section-kicker">TECHNICAL INTEGRITY</div>
+          <h2 class="section-heading">Cloud Architecture, Security & Next Steps</h2>
+          <p class="section-lead">
+            Studio OS is engineered to enterprise cloud standards, providing bulletproof tenant isolation, high availability, and seamless responsive performance across all devices.
+          </p>
+        </div>
+
+        <!-- 3 Role Portals Grid -->
+        <div class="roles-breakdown-grid">
+          <div class="role-box">
+            <div class="role-icon">🌐</div>
+            <h4>Platform Master Admin</h4>
+            <p>Manages multi-studio accounts, global system feature killswitches, tenant provisioning, and platform-wide health monitoring.</p>
+          </div>
+
+          <div class="role-box">
+            <div class="role-icon">👑</div>
+            <h4>Studio Owner Portal</h4>
+            <p>Complete management of customer bookings, financial ledgers, crew allocation, quotation negotiations, deliverables, and business reports.</p>
+          </div>
+
+          <div class="role-box">
+            <div class="role-icon">📱</div>
+            <h4>Employee & Crew Portal</h4>
+            <p>Restricted mobile view for assigned shoots, personal schedules, venues, and call times with strict financial privacy projection.</p>
+          </div>
+        </div>
+
+        <!-- Device Responsiveness & Architecture Specs -->
+        <div class="tech-specs-split">
+          <div class="spec-col">
+            <div class="spec-col-header">
+              <span class="spec-dot"></span>
+              <h4>Cross-Device Responsive Experience</h4>
+            </div>
+            <ul class="spec-list">
+              <li><strong>Mobile Smartphones:</strong> Compact drawer navigation, finger-friendly 48px touch targets, and responsive booking cards.</li>
+              <li><strong>Tablets & iPads:</strong> Elegant 2-column workspace layout ideal for in-studio client consultations.</li>
+              <li><strong>Desktop Workstations:</strong> Expansive data tables and multi-event schedules for office administration.</li>
+            </ul>
+          </div>
+
+          <div class="spec-col">
+            <div class="spec-col-header">
+              <span class="spec-dot"></span>
+              <h4>Data Protection & Isolation</h4>
+            </div>
+            <ul class="spec-list">
+              <li><strong>Multi-Tenant Isolation:</strong> Complete logical partition of studio records ensuring zero data crossover.</li>
+              <li><strong>Instant Autosave Persistence:</strong> Real-time database synchronisation eliminates manual save anxiety.</li>
+              <li><strong>Role-Based Access Control:</strong> Strict permission barriers shield sensitive financial and customer details.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Concluding Call to Action Banner -->
+        <div class="conclusion-banner">
+          <div class="conc-eyebrow">THE BOTTOM LINE</div>
+          <h3 class="conc-headline">
+            Focus on Photography. Let Studio OS Organize the Business Behind It.
+          </h3>
+          <p class="conc-body">
+            Your clients hire you for your artistic eye, your cinematic storytelling, and your ability to capture once-in-a-lifetime emotions. Don't let operational friction, double-booking fears, and payment confusion distract from your craft. Studio OS provides the professional operating system your studio deserves.
+          </p>
+          
+          <div class="conc-contact-row">
+            <div class="cc-item">
+              <span class="cc-lbl">PRODUCT INQUIRIES & DEMOS</span>
+              <span class="cc-val">support@studio-os.com</span>
+            </div>
+            <div class="cc-item">
+              <span class="cc-lbl">WEB APPLICATION</span>
+              <span class="cc-val">https://studio-os.vercel.app</span>
+            </div>
+            <div class="cc-item">
+              <span class="cc-lbl">EDITION</span>
+              <span class="cc-val">Studio OS Commercial Suite 2026</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+        <div class="page-footer">
+          <div class="footer-left">
+            <span class="footer-title">Studio OS — Complete Photography Studio Management System</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-confidential">Commercial Product Brochure</span>
+          </div>
+          <div class="footer-right">
+            <span class="footer-page-pill">Page 18 of 18</span>
+          </div>
+        </div>
+        
+    </div>
+    
+</body>
+</html>
