@@ -353,10 +353,10 @@ export const MasterStudioCreatePage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2.5 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md shadow-amber-500/20 transition-all flex items-center gap-2 cursor-pointer"
+              className="px-5 py-2.5 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-md shadow-amber-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Sparkles className="w-4 h-4 text-zinc-950" />
-              <span>{isSubmitting ? 'Creating Studio & Owner...' : 'Create Studio & Owner Account'}</span>
+              <span>{isSubmitting ? 'Creating Studio...' : 'Create Studio & Owner Account'}</span>
             </button>
           </div>
         </form>

@@ -36,7 +36,6 @@ import { CrewMembersPage } from './pages/CrewMembersPage';
 import { CreateQuotationPage } from './pages/CreateQuotationPage';
 import { BookingsWorkspacePage } from './pages/BookingsWorkspacePage';
 import { DeliveriesPage } from './pages/DeliveriesPage';
-import { HistoryBookingsPage } from './pages/history/HistoryBookingsPage';
 
 // Modals
 import { EventDetailModal } from './components/events/EventDetailModal';

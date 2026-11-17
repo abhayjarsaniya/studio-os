@@ -43,10 +43,13 @@ describe('STUDIO OS — Master Admin Login, Routing & All 15 Module Options Veri
     expect(res3.success).toBe(true);
   });
 
-  it('4. verifies StudioLoginPage contains an accessible link to Master Admin', () => {
+  it('4. verifies StudioLoginPage provides the clean common login form without portal switchers', () => {
     const content = fs.readFileSync(studioLoginPath, 'utf-8');
-    expect(content).toContain('href="#/master/login"');
-    expect(content).toContain('Platform Master Admin');
+    // Common login page has clean title and removes role switcher buttons
+    expect(content).toContain('Welcome to Studio OS');
+    expect(content).not.toContain('Employee Portal');
+    expect(content).not.toContain('Platform Master Admin');
+    expect(content).toContain('unifiedAuthService.login');
   });
 
   it('5. verifies EmployeeLoginPage contains an accessible link to Master Admin', () => {

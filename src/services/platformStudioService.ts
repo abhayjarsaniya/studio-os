@@ -12,6 +12,7 @@ import { platformBillingService } from './platformBillingService';
 import { platformAuditService } from './platformAuditService';
 import { employeeAuthService } from './employeeAuthService';
 import { unifiedAuthService } from './unifiedAuthService';
+import { firestoreService } from './firestoreService';
 import { studioA, studioB } from '../data/multiTenantDemoData';
 import { shreejiStudio } from './studioService';
 
@@ -344,6 +345,11 @@ export class PlatformStudioService {
       logoUrl: payload.logoUrl,
       phone: payload.ownerMobile.trim(),
       email: payload.ownerEmail.trim(),
+      ownerName: payload.ownerName.trim(),
+      ownerEmail: payload.ownerEmail.trim(),
+      ownerPhone: payload.ownerMobile.trim(),
+      ownerUsername,
+      ownerAuthUid: `auth_uid_${studioId}_${Math.random().toString(36).slice(2, 10)}`,
       address: payload.address.trim(),
       city: payload.city.trim(),
       state: payload.state.trim() || 'Gujarat',
@@ -375,10 +381,11 @@ export class PlatformStudioService {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       createdBy: actingAdminName
-    };
+    } as any;
 
-    // Save Studio Profile
+    // Save Studio Profile to Local Storage and Firestore
     TenantStore.set(studioId, 'profile', newStudio);
+    firestoreService.saveDocument(studioId, 'profile', studioId, newStudio).catch(() => {});
 
     // Save Default Main Branch
     const defaultBranch: Branch = {
@@ -420,7 +427,18 @@ export class PlatformStudioService {
     };
     TenantStore.set(studioId, 'employees', [ownerEmployee]);
 
-    // Provision Studio Owner Login Account
+    // Provision Studio Owner Login Account in Unified User Accounts Registry (Enables Immediate Login)
+    unifiedAuthService.provisionStudioOwner({
+      studioId,
+      studioName: payload.name.trim(),
+      ownerName: payload.ownerName.trim(),
+      email: payload.ownerEmail.trim(),
+      mobile: payload.ownerMobile.trim(),
+      username: ownerUsername,
+      temporaryPassword
+    });
+
+    // Also provision in employeeAuthService
     employeeAuthService.provisionAccount(
       studioId,
       ownerEmpId,
@@ -428,6 +446,19 @@ export class PlatformStudioService {
       payload.ownerEmail.trim(),
       temporaryPassword
     );
+
+    // Save to Firestore platform users
+    const ownerAuthUid = (newStudio as any).ownerAuthUid || `auth_uid_${studioId}`;
+    firestoreService.saveDocument('platform_system', 'users', ownerAuthUid, {
+      uid: ownerAuthUid,
+      email: payload.ownerEmail.trim().toLowerCase(),
+      username: ownerUsername,
+      displayName: payload.ownerName.trim(),
+      role: 'owner',
+      studioId,
+      status: 'active',
+      createdAt: new Date().toISOString()
+    }).catch(() => {});
 
     // Register Subscription
     platformSubscriptionManager.createSubscription({
@@ -522,12 +553,18 @@ export class PlatformStudioService {
 
     // Synchronize with unifiedAuthService
     try {
-      const accounts = unifiedAuthService.listAllAccounts();
-      const ownerAcc = accounts.find(a => a.studioId === studioId && (a.accountType === 'STUDIO_OWNER' || a.email?.toLowerCase() === email.toLowerCase()));
+      const accounts = (unifiedAuthService as any).listStoredAccounts?.() || unifiedAuthService.listAllAccounts();
+      const ownerAcc = accounts.find((a: any) => 
+        (a.studioId === studioId && a.accountType === 'STUDIO_OWNER') || 
+        a.email?.toLowerCase() === email.toLowerCase() ||
+        a.loginId?.toLowerCase() === username.toLowerCase()
+      );
       if (ownerAcc) {
         username = ownerAcc.loginId;
         email = ownerAcc.email;
         unifiedAuthService.changePassword(ownerAcc.id, temporaryPassword);
+        ownerAcc.mustChangePassword = mustChangePassword;
+        (unifiedAuthService as any).saveAccount?.(ownerAcc);
       }
     } catch (e) {
       // Continue safely

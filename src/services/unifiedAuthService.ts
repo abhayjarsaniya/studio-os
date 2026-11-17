@@ -446,6 +446,71 @@ export class UnifiedAuthService {
     return { account, temporaryPassword: tempPassword };
   }
 
+  // Universal Multi-Role Login Method (Common login form for all roles)
+  login(identifier: string, password: string): {
+    success: boolean;
+    role?: LogicalAccountType;
+    targetRoute?: string;
+    session?: UserSession;
+    error?: string;
+  } {
+    if (!identifier || !password) {
+      return { success: false, error: 'Please enter both your email or username and password.' };
+    }
+
+    const idClean = identifier.toLowerCase().trim();
+    const account = this.findAccountByIdentifier(idClean);
+
+    if (!account) {
+      return { success: false, error: 'Invalid email or password.' };
+    }
+
+    if (account.status !== 'active') {
+      return { success: false, error: `Account is ${account.status}. Access denied.` };
+    }
+
+    if (account.accountType === 'MASTER_ADMIN') {
+      const res = this.loginMasterAdmin(idClean, password);
+      if (res.success && res.session) {
+        return {
+          success: true,
+          role: 'MASTER_ADMIN',
+          targetRoute: '#/master/dashboard',
+          session: res.session
+        };
+      }
+      return { success: false, error: res.error || 'Invalid email or password.' };
+    }
+
+    if (account.accountType === 'STUDIO_OWNER') {
+      const res = this.loginStudioOwner(idClean, password, account.studioId);
+      if (res.success && res.session) {
+        return {
+          success: true,
+          role: 'STUDIO_OWNER',
+          targetRoute: '#/app/dashboard',
+          session: res.session
+        };
+      }
+      return { success: false, error: res.error || 'Invalid email or password.' };
+    }
+
+    if (account.accountType === 'EMPLOYEE' || account.accountType === 'EXTERNAL_SUPPLIER') {
+      const res = this.loginEmployee(idClean, password, account.studioId);
+      if (res.success && res.session) {
+        return {
+          success: true,
+          role: account.accountType,
+          targetRoute: '#/employee/dashboard',
+          session: res.session
+        };
+      }
+      return { success: false, error: res.error || 'Invalid email or password.' };
+    }
+
+    return { success: false, error: 'Invalid email or password.' };
+  }
+
   // Master Admin Login
   loginMasterAdmin(emailOrLogin: string, password: string): {
     success: boolean;
@@ -510,7 +575,7 @@ export class UnifiedAuthService {
       password === 'StudioOwner@123' ||
       password === '7FgBK8@TUsxV@H';
     if (!isInitialMatch) {
-      return { success: false, error: 'Invalid username or password.' };
+      return { success: false, error: 'Invalid email or password.' };
     }
 
     account.lastLoginAt = new Date().toISOString();
@@ -565,7 +630,7 @@ export class UnifiedAuthService {
     const isTempMatch = employeeTempPasswords[account.id] === password;
     const isInitialMatch = calculatedHash === account.passwordHash || isTempMatch || password.startsWith('Emp#') || password === 'ChangeMe@123';
     if (!isInitialMatch) {
-      return { success: false, error: 'Invalid username or password.' };
+      return { success: false, error: 'Invalid email or password.' };
     }
 
     account.lastLoginAt = new Date().toISOString();

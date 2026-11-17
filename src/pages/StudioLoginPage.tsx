@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { unifiedAuthService } from '../services/unifiedAuthService';
-import { Lock, User, ArrowRight, ShieldCheck, Camera, Check, Eye, EyeOff, Crown } from 'lucide-react';
+import { Lock, User, ArrowRight, ShieldCheck, Camera, Eye, EyeOff } from 'lucide-react';
 import { ForgotPasswordModal } from '../components/auth/ForgotPasswordModal';
 
 export const StudioLoginPage: React.FC = () => {
-  const [identifier, setIdentifier] = useState('shreeji.owner');
-  const [password, setPassword] = useState('7FgBK8@TUsxV@H');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -15,6 +15,7 @@ export const StudioLoginPage: React.FC = () => {
   const [changePassModal, setChangePassModal] = useState<{
     isOpen: boolean;
     accountId: string;
+    targetRoute: string;
     newPass: string;
     confirmPass: string;
   } | null>(null);
@@ -25,29 +26,41 @@ export const StudioLoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const res = unifiedAuthService.loginStudioOwner(identifier, password);
+      const res = unifiedAuthService.login(identifier, password);
       if (res.success && res.session) {
-        const studioId = res.session.account.studioId || 'studio_shreeji_films';
-        localStorage.setItem('studio_os_session_token', res.session.token);
-        localStorage.setItem('studio_os_user_role', 'owner');
-        localStorage.setItem('studio_os_active_studio_id_v2', studioId);
+        const account = res.session.account;
+        const studioId = account.studioId || 'studio_shreeji_films';
 
-        if (res.session.account.mustChangePassword) {
+        localStorage.setItem('studio_os_session_token', res.session.token);
+
+        if (account.accountType === 'MASTER_ADMIN') {
+          localStorage.setItem('studio_os_master_token', res.session.token);
+          localStorage.setItem('studio_os_user_role', 'platform_master_admin');
+        } else if (account.accountType === 'STUDIO_OWNER') {
+          localStorage.setItem('studio_os_user_role', 'owner');
+          localStorage.setItem('studio_os_active_studio_id_v2', studioId);
+        } else {
+          localStorage.setItem('studio_os_user_role', 'employee');
+          localStorage.setItem('studio_os_active_studio_id_v2', studioId);
+        }
+
+        if (account.mustChangePassword) {
           setChangePassModal({
             isOpen: true,
-            accountId: res.session.account.id,
+            accountId: account.id,
+            targetRoute: res.targetRoute || '#/app/dashboard',
             newPass: '',
             confirmPass: ''
           });
           return;
         }
 
-        window.location.hash = '#/app/dashboard';
+        window.location.hash = res.targetRoute || '#/app/dashboard';
       } else {
-        setError(res.error || 'Invalid credentials or studio not found');
+        setError(res.error || 'Invalid email or password.');
       }
     } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+      setError('Invalid email or password.');
     } finally {
       setLoading(false);
     }
@@ -56,16 +69,8 @@ export const StudioLoginPage: React.FC = () => {
   const handlePasswordChangeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!changePassModal) return;
-    if (changePassModal.newPass.length < 12) {
-      alert('Password must be at least 12 characters long.');
-      return;
-    }
-    const hasUpper = /[A-Z]/.test(changePassModal.newPass);
-    const hasLower = /[a-z]/.test(changePassModal.newPass);
-    const hasDigit = /[0-9]/.test(changePassModal.newPass);
-    const hasSymbol = /[!@#$%&*]/.test(changePassModal.newPass);
-    if (!hasUpper || !hasLower || !hasDigit || !hasSymbol) {
-      alert('Password must include uppercase, lowercase, numbers, and symbols (!@#$%&*).');
+    if (changePassModal.newPass.length < 6) {
+      alert('Password must be at least 6 characters long.');
       return;
     }
     if (changePassModal.newPass !== changePassModal.confirmPass) {
@@ -75,9 +80,10 @@ export const StudioLoginPage: React.FC = () => {
 
     try {
       unifiedAuthService.changePassword(changePassModal.accountId, changePassModal.newPass);
-      alert('Password successfully updated! Redirecting to studio workspace...');
+      alert('Password successfully updated! Redirecting...');
+      const route = changePassModal.targetRoute;
       setChangePassModal(null);
-      window.location.hash = '#/app/dashboard';
+      window.location.hash = route;
     } catch (err: any) {
       alert(err.message || 'Failed to update password');
     }
@@ -86,18 +92,17 @@ export const StudioLoginPage: React.FC = () => {
   return (
     <div className="min-h-screen w-full bg-zinc-50 flex flex-col justify-center items-center p-4 selection:bg-zinc-200">
       <div className="w-full max-w-md bg-white border border-zinc-200/90 rounded-3xl p-6 sm:p-8 shadow-xl shadow-zinc-200/50 relative overflow-hidden">
-        {/* Subtle glow */}
-        <div className="absolute -top-12 -right-12 w-36 h-36 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+        {/* Subtle decorative glow */}
+        <div className="absolute -top-12 -right-12 w-36 h-36 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="flex flex-col items-center text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-white flex items-center justify-center shadow-md shadow-zinc-400/20 mb-4">
-            <Camera className="w-8 h-8 text-amber-400" />
+        {/* Clean Logo & Welcome Header */}
+        <div className="flex flex-col items-center text-center mb-7">
+          <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-white flex items-center justify-center shadow-md shadow-zinc-400/20 mb-3.5">
+            <Camera className="w-7 h-7 text-orange-400 stroke-[2.2]" />
           </div>
-          <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200/80 mb-2">
-            Studio Owner Portal
-          </span>
-          <h1 className="text-2xl font-black text-zinc-900 tracking-tight font-display">Studio Owner Login</h1>
-          <p className="text-xs text-zinc-500 mt-1">Access your studio's isolated operational workspace</p>
+          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight font-display">
+            Welcome to Studio OS
+          </h1>
         </div>
 
         {error && (
@@ -106,35 +111,42 @@ export const StudioLoginPage: React.FC = () => {
           </div>
         )}
 
+        {/* Single Common Login Form for Everyone */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Field 1: Email / Username */}
+          {/* Email / Username */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 mb-1">Email / Username</label>
+            <label className="block text-xs font-semibold text-zinc-700 mb-1">
+              Email / Username
+            </label>
             <div className="relative">
               <User className="w-4 h-4 text-zinc-400 absolute left-3 top-3.5" />
               <input
                 type="text"
                 value={identifier}
                 onChange={e => setIdentifier(e.target.value)}
-                placeholder="Enter your email or username"
+                placeholder="Enter email or username"
                 className="w-full pl-9 pr-3 py-2.5 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors"
                 required
+                autoComplete="username"
               />
             </div>
           </div>
 
-          {/* Field 2: Password with Show/Hide toggle */}
+          {/* Password with Show/Hide toggle */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 mb-1">Password</label>
+            <label className="block text-xs font-semibold text-zinc-700 mb-1">
+              Password
+            </label>
             <div className="relative">
               <Lock className="w-4 h-4 text-zinc-400 absolute left-3 top-3.5" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                placeholder="Enter password"
                 className="w-full pl-9 pr-10 py-2.5 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors"
                 required
+                autoComplete="current-password"
               />
               <button
                 type="button"
@@ -147,6 +159,7 @@ export const StudioLoginPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Forgot Password */}
           <div className="flex justify-end -mt-1">
             <button
               type="button"
@@ -157,35 +170,16 @@ export const StudioLoginPage: React.FC = () => {
             </button>
           </div>
 
+          {/* Sign In Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full min-h-[48px] py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all mt-2 cursor-pointer disabled:opacity-50"
+            className="w-full min-h-[48px] py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all mt-2 cursor-pointer disabled:opacity-50 touch-manipulation"
           >
-            <span>{loading ? 'Authenticating...' : 'Sign In to Studio OS'}</span>
+            <span>{loading ? 'Signing In...' : 'Sign In'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-
-        <div className="mt-6 pt-4 border-t border-zinc-100 flex flex-col items-center gap-2.5 text-xs text-zinc-500">
-          <div className="flex items-center gap-3">
-            <a
-              href="#/employee/login"
-              className="text-zinc-600 hover:text-zinc-900 font-semibold underline underline-offset-2 transition-colors cursor-pointer"
-            >
-              Employee Portal
-            </a>
-            <span className="text-zinc-300">•</span>
-            <a
-              href="#/master/login"
-              className="text-amber-600 hover:text-amber-700 font-bold underline underline-offset-2 flex items-center gap-1 transition-colors cursor-pointer"
-            >
-              <Crown className="w-3.5 h-3.5 text-amber-500" />
-              <span>Platform Master Admin</span>
-            </a>
-          </div>
-          <span className="text-xs text-zinc-400">Studio OS Multi-Tenant Photography ERP • Independent Studio Access</span>
-        </div>
       </div>
 
       {/* Mandatory First-Time Password Change Modal */}
@@ -193,11 +187,11 @@ export const StudioLoginPage: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-white border border-zinc-200 rounded-3xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-2 pb-3 border-b border-zinc-100">
-              <ShieldCheck className="w-5 h-5 text-amber-500" />
+              <ShieldCheck className="w-5 h-5 text-orange-500" />
               <h3 className="text-sm font-bold text-zinc-900">Set New Password</h3>
             </div>
             <p className="text-xs text-zinc-600">
-              Your account requires an immediate password update on first login.
+              Please set a new password for your account to continue.
             </p>
 
             <form onSubmit={handlePasswordChangeSubmit} className="space-y-3 pt-2">
@@ -228,7 +222,7 @@ export const StudioLoginPage: React.FC = () => {
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="submit"
-                  className="px-5 min-h-[44px] py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs"
+                  className="px-5 min-h-[44px] py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs cursor-pointer touch-manipulation"
                 >
                   Save Password & Continue
                 </button>
@@ -237,11 +231,12 @@ export const StudioLoginPage: React.FC = () => {
           </div>
         </div>
       )}
+
       {/* Forgot Password Modal */}
       <ForgotPasswordModal
         isOpen={showForgotPassword}
         onClose={() => setShowForgotPassword(false)}
-        portalTitle="Studio Owner"
+        portalTitle="Studio OS"
         defaultEmail={identifier.includes('@') ? identifier : 'aarav@shreejifilms.in'}
       />
     </div>
