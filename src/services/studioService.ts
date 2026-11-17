@@ -49,6 +49,21 @@ export const studioService = {
                     TenantStore.getSingle<Studio>('std_demo_royal', 'profile') || 
                     shreejiStudio;
     if (shreeji) list.push(shreeji);
+
+    try {
+      const meta = TenantStore.getSingle<Record<string, any>>('platform_system', 'platform_studios_meta') || {};
+      for (const sId of Object.keys(meta)) {
+        if (sId !== 'studio_shreeji_films' && sId !== 'std_demo_royal') {
+          const profile = TenantStore.getSingle<Studio>(sId, 'profile');
+          if (profile && !list.some(s => s.id === sId)) {
+            list.push(profile);
+          }
+        }
+      }
+    } catch {
+      // safe fallback
+    }
+
     return list;
   },
 

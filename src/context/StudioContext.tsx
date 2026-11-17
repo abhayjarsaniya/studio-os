@@ -44,8 +44,34 @@ export const StudioProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const [isStudioSwitcherOpen, setIsStudioSwitcherOpen] = useState(false);
 
-  // Active studio object
-  const currentStudio = availableStudios.find(s => s.id === currentStudioId) || availableStudios[0] || studioA;
+  // Active studio object (ensures newly created or switched studio resolves cleanly)
+  const currentStudio = availableStudios.find(s => s.id === currentStudioId) || 
+    (() => {
+      try {
+        return studioService.getStudio(currentStudioId);
+      } catch {
+        return availableStudios[0] || studioA;
+      }
+    })();
+
+  // Listen for studio updates across tabs or services
+  useEffect(() => {
+    const handleUpdate = () => {
+      refreshStudioData();
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const storedId = localStorage.getItem(ACTIVE_STUDIO_STORAGE_KEY);
+        if (storedId && storedId !== currentStudioId) {
+          setCurrentStudioId(storedId);
+        }
+      }
+    };
+    window.addEventListener('studio_data_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('studio_data_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, [currentStudioId]);
 
   // Active studio's branches & members
   const [branches, setBranches] = useState<Branch[]>([]);

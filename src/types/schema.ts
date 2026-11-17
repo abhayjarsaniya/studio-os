@@ -73,7 +73,12 @@ export const StudioSchema = z.object({
   brandColor: z.string().optional(),
   departments: z.array(z.string()).optional(),
   customCategories: z.array(z.string()).optional(),
-  lifecycleStatus: z.enum(['pending_activation', 'active', 'hidden', 'suspended', 'deactivated', 'archived']).default('active').optional(),
+  lifecycleStatus: z.enum(['pending_activation', 'active', 'hidden', 'suspended', 'deactivated', 'archived', 'draft']).default('active').optional(),
+  ownerAuthUid: z.string().optional(),
+  ownerName: z.string().optional(),
+  ownerEmail: z.string().optional(),
+  ownerPhone: z.string().optional(),
+  ownerUsername: z.string().optional(),
   isHidden: z.boolean().default(false).optional(),
   hiddenReason: z.string().optional(),
   subscription: StudioSubscriptionSchema,
@@ -1929,7 +1934,8 @@ export const StudioLifecycleStatusEnum = z.enum([
   'hidden',
   'suspended',
   'deactivated',
-  'archived'
+  'archived',
+  'draft'
 ]);
 export type StudioLifecycleStatus = z.infer<typeof StudioLifecycleStatusEnum>;
 

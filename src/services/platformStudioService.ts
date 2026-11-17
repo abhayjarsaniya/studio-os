@@ -62,9 +62,14 @@ export interface CreatedStudioResult {
   studio: Studio;
   ownerEmployee: Employee;
   temporaryPassword: string;
+  error?: string;
   credentials: {
     username: string;
     email: string;
+    ownerEmail?: string;
+    ownerName?: string;
+    ownerPhone?: string;
+    temporaryPassword?: string;
     mustChangePassword: boolean;
   };
   ownerCredentials: {
@@ -94,15 +99,190 @@ export interface StudioDetailedView {
   internalNotes: string[];
 }
 
+export function generate8CharTemporaryPassword(): string {
+  const uppers = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const lowers = 'abcdefghijkmnopqrstuvwxyz';
+  const digits = '23456789';
+  const specials = '!@#$%&*';
+
+  const chars = [
+    uppers[Math.floor(Math.random() * uppers.length)],
+    lowers[Math.floor(Math.random() * lowers.length)],
+    digits[Math.floor(Math.random() * digits.length)],
+    specials[Math.floor(Math.random() * specials.length)]
+  ];
+
+  const pool = uppers + lowers + digits + specials;
+  while (chars.length < 8) {
+    chars.push(pool[Math.floor(Math.random() * pool.length)]);
+  }
+
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [chars[i], chars[j]] = [chars[j], chars[i]];
+  }
+
+  return chars.join('');
+}
+
+export const DRAFT_STUDIOS_DEF: Studio[] = [
+  {
+    id: 'studio_draft_001',
+    name: 'Draft Studio 1',
+    slug: 'draft_studio_1',
+    city: '',
+    state: 'Gujarat',
+    address: '',
+    phone: '',
+    email: '',
+    ownerName: '',
+    ownerEmail: '',
+    ownerPhone: '',
+    lifecycleStatus: 'draft',
+    isHidden: false,
+    subscription: {
+      planId: 'plan_standard_500',
+      planName: 'Studio OS Standard (₹500/mo)',
+      pricePerMonth: 500,
+      currency: 'INR',
+      status: 'trial',
+      validUntil: '2027-12-31',
+      autoRenew: true
+    },
+    settings: {
+      defaultCurrency: 'INR',
+      timezone: 'Asia/Kolkata',
+      dateFormat: 'DD/MM/YYYY',
+      timeFormat: '12h',
+      allowDirectWhatsApp: true,
+      watermarkEnabled: true,
+      invoicePrefix: 'D1-INV',
+      eventPrefix: 'D1-EV'
+    },
+    storageUsageMb: 0,
+    storageQuotaMb: 15360,
+    createdAt: '2026-02-01T00:00:00Z',
+    updatedAt: new Date().toISOString(),
+    createdBy: 'Master Admin'
+  } as any,
+  {
+    id: 'studio_draft_002',
+    name: 'Draft Studio 2',
+    slug: 'draft_studio_2',
+    city: '',
+    state: 'Gujarat',
+    address: '',
+    phone: '',
+    email: '',
+    ownerName: '',
+    ownerEmail: '',
+    ownerPhone: '',
+    lifecycleStatus: 'draft',
+    isHidden: false,
+    subscription: {
+      planId: 'plan_standard_500',
+      planName: 'Studio OS Standard (₹500/mo)',
+      pricePerMonth: 500,
+      currency: 'INR',
+      status: 'trial',
+      validUntil: '2027-12-31',
+      autoRenew: true
+    },
+    settings: {
+      defaultCurrency: 'INR',
+      timezone: 'Asia/Kolkata',
+      dateFormat: 'DD/MM/YYYY',
+      timeFormat: '12h',
+      allowDirectWhatsApp: true,
+      watermarkEnabled: true,
+      invoicePrefix: 'D2-INV',
+      eventPrefix: 'D2-EV'
+    },
+    storageUsageMb: 0,
+    storageQuotaMb: 15360,
+    createdAt: '2026-02-01T00:00:00Z',
+    updatedAt: new Date().toISOString(),
+    createdBy: 'Master Admin'
+  } as any,
+  {
+    id: 'studio_draft_003',
+    name: 'Draft Studio 3',
+    slug: 'draft_studio_3',
+    city: '',
+    state: 'Gujarat',
+    address: '',
+    phone: '',
+    email: '',
+    ownerName: '',
+    ownerEmail: '',
+    ownerPhone: '',
+    lifecycleStatus: 'draft',
+    isHidden: false,
+    subscription: {
+      planId: 'plan_standard_500',
+      planName: 'Studio OS Standard (₹500/mo)',
+      pricePerMonth: 500,
+      currency: 'INR',
+      status: 'trial',
+      validUntil: '2027-12-31',
+      autoRenew: true
+    },
+    settings: {
+      defaultCurrency: 'INR',
+      timezone: 'Asia/Kolkata',
+      dateFormat: 'DD/MM/YYYY',
+      timeFormat: '12h',
+      allowDirectWhatsApp: true,
+      watermarkEnabled: true,
+      invoicePrefix: 'D3-INV',
+      eventPrefix: 'D3-EV'
+    },
+    storageUsageMb: 0,
+    storageQuotaMb: 15360,
+    createdAt: '2026-02-01T00:00:00Z',
+    updatedAt: new Date().toISOString(),
+    createdBy: 'Master Admin'
+  } as any
+];
+
 export class PlatformStudioService {
   private readonly STORE_KEY = 'platform_studios_meta';
+
+  constructor() {
+    this.ensureSeeded();
+  }
+
+  public ensureSeeded(): void {
+    const meta = this.getStudiosMeta();
+    let changed = false;
+    for (const d of DRAFT_STUDIOS_DEF) {
+      if (!meta[d.id]) {
+        meta[d.id] = { lifecycleStatus: 'draft', internalNotes: ['Draft studio pending owner setup'] };
+        changed = true;
+      }
+      if (!TenantStore.getSingle(d.id, 'profile')) {
+        TenantStore.set(d.id, 'profile', d);
+        TenantStore.set(d.id, 'employees', []);
+        TenantStore.set(d.id, 'events', []);
+        TenantStore.set(d.id, 'customers', []);
+        TenantStore.set(d.id, 'invoices', []);
+        TenantStore.set(d.id, 'payments', []);
+      }
+    }
+    if (changed) {
+      this.saveStudiosMeta(meta);
+    }
+  }
 
   private getStudiosMeta(): Record<string, { lifecycleStatus: StudioLifecycleStatus; internalNotes: string[] }> {
     return TenantStore.getSingle<Record<string, { lifecycleStatus: StudioLifecycleStatus; internalNotes: string[] }>>(
       'platform_system',
       this.STORE_KEY
     ) || {
-      studio_shreeji_films: { lifecycleStatus: 'active', internalNotes: ['Official Single Tenant Production Studio — Gujarat Flagship'] }
+      studio_shreeji_films: { lifecycleStatus: 'active', internalNotes: ['Official Single Tenant Production Studio — Gujarat Flagship'] },
+      studio_draft_001: { lifecycleStatus: 'draft', internalNotes: ['Draft studio 1 pending owner configuration'] },
+      studio_draft_002: { lifecycleStatus: 'draft', internalNotes: ['Draft studio 2 pending owner configuration'] },
+      studio_draft_003: { lifecycleStatus: 'draft', internalNotes: ['Draft studio 3 pending owner configuration'] }
     };
   }
 
@@ -330,11 +510,25 @@ export class PlatformStudioService {
 
   createStudioWithOwner(payload: CreateStudioPayload, actingAdminName = 'Master Admin'): CreatedStudioResult {
     const slug = payload.name.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 16);
-    const studioId = `studio_${slug}_${Math.random().toString(36).slice(2, 6)}`;
+    const uniqueSuffix = Math.random().toString(36).slice(2, 6);
+    const studioId = `studio_${slug}_${uniqueSuffix}`;
     const tenantId = studioId;
     const ownerEmpId = `emp_owner_${studioId}`;
     const ownerUsername = `${payload.ownerName.split(' ')[0].toLowerCase()}_${payload.city.toLowerCase().slice(0, 3)}_${Math.random().toString(36).slice(2, 4)}`;
-    const temporaryPassword = `Owner#${Math.floor(1000 + Math.random() * 9000)}`;
+    const temporaryPassword = generate8CharTemporaryPassword();
+    const cleanEmail = payload.ownerEmail.toLowerCase().trim();
+
+    // Verify email conflict across existing accounts
+    const existingAccounts = unifiedAuthService.listStoredAccounts();
+    const conflict = existingAccounts.find(a => 
+      a.email.toLowerCase() === cleanEmail && 
+      a.accountType !== 'MASTER_ADMIN'
+    );
+    if (conflict) {
+      throw new Error(`Email address "${payload.ownerEmail}" is already registered to another account (${conflict.displayName}).`);
+    }
+
+    const authUid = `auth_uid_${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
 
     const newStudio: Studio = {
       id: studioId,
@@ -344,12 +538,12 @@ export class PlatformStudioService {
       tagline: payload.description || `${payload.name} Photography & Cinematography`,
       logoUrl: payload.logoUrl,
       phone: payload.ownerMobile.trim(),
-      email: payload.ownerEmail.trim(),
+      email: cleanEmail,
       ownerName: payload.ownerName.trim(),
-      ownerEmail: payload.ownerEmail.trim(),
+      ownerEmail: cleanEmail,
       ownerPhone: payload.ownerMobile.trim(),
       ownerUsername,
-      ownerAuthUid: `auth_uid_${studioId}_${Math.random().toString(36).slice(2, 10)}`,
+      ownerAuthUid: authUid,
       address: payload.address.trim(),
       city: payload.city.trim(),
       state: payload.state.trim() || 'Gujarat',
@@ -396,7 +590,7 @@ export class PlatformStudioService {
       address: payload.address,
       city: payload.city,
       phone: payload.ownerMobile,
-      email: payload.ownerEmail,
+      email: cleanEmail,
       isMainBranch: true,
       isActive: true,
       createdAt: new Date().toISOString(),
@@ -412,7 +606,7 @@ export class PlatformStudioService {
       fullName: payload.ownerName.trim(),
       name: payload.ownerName.trim(),
       phone: payload.ownerMobile.trim(),
-      email: payload.ownerEmail.trim(),
+      email: cleanEmail,
       designation: 'Studio Owner & Creative Director',
       department: 'Executive',
       roleName: 'Studio Owner',
@@ -432,7 +626,7 @@ export class PlatformStudioService {
       studioId,
       studioName: payload.name.trim(),
       ownerName: payload.ownerName.trim(),
-      email: payload.ownerEmail.trim(),
+      email: cleanEmail,
       mobile: payload.ownerMobile.trim(),
       username: ownerUsername,
       temporaryPassword
@@ -443,21 +637,29 @@ export class PlatformStudioService {
       studioId,
       ownerEmpId,
       ownerUsername,
-      payload.ownerEmail.trim(),
+      cleanEmail,
       temporaryPassword
     );
 
-    // Save to Firestore platform users
-    const ownerAuthUid = (newStudio as any).ownerAuthUid || `auth_uid_${studioId}`;
-    firestoreService.saveDocument('platform_system', 'users', ownerAuthUid, {
-      uid: ownerAuthUid,
-      email: payload.ownerEmail.trim().toLowerCase(),
+    // Save to Firestore platform users & studio members
+    firestoreService.saveDocument('platform_system', 'users', authUid, {
+      uid: authUid,
+      email: cleanEmail,
       username: ownerUsername,
       displayName: payload.ownerName.trim(),
       role: 'owner',
       studioId,
       status: 'active',
       createdAt: new Date().toISOString()
+    }).catch(() => {});
+
+    firestoreService.saveDocument(studioId, 'members', authUid, {
+      uid: authUid,
+      email: cleanEmail,
+      displayName: payload.ownerName.trim(),
+      role: 'owner',
+      status: 'active',
+      joinedAt: new Date().toISOString()
     }).catch(() => {});
 
     // Register Subscription
@@ -493,16 +695,204 @@ export class PlatformStudioService {
       temporaryPassword,
       credentials: {
         username: ownerUsername,
-        email: payload.ownerEmail,
+        email: cleanEmail,
         mustChangePassword: true
       },
       ownerCredentials: {
         username: ownerUsername,
-        email: payload.ownerEmail,
+        email: cleanEmail,
         temporaryPassword,
         mustChangePassword: true,
         studioId,
         studioName: payload.name
+      }
+    };
+  }
+
+  // Activate an existing Draft studio and provision its owner credentials
+  activateStudioWithOwner(
+    studioId: string,
+    payload: {
+      ownerName: string;
+      ownerEmail: string;
+      ownerMobile: string;
+      name?: string;
+      city?: string;
+      address?: string;
+      subscriptionPlan?: string;
+    },
+    actingAdminName = 'Master Admin'
+  ): CreatedStudioResult {
+    let studio = TenantStore.getSingle<Studio>(studioId, 'profile');
+    if (!studio) {
+      const dStudio = DRAFT_STUDIOS_DEF.find(d => d.id === studioId);
+      if (dStudio) {
+        studio = { ...dStudio };
+      } else {
+        throw new Error(`Studio "${studioId}" not found.`);
+      }
+    }
+
+    const phoneNum = (payload.ownerMobile || (payload as any).ownerPhone || '').trim();
+    if (!payload.ownerName.trim() || !payload.ownerEmail.trim() || !phoneNum) {
+      throw new Error('Owner Name, Email, and Mobile number are required to activate studio.');
+    }
+    payload.ownerMobile = phoneNum;
+
+    const cleanEmail = payload.ownerEmail.toLowerCase().trim();
+    const existingAccounts = unifiedAuthService.listStoredAccounts();
+    const conflict = existingAccounts.find(a => 
+      a.email.toLowerCase() === cleanEmail && 
+      a.studioId !== studioId && 
+      a.accountType !== 'MASTER_ADMIN'
+    );
+    if (conflict) {
+      throw new Error(`Email "${payload.ownerEmail}" is already registered to another account.`);
+    }
+
+    const temporaryPassword = generate8CharTemporaryPassword();
+    const authUid = `auth_uid_${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
+    const ownerEmpId = `emp_${studioId}_owner`;
+    const ownerUsername = `${payload.ownerName.split(' ')[0].toLowerCase()}_${studioId.slice(-4)}`;
+
+    if (payload.name) studio.name = payload.name.trim();
+    if (payload.city) studio.city = payload.city.trim();
+    if (payload.address) studio.address = payload.address.trim();
+    studio.ownerName = payload.ownerName.trim();
+    studio.ownerEmail = cleanEmail;
+    studio.ownerPhone = payload.ownerMobile.trim();
+    studio.email = cleanEmail;
+    studio.phone = payload.ownerMobile.trim();
+    (studio as any).ownerUsername = ownerUsername;
+    (studio as any).ownerAuthUid = authUid;
+    studio.lifecycleStatus = 'active';
+    studio.updatedAt = new Date().toISOString();
+
+    // 1. Save Studio Profile
+    TenantStore.set(studioId, 'profile', studio);
+    firestoreService.saveDocument(studioId, 'profile', studioId, studio).catch(() => {});
+
+    // 2. Default Branch
+    const defaultBranch: Branch = {
+      id: `br_${studioId}_main`,
+      studioId,
+      name: `${studio.name} Flagship`,
+      code: `${(studio.city || 'STD').slice(0, 3).toUpperCase()}-01`,
+      address: studio.address || 'Flagship Branch',
+      city: studio.city || 'Ahmedabad',
+      phone: payload.ownerMobile.trim(),
+      email: cleanEmail,
+      isMainBranch: true,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    TenantStore.set(studioId, 'branches', [defaultBranch]);
+
+    // 3. Owner Employee Record
+    const ownerEmployee: Employee = {
+      id: ownerEmpId,
+      studioId,
+      employeeNumber: 'EMP-001',
+      fullName: payload.ownerName.trim(),
+      name: payload.ownerName.trim(),
+      phone: payload.ownerMobile.trim(),
+      email: cleanEmail,
+      designation: 'Studio Owner & Creative Director',
+      department: 'Executive',
+      roleName: 'Studio Owner',
+      roleId: 'owner',
+      roleIds: ['owner'],
+      branchId: defaultBranch.id,
+      employmentStatus: 'active' as any,
+      joiningDate: new Date().toISOString().split('T')[0],
+      dateOfJoining: new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    TenantStore.set(studioId, 'employees', [ownerEmployee]);
+
+    // 4. Provision in unifiedAuthService
+    unifiedAuthService.provisionStudioOwner({
+      authUid,
+      studioId,
+      studioName: studio.name,
+      ownerName: payload.ownerName.trim(),
+      email: cleanEmail,
+      mobile: payload.ownerMobile.trim(),
+      username: ownerUsername,
+      temporaryPassword
+    });
+
+    // 5. Provision in employeeAuthService
+    employeeAuthService.provisionAccount(
+      studioId,
+      ownerEmpId,
+      ownerUsername,
+      cleanEmail,
+      temporaryPassword
+    );
+
+    // 6. Save Firestore platform users and members
+    firestoreService.saveDocument('platform_system', 'users', authUid, {
+      uid: authUid,
+      email: cleanEmail,
+      username: ownerUsername,
+      displayName: payload.ownerName.trim(),
+      role: 'owner',
+      studioId,
+      status: 'active',
+      createdAt: new Date().toISOString()
+    }).catch(() => {});
+
+    firestoreService.saveDocument(studioId, 'members', authUid, {
+      uid: authUid,
+      email: cleanEmail,
+      displayName: payload.ownerName.trim(),
+      role: 'owner',
+      status: 'active',
+      joinedAt: new Date().toISOString()
+    }).catch(() => {});
+
+    // 7. Update Meta
+    const meta = this.getStudiosMeta();
+    meta[studioId] = {
+      lifecycleStatus: 'active',
+      internalNotes: [...(meta[studioId]?.internalNotes || []), `Activated by ${actingAdminName} on ${new Date().toISOString().split('T')[0]}`]
+    };
+    this.saveStudiosMeta(meta);
+
+    // 8. Platform Audit Log
+    platformAuditService.log({
+      adminId: 'admin_sys',
+      adminName: actingAdminName,
+      action: 'ACTIVATE_STUDIO_WITH_OWNER',
+      targetType: 'studio',
+      targetId: studioId,
+      details: `Studio "${studio.name}" (${studioId}) activated. Owner account provisioned for ${payload.ownerName} (${cleanEmail}).`
+    });
+
+    return {
+      success: true,
+      studio,
+      ownerEmployee,
+      temporaryPassword,
+      credentials: {
+        username: ownerUsername,
+        email: cleanEmail,
+        ownerEmail: cleanEmail,
+        ownerName: payload.ownerName.trim(),
+        ownerPhone: payload.ownerMobile.trim(),
+        temporaryPassword,
+        mustChangePassword: true
+      },
+      ownerCredentials: {
+        username: ownerUsername,
+        email: cleanEmail,
+        temporaryPassword,
+        mustChangePassword: true,
+        studioId,
+        studioName: studio.name
       }
     };
   }
@@ -603,63 +993,77 @@ export class PlatformStudioService {
     renewalDate?: string;
     lifecycleStatus?: StudioLifecycleStatus;
     ownerEmail?: string;
+    ownerName?: string;
+    ownerPhone?: string;
   }, actingAdminName = 'Master Admin'): boolean {
     let profile = TenantStore.getSingle<Studio>(studioId, 'profile');
     if (!profile) {
-      const studioView = this.getStudioDetails(studioId);
-      profile = studioView?.profile || {
-        id: studioId,
-        tenantId: studioId,
-        name: updates.name || studioId,
-        email: updates.email || 'studio@studio-os.internal',
-        phone: updates.phone || '9876543210',
-        address: updates.address || '',
-        city: updates.city || 'Ahmedabad',
-        state: updates.state || 'Gujarat',
-        pincode: '380001',
-        settings: {
-          defaultCurrency: 'INR',
-          timezone: 'Asia/Kolkata',
-          dateFormat: 'DD/MM/YYYY',
-          timeFormat: '12h',
-          allowDirectWhatsApp: true,
-          watermarkEnabled: true,
-          invoicePrefix: 'INV',
-          eventPrefix: 'EV'
-        },
-        storageUsageMb: 120,
-        storageQuotaMb: 15360,
-        subscription: {
-          planId: 'standard',
-          planName: 'Studio OS Monthly',
-          pricePerMonth: 500,
-          currency: 'INR',
-          autoRenew: true,
-          status: 'active',
-          validUntil: new Date(Date.now() + 30 * 86400000).toISOString()
-        } as any,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: actingAdminName
-      };
+      const dStudio = DRAFT_STUDIOS_DEF.find(d => d.id === studioId);
+      if (dStudio) {
+        profile = { ...dStudio };
+      } else {
+        const studioView = this.getStudioDetails(studioId);
+        profile = studioView?.profile || {
+          id: studioId,
+          tenantId: studioId,
+          name: updates.name || studioId,
+          email: updates.email || 'studio@studio-os.internal',
+          phone: updates.phone || '9876543210',
+          address: updates.address || '',
+          city: updates.city || 'Ahmedabad',
+          state: updates.state || 'Gujarat',
+          pincode: '380001',
+          settings: {
+            defaultCurrency: 'INR',
+            timezone: 'Asia/Kolkata',
+            dateFormat: 'DD/MM/YYYY',
+            timeFormat: '12h',
+            allowDirectWhatsApp: true,
+            watermarkEnabled: true,
+            invoicePrefix: 'INV',
+            eventPrefix: 'EV'
+          },
+          storageUsageMb: 0,
+          storageQuotaMb: 15360,
+          subscription: {
+            planId: 'plan_standard_500',
+            planName: 'Studio OS Standard (₹500/mo)',
+            pricePerMonth: 500,
+            currency: 'INR',
+            autoRenew: true,
+            status: 'active',
+            validUntil: new Date(Date.now() + 30 * 86400000).toISOString()
+          } as any,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          createdBy: actingAdminName
+        };
+      }
     }
 
-    if (updates.name) profile.name = updates.name;
-    if (updates.phone) profile.phone = updates.phone;
-    if (updates.email) profile.email = updates.email;
-    if (updates.city) profile.city = updates.city;
-    if (updates.state) profile.state = updates.state;
-    if (updates.address) profile.address = updates.address;
-    if (updates.gstNumber !== undefined) profile.gstNumber = updates.gstNumber;
-    if (updates.website !== undefined) profile.website = updates.website;
+    if (updates.name) profile.name = updates.name.trim();
+    if (updates.phone) profile.phone = updates.phone.trim();
+    if (updates.email) profile.email = updates.email.trim();
+    if (updates.city) profile.city = updates.city.trim();
+    if (updates.state) profile.state = updates.state.trim();
+    if (updates.address) profile.address = updates.address.trim();
+    if (updates.gstNumber !== undefined) profile.gstNumber = updates.gstNumber.trim();
+    if (updates.website !== undefined) profile.website = updates.website.trim();
     if (updates.description !== undefined) (profile as any).description = updates.description;
+    if (updates.ownerName) {
+      (profile as any).ownerName = updates.ownerName.trim();
+      profile.title = updates.ownerName.trim();
+    }
+    if (updates.ownerPhone) {
+      (profile as any).ownerPhone = updates.ownerPhone.trim();
+    }
     profile.updatedAt = new Date().toISOString();
 
     if (updates.subscriptionPlan || updates.subscriptionStatus || updates.renewalDate) {
       if (!profile.subscription) {
         profile.subscription = {
-          planId: 'standard',
-          planName: 'Studio OS Monthly',
+          planId: 'plan_standard_500',
+          planName: updates.subscriptionPlan || 'Studio OS Standard (₹500/mo)',
           status: (updates.subscriptionStatus as any) || 'active',
           pricePerMonth: 500,
           currency: 'INR',
@@ -679,29 +1083,60 @@ export class PlatformStudioService {
       profile.isHidden = updates.lifecycleStatus === 'hidden';
     }
 
-    TenantStore.set(studioId, 'profile', profile);
-
-    // If owner email was updated, update owner employee record & credentials
+    // If owner email was updated, handle conflict check and update records
     if (updates.ownerEmail) {
+      const cleanEmail = updates.ownerEmail.toLowerCase().trim();
+      const accounts = unifiedAuthService.listStoredAccounts();
+      const conflict = accounts.find(a => 
+        a.email.toLowerCase() === cleanEmail && 
+        a.studioId !== studioId && 
+        a.accountType !== 'MASTER_ADMIN'
+      );
+      if (conflict) {
+        throw new Error(`Email address "${updates.ownerEmail}" is already registered to another account.`);
+      }
+
+      (profile as any).ownerEmail = cleanEmail;
+      profile.email = cleanEmail;
+
       const employees = TenantStore.get<Employee>(studioId, 'employees') || [];
       const ownerEmp = employees.find(e => e.designation?.toLowerCase().includes('owner') || (e as any).role === 'studio_owner');
       if (ownerEmp) {
-        ownerEmp.email = updates.ownerEmail;
+        ownerEmp.email = cleanEmail;
+        if (updates.ownerName) {
+          ownerEmp.name = updates.ownerName.trim();
+          ownerEmp.fullName = updates.ownerName.trim();
+        }
+        if (updates.ownerPhone) {
+          ownerEmp.phone = updates.ownerPhone.trim();
+        }
         ownerEmp.updatedAt = new Date().toISOString();
         TenantStore.set(studioId, 'employees', employees);
       }
+
       try {
-        const accounts = unifiedAuthService.listAllAccounts();
-        const ownerAcc = accounts.find(a => (a.studioId === studioId && a.accountType === 'STUDIO_OWNER') || a.id.includes('owner'));
+        const ownerAcc = accounts.find(a => a.studioId === studioId && a.accountType === 'STUDIO_OWNER') ||
+          accounts.find(a => a.studioId === studioId);
         if (ownerAcc) {
-          ownerAcc.email = updates.ownerEmail;
+          ownerAcc.email = cleanEmail;
+          if (updates.ownerName) ownerAcc.displayName = updates.ownerName.trim();
+          if (updates.ownerPhone) ownerAcc.phone = updates.ownerPhone.trim();
           ownerAcc.updatedAt = new Date().toISOString();
           (unifiedAuthService as any).saveAccount(ownerAcc);
+
+          firestoreService.saveDocument('platform_system', 'users', ownerAcc.id, {
+            email: cleanEmail,
+            displayName: ownerAcc.displayName,
+            updatedAt: new Date().toISOString()
+          }, true).catch(() => {});
         }
       } catch (e) {
-        // Continue
+        // Continue safely
       }
     }
+
+    TenantStore.set(studioId, 'profile', profile);
+    firestoreService.saveDocument(studioId, 'profile', studioId, profile).catch(() => {});
 
     platformAuditService.log({
       adminId: 'admin_sys',
@@ -713,6 +1148,64 @@ export class PlatformStudioService {
     });
 
     return true;
+  }
+
+  archiveStudio(studioId: string, reason = 'Master Admin archive', actingAdmin = 'Master Admin'): { success: boolean; error?: string } {
+    const meta = this.getStudiosMeta();
+    meta[studioId] = {
+      lifecycleStatus: 'archived',
+      internalNotes: [...(meta[studioId]?.internalNotes || []), `Archived by ${actingAdmin}: ${reason}`]
+    };
+    this.saveStudiosMeta(meta);
+
+    const profile = TenantStore.getSingle<Studio>(studioId, 'profile');
+    if (profile) {
+      profile.lifecycleStatus = 'archived';
+      profile.isHidden = true;
+      TenantStore.set(studioId, 'profile', profile);
+      firestoreService.saveDocument(studioId, 'profile', studioId, profile).catch(() => {});
+    }
+
+    platformAuditService.log({
+      adminId: 'admin_sys',
+      adminName: actingAdmin,
+      action: 'ARCHIVE_STUDIO',
+      targetType: 'studio',
+      targetId: studioId,
+      details: `Studio ${studioId} archived: ${reason}`
+    });
+
+    return { success: true };
+  }
+
+  deleteStudio(studioId: string, reason = 'Master Admin deletion', actingAdmin = 'Master Admin'): { success: boolean; error?: string } {
+    const events = TenantStore.get(studioId, 'events') || [];
+    const invoices = TenantStore.get(studioId, 'invoices') || [];
+    const payments = TenantStore.get(studioId, 'payments') || [];
+
+    const hasFinancialOrHistoricalRecords = events.length > 0 || invoices.length > 0 || payments.length > 0;
+    if (hasFinancialOrHistoricalRecords) {
+      return this.archiveStudio(studioId, `Preserved and archived: protected ${events.length} bookings/financial records against deletion`, actingAdmin);
+    }
+
+    const meta = this.getStudiosMeta();
+    delete meta[studioId];
+    this.saveStudiosMeta(meta);
+
+    TenantStore.remove(studioId, 'profile');
+    TenantStore.remove(studioId, 'employees');
+    TenantStore.remove(studioId, 'branches');
+
+    platformAuditService.log({
+      adminId: 'admin_sys',
+      adminName: actingAdmin,
+      action: 'DELETE_STUDIO',
+      targetType: 'studio',
+      targetId: studioId,
+      details: `Studio ${studioId} deleted: ${reason}`
+    });
+
+    return { success: true };
   }
 
   addInternalNote(studioId: string, noteText: string, authorName = 'Master Admin'): void {

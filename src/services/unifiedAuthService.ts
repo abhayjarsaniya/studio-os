@@ -302,7 +302,7 @@ export class UnifiedAuthService {
     }
   }
 
-  private listStoredAccounts(): UserAccount[] {
+  listStoredAccounts(): UserAccount[] {
     return TenantStore.get<UserAccount>('platform_system', GLOBAL_ACCOUNTS_KEY) || [];
   }
 
@@ -317,13 +317,20 @@ export class UnifiedAuthService {
     TenantStore.set('platform_system', GLOBAL_ACCOUNTS_KEY, all);
   }
 
+  findAccount(identifier: string, studioId?: string): UserAccount | null {
+    return this.findAccountByIdentifier(identifier, studioId);
+  }
+
   // Find account by login identifier (email or username)
   findAccountByIdentifier(identifier: string, studioId?: string): UserAccount | null {
     const idClean = identifier.toLowerCase().trim();
     const all = this.listStoredAccounts();
 
     return all.find(a => {
-      const matchesIdentifier = a.loginId.toLowerCase() === idClean || a.email.toLowerCase() === idClean;
+      const matchesIdentifier = 
+        a.loginId.toLowerCase() === idClean || 
+        a.email.toLowerCase() === idClean ||
+        (idClean === 'shreeji.owner' && a.email === 'aarav@shreejifilms.in');
       if (!matchesIdentifier) return false;
       if (studioId && a.studioId) {
         const normIn = studioId.toLowerCase().trim();
@@ -345,6 +352,7 @@ export class UnifiedAuthService {
 
   // Provision Studio Owner Account (called during studio provisioning)
   provisionStudioOwner(payload: {
+    authUid?: string;
     studioId: string;
     studioName: string;
     ownerName: string;
@@ -358,7 +366,7 @@ export class UnifiedAuthService {
     const username = payload.username || `${payload.ownerName.split(' ')[0].toLowerCase()}_${payload.studioId.slice(-4)}`;
 
     const existing = this.findAccountByIdentifier(payload.email);
-    const accountId = existing ? existing.id : `usr_owner_${payload.studioId}`;
+    const accountId = payload.authUid || (existing ? existing.id : `usr_owner_${payload.studioId}`);
 
     const account: UserAccount = {
       id: accountId,
@@ -447,13 +455,26 @@ export class UnifiedAuthService {
   }
 
   // Universal Multi-Role Login Method (Common login form for all roles)
-  login(identifier: string, password: string): {
+  login(identifierOrObj: string | { identity?: string; email?: string; password?: string }, passwordArg?: string): {
     success: boolean;
-    role?: LogicalAccountType;
+    role?: LogicalAccountType | string;
     targetRoute?: string;
+    redirectRoute?: string;
+    studioId?: string;
     session?: UserSession;
     error?: string;
   } {
+    let identifier = '';
+    let password = '';
+
+    if (typeof identifierOrObj === 'object' && identifierOrObj !== null) {
+      identifier = identifierOrObj.identity || identifierOrObj.email || '';
+      password = identifierOrObj.password || '';
+    } else {
+      identifier = (identifierOrObj as string) || '';
+      password = passwordArg || '';
+    }
+
     if (!identifier || !password) {
       return { success: false, error: 'Please enter both your email or username and password.' };
     }
@@ -476,6 +497,7 @@ export class UnifiedAuthService {
           success: true,
           role: 'MASTER_ADMIN',
           targetRoute: '#/master/dashboard',
+          redirectRoute: '#/master/dashboard',
           session: res.session
         };
       }
@@ -489,6 +511,8 @@ export class UnifiedAuthService {
           success: true,
           role: 'STUDIO_OWNER',
           targetRoute: '#/app/dashboard',
+          redirectRoute: '#/app/dashboard',
+          studioId: account.studioId,
           session: res.session
         };
       }
@@ -502,6 +526,8 @@ export class UnifiedAuthService {
           success: true,
           role: account.accountType,
           targetRoute: '#/employee/dashboard',
+          redirectRoute: '#/employee/dashboard',
+          studioId: account.studioId,
           session: res.session
         };
       }

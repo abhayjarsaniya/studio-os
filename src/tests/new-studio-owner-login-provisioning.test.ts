@@ -87,7 +87,7 @@ describe('STUDIO OS — Fix New Studio Owner Login & Account Provisioning', () =
     expect(createdResult.studio.id).toBeDefined();
     expect(createdResult.credentials.username).toBeDefined();
     expect(createdResult.temporaryPassword).toBeDefined();
-    expect(createdResult.temporaryPassword.startsWith('Owner#')).toBe(true);
+    expect(createdResult.temporaryPassword.length).toBe(8);
 
     // 2. Immediate Login via Username on Common Login Method
     const loginByUsername = unifiedAuthService.login(

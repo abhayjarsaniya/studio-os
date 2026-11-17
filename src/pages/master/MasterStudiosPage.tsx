@@ -32,7 +32,7 @@ import {
 export const MasterStudiosPage: React.FC = () => {
   const { setMasterRoute, setSelectedStudioId, triggerRefresh, refreshTrigger } = useMasterAdmin();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'hidden' | 'suspended'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'hidden' | 'suspended' | 'draft'>('all');
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [activeMenuStudioId, setActiveMenuStudioId] = useState<string | null>(null);
 
@@ -109,11 +109,27 @@ export const MasterStudiosPage: React.FC = () => {
         ownerEmail: res.ownerEmail || studio.ownerEmail,
         username: res.username || studio.ownerEmail.split('@')[0],
         temporaryPassword: res.temporaryPassword,
-        loginUrl: `${window.location.origin}/#/studio/login`
+        loginUrl: `${window.location.origin}/#/login`
       });
       setIsHandoverOpen(true);
     } catch (e: any) {
       alert(e.message || 'Failed to reset password');
+    }
+  };
+
+  const handleArchiveStudio = (studio: MasterStudioListItem) => {
+    setActiveMenuStudioId(null);
+    if (window.confirm(`Are you sure you want to archive studio "${studio.name}"? It will be safely protected and hidden from active discovery.`)) {
+      masterAdminService.archiveStudio(studio.studioId, 'Archived by Master Admin from directory', 'Master Admin');
+      triggerRefresh();
+    }
+  };
+
+  const handleDeleteStudio = (studio: MasterStudioListItem) => {
+    setActiveMenuStudioId(null);
+    if (window.confirm(`Are you sure you want to delete or purge studio "${studio.name}"? If it contains events or financial records, it will be automatically archived instead.`)) {
+      masterAdminService.deleteStudio(studio.studioId, 'Deleted by Master Admin from directory', 'Master Admin');
+      triggerRefresh();
     }
   };
 
@@ -127,7 +143,7 @@ export const MasterStudiosPage: React.FC = () => {
       ownerEmail: studio.ownerEmail,
       username: studio.ownerEmail.split('@')[0],
       temporaryPassword: 'Password previously set',
-      loginUrl: `${window.location.origin}/#/studio/login`
+      loginUrl: `${window.location.origin}/#/login`
     });
     setIsHandoverOpen(true);
   };
@@ -179,6 +195,7 @@ export const MasterStudiosPage: React.FC = () => {
           >
             <option value="all">All Statuses ({studios.length})</option>
             <option value="active">Active Only</option>
+            <option value="draft">Draft (Setup Pending)</option>
             <option value="hidden">Hidden Only</option>
             <option value="suspended">Suspended Only</option>
           </select>
@@ -226,18 +243,22 @@ export const MasterStudiosPage: React.FC = () => {
                 <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
                   studio.status === 'active'
                     ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    : studio.status === 'draft'
+                    ? 'bg-purple-50 text-purple-700 border border-purple-200'
                     : studio.status === 'hidden'
                     ? 'bg-zinc-100 text-zinc-600 border border-zinc-200'
                     : 'bg-rose-50 text-rose-700 border border-rose-200'
                 }`}>
-                  {studio.status}
+                  {studio.status === 'draft' ? 'Draft (Setup Pending)' : studio.status}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs bg-zinc-50/80 p-3 rounded-xl border border-zinc-100">
                 <div>
                   <span className="text-xs text-zinc-500 uppercase font-bold block">Owner</span>
-                  <span className="font-semibold text-zinc-900 text-sm">{studio.ownerName}</span>
+                  <span className="font-semibold text-zinc-900 text-sm">
+                    {studio.status === 'draft' && !studio.ownerName ? 'Pending Setup' : studio.ownerName}
+                  </span>
                 </div>
                 <div>
                   <span className="text-xs text-zinc-500 uppercase font-bold block">City</span>
@@ -256,17 +277,26 @@ export const MasterStudiosPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <button
                   onClick={() => handleDrilldown(studio.studioId)}
-                  className="min-h-[44px] px-3 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation active:scale-95 shadow-2xs"
+                  className={`min-h-[44px] px-3 py-2 rounded-xl text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation active:scale-95 shadow-2xs ${
+                    studio.status === 'draft'
+                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
+                      : 'bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700'
+                  }`}
                 >
                   <Eye className="w-4 h-4" />
-                  <span>View Studio</span>
+                  <span>{studio.status === 'draft' ? 'Configure & Activate' : 'View Studio'}</span>
                 </button>
                 <button
                   onClick={() => handleResetPassword(studio)}
-                  className="min-h-[44px] px-3 py-2 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation active:scale-95"
+                  disabled={studio.status === 'draft'}
+                  className={`min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation active:scale-95 ${
+                    studio.status === 'draft'
+                      ? 'bg-zinc-100 text-zinc-400 border border-zinc-200 cursor-not-allowed'
+                      : 'bg-amber-50 text-amber-900 border border-amber-200'
+                  }`}
                 >
                   <KeyRound className="w-4 h-4 text-amber-600" />
-                  <span>Reset Key</span>
+                  <span>{studio.status === 'draft' ? 'Draft' : 'Reset Key'}</span>
                 </button>
               </div>
             </div>
@@ -395,11 +425,13 @@ export const MasterStudiosPage: React.FC = () => {
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
                           studio.status === 'active'
                             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            : studio.status === 'draft'
+                            ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
                             : studio.status === 'hidden'
                             ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                             : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                         }`}>
-                          {studio.status}
+                          {studio.status === 'draft' ? 'Draft' : studio.status}
                         </span>
                       </td>
 
@@ -420,7 +452,7 @@ export const MasterStudiosPage: React.FC = () => {
                         {/* Dropdown Menu */}
                         {isMenuOpen && (
                           <div 
-                            className="absolute right-4 top-10 z-30 w-52 bg-white border border-zinc-200 rounded-xl shadow-2xl py-1 text-left text-xs"
+                            className="absolute right-4 top-10 z-30 w-56 bg-white border border-zinc-200 rounded-xl shadow-2xl py-1 text-left text-xs"
                             onClick={e => e.stopPropagation()}
                           >
                             <button
@@ -428,24 +460,28 @@ export const MasterStudiosPage: React.FC = () => {
                               className="w-full px-3 py-2 text-zinc-800 hover:bg-zinc-100 flex items-center gap-2"
                             >
                               <Eye className="w-3.5 h-3.5 text-amber-500" />
-                              <span>View Studio (8 Tabs)</span>
+                              <span>{studio.status === 'draft' ? 'Configure & Activate Studio' : 'View Studio (8 Tabs)'}</span>
                             </button>
 
-                            <button
-                              onClick={() => handleShareLogin(studio)}
-                              className="w-full px-3 py-2 text-zinc-800 hover:bg-zinc-100 flex items-center gap-2"
-                            >
-                              <Share2 className="w-3.5 h-3.5 text-indigo-600" />
-                              <span>Share Login Details</span>
-                            </button>
+                            {studio.status !== 'draft' && (
+                              <>
+                                <button
+                                  onClick={() => handleShareLogin(studio)}
+                                  className="w-full px-3 py-2 text-zinc-800 hover:bg-zinc-100 flex items-center gap-2"
+                                >
+                                  <Share2 className="w-3.5 h-3.5 text-indigo-600" />
+                                  <span>Share Login Details</span>
+                                </button>
 
-                            <button
-                              onClick={() => handleResetPassword(studio)}
-                              className="w-full px-3 py-2 text-zinc-800 hover:bg-zinc-100 flex items-center gap-2"
-                            >
-                              <KeyRound className="w-3.5 h-3.5 text-amber-600" />
-                              <span>Reset Owner Password</span>
-                            </button>
+                                <button
+                                  onClick={() => handleResetPassword(studio)}
+                                  className="w-full px-3 py-2 text-zinc-800 hover:bg-zinc-100 flex items-center gap-2"
+                                >
+                                  <KeyRound className="w-3.5 h-3.5 text-amber-600" />
+                                  <span>Reset Owner Password</span>
+                                </button>
+                              </>
+                            )}
 
                             <button
                               onClick={() => handleDrilldown(studio.studioId, 'events')}
@@ -494,7 +530,7 @@ export const MasterStudiosPage: React.FC = () => {
 
                             <button
                               onClick={() => handleToggleHide(studio)}
-                              className="w-full px-3 py-2 text-amber-300 hover:bg-zinc-100 flex items-center gap-2"
+                              className="w-full px-3 py-2 text-amber-600 hover:bg-zinc-100 flex items-center gap-2"
                             >
                               {studio.status === 'hidden' ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                               <span>{studio.status === 'hidden' ? 'Unhide Studio' : 'Hide Studio'}</span>
@@ -502,10 +538,28 @@ export const MasterStudiosPage: React.FC = () => {
 
                             <button
                               onClick={() => handleToggleSuspend(studio)}
-                              className="w-full px-3 py-2 text-rose-400 hover:bg-zinc-100 flex items-center gap-2"
+                              className="w-full px-3 py-2 text-amber-700 hover:bg-zinc-100 flex items-center gap-2"
                             >
                               {studio.status === 'suspended' ? <PlayCircle className="w-3.5 h-3.5" /> : <PauseCircle className="w-3.5 h-3.5" />}
                               <span>{studio.status === 'suspended' ? 'Reactivate Studio' : 'Suspend Studio'}</span>
+                            </button>
+
+                            <div className="border-t border-zinc-200 my-1" />
+
+                            <button
+                              onClick={() => handleArchiveStudio(studio)}
+                              className="w-full px-3 py-2 text-zinc-600 hover:bg-zinc-100 flex items-center gap-2"
+                            >
+                              <Clock className="w-3.5 h-3.5 text-zinc-500" />
+                              <span>Archive Studio</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteStudio(studio)}
+                              className="w-full px-3 py-2 text-rose-600 hover:bg-rose-50 flex items-center gap-2 font-semibold"
+                            >
+                              <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
+                              <span>Delete / Purge Studio</span>
                             </button>
                           </div>
                         )}

@@ -303,6 +303,45 @@ export const SettingsPage: React.FC = () => {
                   />
                 </div>
 
+                {/* Registered Login Email - Strictly Locked for Studio Owner */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-zinc-700 font-semibold">Registered Login Email</label>
+                    <span className="flex items-center gap-1 text-xs text-amber-700 font-medium bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                      <Lock className="w-3 h-3 text-amber-600" />
+                      <span>Locked (Managed by Master Admin)</span>
+                    </span>
+                  </div>
+                  <input
+                    type="email"
+                    disabled
+                    readOnly
+                    value={(currentStudio as any).ownerEmail || studio.email || currentUser.email}
+                    className="w-full px-3 py-2 bg-zinc-100 border border-zinc-200 rounded-xl text-zinc-500 cursor-not-allowed select-none font-mono"
+                  />
+                  <p className="text-xs text-zinc-400 mt-1">
+                    Your primary login identity is managed by Platform Master Admin for tenant security.
+                  </p>
+                </div>
+
+                {/* Unique Studio ID - Strictly Locked */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-zinc-700 font-semibold">Studio ID</label>
+                    <span className="flex items-center gap-1 text-xs text-zinc-400">
+                      <Lock className="w-3 h-3 text-zinc-400" />
+                      <span>Immutable</span>
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    disabled
+                    readOnly
+                    value={currentStudio.id}
+                    className="w-full px-3 py-2 bg-zinc-100 border border-zinc-200 rounded-xl text-zinc-500 cursor-not-allowed select-none font-mono"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-zinc-700 font-semibold mb-1">City *</label>
                   <input

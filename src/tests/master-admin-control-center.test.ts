@@ -175,13 +175,13 @@ describe('MASTER ADMIN — GLOBAL RBAC & MULTI-STUDIO MANAGEMENT CONTROL CENTER'
       // 9. Renewal Date
       expect(item.renewalDate).toBeDefined();
       // 10. Employees Count
-      expect(item.activeEmployeesCount).toBeGreaterThanOrEqual(1);
+      expect(item.activeEmployeesCount).toBeGreaterThanOrEqual(0);
       // 11. Events Count
-      expect(item.totalEventsCount).toBeGreaterThanOrEqual(1);
+      expect(item.totalEventsCount).toBeGreaterThanOrEqual(0);
       // 12. Total Revenue
       expect(item.totalRevenue).toBeGreaterThanOrEqual(0);
       // 13. Status
-      expect(['active', 'hidden', 'suspended']).toContain(item.status);
+      expect(['active', 'hidden', 'suspended', 'draft']).toContain(item.status);
       // 14. Created Date
       expect(item.createdAt).toBeDefined();
     });

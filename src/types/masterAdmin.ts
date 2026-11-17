@@ -534,7 +534,7 @@ export interface MasterStudioListItem {
   activeEmployeesCount: number;
   totalEventsCount: number;
   totalRevenue: number;
-  status: 'active' | 'hidden' | 'suspended';
+  status: 'active' | 'hidden' | 'suspended' | 'draft';
   createdAt: string;
 }
 

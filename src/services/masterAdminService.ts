@@ -106,6 +106,10 @@ export class MasterAdminService {
     return this.getAllStudios();
   }
 
+  getStudioById(studioId: string): (Studio & { ownerEmail?: string }) | null {
+    return this.getStudio(studioId);
+  }
+
   getStudio(studioId: string): (Studio & { ownerEmail?: string }) | null {
     this.ensureSeeded();
     const all = this.getAllStudios();
@@ -387,16 +391,17 @@ export class MasterAdminService {
     return studios.map(s => {
       const employees = this.getStudioRecords<Employee>(s.id, 'employees');
       const events = this.getStudioRecords<StudioEvent>(s.id, 'events');
-      const totalRev = events.reduce((sum, e) => sum + (Number(e.totalAmount) || 0), 0) || 75000;
+      const totalRev = events.reduce((sum, e) => sum + (Number(e.totalAmount) || 0), 0);
       
       const ownerEmp = employees.find(e => e.designation?.toLowerCase().includes('owner') || (e as any).role === 'studio_owner');
-      const ownerName = ownerEmp?.name || (s as any).ownerName || 'Studio Owner';
-      const ownerEmail = ownerEmp?.email || s.email;
-      const ownerPhone = ownerEmp?.phone || s.phone;
+      const ownerName = ownerEmp?.name || (s as any).ownerName || (s.lifecycleStatus === 'draft' ? 'Unconfigured' : 'Studio Owner');
+      const ownerEmail = ownerEmp?.email || (s as any).ownerEmail || s.email || '—';
+      const ownerPhone = ownerEmp?.phone || (s as any).ownerPhone || s.phone || '—';
 
       const subStatus = s.subscription?.status || 'active';
-      let status: 'active' | 'hidden' | 'suspended' = 'active';
-      if (s.lifecycleStatus === 'suspended') status = 'suspended';
+      let status: 'active' | 'hidden' | 'suspended' | 'draft' = 'active';
+      if (s.lifecycleStatus === 'draft') status = 'draft';
+      else if (s.lifecycleStatus === 'suspended') status = 'suspended';
       else if (s.isHidden || s.lifecycleStatus === 'hidden') status = 'hidden';
 
       const studioCode = s.id.replace('studio_', '').toUpperCase().slice(0, 8);
@@ -409,13 +414,13 @@ export class MasterAdminService {
         ownerName,
         ownerEmail,
         ownerPhone,
-        city: s.city || 'Ahmedabad',
+        city: s.city || '—',
         state: s.state || 'Gujarat',
         subscriptionPlan: s.subscription?.planName || 'Studio OS Standard (₹500/mo)',
         subscriptionStatus: (subStatus as any) || 'active',
-        renewalDate: s.subscription?.validUntil ? new Date(s.subscription.validUntil).toLocaleDateString('en-IN') : '15/12/2026',
-        activeEmployeesCount: employees.length || 4,
-        totalEventsCount: events.length || 6,
+        renewalDate: s.subscription?.validUntil ? new Date(s.subscription.validUntil).toLocaleDateString('en-IN') : '—',
+        activeEmployeesCount: employees.length,
+        totalEventsCount: events.length,
         totalRevenue: totalRev,
         status,
         createdAt: new Date(s.createdAt || '2026-01-01').toLocaleDateString('en-IN')
@@ -509,6 +514,18 @@ export class MasterAdminService {
 
   updateStudio(studioId: string, updates: any, actingAdmin = 'Master Admin') {
     return platformStudioService.updateStudio(studioId, updates, actingAdmin);
+  }
+
+  activateStudioWithOwner(studioId: string, payload: any, actingAdmin = 'Master Admin') {
+    return platformStudioService.activateStudioWithOwner(studioId, payload, actingAdmin);
+  }
+
+  archiveStudio(studioId: string, reason = 'Master Admin archive', actingAdmin = 'Master Admin') {
+    return platformStudioService.archiveStudio(studioId, reason, actingAdmin);
+  }
+
+  deleteStudio(studioId: string, reason = 'Master Admin deletion', actingAdmin = 'Master Admin') {
+    return platformStudioService.deleteStudio(studioId, reason, actingAdmin);
   }
 }
 

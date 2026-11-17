@@ -49,6 +49,16 @@ export const MasterStudioDetailPage: React.FC = () => {
   const [isSetPasswordOpen, setIsSetPasswordOpen] = useState(false);
   const [customPasswordInput, setCustomPasswordInput] = useState('');
 
+  // Draft Studio Activation State
+  const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
+  const [activateFormData, setActivateFormData] = useState({
+    ownerName: '',
+    ownerEmail: '',
+    ownerPhone: ''
+  });
+  const [activateError, setActivateError] = useState('');
+  const [isActivating, setIsActivating] = useState(false);
+
   // Edit Studio Form
   const [editFormData, setEditFormData] = useState({
     name: '',
@@ -99,9 +109,9 @@ export const MasterStudioDetailPage: React.FC = () => {
     return logs.filter(l => l.targetId === studioId || l.details.includes(studioId)).slice(0, 15);
   }, [studioId, refreshTrigger]);
 
-  // Financial calculations
-  const totalInvoiced = events.reduce((sum, e) => sum + (Number(e.totalAmount) || 0), 0) || 150000;
-  const paymentsReceived = events.reduce((sum, e) => sum + (Number(e.advancePaid) || 0), 0) || 85000;
+  // Financial calculations (exact studio metrics - no fabricated demo values)
+  const totalInvoiced = events.reduce((sum, e) => sum + (Number(e.totalAmount) || 0), 0);
+  const paymentsReceived = events.reduce((sum, e) => sum + (Number(e.advancePaid) || 0), 0);
   const pendingBalance = Math.max(0, totalInvoiced - paymentsReceived);
 
   // Open Edit Studio
@@ -190,12 +200,81 @@ export const MasterStudioDetailPage: React.FC = () => {
         ownerEmail: res.ownerEmail || studio.email,
         username: res.username || 'shreeji.owner',
         temporaryPassword: res.temporaryPassword,
-        loginUrl: `${window.location.origin}/#/studio/login`
+        loginUrl: `${window.location.origin}/#/login`
       });
       setIsHandoverOpen(true);
       showToast('New password configured and handover panel ready!');
     } catch (err: any) {
       alert(err.message || 'Failed to set password');
+    }
+  };
+
+  const handleActivateDraftStudio = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!studio) return;
+    setActivateError('');
+
+    if (!activateFormData.ownerName.trim()) {
+      setActivateError('Owner full name is required');
+      return;
+    }
+    if (!activateFormData.ownerEmail.trim() || !activateFormData.ownerEmail.includes('@')) {
+      setActivateError('Valid owner email address is required');
+      return;
+    }
+    if (!activateFormData.ownerPhone.trim() || activateFormData.ownerPhone.length < 10) {
+      setActivateError('Valid 10-digit owner phone number is required');
+      return;
+    }
+
+    setIsActivating(true);
+    try {
+      const res = masterAdminService.activateStudioWithOwner(studioId, {
+        ownerName: activateFormData.ownerName.trim(),
+        ownerEmail: activateFormData.ownerEmail.trim(),
+        ownerPhone: activateFormData.ownerPhone.trim()
+      }, 'Master Admin');
+
+      if (res.success && res.credentials) {
+        setIsActivateModalOpen(false);
+        setHandoverData({
+          studioName: studio.name,
+          studioId: studio.id,
+          ownerName: res.credentials.ownerName || activateFormData.ownerName,
+          ownerMobile: res.credentials.ownerPhone || activateFormData.ownerPhone,
+          ownerEmail: res.credentials.ownerEmail || res.credentials.email,
+          username: res.credentials.username,
+          temporaryPassword: res.credentials.temporaryPassword || res.temporaryPassword,
+          loginUrl: `${window.location.origin}/#/login`
+        });
+        setIsHandoverOpen(true);
+        showToast(`Studio activated! Initial 8-char password: ${res.credentials.temporaryPassword || res.temporaryPassword}`);
+        triggerRefresh();
+      } else {
+        setActivateError((res as any).error || 'Failed to activate studio');
+      }
+    } catch (err: any) {
+      setActivateError(err.message || 'Error activating draft studio');
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
+  const handleArchiveStudio = () => {
+    if (!studio) return;
+    if (window.confirm(`Are you sure you want to archive "${studio.name}"? Historical records and bookings will be safely preserved.`)) {
+      masterAdminService.archiveStudio(studioId, 'Archived by Master Admin from detail view', 'Master Admin');
+      showToast('Studio archived successfully.');
+      triggerRefresh();
+    }
+  };
+
+  const handleDeleteStudio = () => {
+    if (!studio) return;
+    if (window.confirm(`Are you sure you want to delete "${studio.name}"? If it contains events or financial records, it will be automatically protected and archived instead.`)) {
+      masterAdminService.deleteStudio(studioId, 'Deleted by Master Admin from detail view', 'Master Admin');
+      showToast('Studio deleted or archived.');
+      setMasterRoute('studios');
     }
   };
 
@@ -223,7 +302,7 @@ export const MasterStudioDetailPage: React.FC = () => {
       ownerEmail: studio.email,
       username: (studio as any).ownerUsername || studio.email.split('@')[0],
       temporaryPassword: 'Password previously set',
-      loginUrl: `${window.location.origin}/#/studio/login`
+      loginUrl: `${window.location.origin}/#/login`
     });
     setIsHandoverOpen(true);
   };
@@ -301,33 +380,46 @@ export const MasterStudioDetailPage: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {studio.lifecycleStatus === 'draft' ? (
+            <button
+              onClick={() => setIsActivateModalOpen(true)}
+              className="min-h-[44px] px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white flex items-center gap-1.5 transition-all shadow-md shadow-purple-600/20 cursor-pointer touch-manipulation active:scale-95"
+            >
+              <Sparkles className="w-4 h-4 text-purple-200" />
+              <span>Configure & Activate</span>
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={handleShareLoginDetails}
+                className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
+              >
+                <Share2 className="w-4 h-4 text-indigo-600" />
+                <span>Share Login Details</span>
+              </button>
+              <button
+                onClick={handleOpenSetPassword}
+                className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
+              >
+                <KeyRound className="w-4 h-4 text-amber-500" />
+                <span>Set / Reset Password</span>
+              </button>
+              <button
+                onClick={handleSendResetEmail}
+                className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
+              >
+                <Mail className="w-4 h-4 text-emerald-600" />
+                <span>Send Reset Email</span>
+              </button>
+            </>
+          )}
+
           <button
             onClick={handleOpenEdit}
             className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
           >
             <Edit3 className="w-4 h-4 text-zinc-600" />
             <span>Edit Studio</span>
-          </button>
-          <button
-            onClick={handleShareLoginDetails}
-            className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
-          >
-            <Share2 className="w-4 h-4 text-indigo-600" />
-            <span>Share Login Details</span>
-          </button>
-          <button
-            onClick={handleOpenSetPassword}
-            className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
-          >
-            <KeyRound className="w-4 h-4 text-amber-500" />
-            <span>Set / Reset Password</span>
-          </button>
-          <button
-            onClick={handleSendResetEmail}
-            className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
-          >
-            <Mail className="w-4 h-4 text-emerald-600" />
-            <span>Send Reset Email</span>
           </button>
           <button
             onClick={() => {
@@ -339,8 +431,51 @@ export const MasterStudioDetailPage: React.FC = () => {
             <ToggleRight className="w-4 h-4" />
             <span>Configure Features</span>
           </button>
+          <button
+            onClick={handleArchiveStudio}
+            className="min-h-[44px] px-3 py-2 text-xs font-medium rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 border border-zinc-200 flex items-center gap-1.5 cursor-pointer touch-manipulation active:scale-95"
+            title="Archive studio safely"
+          >
+            <span>Archive</span>
+          </button>
+          <button
+            onClick={handleDeleteStudio}
+            className="min-h-[44px] px-3 py-2 text-xs font-medium rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 flex items-center gap-1.5 cursor-pointer touch-manipulation active:scale-95"
+            title="Delete or auto-archive studio"
+          >
+            <span>Delete</span>
+          </button>
         </div>
       </div>
+
+      {/* DRAFT STUDIO SETUP BANNER */}
+      {studio.lifecycleStatus === 'draft' && (
+        <div className="bg-purple-50/90 border border-purple-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-100 border border-purple-200 flex items-center justify-center text-purple-700 font-bold shrink-0">
+              <Building2 className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-purple-200 text-purple-900 border border-purple-300">
+                  Draft Studio — Pending Activation
+                </span>
+                <span className="text-xs text-purple-700 font-medium">Clean Record (0 demo data)</span>
+              </div>
+              <p className="text-xs sm:text-sm text-purple-950 font-medium mt-1">
+                This studio has no fake bookings, employees, or fabricated transactions. Enter the owner's details to activate the studio and generate their login credentials.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsActivateModalOpen(true)}
+            className="px-5 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-purple-700/20 transition-all shrink-0 cursor-pointer touch-manipulation active:scale-95"
+          >
+            <Sparkles className="w-4 h-4 text-purple-200" />
+            <span>Configure & Activate Now</span>
+          </button>
+        </div>
+      )}
 
       {/* 8 Tabs Navigation */}
       <div className="flex items-center gap-1.5 border-b border-zinc-200 overflow-x-auto pb-1 text-xs font-semibold scrollbar-none touch-scroll">
@@ -1137,6 +1272,102 @@ export const MasterStudioDetailPage: React.FC = () => {
                   className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold transition-all shadow-sm cursor-pointer"
                 >
                   Save & Open Handover
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* DRAFT STUDIO ACTIVATION MODAL */}
+      {isActivateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl border border-zinc-200 shadow-2xl w-full max-w-lg p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-purple-100 border border-purple-200 flex items-center justify-center text-purple-700">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-zinc-900 font-display">Activate Studio & Provision Owner</h3>
+                  <p className="text-xs text-zinc-500 font-mono">{studio.id}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsActivateModalOpen(false)}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {activateError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{activateError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleActivateDraftStudio} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 uppercase mb-1">Owner Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Ramesh Patel"
+                  value={activateFormData.ownerName}
+                  onChange={e => setActivateFormData(f => ({ ...f, ownerName: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-sm bg-zinc-50 text-zinc-900 focus:outline-none focus:bg-white focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 uppercase mb-1">Registered Login Email *</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="e.g. ramesh@newstudio.com"
+                  value={activateFormData.ownerEmail}
+                  onChange={e => setActivateFormData(f => ({ ...f, ownerEmail: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-sm bg-zinc-50 text-zinc-900 focus:outline-none focus:bg-white focus:border-purple-500"
+                />
+                <p className="text-xs text-zinc-400 mt-1">This will be the permanent login identity for the Studio Owner.</p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 uppercase mb-1">Owner Mobile / WhatsApp *</label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="e.g. 9876543210"
+                  value={activateFormData.ownerPhone}
+                  onChange={e => setActivateFormData(f => ({ ...f, ownerPhone: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-sm bg-zinc-50 text-zinc-900 focus:outline-none focus:bg-white focus:border-purple-500"
+                />
+              </div>
+
+              <div className="p-3 bg-purple-50 border border-purple-200/80 rounded-xl text-xs text-purple-900 space-y-1">
+                <p className="font-semibold">Security & Provisioning:</p>
+                <p>• Creates Firebase Auth identity linked to this studio record.</p>
+                <p>• Automatically generates an 8-character temporary password meeting complexity requirements.</p>
+                <p>• Updates studio status from Draft to Active.</p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100">
+                <button
+                  type="button"
+                  onClick={() => setIsActivateModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-zinc-200 text-zinc-600 hover:bg-zinc-50 font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isActivating}
+                  className="px-5 py-2 rounded-xl bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white font-bold transition-all shadow-sm cursor-pointer flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{isActivating ? 'Provisioning...' : 'Activate & Generate Password'}</span>
                 </button>
               </div>
             </form>
