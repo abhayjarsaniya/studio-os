@@ -23,23 +23,23 @@ import {
 export const MasterSidebar: React.FC = () => {
   const { masterRoute, setMasterRoute, currentAdmin } = useMasterAdmin();
 
-  // 15 Master Platform Modules
+  // Master Platform Modules (unprefixed labels)
   const navItems = [
-    { id: 'dashboard', label: '1. Dashboard', icon: LayoutDashboard },
-    { id: 'studios', label: '2. Studios Directory', icon: Building2 },
-    { id: 'accounts', label: '3. Studio Accounts', icon: Users },
-    { id: 'subscriptions', label: '4. Subscriptions', icon: CreditCard },
-    { id: 'plans', label: '5. Billing Plans', icon: Layers },
-    { id: 'roles-permissions', label: '6. Roles & Permissions', icon: ShieldAlert },
-    { id: 'features', label: '7. Feature Visibility', icon: ToggleRight },
-    { id: 'customer-reports', label: '8. Customer & Event Reports', icon: FileSpreadsheet },
-    { id: 'analytics', label: '9. Finance & Revenue Analytics', icon: BarChart3 },
-    { id: 'team-reports', label: '10. Team & Attendance Reports', icon: UserCheck },
-    { id: 'payroll', label: '11. Payroll Administration', icon: Receipt },
-    { id: 'suppliers', label: '12. Supplier Administration', icon: Truck },
-    { id: 'reports', label: '13. Report Center (13 Audits)', icon: FileText },
-    { id: 'notifications', label: '14. Platform Notifications', icon: Bell },
-    { id: 'settings', label: '15. Settings & Audit Logs', icon: Settings }
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'studios', label: 'Studios Directory', icon: Building2 },
+    { id: 'accounts', label: 'Studio Accounts', icon: Users },
+    { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard },
+    { id: 'plans', label: 'Billing Plans', icon: Layers },
+    { id: 'roles-permissions', label: 'Roles & Permissions', icon: ShieldAlert },
+    { id: 'features', label: 'Feature Visibility', icon: ToggleRight },
+    { id: 'customer-reports', label: 'Customer & Event Reports', icon: FileSpreadsheet },
+    { id: 'analytics', label: 'Finance & Revenue Analytics', icon: BarChart3 },
+    { id: 'team-reports', label: 'Team & Attendance Reports', icon: UserCheck },
+    { id: 'payroll', label: 'Payroll Administration', icon: Receipt },
+    { id: 'suppliers', label: 'Supplier Administration', icon: Truck },
+    { id: 'reports', label: 'Report Center', icon: FileText },
+    { id: 'notifications', label: 'Platform Notifications', icon: Bell },
+    { id: 'settings', label: 'Settings & Audit Logs', icon: Settings }
   ];
 
   const handleLogout = () => {
@@ -83,7 +83,7 @@ export const MasterSidebar: React.FC = () => {
       {/* Navigation Links */}
       <nav className="flex-1 px-2.5 py-3.5 space-y-1 overflow-y-auto">
         <div className="px-2 py-1 text-xs font-bold uppercase tracking-wider text-zinc-400">
-          Master Workspace (15 Modules)
+          Platform Modules
         </div>
 
         {navItems.map(item => {
@@ -96,11 +96,7 @@ export const MasterSidebar: React.FC = () => {
             <button
               key={item.id}
               onClick={() => {
-                if (['customer-reports', 'team-reports', 'payroll', 'suppliers', 'notifications'].includes(item.id)) {
-                  setMasterRoute('reports');
-                } else {
-                  setMasterRoute(item.id);
-                }
+                setMasterRoute(item.id);
               }}
               className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all text-left min-h-[44px] cursor-pointer ${
                 isActive

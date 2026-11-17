@@ -2,7 +2,7 @@ import React from 'react';
 import { MasterAdminProvider, useMasterAdmin } from '../../context/MasterAdminContext';
 import { MasterLayout } from './MasterLayout';
 
-// Master Pages
+// Master Platform Pages
 import { MasterDashboardPage } from '../../pages/master/MasterDashboardPage';
 import { MasterStudiosPage } from '../../pages/master/MasterStudiosPage';
 import { MasterStudioCreatePage } from '../../pages/master/MasterStudioCreatePage';
@@ -13,7 +13,13 @@ import { MasterSubscriptionsPage } from '../../pages/master/MasterSubscriptionsP
 import { MasterPlansPage } from '../../pages/master/MasterPlansPage';
 import { MasterRolesPermissionsPage } from '../../pages/master/MasterRolesPermissionsPage';
 import { MasterFeaturesPage } from '../../pages/master/MasterFeaturesPage';
+import { MasterCustomerReportsPage } from '../../pages/master/MasterCustomerReportsPage';
+import { MasterAnalyticsPage } from '../../pages/master/MasterAnalyticsPage';
+import { MasterTeamReportsPage } from '../../pages/master/MasterTeamReportsPage';
+import { MasterPayrollPage } from '../../pages/master/MasterPayrollPage';
+import { MasterSuppliersPage } from '../../pages/master/MasterSuppliersPage';
 import { MasterReportsPage } from '../../pages/master/MasterReportsPage';
+import { MasterNotificationsPage } from '../../pages/master/MasterNotificationsPage';
 import { MasterAuditLogsPage } from '../../pages/master/MasterAuditLogsPage';
 import { MasterSettingsPage } from '../../pages/master/MasterSettingsPage';
 import { MasterAccountsPage } from '../../pages/master/MasterAccountsPage';
@@ -51,19 +57,19 @@ const MasterRouter: React.FC = () => {
       case 'features':
         return <MasterFeaturesPage />;
       case 'customer-reports':
-        return <MasterReportsPage initialReportId="customer_volume" />;
+        return <MasterCustomerReportsPage />;
       case 'analytics':
-        return <MasterReportsPage initialReportId="platform_revenue" />;
+        return <MasterAnalyticsPage />;
       case 'team-reports':
-        return <MasterReportsPage initialReportId="employee_statistics" />;
+        return <MasterTeamReportsPage />;
       case 'payroll':
-        return <MasterReportsPage initialReportId="financial_audit" />;
+        return <MasterPayrollPage />;
       case 'suppliers':
-        return <MasterReportsPage initialReportId="supplier_utilization" />;
+        return <MasterSuppliersPage />;
       case 'reports':
         return <MasterReportsPage />;
       case 'notifications':
-        return <MasterAuditLogsPage />;
+        return <MasterNotificationsPage />;
       case 'audit-logs':
         return <MasterAuditLogsPage />;
       case 'settings':
