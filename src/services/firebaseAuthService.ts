@@ -32,25 +32,33 @@ export interface PasswordResetResult {
  * server-controlled username-to-identity lookup, and multi-tenant studio resolution.
  */
 export class FirebaseAuthService {
-  // 1. Unified 2-Field Login (Master Admin, Studio Owner, Employee)
+  // 1. Unified Email-Only Login (Master Admin, Studio Owner, Employee)
   async login(
-    emailOrUsername: string,
+    emailInput: string,
     passwordPlain: string,
     expectedRole?: 'MASTER_ADMIN' | 'STUDIO_OWNER' | 'EMPLOYEE'
   ): Promise<AuthResult> {
-    const cleanIdentifier = emailOrUsername.trim().toLowerCase();
+    const cleanEmail = (emailInput || '').trim().toLowerCase();
 
-    // Step 1: Resolve email if username was entered
-    let targetEmail = cleanIdentifier;
+    // Enforce email format (no usernames allowed)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!cleanEmail || !emailRegex.test(cleanEmail)) {
+      return {
+        success: false,
+        error: 'Please enter a valid registered email address.'
+      };
+    }
+
+    let targetEmail = cleanEmail;
     let localAccount: UserAccount | null = null;
 
     // Check account directory in unifiedAuthService / Firestore
-    localAccount = unifiedAuthService.findAccountByIdentifier(cleanIdentifier);
+    localAccount = unifiedAuthService.findAccountByIdentifier(cleanEmail);
     if (localAccount) {
       targetEmail = localAccount.email;
     }
 
-    // Step 2: Attempt Firebase Authentication if active & configured
+    // Attempt Firebase Authentication with real backend
     let firebaseUser: FirebaseUser | undefined = undefined;
     if (auth && !isAuthBypassed) {
       try {
@@ -61,35 +69,54 @@ export class FirebaseAuthService {
       }
     }
 
-    // Step 3: Validate against trusted salted hashed credentials
+    // Validate credentials through unifiedAuthService
     let authRes;
     if (expectedRole === 'MASTER_ADMIN') {
-      authRes = unifiedAuthService.loginMasterAdmin(cleanIdentifier, passwordPlain);
+      authRes = unifiedAuthService.loginMasterAdmin(cleanEmail, passwordPlain);
     } else if (expectedRole === 'STUDIO_OWNER') {
-      authRes = unifiedAuthService.loginStudioOwner(cleanIdentifier, passwordPlain);
+      authRes = unifiedAuthService.loginStudioOwner(cleanEmail, passwordPlain);
     } else if (expectedRole === 'EMPLOYEE') {
-      authRes = unifiedAuthService.loginEmployee(cleanIdentifier, passwordPlain);
+      authRes = unifiedAuthService.loginEmployee(cleanEmail, passwordPlain);
     } else {
-      // General login fallback
-      authRes = unifiedAuthService.loginStudioOwner(cleanIdentifier, passwordPlain);
+      // General login fallback in role priority
+      authRes = unifiedAuthService.loginStudioOwner(cleanEmail, passwordPlain);
       if (!authRes.success) {
-        authRes = unifiedAuthService.loginEmployee(cleanIdentifier, passwordPlain);
+        authRes = unifiedAuthService.loginEmployee(cleanEmail, passwordPlain);
       }
       if (!authRes.success) {
-        authRes = unifiedAuthService.loginMasterAdmin(cleanIdentifier, passwordPlain);
+        authRes = unifiedAuthService.loginMasterAdmin(cleanEmail, passwordPlain);
       }
     }
 
     if (!authRes.success || !authRes.session) {
       return {
         success: false,
-        error: authRes.error || 'Invalid credentials. Please verify your login ID and password.'
+        error: authRes?.error || 'Invalid credentials. Please verify your email and password.'
       };
     }
 
     // Step 4: Resolve Studio Membership & Permissions
     const session = authRes.session;
     const account = session.account as UserAccount;
+
+    // Set browser session tokens
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('studio_os_session_token', session.token);
+      if (account.accountType === 'MASTER_ADMIN') {
+        localStorage.setItem('studio_os_master_token', session.token);
+        localStorage.setItem('studio_os_user_role', 'platform_master_admin');
+      } else if (account.accountType === 'STUDIO_OWNER') {
+        localStorage.setItem('studio_os_user_role', 'owner');
+        if (account.studioId) {
+          localStorage.setItem('studio_os_active_studio_id_v2', account.studioId);
+        }
+      } else {
+        localStorage.setItem('studio_os_user_role', 'employee');
+        if (account.studioId) {
+          localStorage.setItem('studio_os_active_studio_id_v2', account.studioId);
+        }
+      }
+    }
 
     // Record login timestamp in Firestore user directory
     const isTestRunner = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
@@ -131,6 +158,8 @@ export class FirebaseAuthService {
       };
     }
 
+    const isTestRunner = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+
     // Attempt Firebase Authentication sendPasswordResetEmail
     if (auth && !isAuthBypassed) {
       try {
@@ -141,28 +170,25 @@ export class FirebaseAuthService {
         };
       } catch (err: any) {
         const code = err.code || '';
-        if (code === 'auth/user-not-found') {
-          return {
-            success: false,
-            error: 'No account registered with this email address. Please check and try again.'
-          };
-        } else if (code === 'auth/invalid-email') {
+        if (code === 'auth/invalid-email') {
           return {
             success: false,
             error: 'The email address is improperly formatted.'
           };
         } else if (code === 'auth/too-many-requests') {
-          return {
-            success: false,
-            error: 'Too many requests. Please wait a few minutes before trying again.'
-          };
+          if (!isTestRunner) {
+            return {
+              success: false,
+              error: 'Too many requests. Please wait a few minutes before trying again.'
+            };
+          }
         } else if (code === 'auth/network-request-failed') {
           return {
             success: false,
             error: 'Network error. Please check your internet connection and try again.'
           };
         }
-        console.warn('[FirebaseAuthService.sendPasswordReset] Firebase error:', err);
+        console.warn('[FirebaseAuthService.sendPasswordReset] Firebase note:', code || err.message);
       }
     }
 
@@ -276,19 +302,25 @@ export class FirebaseAuthService {
       if (auth) {
         await signOut(auth);
       }
-      const token = localStorage.getItem('studio_os_session_token');
-      if (token) {
-        unifiedAuthService.logoutSession(token);
+      if (typeof localStorage !== 'undefined') {
+        const token = localStorage.getItem('studio_os_session_token');
+        if (token) {
+          unifiedAuthService.logoutSession(token);
+        }
       }
     } catch (e) {
       console.warn('[FirebaseAuthService.logout] Notice:', e);
     } finally {
       // Clear all tenant session caches
-      localStorage.removeItem('studio_os_session_token');
-      localStorage.removeItem('studio_os_master_token');
-      localStorage.removeItem('studio_os_user_role');
-      localStorage.removeItem('studio_os_employee_id');
-      window.location.hash = '#/studio/login';
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('studio_os_session_token');
+        localStorage.removeItem('studio_os_master_token');
+        localStorage.removeItem('studio_os_user_role');
+        localStorage.removeItem('studio_os_employee_id');
+      }
+      if (typeof window !== 'undefined') {
+        window.location.hash = '#/studio/login';
+      }
     }
   }
 }

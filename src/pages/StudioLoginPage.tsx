@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { firebaseAuthService } from '../services/firebaseAuthService';
 import { unifiedAuthService } from '../services/unifiedAuthService';
 import { Lock, Mail, ArrowRight, ShieldCheck, Camera, Eye, EyeOff } from 'lucide-react';
 import { ForgotPasswordModal } from '../components/auth/ForgotPasswordModal';
@@ -20,13 +21,25 @@ export const StudioLoginPage: React.FC = () => {
     confirmPass: string;
   } | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
-      const res = unifiedAuthService.login(identifier, password);
+      const cleanEmail = identifier.trim().toLowerCase();
+      // Authenticate via firebaseAuthService with unifiedAuthService.login verification
+      let res = await firebaseAuthService.login(cleanEmail, password);
+      if (!res.success) {
+        const fallback = unifiedAuthService.login(cleanEmail, password);
+        if (fallback.success && fallback.session) {
+          res = { 
+            success: true, 
+            session: fallback.session, 
+            account: fallback.session.account as any 
+          };
+        }
+      }
       if (res.success && res.session) {
         const account = res.session.account;
         const studioId = account.studioId || 'studio_shreeji_films';
@@ -48,19 +61,19 @@ export const StudioLoginPage: React.FC = () => {
           setChangePassModal({
             isOpen: true,
             accountId: account.id,
-            targetRoute: res.targetRoute || '#/app/dashboard',
+            targetRoute: (res.session as any)?.targetRoute || '#/app/dashboard',
             newPass: '',
             confirmPass: ''
           });
           return;
         }
 
-        window.location.hash = res.targetRoute || '#/app/dashboard';
+        window.location.hash = (res.session as any)?.targetRoute || (account.accountType === 'MASTER_ADMIN' ? '#/master/dashboard' : '#/app/dashboard');
       } else {
         setError(res.error || 'Invalid email or password.');
       }
     } catch (err: any) {
-      setError('Invalid email or password.');
+      setError(err?.message || 'Invalid email or password.');
     } finally {
       setLoading(false);
     }

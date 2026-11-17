@@ -6,6 +6,7 @@ import { DesktopHeader } from './components/layout/DesktopHeader';
 import { MobileHeader } from './components/layout/MobileHeader';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { StudioLoginPage } from './pages/StudioLoginPage';
+import { PasswordSetupPage } from './pages/auth/PasswordSetupPage';
 import { EmployeeLoginPage } from './pages/EmployeeLoginPage';
 import { EmployeeDashboardPage } from './pages/EmployeeDashboardPage';
 import { MasterLoginPage } from './pages/master/MasterLoginPage';
@@ -285,6 +286,19 @@ export function App() {
   const masterSession = unifiedAuthService.getMasterSession();
   const employeeSession = unifiedAuthService.getEmployeeSession();
   const ownerSession = unifiedAuthService.getStudioOwnerSession();
+
+  // 0. Account Setup & Password Activation Link
+  if (
+    currentRoute.startsWith('#/setup-password') ||
+    currentRoute.startsWith('#/auth/action') ||
+    currentRoute.startsWith('#/activate')
+  ) {
+    return (
+      <ErrorBoundary fallbackTitle="Studio OS Account Activation Error">
+        <PasswordSetupPage />
+      </ErrorBoundary>
+    );
+  }
 
   // 1. One Single Common Login Route for All Users
   if (

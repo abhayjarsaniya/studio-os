@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { useStudio } from '../context/StudioContext';
 import { unifiedAuthService } from '../services/unifiedAuthService';
 import { firebaseAuthService } from '../services/firebaseAuthService';
+import { realAccountProvisionService } from '../services/realAccountProvisionService';
 import { Employee, EmploymentStatus } from '../types';
 import { 
   Users, 
@@ -47,6 +48,7 @@ export const CrewMembersPage: React.FC = () => {
     employees, 
     roles, 
     events, 
+    currentUser,
     createEmployee,
     updateEmployee,
     setEmploymentStatus,
@@ -169,97 +171,74 @@ export const CrewMembersPage: React.FC = () => {
   }, [roles]);
 
   // Handle Create Crew Member
-  const handleSaveCrew = (e: React.FormEvent) => {
+  const handleSaveCrew = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.fullName.trim() || !formData.email.trim()) {
       alert('Full Name and Email are required.');
       return;
     }
 
-    const employeeId = `emp_${Date.now()}`;
     const newEmpNumber = formData.employeeNumber.trim() || `CREW-${String(employees.length + 1).padStart(3, '0')}`;
-    const generatedUsername = formData.username.trim() || formData.email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
-    const tempPassword = formData.initialPassword || `Temp#${Math.floor(1000 + Math.random() * 9000)}`;
-
     const selectedRole = approvedRoles.find(r => r.id === formData.roleId) || approvedRoles[0];
 
-    // Create login account through trusted backend
-    if (formData.generateLogin) {
-      try {
-        unifiedAuthService.provisionEmployee({
-          studioId,
-          studioName: currentStudio.name,
-          employeeName: formData.fullName.trim(),
-          employeeId,
+    try {
+      const res = await realAccountProvisionService.provisionEmployeeAccount(
+        studioId,
+        {
+          fullName: formData.fullName.trim(),
           email: formData.email.trim(),
           mobile: formData.mobile.trim(),
-          username: generatedUsername,
+          whatsapp: formData.whatsapp?.trim(),
+          department: formData.department,
+          designation: formData.designation.trim() || 'Staff Member',
           roleId: selectedRole?.id || 'photographer',
-          roleTitle: selectedRole?.name || 'Staff Member',
-          initialPassword: tempPassword
-        });
-      } catch (err) {
-        console.warn('Backend employee provisioning notice:', err);
-      }
-    }
+          roleName: selectedRole?.name || 'Photographer',
+          branchId: formData.branchId || branches?.[0]?.id || 'main',
+          employeeNumber: newEmpNumber,
+          dailyRate: formData.dailyRate,
+          joiningDate: formData.joiningDate,
+          status: (formData.status === 'inactive' ? 'inactive' : 'active') as 'active' | 'inactive'
+        },
+        currentUser?.name || 'Studio Owner'
+      );
 
-    // Add employee to context state
-    const newMember: Employee = {
-      id: employeeId,
-      studioId,
-      userId: `usr_${employeeId}`,
-      employeeNumber: newEmpNumber,
-      fullName: formData.fullName.trim(),
-      email: formData.email.trim(),
-      phone: formData.mobile.trim(),
-      department: formData.department,
-      designation: formData.designation.trim() || 'Staff Member',
-      roleId: selectedRole?.id || 'photographer',
-      roleName: selectedRole?.name || 'Photographer',
-      branchId: formData.branchId || branches?.[0]?.id || 'main',
-      employmentStatus: formData.status,
-      dateOfJoining: formData.joiningDate || new Date().toISOString().split('T')[0],
-      profilePhoto: formData.profilePhoto || undefined,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      ...(formData as any)
-    };
+      employees.unshift(res.employee);
 
-    employees.unshift(newMember);
-
-    if (formData.generateLogin) {
       setGeneratedCreds({
-        name: formData.fullName,
-        username: generatedUsername,
-        password: tempPassword,
-        loginUrl: `${window.location.origin}/#/employee/login`,
-        phone: formData.mobile || formData.whatsapp,
-        email: formData.email,
-        isReset: false
-      });
-    }
+        name: res.employee.fullName,
+        username: res.email,
+        password: 'Set via secure link',
+        loginUrl: `${window.location.origin}/#/studio/login`,
+        phone: res.employee.phone || formData.whatsapp,
+        email: res.email,
+        isReset: false,
+        setupLink: res.setupLink
+      } as any);
 
-    setIsAddModalOpen(false);
-    // Reset form
-    setFormData({
-      fullName: '',
-      crewType: 'Permanent Employee',
-      employeeNumber: '',
-      username: '',
-      mobile: '',
-      whatsapp: '',
-      email: '',
-      department: 'Photography',
-      designation: 'Lead Photographer',
-      roleId: approvedRoles[0]?.id || 'photographer',
-      joiningDate: new Date().toISOString().split('T')[0],
-      branchId: branches?.[0]?.id || 'main',
-      dailyRate: '3500',
-      status: 'active',
-      profilePhoto: '',
-      generateLogin: true,
-      initialPassword: 'TempPassword@123'
-    });
+      setIsAddModalOpen(false);
+      // Reset form
+      setFormData({
+        fullName: '',
+        crewType: 'Permanent Employee',
+        employeeNumber: '',
+        username: '',
+        mobile: '',
+        whatsapp: '',
+        email: '',
+        department: 'Photography',
+        designation: 'Lead Photographer',
+        roleId: approvedRoles[0]?.id || 'photographer',
+        joiningDate: new Date().toISOString().split('T')[0],
+        branchId: branches?.[0]?.id || 'main',
+        dailyRate: '3500',
+        status: 'active',
+        profilePhoto: '',
+        generateLogin: true,
+        initialPassword: ''
+      });
+    } catch (err: any) {
+      alert(err.message || 'Failed to register employee and create account.');
+    }
   };
 
   // Open Edit Modal
@@ -432,7 +411,8 @@ export const CrewMembersPage: React.FC = () => {
   const handleShareWhatsAppCrew = () => {
     if (!generatedCreds) return;
     const cleanPhone = (generatedCreds.phone || '').replace(/[^0-9]/g, '');
-    const msg = `Hello ${generatedCreds.name},\n\nYour Studio OS employee portal login details:\n\nPortal: ${generatedCreds.loginUrl}\nUsername / Email: ${generatedCreds.username}\nTemporary Password: ${generatedCreds.password}\n\nPlease keep these details secure. You can update your password anytime from Security & Password in the portal.`;
+    const setupLink = (generatedCreds as any).setupLink || `${window.location.origin}/#/setup-password?email=${encodeURIComponent(generatedCreds.email)}`;
+    const msg = `Hello ${generatedCreds.name},\n\nWelcome to Studio OS! You have been registered as a crew member.\n\nPlease set your password using this secure link to activate your portal:\n${setupLink}\n\nOnce set, you can log in anytime using your registered email: ${generatedCreds.email}`;
     const url = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}` : `https://wa.me/?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
   };
@@ -1350,59 +1330,51 @@ export const CrewMembersPage: React.FC = () => {
               </div>
             )}
 
-            <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2.5 text-xs font-mono">
+            <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2.5 text-xs">
               <div className="flex items-center justify-between pb-1.5 border-b border-zinc-200/60 font-sans">
                 <span className="text-zinc-400 text-xs uppercase font-bold">Crew Member</span>
-                <span className="font-bold text-zinc-900 text-xs">{generatedCreds.name}</span>
-              </div>
-
-              <div className="flex items-center justify-between py-0.5">
-                <span className="text-zinc-500 font-sans">Login Portal:</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-zinc-800 truncate max-w-[180px] text-xs">{generatedCreds.loginUrl}</span>
-                  <button
-                    onClick={() => handleCopyCredentials('url')}
-                    className="p-1 hover:bg-zinc-200 rounded text-zinc-600 cursor-pointer"
-                    title="Copy Login Portal URL"
-                  >
-                    {copiedKey === 'url' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between py-0.5">
-                <span className="text-zinc-500 font-sans">Username / Email:</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-indigo-700">{generatedCreds.username}</span>
-                  <button
-                    onClick={() => handleCopyCredentials('user')}
-                    className="p-1 hover:bg-zinc-200 rounded text-zinc-600 cursor-pointer"
-                    title="Copy Username"
-                  >
-                    {copiedKey === 'user' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between py-1 px-2 bg-amber-50 rounded-xl border border-amber-200/70">
-                <span className="text-amber-900 font-sans font-semibold">Temporary Password:</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-amber-950 bg-white px-2 py-0.5 rounded border border-amber-300">
-                    {generatedCreds.password}
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-zinc-900 text-xs">{generatedCreds.name}</span>
+                  <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                    Pending Activation
                   </span>
-                  <button
-                    onClick={() => handleCopyCredentials('pass')}
-                    className="p-1 hover:bg-amber-200 rounded text-amber-900 cursor-pointer"
-                    title="Copy Temporary Password"
-                  >
-                    {copiedKey === 'pass' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                  </button>
                 </div>
               </div>
+
+              <div className="flex items-center justify-between py-0.5">
+                <span className="text-zinc-500 font-sans">Registered Email (Login ID):</span>
+                <span className="font-bold text-orange-700 font-mono text-xs">{generatedCreds.email}</span>
+              </div>
+
+              {Boolean((generatedCreds as any).setupLink) && (
+                <div className="pt-2 border-t border-zinc-200/60 space-y-1.5">
+                  <span className="text-xs font-bold text-zinc-600 uppercase">Single-Use Setup Link (7-Day Expiry)</span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={(generatedCreds as any).setupLink}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-white text-xs font-mono select-all focus:outline-none text-zinc-800"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText((generatedCreds as any).setupLink);
+                        setCopiedKey('setupLink');
+                        setTimeout(() => setCopiedKey(null), 2500);
+                      }}
+                      className="min-h-[34px] px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs flex items-center gap-1 cursor-pointer shrink-0"
+                    >
+                      {copiedKey === 'setupLink' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedKey === 'setupLink' ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <p className="text-xs text-zinc-500 font-sans leading-relaxed">
-              <strong>Security note:</strong> The employee can sign in immediately and update their password from Security & Password in the portal, or request a password reset anytime.
+              <strong>Account Activation:</strong> An official invitation link has been dispatched to {generatedCreds.email}. The employee will set their own secure password before logging in.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-sans">

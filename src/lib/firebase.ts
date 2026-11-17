@@ -15,7 +15,7 @@ const firebaseConfig = {
 };
 
 // Check if Firebase is enabled or in offline preview
-export const isAuthBypassed = env.VITE_AUTH_BYPASS !== 'false';
+export const isAuthBypassed = env.VITE_AUTH_BYPASS === 'true';
 export const useEmulator = env.VITE_USE_FIREBASE_EMULATOR === 'true';
 
 let app: FirebaseApp;

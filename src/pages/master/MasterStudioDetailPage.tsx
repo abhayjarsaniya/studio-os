@@ -5,6 +5,7 @@ import { globalRbacService } from '../../services/globalRbacService';
 import { featureVisibilityService } from '../../services/featureVisibilityService';
 import { platformAuditService } from '../../services/platformAuditService';
 import { firebaseAuthService } from '../../services/firebaseAuthService';
+import { realAccountProvisionService } from '../../services/realAccountProvisionService';
 import { TenantStore } from '../../services/tenantStore';
 import { StudioHandoverModal, StudioHandoverData } from '../../components/master/StudioHandoverModal';
 import { 
@@ -48,6 +49,7 @@ export const MasterStudioDetailPage: React.FC = () => {
   const [isEditStudioOpen, setIsEditStudioOpen] = useState(false);
   const [isSetPasswordOpen, setIsSetPasswordOpen] = useState(false);
   const [customPasswordInput, setCustomPasswordInput] = useState('');
+  const [linkModalData, setLinkModalData] = useState<{ email: string; link: string; copied: boolean } | null>(null);
 
   // Draft Studio Activation State
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
@@ -73,6 +75,7 @@ export const MasterStudioDetailPage: React.FC = () => {
     subscriptionStatus: 'active',
     renewalDate: '',
     lifecycleStatus: 'active' as any,
+    ownerName: '',
     ownerEmail: ''
   });
 
@@ -130,16 +133,31 @@ export const MasterStudioDetailPage: React.FC = () => {
       subscriptionStatus: studio.subscription?.status || 'active',
       renewalDate: studio.subscription?.validUntil ? studio.subscription.validUntil.slice(0, 10) : new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
       lifecycleStatus: studio.lifecycleStatus || 'active',
-      ownerEmail: studio.email || ''
+      ownerName: (studio as any).ownerName || studio.title || '',
+      ownerEmail: studio.ownerEmail || studio.email || ''
     });
     setIsEditStudioOpen(true);
   };
 
-  const handleSaveEditStudio = (e: React.FormEvent) => {
+  const handleSaveEditStudio = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       masterAdminService.updateStudio(studioId, editFormData, 'Master Admin');
-      showToast('Studio profile and configuration updated successfully!');
+
+      if (editFormData.ownerName || editFormData.ownerEmail) {
+        const updateRes = await realAccountProvisionService.updateStudioOwnerDetails(
+          studioId,
+          editFormData.ownerName || (studio as any).ownerName || studio.name,
+          editFormData.ownerEmail || studio.ownerEmail || studio.email,
+          'Master Admin'
+        );
+        if (!updateRes.success) {
+          alert(updateRes.error);
+          return;
+        }
+      }
+
+      showToast('Studio profile and owner identity updated successfully!');
       setIsEditStudioOpen(false);
       triggerRefresh();
     } catch (err: any) {
@@ -282,15 +300,36 @@ export const MasterStudioDetailPage: React.FC = () => {
 
   const handleSendResetEmail = async () => {
     if (!studio) return;
+    const targetEmail = studio.ownerEmail || studio.email;
     try {
-      const res = await firebaseAuthService.sendPasswordReset(studio.email);
+      const res = await firebaseAuthService.sendPasswordReset(targetEmail);
       if (res.success) {
-        showToast(`Password reset link dispatched to ${studio.email}`);
+        showToast(`Password reset link dispatched to ${targetEmail}`);
       } else {
         alert(res.error || 'Failed to dispatch reset email.');
       }
     } catch (e: any) {
       alert(e.message || 'Error dispatching password reset email.');
+    }
+  };
+
+  const handleResendSetupLink = async () => {
+    if (!studio) return;
+    const targetEmail = studio.ownerEmail || studio.email;
+    try {
+      const res = await realAccountProvisionService.resendSetupLink(targetEmail, 'studio_owner', studio.id);
+      if (res.success) {
+        setLinkModalData({
+          email: targetEmail,
+          link: res.setupLink,
+          copied: false
+        });
+        showToast(`Setup link dispatched to ${targetEmail}!`);
+      } else {
+        alert(res.error || 'Failed to generate setup link.');
+      }
+    } catch (e: any) {
+      alert(e.message || 'Error generating setup link.');
     }
   };
 
@@ -371,13 +410,25 @@ export const MasterStudioDetailPage: React.FC = () => {
             <ArrowLeft className="w-5 h-5 sm:w-4 sm:h-4" />
           </button>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-mono text-amber-500 font-bold uppercase">{studio.id}</span>
               <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
                 {studio.subscription?.status || 'Active'}
               </span>
+              {(studio as any).accountStatus === 'active' ? (
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Account Active
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                  Pending Activation
+                </span>
+              )}
+              <span className="text-xs text-zinc-500 font-mono">
+                {studio.ownerEmail || studio.email}
+              </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-zinc-900 font-display tracking-tight">{studio.name}</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-zinc-900 font-display tracking-tight mt-0.5">{studio.name}</h1>
           </div>
         </div>
 
@@ -393,25 +444,20 @@ export const MasterStudioDetailPage: React.FC = () => {
           ) : (
             <>
               <button
-                onClick={handleShareLoginDetails}
-                className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
+                onClick={handleResendSetupLink}
+                className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
+                title="Send or resend secure activation link to owner"
               >
-                <Share2 className="w-4 h-4 text-indigo-600" />
-                <span>Share Login Details</span>
-              </button>
-              <button
-                onClick={handleOpenSetPassword}
-                className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
-              >
-                <KeyRound className="w-4 h-4 text-amber-500" />
-                <span>Set / Reset Password</span>
+                <Key className="w-4 h-4 text-orange-600" />
+                <span>Send Setup Link</span>
               </button>
               <button
                 onClick={handleSendResetEmail}
                 className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
+                title="Dispatch official Firebase password reset email"
               >
                 <Mail className="w-4 h-4 text-emerald-600" />
-                <span>Send Reset Email</span>
+                <span>Password Reset</span>
               </button>
             </>
           )}
@@ -1398,6 +1444,71 @@ export const MasterStudioDetailPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* SETUP LINK DISPATCH MODAL */}
+      {linkModalData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl border border-zinc-200 shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-600">
+                  <Key className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-zinc-900 font-display">Setup Link Generated</h3>
+                  <p className="text-xs text-zinc-500">{linkModalData.email}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setLinkModalData(null)}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center gap-2 font-medium">
+              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Password setup invitation link has been dispatched to {linkModalData.email}.</span>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-zinc-600 uppercase">Single-Use Setup Link (7-Day Expiry)</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={linkModalData.link}
+                  className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 font-mono text-xs bg-zinc-50 text-zinc-800 select-all focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(linkModalData.link);
+                    setLinkModalData({ ...linkModalData, copied: true });
+                    setTimeout(() => {
+                      if (linkModalData) setLinkModalData({ ...linkModalData, copied: false });
+                    }, 2500);
+                  }}
+                  className="min-h-[42px] px-3.5 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+                >
+                  {linkModalData.copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  <span>{linkModalData.copied ? 'Copied' : 'Copy'}</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setLinkModalData(null)}
+                className="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}
