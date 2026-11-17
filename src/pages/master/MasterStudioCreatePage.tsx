@@ -28,6 +28,7 @@ export const MasterStudioCreatePage: React.FC = () => {
     ownerName: '',
     ownerMobile: '',
     ownerEmail: '',
+    initialPassword: '',
     address: '',
     city: 'Ahmedabad',
     state: 'Gujarat',
@@ -50,6 +51,11 @@ export const MasterStudioCreatePage: React.FC = () => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.ownerName.trim() || !formData.ownerMobile.trim() || !formData.ownerEmail.trim()) {
       alert('Please fill in all required fields: Studio Name, Owner Name, Mobile and Email.');
+      return;
+    }
+
+    if (formData.initialPassword && formData.initialPassword.length < 6) {
+      alert('Initial password must be at least 6 characters.');
       return;
     }
 
@@ -246,7 +252,7 @@ export const MasterStudioCreatePage: React.FC = () => {
               <span>Studio Owner (Studio Level Authority)</span>
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
               <div>
                 <label className="block text-zinc-700 font-medium mb-1">Owner Full Name *</label>
                 <input
@@ -260,7 +266,7 @@ export const MasterStudioCreatePage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-zinc-700 font-medium mb-1">Owner Email *</label>
+                <label className="block text-zinc-700 font-medium mb-1">Owner Real Email *</label>
                 <input
                   type="email"
                   required
@@ -280,6 +286,32 @@ export const MasterStudioCreatePage: React.FC = () => {
                   value={formData.ownerMobile}
                   onChange={e => setFormData({ ...formData, ownerMobile: e.target.value })}
                   className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2 text-zinc-800 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-zinc-700 font-medium">Initial Password *</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
+                      let p = '';
+                      for (let i = 0; i < 8; i++) p += chars.charAt(Math.floor(Math.random() * chars.length));
+                      setFormData(f => ({ ...f, initialPassword: p }));
+                    }}
+                    className="text-amber-600 hover:underline font-bold text-xs"
+                  >
+                    Auto-Fill
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  required
+                  placeholder="Set initial password"
+                  value={formData.initialPassword}
+                  onChange={e => setFormData({ ...formData, initialPassword: e.target.value })}
+                  className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2 text-zinc-800 font-mono focus:outline-none focus:border-amber-400"
                 />
               </div>
             </div>

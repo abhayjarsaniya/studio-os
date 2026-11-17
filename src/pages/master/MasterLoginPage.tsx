@@ -6,8 +6,8 @@ import { ForgotPasswordModal } from '../../components/auth/ForgotPasswordModal';
 
 export const MasterLoginPage: React.FC = () => {
   const { setMasterRoute } = useMasterAdmin();
-  const [email, setEmail] = useState('masteradmin');
-  const [password, setPassword] = useState('Hz9#*R*r2&#%L3');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,27 +100,16 @@ export const MasterLoginPage: React.FC = () => {
           </div>
         )}
 
-        <div className="mb-4 p-3 rounded-xl bg-amber-50/80 border border-amber-200/70 text-amber-900 text-xs leading-relaxed">
-          <div className="font-bold flex items-center gap-1.5 text-amber-800 mb-1">
-            <Crown className="w-3.5 h-3.5 text-amber-600" />
-            <span>Master Admin Access</span>
-          </div>
-          <div className="text-zinc-600 space-y-0.5">
-            <div>User: <strong className="text-zinc-900 font-mono">masteradmin</strong> or <strong className="text-zinc-900 font-mono">admin@studio-os.com</strong></div>
-            <div>Password: <strong className="text-zinc-900 font-mono">MasterAdmin@2026</strong></div>
-          </div>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 mb-1">Email / Username</label>
+            <label className="block text-xs font-semibold text-zinc-700 mb-1">Registered Master Email</label>
             <div className="relative">
               <Mail className="w-4 h-4 text-zinc-400 absolute left-3 top-3.5" />
               <input
-                type="text"
+                type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="masteradmin or masteradmin@studioos.internal"
+                placeholder="e.g. jarsaniya.abhay@gmail.com"
                 className="w-full pl-9 pr-3 py-2.5 bg-white border border-zinc-300 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition-colors"
                 required
               />

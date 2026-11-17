@@ -17,7 +17,7 @@ describe('STUDIO OS — Fix New Studio Owner Login & Account Provisioning', () =
 
     // Required elements
     expect(content).toContain('Welcome to Studio OS');
-    expect(content).toContain('Email / Username');
+    expect(content).toContain('Email Address');
     expect(content).toContain('Password');
     expect(content).toContain('Forgot Password?');
     expect(content).toContain('Sign In');

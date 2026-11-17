@@ -59,19 +59,19 @@ export class UnifiedAuthService {
   private ensureDefaultAccounts(): void {
     try {
       const accounts = this.listStoredAccounts();
-      // Master Admin accounts
-      const masterEmails = ['admin@studio-os.com', 'masteradmin@studioos.internal'];
+      // Master Admin accounts (Abhay Jarsaniya set as primary Master Admin)
+      const masterEmails = ['jarsaniya.abhay@gmail.com', 'admin@studio-os.com', 'masteradmin@studioos.internal'];
       for (const mEmail of masterEmails) {
-        const masterAcc = accounts.find(a => a.email === mEmail || a.loginId === mEmail);
+        const masterAcc = accounts.find(a => a.email.toLowerCase() === mEmail.toLowerCase() || a.loginId.toLowerCase() === mEmail.toLowerCase());
         if (!masterAcc) {
           const salt = generateCryptoSalt();
           this.saveAccount({
-            id: mEmail === 'admin@studio-os.com' ? 'admin_master_primary' : 'admin_master_alias',
+            id: mEmail === 'jarsaniya.abhay@gmail.com' ? 'admin_master_abhay' : (mEmail === 'admin@studio-os.com' ? 'admin_master_primary' : 'admin_master_alias'),
             accountType: 'MASTER_ADMIN',
-            loginId: mEmail === 'admin@studio-os.com' ? 'admin@studio-os.com' : 'masteradmin',
+            loginId: mEmail === 'jarsaniya.abhay@gmail.com' ? 'jarsaniya.abhay@gmail.com' : (mEmail === 'admin@studio-os.com' ? 'admin@studio-os.com' : 'masteradmin'),
             email: mEmail,
             phone: '+91 99000 11000',
-            displayName: 'Platform Master Owner',
+            displayName: mEmail === 'jarsaniya.abhay@gmail.com' ? 'Abhay Jarsaniya (Master Admin)' : 'Platform Master Owner',
             roleId: 'master_super_admin',
             roleTitle: 'Master Super Admin',
             status: 'active',
@@ -306,7 +306,7 @@ export class UnifiedAuthService {
     return TenantStore.get<UserAccount>('platform_system', GLOBAL_ACCOUNTS_KEY) || [];
   }
 
-  private saveAccount(account: UserAccount): void {
+  public saveAccount(account: UserAccount): void {
     const all = this.listStoredAccounts();
     const idx = all.findIndex(a => a.id === account.id);
     if (idx >= 0) {

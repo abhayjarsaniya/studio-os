@@ -54,7 +54,8 @@ export const MasterStudioDetailPage: React.FC = () => {
   const [activateFormData, setActivateFormData] = useState({
     ownerName: '',
     ownerEmail: '',
-    ownerPhone: ''
+    ownerPhone: '',
+    initialPassword: ''
   });
   const [activateError, setActivateError] = useState('');
   const [isActivating, setIsActivating] = useState(false);
@@ -232,7 +233,8 @@ export const MasterStudioDetailPage: React.FC = () => {
       const res = masterAdminService.activateStudioWithOwner(studioId, {
         ownerName: activateFormData.ownerName.trim(),
         ownerEmail: activateFormData.ownerEmail.trim(),
-        ownerPhone: activateFormData.ownerPhone.trim()
+        ownerPhone: activateFormData.ownerPhone.trim(),
+        initialPassword: activateFormData.initialPassword.trim() || undefined
       }, 'Master Admin');
 
       if (res.success && res.credentials) {
@@ -1343,6 +1345,31 @@ export const MasterStudioDetailPage: React.FC = () => {
                   value={activateFormData.ownerPhone}
                   onChange={e => setActivateFormData(f => ({ ...f, ownerPhone: e.target.value }))}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-sm bg-zinc-50 text-zinc-900 focus:outline-none focus:bg-white focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-zinc-700 uppercase">Initial Password (Optional / Auto-Gen)</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
+                      let p = '';
+                      for (let i = 0; i < 8; i++) p += chars.charAt(Math.floor(Math.random() * chars.length));
+                      setActivateFormData(f => ({ ...f, initialPassword: p }));
+                    }}
+                    className="text-purple-600 hover:underline font-bold text-xs"
+                  >
+                    Auto-Fill 8-Char
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Leave blank to auto-generate 8-character password"
+                  value={activateFormData.initialPassword}
+                  onChange={e => setActivateFormData(f => ({ ...f, initialPassword: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-sm font-mono bg-zinc-50 text-zinc-900 focus:outline-none focus:bg-white focus:border-purple-500"
                 />
               </div>
 

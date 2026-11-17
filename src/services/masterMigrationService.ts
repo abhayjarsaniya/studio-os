@@ -4,9 +4,9 @@ import { globalRbacService } from './globalRbacService';
 import { demoStudioSeedService } from './demoStudioSeedService';
 
 export const DEFAULT_MASTER_ADMIN: MasterAdminUser = {
-  id: 'admin_master_001',
-  name: 'Platform Master Admin',
-  email: 'masteradmin@studioos.internal',
+  id: 'admin_master_abhay',
+  name: 'Abhay Jarsaniya',
+  email: 'jarsaniya.abhay@gmail.com',
   role: 'master_super_admin',
   permissions: [
     'view_studios',

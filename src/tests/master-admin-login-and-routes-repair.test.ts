@@ -14,10 +14,10 @@ describe('STUDIO OS — Master Admin Login, Routing & All 15 Module Options Veri
   const desktopSidebarPath = path.resolve(__dirname, '../components/layout/DesktopSidebar.tsx');
   const mobileHeaderPath = path.resolve(__dirname, '../components/layout/MobileHeader.tsx');
 
-  it('1. verifies App.tsx wraps MasterLoginPage in MasterAdminProvider on #/master/login route', () => {
+  it('1. verifies App.tsx wraps MasterApp in MasterAdminProvider on #/master route', () => {
     const content = fs.readFileSync(appPath, 'utf-8');
     expect(content).toContain("<MasterAdminProvider>");
-    expect(content).toContain("<MasterLoginPage />");
+    expect(content).toContain("<MasterApp />");
     expect(content).toContain("</MasterAdminProvider>");
   });
 
@@ -52,26 +52,26 @@ describe('STUDIO OS — Master Admin Login, Routing & All 15 Module Options Veri
     expect(content).toContain('unifiedAuthService.login');
   });
 
-  it('5. verifies EmployeeLoginPage contains an accessible link to Master Admin', () => {
+  it('5. verifies EmployeeLoginPage strictly does not expose Master Admin navigation', () => {
     const content = fs.readFileSync(employeeLoginPath, 'utf-8');
-    expect(content).toContain('href="#/master/login"');
-    expect(content).toContain('Platform Master Admin');
+    expect(content).not.toContain('href="#/master/login"');
+    expect(content).not.toContain('Platform Master Admin');
   });
 
-  it('6. verifies MasterLoginPage contains return links to Studio Owner and Employee portals', () => {
+  it('6. verifies MasterLoginPage provides clean login interface', () => {
     const content = fs.readFileSync(masterLoginPath, 'utf-8');
-    expect(content).toContain('href="#/studio/login"');
-    expect(content).toContain('href="#/employee/login"');
+    expect(content).toContain('email');
+    expect(content).toContain('password');
   });
 
-  it('7. verifies DesktopSidebar and MobileHeader contain direct links to Platform Master Admin', () => {
+  it('7. verifies DesktopSidebar and MobileHeader strictly do not expose links to Master Admin', () => {
     const desktopContent = fs.readFileSync(desktopSidebarPath, 'utf-8');
-    expect(desktopContent).toContain('href="#/master/login"');
-    expect(desktopContent).toContain('Platform Master Admin Console');
+    expect(desktopContent).not.toContain('href="#/master/login"');
+    expect(desktopContent).not.toContain('Platform Master Admin Console');
 
     const mobileContent = fs.readFileSync(mobileHeaderPath, 'utf-8');
-    expect(mobileContent).toContain('href="#/master/login"');
-    expect(mobileContent).toContain('Platform Master Admin');
+    expect(mobileContent).not.toContain('href="#/master/login"');
+    expect(mobileContent).not.toContain('Platform Master Admin');
   });
 
   it('8. verifies all 15 Master Admin options are handled in MasterApp router', () => {

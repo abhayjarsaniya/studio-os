@@ -221,16 +221,8 @@ export const MobileHeader: React.FC = () => {
               ))}
             </div>
 
-            {/* Footer / Master Admin & Logout */}
-            <div className="p-3 border-t border-zinc-100 bg-zinc-50/50 space-y-2">
-              <a
-                href="#/master/login"
-                onClick={() => setMobileDrawerOpen(false)}
-                className="w-full min-h-[48px] flex items-center justify-center gap-2 px-3 py-2 text-sm font-bold rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 touch-manipulation active:scale-98 transition-transform cursor-pointer"
-              >
-                <Crown className="w-4 h-4 text-amber-600" />
-                <span>Platform Master Admin</span>
-              </a>
+            {/* Footer / Logout */}
+            <div className="p-3 border-t border-zinc-100 bg-zinc-50/50">
               <button
                 onClick={handleLogout}
                 className="w-full min-h-[48px] flex items-center justify-center gap-2 px-3 py-2 text-sm font-bold rounded-xl bg-white hover:bg-rose-50 text-rose-700 border border-zinc-200 touch-manipulation active:scale-98 transition-transform cursor-pointer"

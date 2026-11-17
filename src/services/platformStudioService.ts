@@ -11,7 +11,7 @@ import { platformSubscriptionManager } from './platformSubscriptionManager';
 import { platformBillingService } from './platformBillingService';
 import { platformAuditService } from './platformAuditService';
 import { employeeAuthService } from './employeeAuthService';
-import { unifiedAuthService } from './unifiedAuthService';
+import { unifiedAuthService, generateCryptoSalt, hashCredential } from './unifiedAuthService';
 import { firestoreService } from './firestoreService';
 import { studioA, studioB } from '../data/multiTenantDemoData';
 import { shreejiStudio } from './studioService';
@@ -55,6 +55,7 @@ export interface CreateStudioPayload {
   gstNumber?: string;
   website?: string;
   description?: string;
+  initialPassword?: string;
 }
 
 export interface CreatedStudioResult {
@@ -515,7 +516,7 @@ export class PlatformStudioService {
     const tenantId = studioId;
     const ownerEmpId = `emp_owner_${studioId}`;
     const ownerUsername = `${payload.ownerName.split(' ')[0].toLowerCase()}_${payload.city.toLowerCase().slice(0, 3)}_${Math.random().toString(36).slice(2, 4)}`;
-    const temporaryPassword = generate8CharTemporaryPassword();
+    const temporaryPassword = payload.initialPassword?.trim() || generate8CharTemporaryPassword();
     const cleanEmail = payload.ownerEmail.toLowerCase().trim();
 
     // Verify email conflict across existing accounts
@@ -623,6 +624,7 @@ export class PlatformStudioService {
 
     // Provision Studio Owner Login Account in Unified User Accounts Registry (Enables Immediate Login)
     unifiedAuthService.provisionStudioOwner({
+      authUid,
       studioId,
       studioName: payload.name.trim(),
       ownerName: payload.ownerName.trim(),
@@ -696,6 +698,10 @@ export class PlatformStudioService {
       credentials: {
         username: ownerUsername,
         email: cleanEmail,
+        ownerEmail: cleanEmail,
+        ownerName: payload.ownerName.trim(),
+        ownerPhone: payload.ownerMobile.trim(),
+        temporaryPassword,
         mustChangePassword: true
       },
       ownerCredentials: {
@@ -750,7 +756,7 @@ export class PlatformStudioService {
       throw new Error(`Email "${payload.ownerEmail}" is already registered to another account.`);
     }
 
-    const temporaryPassword = generate8CharTemporaryPassword();
+    const temporaryPassword = (payload as any).initialPassword?.trim() || generate8CharTemporaryPassword();
     const authUid = `auth_uid_${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
     const ownerEmpId = `emp_${studioId}_owner`;
     const ownerUsername = `${payload.ownerName.split(' ')[0].toLowerCase()}_${studioId.slice(-4)}`;
@@ -920,10 +926,15 @@ export class PlatformStudioService {
   } {
     const creds = employeeAuthService.listCredentials(studioId);
     const ownerCred = creds.find(c => c.employeeId.includes('owner') || c.email.includes('owner')) || creds[0];
-    const temporaryPassword = customPassword || `Studio#${Math.floor(1000 + Math.random() * 9000)}`;
+    const temporaryPassword = customPassword || generate8CharTemporaryPassword();
 
-    let username = 'shreeji.owner';
-    let email = 'aarav@shreejifilms.in';
+    const studio = TenantStore.getSingle<Studio>(studioId, 'profile');
+    let email = studio?.ownerEmail || studio?.email || (ownerCred ? ownerCred.email : '');
+    let username = (studio as any)?.ownerUsername || (ownerCred ? ownerCred.username : (email.includes('@') ? email.split('@')[0] : studioId));
+    if (!email && (studioId === 'studio_shreeji_films' || studioId === 'std_demo_royal')) {
+      email = 'aarav@shreejifilms.in';
+      username = 'shreeji.owner';
+    }
 
     if (ownerCred) {
       username = ownerCred.username;
@@ -1227,6 +1238,136 @@ export class PlatformStudioService {
       targetId: studioId,
       details: `Added internal platform note: "${noteText}"`
     });
+  }
+
+  auditAndRepairAllStudios(): {
+    totalStudiosAudited: number;
+    repairedCount: number;
+    actions: string[];
+  } {
+    const actions: string[] = [];
+    let repairedCount = 0;
+
+    if (!unifiedAuthService || typeof unifiedAuthService.listStoredAccounts !== 'function') {
+      return { totalStudiosAudited: 0, repairedCount: 0, actions: [] };
+    }
+
+    const meta = this.getStudiosMeta();
+    const studioIds = new Set<string>(['studio_shreeji_films', 'std_demo_royal', ...Object.keys(meta)]);
+
+    const allAccounts = unifiedAuthService.listStoredAccounts();
+
+    // 1. Ensure Abhay Jarsaniya is provisioned as primary Master Admin
+    const masterAccount = allAccounts.find(a => a.email.toLowerCase() === 'jarsaniya.abhay@gmail.com');
+    if (!masterAccount) {
+      const salt = generateCryptoSalt();
+      unifiedAuthService.saveAccount({
+        id: 'admin_master_abhay',
+        accountType: 'MASTER_ADMIN',
+        loginId: 'jarsaniya.abhay@gmail.com',
+        email: 'jarsaniya.abhay@gmail.com',
+        phone: '+91 99000 11000',
+        displayName: 'Abhay Jarsaniya (Master Admin)',
+        roleId: 'master_super_admin',
+        roleTitle: 'Master Super Admin',
+        status: 'active',
+        passwordHash: hashCredential('MasterAdmin@2026', salt),
+        salt,
+        mustChangePassword: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      actions.push('Provisioned primary Master Admin: jarsaniya.abhay@gmail.com');
+      repairedCount++;
+    }
+
+    // 2. Audit each studio and repair owner accounts and Auth UIDs
+    for (const sId of studioIds) {
+      const studio = TenantStore.getSingle<Studio>(sId, 'profile');
+      if (!studio) continue;
+
+      const ownerEmail = (studio.ownerEmail || studio.email || '').trim().toLowerCase();
+      if (!ownerEmail || !ownerEmail.includes('@')) continue;
+
+      // Ensure ownerAuthUid exists
+      let authUid = studio.ownerAuthUid;
+      if (!authUid) {
+        authUid = `auth_uid_${sId.replace(/[^a-z0-9]/g, '_')}_${Date.now().toString(36)}`;
+        studio.ownerAuthUid = authUid;
+        TenantStore.set(sId, 'profile', studio);
+        actions.push(`Assigned missing authUid ${authUid} to studio ${sId}`);
+        repairedCount++;
+      }
+
+      // Check owner account in unifiedAuthService
+      const currentAccounts = unifiedAuthService.listStoredAccounts();
+      let ownerAcc = currentAccounts.find(a => 
+        (a.studioId === sId && a.accountType === 'STUDIO_OWNER') ||
+        (a.email.toLowerCase() === ownerEmail && a.accountType === 'STUDIO_OWNER')
+      );
+
+      if (!ownerAcc) {
+        const username = (studio as any).ownerUsername || `${sId.slice(0, 8)}_owner`;
+        const tempPass = generate8CharTemporaryPassword();
+        unifiedAuthService.provisionStudioOwner({
+          authUid,
+          studioId: sId,
+          studioName: studio.name,
+          ownerName: studio.ownerName || studio.name,
+          email: ownerEmail,
+          mobile: studio.ownerPhone || studio.phone || '9876543210',
+          username,
+          temporaryPassword: tempPass
+        });
+        actions.push(`Repaired and provisioned missing owner account for ${sId} (${ownerEmail})`);
+        repairedCount++;
+      } else {
+        let changed = false;
+        if (ownerAcc.id !== authUid) {
+          ownerAcc.id = authUid;
+          changed = true;
+        }
+        if (ownerAcc.studioId !== sId) {
+          ownerAcc.studioId = sId;
+          changed = true;
+        }
+        if (ownerAcc.accountType !== 'STUDIO_OWNER') {
+          ownerAcc.accountType = 'STUDIO_OWNER';
+          changed = true;
+        }
+        if (ownerAcc.status !== 'active') {
+          ownerAcc.status = 'active';
+          changed = true;
+        }
+        if (ownerAcc.email.toLowerCase() !== ownerEmail) {
+          ownerAcc.email = ownerEmail;
+          changed = true;
+        }
+        if (changed) {
+          ownerAcc.updatedAt = new Date().toISOString();
+          unifiedAuthService.saveAccount(ownerAcc);
+          actions.push(`Synchronized UID/studioId/role for owner account ${ownerAcc.email}`);
+          repairedCount++;
+        }
+      }
+
+      // Sync Firestore platform_system/users
+      firestoreService.saveDocument('platform_system', 'users', authUid, {
+        uid: authUid,
+        email: ownerEmail,
+        displayName: studio.ownerName || studio.name,
+        role: 'owner',
+        studioId: sId,
+        status: 'active',
+        updatedAt: new Date().toISOString()
+      }, true).catch(() => {});
+    }
+
+    return {
+      totalStudiosAudited: studioIds.size,
+      repairedCount,
+      actions
+    };
   }
 }
 

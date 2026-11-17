@@ -48,10 +48,10 @@ import { TaskFormModal } from './components/tasks/TaskFormModal';
 import { PDFViewerModal } from './components/finance/PDFViewerModal';
 import { PlatformApp } from './components/platform/PlatformApp';
 import { MasterApp } from './components/master/MasterApp';
+import { ShieldAlert } from 'lucide-react';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { useStudio } from './context/StudioContext';
 import { featureVisibilityService } from './services/featureVisibilityService';
-import { ShieldAlert } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
   const { 
@@ -270,13 +270,13 @@ const MainLayout: React.FC = () => {
 
 export function App() {
   const [currentRoute, setCurrentRoute] = React.useState<string>(() => {
-    return typeof window !== 'undefined' ? (window.location.hash || '#/studio/login') : '#/studio/login';
+    return typeof window !== 'undefined' ? (window.location.hash || '#/login') : '#/login';
   });
 
   React.useEffect(() => {
     portalAccountProvisionService.syncWithUnifiedAuthService();
     const handleHashChange = () => {
-      setCurrentRoute(window.location.hash || '#/studio/login');
+      setCurrentRoute(window.location.hash || '#/login');
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
@@ -286,53 +286,66 @@ export function App() {
   const employeeSession = unifiedAuthService.getEmployeeSession();
   const ownerSession = unifiedAuthService.getStudioOwnerSession();
 
-  // 1. Master Admin Login Route
-  if (currentRoute === '#/master/login' || currentRoute.startsWith('#/master/login')) {
+  // 1. One Single Common Login Route for All Users
+  if (
+    currentRoute === '#/login' ||
+    currentRoute === '#/studio/login' ||
+    currentRoute === '#/master/login' ||
+    currentRoute === '#/employee/login'
+  ) {
     return (
-      <ErrorBoundary fallbackTitle="Master Admin Login Error">
-        <MasterAdminProvider>
-          <MasterLoginPage />
-        </MasterAdminProvider>
+      <ErrorBoundary fallbackTitle="Studio OS Login Error">
+        <StudioLoginPage />
       </ErrorBoundary>
     );
   }
 
-  // 2. Master Admin Platform Portal (Protected)
+  // 2. Master Admin Platform Portal (Protected with Strict Role Separation)
   if (currentRoute.startsWith('#/master') || currentRoute.startsWith('#/platform')) {
+    // If a Studio Owner or Employee tries to open Master Admin, strictly deny access
+    const isOwner = Boolean(ownerSession || localStorage.getItem('studio_os_user_role') === 'owner');
+    const isEmployee = Boolean(employeeSession || localStorage.getItem('studio_os_user_role') === 'employee');
+
+    if (isOwner || isEmployee) {
+      return (
+        <div className="min-h-screen bg-zinc-50 flex flex-col items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white border border-rose-200 rounded-3xl p-8 text-center shadow-xl space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
+            <h2 className="text-xl font-bold text-zinc-900">Access Denied</h2>
+            <p className="text-xs text-zinc-500">
+              Master Admin portal requires platform administrator authority. Studio Owner and Employee credentials cannot access this console.
+            </p>
+            <button
+              onClick={() => {
+                window.location.hash = isOwner ? '#/app/dashboard' : '#/employee/dashboard';
+              }}
+              className="w-full py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs cursor-pointer"
+            >
+              Return to Studio Dashboard
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     if (!masterSession) {
-      if (typeof window !== 'undefined' && window.location.hash !== '#/master/login') {
-        window.location.hash = '#/master/login';
+      if (typeof window !== 'undefined' && window.location.hash !== '#/login') {
+        window.location.hash = '#/login';
       }
       return (
-        <ErrorBoundary fallbackTitle="Master Admin Login Error">
-          <MasterAdminProvider>
-            <MasterLoginPage />
-          </MasterAdminProvider>
+        <ErrorBoundary fallbackTitle="Studio OS Login Error">
+          <StudioLoginPage />
         </ErrorBoundary>
       );
     }
 
     return (
       <ErrorBoundary fallbackTitle="Master Admin Platform Portal Error">
-        <MasterApp />
-      </ErrorBoundary>
-    );
-  }
-
-  // 3. Studio Owner Login Route
-  if (currentRoute === '#/studio/login' || currentRoute === '#/login') {
-    return (
-      <ErrorBoundary fallbackTitle="Studio Owner Login Error">
-        <StudioLoginPage />
-      </ErrorBoundary>
-    );
-  }
-
-  // 4. Employee Login Route
-  if (currentRoute === '#/employee/login') {
-    return (
-      <ErrorBoundary fallbackTitle="Employee Login Error">
-        <EmployeeLoginPage />
+        <MasterAdminProvider>
+          <MasterApp />
+        </MasterAdminProvider>
       </ErrorBoundary>
     );
   }
