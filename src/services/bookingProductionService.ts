@@ -33,9 +33,21 @@ export class BookingProductionService {
   // Helper to get bookings list
   listBookings(studioId: string, includeDeleted = false): BookingRecord[] {
     const raw = TenantStore.get(studioId, BookingProductionService.BOOKINGS_COLLECTION) as BookingRecord[];
-    const list = Array.isArray(raw) && raw.length > 0 ? raw : this.seedDemoBookings(studioId);
-    if (includeDeleted) return list;
-    return list.filter(b => !b.isDeleted);
+    if (Array.isArray(raw) && raw.length > 0) {
+      return includeDeleted ? raw : raw.filter(b => !b.isDeleted);
+    }
+    // Only seed demo bookings for historical demo/test studios (not for new production studios)
+    const isDemoOrTest = studioId === 'std_demo_royal' || 
+      studioId === 'studio_shreeji_films' || 
+      studioId === 'studio_royal_001' || 
+      studioId.includes('test') || 
+      studioId.startsWith('studio_demo_');
+
+    if (isDemoOrTest) {
+      const list = this.seedDemoBookings(studioId);
+      return includeDeleted ? list : list.filter(b => !b.isDeleted);
+    }
+    return Array.isArray(raw) ? raw : [];
   }
 
   // Get single booking
@@ -405,6 +417,7 @@ export class BookingProductionService {
     category: string;
     mainEventDate: string;
     startDate?: string;
+    endDate?: string;
     venue: string;
     city: string;
     description?: string;
@@ -441,6 +454,11 @@ export class BookingProductionService {
     }>;
     initialQuotationAmount?: number;
     originalQuotation?: number;
+    agreedAmount?: number;
+    quotedAmount?: number;
+    advancePayment?: number;
+    paymentStatus?: string;
+    paymentMethod?: string;
     advanceRequired?: number;
     advanceReceived?: number;
     createdBy?: string;
@@ -518,8 +536,8 @@ export class BookingProductionService {
       });
     });
 
-    const agreedPrice = data.financials?.finalAgreedAmount ?? data.financials?.originalQuotation ?? data.initialQuotationAmount ?? data.originalQuotation ?? 150000;
-    const advancePaid = data.financials?.verifiedPaymentsReceived ?? data.financials?.advanceReceived ?? data.advanceReceived ?? 0;
+    const agreedPrice = (data as any).agreedAmount ?? (data as any).agreedPrice ?? data.financials?.finalAgreedAmount ?? data.financials?.originalQuotation ?? data.initialQuotationAmount ?? data.originalQuotation ?? 150000;
+    const advancePaid = (data as any).advancePayment ?? (data as any).advanceAmount ?? data.financials?.verifiedPaymentsReceived ?? data.financials?.advanceReceived ?? data.advanceReceived ?? 0;
 
     const record: BookingRecord = {
       id: bookingId,

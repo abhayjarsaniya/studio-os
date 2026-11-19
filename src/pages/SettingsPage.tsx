@@ -23,7 +23,10 @@ import {
   EyeOff,
   AlertCircle,
   Shield,
-  HelpCircle
+  HelpCircle,
+  Loader2,
+  Share2,
+  Link as LinkIcon
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
@@ -35,6 +38,8 @@ export const SettingsPage: React.FC = () => {
 
   // Profile Form State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const [profileForm, setProfileForm] = useState({
     name: studio.name || currentStudio.name || 'SHREEJI FILMS AND PHOTOGRAPHY',
     tagline: studio.tagline || currentStudio.tagline || '',
@@ -42,10 +47,16 @@ export const SettingsPage: React.FC = () => {
     email: studio.email || currentStudio.email || '',
     address: studio.address || currentStudio.address || '',
     city: studio.city || currentStudio.city || '',
+    state: (studio as any).state || (currentStudio as any).state || 'Gujarat',
+    pincode: (studio as any).pincode || (currentStudio as any).pincode || '380054',
     gstNumber: studio.gstNumber || currentStudio.gstNumber || '',
     logoUrl: currentStudio.logoUrl || studio.logo || '/shreeji-logo.svg',
-    website: studio.website || 'https://shreejifilms.in',
-    businessHours: '09:00 AM - 08:00 PM (Mon-Sat)'
+    website: (studio as any).website || (currentStudio as any).website || 'https://shreejifilms.in',
+    socialInstagram: (currentStudio.socialLinks as any)?.instagram || '',
+    socialFacebook: (currentStudio.socialLinks as any)?.facebook || '',
+    socialYouTube: (currentStudio.socialLinks as any)?.youtube || '',
+    businessHours: (studio as any).businessHours || (currentStudio as any).businessHours || '09:00 AM - 08:00 PM (Mon-Sat)',
+    description: studio.tagline || currentStudio.tagline || 'Specializing in cinematic wedding films, candid moments and luxury photography.'
   });
   const [profileSaved, setProfileSaved] = useState(false);
 
@@ -76,26 +87,43 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSavingProfile(true);
+    setProfileError(null);
     try {
       studioService.updateStudio(currentStudio.id, {
-        name: profileForm.name,
-        tagline: profileForm.tagline,
-        phone: profileForm.phone,
-        email: profileForm.email,
-        address: profileForm.address,
-        city: profileForm.city,
-        gstNumber: profileForm.gstNumber,
-        logoUrl: profileForm.logoUrl
+        name: profileForm.name.trim(),
+        tagline: profileForm.tagline.trim(),
+        phone: profileForm.phone.trim(),
+        email: profileForm.email.trim(),
+        address: profileForm.address.trim(),
+        city: profileForm.city.trim(),
+        state: profileForm.state.trim(),
+        pincode: profileForm.pincode.trim(),
+        gstNumber: profileForm.gstNumber.trim().toUpperCase(),
+        logoUrl: profileForm.logoUrl,
+        website: profileForm.website.trim(),
+        businessHours: profileForm.businessHours,
+        socialLinks: {
+          instagram: profileForm.socialInstagram.trim(),
+          facebook: profileForm.socialFacebook.trim(),
+          youtube: profileForm.socialYouTube.trim()
+        }
       });
       refreshStudioData();
-    } catch (err) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('studio_data_updated', { detail: { studioId: currentStudio.id } }));
+      }
+      setIsEditingProfile(false);
+      setProfileSaved(true);
+      setTimeout(() => setProfileSaved(false), 3000);
+    } catch (err: any) {
       console.warn('Error saving studio profile:', err);
+      setProfileError(err.message || 'Failed to update studio profile.');
+    } finally {
+      setIsSavingProfile(false);
     }
-    setIsEditingProfile(false);
-    setProfileSaved(true);
-    setTimeout(() => setProfileSaved(false), 2500);
   };
 
   // Password strength calculation
@@ -252,7 +280,14 @@ export const SettingsPage: React.FC = () => {
           {profileSaved && (
             <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Studio profile updated successfully!</span>
+              <span>Studio profile updated successfully and persisted to Firestore!</span>
+            </div>
+          )}
+
+          {profileError && (
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600" />
+              <span>{profileError}</span>
             </div>
           )}
 
@@ -271,7 +306,7 @@ export const SettingsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-zinc-700 font-semibold mb-1">Tagline</label>
+                  <label className="block text-zinc-700 font-semibold mb-1">Tagline / Business Description</label>
                   <input
                     type="text"
                     value={profileForm.tagline}
@@ -343,14 +378,24 @@ export const SettingsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-zinc-700 font-semibold mb-1">City *</label>
-                  <input
-                    type="text"
-                    required
-                    value={profileForm.city}
-                    onChange={e => setProfileForm({ ...profileForm, city: e.target.value })}
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
-                  />
+                  <label className="block text-zinc-700 font-semibold mb-1">City & State *</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      required
+                      placeholder="City"
+                      value={profileForm.city}
+                      onChange={e => setProfileForm({ ...profileForm, city: e.target.value })}
+                      className="w-1/2 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
+                    />
+                    <input
+                      type="text"
+                      placeholder="State"
+                      value={profileForm.state}
+                      onChange={e => setProfileForm({ ...profileForm, state: e.target.value })}
+                      className="w-1/2 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -361,6 +406,28 @@ export const SettingsPage: React.FC = () => {
                     onChange={e => setProfileForm({ ...profileForm, gstNumber: e.target.value.toUpperCase() })}
                     placeholder="24AAACR1234D1Z5"
                     className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl font-mono focus:bg-white focus:outline-none focus:border-zinc-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-zinc-700 font-semibold mb-1">Website URL</label>
+                  <input
+                    type="url"
+                    placeholder="https://yourstudio.com"
+                    value={profileForm.website}
+                    onChange={e => setProfileForm({ ...profileForm, website: e.target.value })}
+                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-zinc-700 font-semibold mb-1">Instagram Handle or Link</label>
+                  <input
+                    type="text"
+                    placeholder="@yourstudio or link"
+                    value={profileForm.socialInstagram}
+                    onChange={e => setProfileForm({ ...profileForm, socialInstagram: e.target.value })}
+                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:outline-none focus:border-zinc-900"
                   />
                 </div>
               </div>
@@ -397,15 +464,18 @@ export const SettingsPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsEditingProfile(false)}
-                  className="px-4 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold transition-all"
+                  disabled={isSavingProfile}
+                  className="px-4 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold transition-all disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold shadow-sm transition-all"
+                  disabled={isSavingProfile}
+                  className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold shadow-sm transition-all flex items-center gap-2 disabled:opacity-50"
                 >
-                  Save Changes
+                  {isSavingProfile ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                  <span>{isSavingProfile ? 'Saving...' : 'Save Changes'}</span>
                 </button>
               </div>
             </form>
@@ -441,6 +511,28 @@ export const SettingsPage: React.FC = () => {
                     <span>{profileForm.city}, {profileForm.address || 'Flagship Studio'}</span>
                   </div>
                 </div>
+
+                {profileForm.website && (
+                  <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200">
+                    <span className="text-zinc-400 block text-xs font-bold uppercase tracking-wider">Website</span>
+                    <div className="text-xs font-semibold text-indigo-600 mt-0.5 flex items-center gap-1.5">
+                      <Globe className="w-3.5 h-3.5 text-zinc-400" />
+                      <a href={profileForm.website} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                        {profileForm.website}
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {profileForm.socialInstagram && (
+                  <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200">
+                    <span className="text-zinc-400 block text-xs font-bold uppercase tracking-wider">Instagram</span>
+                    <div className="text-xs font-semibold text-zinc-800 mt-0.5 flex items-center gap-1.5">
+                      <Share2 className="w-3.5 h-3.5 text-zinc-400" />
+                      <span>{profileForm.socialInstagram}</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {profileForm.gstNumber && (

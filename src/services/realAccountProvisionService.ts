@@ -5,6 +5,7 @@ import { unifiedAuthService, hashCredential, generateCryptoSalt, UserAccount } f
 import { platformAuditService } from './platformAuditService';
 import { Studio, Employee, Branch } from '../types/schema';
 import { platformSubscriptionManager } from './platformSubscriptionManager';
+import { platformStudioService } from './platformStudioService';
 
 const API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_API_KEY) || 'AIzaSyBdN6SpgPVAVD6JPEHbnfa_I2wM6BEodhk';
 const AUTH_REST_URL = 'https://identitytoolkit.googleapis.com/v1';
@@ -42,8 +43,8 @@ export interface AddEmployeePayload {
   email: string;
   mobile: string;
   whatsapp?: string;
-  department: string;
-  designation: string;
+  department?: string;
+  designation?: string;
   roleId: string;
   roleName?: string;
   branchId?: string;
@@ -245,10 +246,15 @@ export class RealAccountProvisionService {
       throw new Error('Owner Phone Number is required.');
     }
 
-    // 2. Generate unique Studio ID
+    // 2. Generate or reuse unique Studio ID (handling retries and duplicate Gmail addresses safely)
+    const existingStudios = platformStudioService.listStudios();
+    const existingStudio = existingStudios.find(s => 
+      s.ownerEmail?.toLowerCase() === cleanEmail || (s as any).email?.toLowerCase() === cleanEmail
+    );
+
     const slug = studioName.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 16);
     const uniqueSuffix = Math.random().toString(36).slice(2, 6);
-    const studioId = `studio_${slug}_${uniqueSuffix}`;
+    const studioId = existingStudio ? existingStudio.id : `studio_${slug}_${uniqueSuffix}`;
     const ownerEmpId = `emp_owner_${studioId}`;
 
     // 3. Create real Firebase Authentication account for Studio Owner
@@ -354,43 +360,55 @@ export class RealAccountProvisionService {
       updatedAt: now.toISOString()
     };
 
-    // 7. Save Studio, Branch, and Employee in TenantStore and Firestore
+    // 7. Save Studio, Branch, and Employee in TenantStore
     TenantStore.set(studioId, 'profile', newStudio);
     TenantStore.set(studioId, 'branches', [defaultBranch]);
     TenantStore.set(studioId, 'employees', [ownerEmployee]);
 
-    // Save in Firestore asynchronously
+    // Register in platformStudioService meta immediately
+    try {
+      const meta = (platformStudioService as any).getStudiosMeta();
+      meta[studioId] = {
+        lifecycleStatus: 'active',
+        internalNotes: [`Provisioned by ${actingAdminName} on ${new Date().toLocaleDateString()}`]
+      };
+      (platformStudioService as any).saveStudiosMeta(meta);
+    } catch (e) {
+      console.warn('[RealAccountProvisionService] Meta save note:', e);
+    }
+
+    // Save in Firestore and verify writes
     const isTestRunner = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
     if (!isTestRunner) {
-      firestoreService.saveDocument(studioId, 'profile', studioId, newStudio).catch(() => {});
-      firestoreService.saveDocument(studioId, 'branches', defaultBranch.id, defaultBranch).catch(() => {});
-      firestoreService.saveDocument(studioId, 'employees', ownerEmployee.id, ownerEmployee).catch(() => {});
-
-      // Link owner Auth UID in Firestore users/{authUid}
-      firestoreService.saveDocument('platform_system', 'users', authUid, {
-        uid: authUid,
-        email: cleanEmail,
-        displayName: ownerName,
-        role: 'studio_owner',
-        studioId,
-        studioName,
-        status: 'pending_activation',
-        mustChangePassword: true,
-        setupToken,
-        setupTokenExpiry: expiry.toISOString(),
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString()
-      }, true).catch(() => {});
-
-      // Link owner membership in studios/{studioId}/members/{authUid}
-      firestoreService.saveDocument(studioId, 'members', authUid, {
-        uid: authUid,
-        email: cleanEmail,
-        displayName: ownerName,
-        role: 'owner',
-        status: 'pending_activation',
-        joinedAt: now.toISOString()
-      }, true).catch(() => {});
+      await Promise.allSettled([
+        firestoreService.saveDocument(studioId, 'profile', studioId, newStudio),
+        firestoreService.saveDocument(studioId, 'branches', defaultBranch.id, defaultBranch),
+        firestoreService.saveDocument(studioId, 'employees', ownerEmployee.id, ownerEmployee),
+        firestoreService.saveDocument('platform_system', 'users', authUid, {
+          uid: authUid,
+          email: cleanEmail,
+          displayName: ownerName,
+          role: 'studio_owner',
+          accountType: 'STUDIO_OWNER',
+          studioId,
+          studioName,
+          phone: mobile,
+          status: 'pending_activation',
+          mustChangePassword: true,
+          setupToken,
+          setupTokenExpiry: expiry.toISOString(),
+          createdAt: now.toISOString(),
+          updatedAt: now.toISOString()
+        }, true),
+        firestoreService.saveDocument(studioId, 'members', authUid, {
+          uid: authUid,
+          email: cleanEmail,
+          displayName: ownerName,
+          role: 'owner',
+          status: 'pending_activation',
+          joinedAt: now.toISOString()
+        }, true)
+      ]);
     }
 
     // 8. Register in Unified Auth Service with mustChangePassword = true
@@ -405,11 +423,13 @@ export class RealAccountProvisionService {
       temporaryPassword: initialTempPassword
     });
 
-    // Mark mustChangePassword = true in unifiedAuthService
+    // Mark mustChangePassword = true and pending_activation in unifiedAuthService
     const storedAccount = unifiedAuthService.findAccountByIdentifier(cleanEmail);
     if (storedAccount) {
       storedAccount.mustChangePassword = true;
+      storedAccount.status = 'pending_activation' as any;
       (storedAccount as any).accountStatus = 'pending_activation';
+      unifiedAuthService.saveAccount(storedAccount);
     }
 
     // 9. Save Token Record
@@ -439,13 +459,16 @@ export class RealAccountProvisionService {
       emailStatus = 'pending';
     }
 
-    // 11. Register Subscription & Meta
-    platformSubscriptionManager.createSubscription({
-      studioId,
-      studioName,
-      planId: payload.subscriptionPlan || 'plan_standard_500',
-      isTrial: payload.subscriptionStatus !== 'active'
-    });
+    // 11. Register Subscription (only if not already created)
+    const existingSub = platformSubscriptionManager.getSubscription(studioId);
+    if (!existingSub) {
+      platformSubscriptionManager.createSubscription({
+        studioId,
+        studioName,
+        planId: payload.subscriptionPlan || 'plan_standard_500',
+        isTrial: payload.subscriptionStatus !== 'active'
+      });
+    }
 
     // Log Audit
     platformAuditService.log({
@@ -476,8 +499,8 @@ export class RealAccountProvisionService {
     creatorName = 'Studio Owner'
   ): Promise<ProvisionEmployeeResult> {
     const cleanEmail = this.normalizeEmail(payload.email);
-    const fullName = payload.fullName.trim();
-    const mobile = payload.mobile.trim();
+    const fullName = (payload.fullName || (payload as any).name || '').trim();
+    const mobile = (payload.mobile || (payload as any).phone || '').trim();
 
     if (!this.isValidEmail(cleanEmail)) {
       throw new Error(`Invalid email address: "${payload.email}". Please provide a valid email.`);
@@ -769,9 +792,14 @@ export class RealAccountProvisionService {
     const storedAccount = unifiedAuthService.findAccountByIdentifier(cleanEmail);
     if (storedAccount) {
       unifiedAuthService.changePassword(storedAccount.id, newPasswordPlain);
-      storedAccount.mustChangePassword = false;
-      (storedAccount as any).accountStatus = 'active';
-      (storedAccount as any).activatedAt = now;
+      const freshlyUpdated = unifiedAuthService.getAccount(storedAccount.id);
+      if (freshlyUpdated) {
+        freshlyUpdated.mustChangePassword = false;
+        freshlyUpdated.status = 'active';
+        (freshlyUpdated as any).accountStatus = 'active';
+        (freshlyUpdated as any).activatedAt = now;
+        unifiedAuthService.saveAccount(freshlyUpdated);
+      }
     }
 
     // 3. Update Studio record in TenantStore

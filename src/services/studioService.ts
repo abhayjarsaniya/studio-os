@@ -1,5 +1,6 @@
 import { Studio, StudioSchema, StudioSettings } from '../types/schema';
 import { TenantStore } from './tenantStore';
+import { firestoreService } from './firestoreService';
 import { studioA, studioB } from '../data/multiTenantDemoData';
 
 export const shreejiStudio: Studio = {
@@ -108,6 +109,15 @@ export const studioService = {
     };
     StudioSchema.parse(updated);
     TenantStore.set(studioId, 'profile', updated);
+
+    // Persist to Cloud Firestore
+    const isTestRunner = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+    if (!isTestRunner) {
+      firestoreService.saveDocument(studioId, 'profile', studioId, updated).catch(err => {
+        console.warn('[studioService.updateStudio] Firestore sync notice:', err);
+      });
+    }
+
     return updated;
   },
 

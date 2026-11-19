@@ -11,6 +11,9 @@ import {
 import { auth, isAuthBypassed } from '../lib/firebase';
 import { firestoreService } from './firestoreService';
 import { unifiedAuthService, UserAccount, UserSession } from './unifiedAuthService';
+import { platformStudioService } from './platformStudioService';
+import { TenantStore } from './tenantStore';
+import { Employee } from '../types/schema';
 
 export interface AuthResult {
   success: boolean;
@@ -52,39 +55,158 @@ export class FirebaseAuthService {
     let targetEmail = cleanEmail;
     let localAccount: UserAccount | null = null;
 
-    // Check account directory in unifiedAuthService / Firestore
+    // Check account directory in unifiedAuthService
     localAccount = unifiedAuthService.findAccountByIdentifier(cleanEmail);
+
+    // If not found in unifiedAuthService, resolve from platform studios registry
+    if (!localAccount) {
+      try {
+        const allStudios = platformStudioService.listStudios();
+        const matchedStudio = allStudios.find(s => 
+          s.ownerEmail?.toLowerCase() === cleanEmail || (s as any).email?.toLowerCase() === cleanEmail
+        );
+        if (matchedStudio) {
+          const ownerEmp = (TenantStore.get<Employee>(matchedStudio.id, 'employees') || []).find(e => 
+            e.roleId === 'owner' || e.roleIds?.includes('owner') || e.email?.toLowerCase() === cleanEmail
+          );
+          unifiedAuthService.provisionStudioOwner({
+            authUid: (matchedStudio as any).ownerAuthUid,
+            studioId: matchedStudio.id,
+            studioName: matchedStudio.name,
+            ownerName: matchedStudio.ownerName || ownerEmp?.name || 'Studio Owner',
+            email: cleanEmail,
+            mobile: matchedStudio.phone || ownerEmp?.phone || '',
+            username: cleanEmail,
+            temporaryPassword: (matchedStudio as any).setupToken || 'Owner#Init2026'
+          });
+          localAccount = unifiedAuthService.findAccountByIdentifier(cleanEmail);
+        } else {
+          // Check if employee in any studio
+          for (const st of allStudios) {
+            const employees = TenantStore.get<Employee>(st.id, 'employees') || [];
+            const emp = employees.find(e => e.email?.toLowerCase() === cleanEmail);
+            if (emp) {
+              unifiedAuthService.provisionEmployee({
+                studioId: st.id,
+                studioName: st.name,
+                employeeName: emp.name || emp.fullName,
+                employeeId: emp.id,
+                email: cleanEmail,
+                mobile: emp.phone || '',
+                username: cleanEmail,
+                roleId: emp.roleId || 'crew',
+                roleTitle: emp.roleName || emp.designation || 'Crew Member'
+              });
+              localAccount = unifiedAuthService.findAccountByIdentifier(cleanEmail);
+              break;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[FirebaseAuthService] Directory resolution notice:', err);
+      }
+    }
+
     if (localAccount) {
       targetEmail = localAccount.email;
     }
 
     // Attempt Firebase Authentication with real backend
     let firebaseUser: FirebaseUser | undefined = undefined;
+    let firebaseErrorCode = '';
     if (auth && !isAuthBypassed) {
       try {
         const cred = await signInWithEmailAndPassword(auth, targetEmail, passwordPlain);
         firebaseUser = cred.user;
+        // Synchronize local credentials if Firebase Auth succeeded
+        if (localAccount) {
+          try {
+            unifiedAuthService.changePassword(localAccount.id, passwordPlain);
+          } catch {}
+        }
       } catch (authError: any) {
-        console.warn('[FirebaseAuthService] Direct Firebase Auth note:', authError.code || authError.message);
+        firebaseErrorCode = authError.code || '';
+        console.warn('[FirebaseAuthService] Direct Firebase Auth note:', firebaseErrorCode || authError.message);
       }
     }
 
-    // Validate credentials through unifiedAuthService
-    let authRes;
+    // Validate credentials safely by recognized account role
+    let authRes: { success: boolean; session?: UserSession; error?: string };
+
     if (expectedRole === 'MASTER_ADMIN') {
       authRes = unifiedAuthService.loginMasterAdmin(cleanEmail, passwordPlain);
     } else if (expectedRole === 'STUDIO_OWNER') {
-      authRes = unifiedAuthService.loginStudioOwner(cleanEmail, passwordPlain);
+      authRes = unifiedAuthService.loginStudioOwner(cleanEmail, passwordPlain, localAccount?.studioId);
     } else if (expectedRole === 'EMPLOYEE') {
-      authRes = unifiedAuthService.loginEmployee(cleanEmail, passwordPlain);
-    } else {
-      // General login fallback in role priority
-      authRes = unifiedAuthService.loginStudioOwner(cleanEmail, passwordPlain);
-      if (!authRes.success) {
-        authRes = unifiedAuthService.loginEmployee(cleanEmail, passwordPlain);
-      }
-      if (!authRes.success) {
+      authRes = unifiedAuthService.loginEmployee(cleanEmail, passwordPlain, localAccount?.studioId);
+    } else if (localAccount) {
+      // Role is known from account record — NEVER show Master Admin error for Studio Owner / Employee
+      if (localAccount.accountType === 'MASTER_ADMIN') {
         authRes = unifiedAuthService.loginMasterAdmin(cleanEmail, passwordPlain);
+      } else if (localAccount.accountType === 'STUDIO_OWNER') {
+        const studio = localAccount.studioId ? (TenantStore.get(localAccount.studioId, 'profile') as any) : null;
+        const isPending = (localAccount as any).accountStatus === 'pending_activation' || 
+          (localAccount.status as string) === 'pending_activation' || 
+          (studio && studio.accountStatus === 'pending_activation');
+        if (isPending && !firebaseUser) {
+          return {
+            success: false,
+            error: 'Account is pending activation. Please use the password setup link sent to your Gmail address.'
+          };
+        }
+        authRes = unifiedAuthService.loginStudioOwner(cleanEmail, passwordPlain, localAccount.studioId);
+        if (!authRes.success && !firebaseUser) {
+          return {
+            success: false,
+            error: authRes.error?.includes('pending_activation')
+              ? 'Account is pending activation. Please use the password setup link sent to your Gmail address.'
+              : 'Invalid email or password. Please verify your credentials and try again.'
+          };
+        }
+      } else if (localAccount.accountType === 'EMPLOYEE') {
+        if ((localAccount as any).accountStatus === 'pending_activation' && !firebaseUser) {
+          return {
+            success: false,
+            error: 'Account is pending activation. Please use the setup link to activate your account.'
+          };
+        }
+        authRes = unifiedAuthService.loginEmployee(cleanEmail, passwordPlain, localAccount.studioId);
+        if (!authRes.success && !firebaseUser) {
+          return {
+            success: false,
+            error: 'Invalid email or password. Please verify your credentials and try again.'
+          };
+        }
+      } else {
+        authRes = { success: false, error: 'Invalid email or password. Please verify your credentials and try again.' };
+      }
+    } else {
+      // Account not found in local directories
+      if (firebaseUser) {
+        // Firebase Auth user exists; create session
+        authRes = unifiedAuthService.login(cleanEmail, passwordPlain);
+      } else {
+        // Return accurate error message without revealing internal Master Admin info
+        if (firebaseErrorCode === 'auth/user-not-found') {
+          return {
+            success: false,
+            error: 'No account registered with this email address. Please contact your studio administrator.'
+          };
+        } else if (firebaseErrorCode === 'auth/user-disabled') {
+          return {
+            success: false,
+            error: 'This account has been disabled. Please contact platform support.'
+          };
+        } else if (firebaseErrorCode === 'auth/too-many-requests') {
+          return {
+            success: false,
+            error: 'Too many failed login attempts. Please wait a few minutes or reset your password.'
+          };
+        }
+        return {
+          success: false,
+          error: 'Invalid email or password. Please verify your credentials and try again.'
+        };
       }
     }
 

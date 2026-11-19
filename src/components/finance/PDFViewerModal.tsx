@@ -35,15 +35,9 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
   };
 
   const handleDownload = () => {
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${activePayload.title.replace(/\s+/g, '_')}_${activePayload.documentNumber || 'doc'}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const cleanDocNum = activePayload.documentNumber || 'doc';
+    const filename = `${activePayload.documentType === 'quotation' ? 'Quotation' : activePayload.title.replace(/\s+/g, '_')}_${cleanDocNum}.pdf`;
+    pdfGeneratorService.downloadPDF(activePayload, filename);
   };
 
   return (

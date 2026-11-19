@@ -200,8 +200,15 @@ export const CreateQuotationPage: React.FC = () => {
       quote = handleSaveQuotation('Draft');
     }
     if (quote) {
-      const payload = pdfGeneratorService.createQuotationPayload(quote);
-      pdfGeneratorService.printDocument(payload);
+      const payload = pdfGeneratorService.createQuotationPayload(quote, {
+        legalName: currentStudio.name,
+        businessAddress: `${currentStudio.address || ''}, ${currentStudio.city || ''}`,
+        supportPhone: currentStudio.phone,
+        supportEmail: currentStudio.email,
+        gstin: currentStudio.gstNumber
+      });
+      const filename = `Quotation_${quote.quotationNumber || quote.id}.pdf`;
+      pdfGeneratorService.downloadPDF(payload, filename);
     }
   };
 

@@ -1,3 +1,4 @@
+import { jsPDF } from 'jspdf';
 import { financialSettingsService } from './financialSettingsService';
 import { Quotation, Invoice, Payment, Refund, CreditNote, Expense, FinancialSettings } from '../types/schema';
 
@@ -21,7 +22,10 @@ export interface PDFGenerationPayload {
   documentNumber?: string;
   date?: string;
   dueDate?: string;
-  studioSettings?: Partial<FinancialSettings>;
+  studioSettings?: Partial<FinancialSettings> & {
+    supportPhone?: string;
+    supportEmail?: string;
+  };
   customer?: {
     name: string;
     phone?: string;
@@ -418,8 +422,356 @@ export class PDFGeneratorService {
     }
   }
 
+  // Format currency in Indian comma numbering
+  formatCurrency(amount: number): string {
+    const num = Math.round(amount || 0);
+    return num.toLocaleString('en-IN');
+  }
+
+  // Generate genuine binary PDF document via jsPDF
+  generateDocumentPDF(payload: PDFGenerationPayload): jsPDF {
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const s = payload.studioSettings || {};
+    const studioName = s.legalName || 'SHREEJI FILMS AND PHOTOGRAPHY';
+    const studioAddr = s.businessAddress || '301, Titanium One, SG Highway, Bodakdev, Ahmedabad - 380054';
+    const studioPhone = s.supportPhone || '+91 98250 12345';
+    const studioEmail = s.supportEmail || 'aarav@shreejifilms.in';
+    const gstin = s.gstin ? `GSTIN: ${s.gstin}` : '';
+    const pan = s.pan ? `PAN: ${s.pan}` : '';
+    const docTitle = (payload.title || 'QUOTATION / PROPOSAL').toUpperCase();
+    const docNum = payload.documentNumber || 'QT-2026-001';
+    const docDate = payload.date || new Date().toISOString().split('T')[0];
+    const dueDate = payload.dueDate || '';
+
+    let y = 18;
+    const leftMargin = 15;
+    const pageWidth = 210;
+    const rightMargin = 15;
+    const contentWidth = pageWidth - leftMargin - rightMargin; // 180mm
+
+    // 1. Studio Header (Left)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(24, 24, 27); // zinc-900
+    doc.text(studioName, leftMargin, y);
+
+    // Document Title & Number Badge (Right)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(249, 115, 22); // Orange / Amber
+    doc.text(docTitle, pageWidth - rightMargin, y, { align: 'right' });
+
+    y += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(113, 113, 122); // zinc-500
+    doc.text(`Doc #: ${docNum}`, pageWidth - rightMargin, y, { align: 'right' });
+
+    y += 4;
+    doc.text(`Date: ${docDate}`, pageWidth - rightMargin, y, { align: 'right' });
+    if (dueDate) {
+      y += 4;
+      doc.text(`Valid Until: ${dueDate}`, pageWidth - rightMargin, y, { align: 'right' });
+    }
+
+    // Studio details on left
+    let studioInfoY = 24;
+    doc.setFontSize(8);
+    doc.setTextColor(82, 82, 91); // zinc-600
+    if (studioAddr) {
+      const splitAddr = doc.splitTextToSize(studioAddr, 100);
+      doc.text(splitAddr, leftMargin, studioInfoY);
+      studioInfoY += splitAddr.length * 3.5;
+    }
+    const contactLine = [studioPhone, studioEmail].filter(Boolean).join(' | ');
+    if (contactLine) {
+      doc.text(contactLine, leftMargin, studioInfoY);
+      studioInfoY += 3.5;
+    }
+    const taxLine = [gstin, pan].filter(Boolean).join('  ');
+    if (taxLine) {
+      doc.text(taxLine, leftMargin, studioInfoY);
+      studioInfoY += 3.5;
+    }
+
+    y = Math.max(y + 6, studioInfoY + 4);
+
+    // Decorative Separator Line
+    doc.setDrawColor(249, 115, 22); // Orange accent
+    doc.setLineWidth(0.8);
+    doc.line(leftMargin, y, pageWidth - rightMargin, y);
+    y += 6;
+
+    // 2. Client & Event Info Box (Two column card)
+    doc.setFillColor(248, 250, 252); // slate-50
+    doc.setDrawColor(228, 228, 231); // zinc-200
+    doc.setLineWidth(0.3);
+    const infoBoxHeight = 30;
+    doc.roundedRect(leftMargin, y, contentWidth, infoBoxHeight, 2, 2, 'FD');
+
+    // Left Column: PREPARED FOR
+    const col1X = leftMargin + 4;
+    let col1Y = y + 5;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(161, 161, 170); // zinc-400
+    doc.text('CLIENT DETAILS', col1X, col1Y);
+    col1Y += 4.5;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(24, 24, 27);
+    doc.text(payload.customer?.name || 'Valued Client', col1X, col1Y);
+    col1Y += 4;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(82, 82, 91);
+    if (payload.customer?.phone) {
+      doc.text(`Phone: ${payload.customer.phone}`, col1X, col1Y);
+      col1Y += 3.5;
+    }
+    if (payload.customer?.email) {
+      doc.text(`Email: ${payload.customer.email}`, col1X, col1Y);
+      col1Y += 3.5;
+    }
+    if (payload.customer?.address) {
+      const splitCustAddr = doc.splitTextToSize(payload.customer.address, 80);
+      doc.text(splitCustAddr[0], col1X, col1Y);
+    }
+
+    // Right Column: EVENT DETAILS
+    const col2X = leftMargin + (contentWidth / 2) + 4;
+    let col2Y = y + 5;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(161, 161, 170);
+    doc.text('EVENT INFORMATION', col2X, col2Y);
+    col2Y += 4.5;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(24, 24, 27);
+    doc.text(payload.event?.name || 'Wedding Photography', col2X, col2Y);
+    col2Y += 4;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(82, 82, 91);
+    if (payload.event?.category) {
+      doc.text(`Category: ${payload.event.category}`, col2X, col2Y);
+      col2Y += 3.5;
+    }
+    if (payload.event?.date) {
+      doc.text(`Event Date: ${payload.event.date}`, col2X, col2Y);
+      col2Y += 3.5;
+    }
+    if (payload.event?.venue) {
+      const splitVenue = doc.splitTextToSize(`Venue: ${payload.event.venue}`, 80);
+      doc.text(splitVenue[0], col2X, col2Y);
+    }
+
+    y += infoBoxHeight + 6;
+
+    // 3. Table Header
+    const drawTableHeader = (currentY: number) => {
+      doc.setFillColor(24, 24, 27); // zinc-900
+      doc.rect(leftMargin, currentY, contentWidth, 7, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(255, 255, 255);
+      doc.text('#', leftMargin + 3, currentY + 4.8);
+      doc.text('SERVICE / DELIVERABLE', leftMargin + 12, currentY + 4.8);
+      doc.text('QTY', leftMargin + 110, currentY + 4.8, { align: 'center' });
+      doc.text('RATE (INR)', leftMargin + 145, currentY + 4.8, { align: 'right' });
+      doc.text('AMOUNT (INR)', leftMargin + contentWidth - 4, currentY + 4.8, { align: 'right' });
+      return currentY + 7;
+    };
+
+    y = drawTableHeader(y);
+
+    // 4. Item Rows
+    const items = payload.items || [];
+    items.forEach((item, index) => {
+      // Calculate row height based on description wrapping
+      const descLines = item.description ? doc.splitTextToSize(item.description, 92) : [];
+      const rowHeight = Math.max(8, 5 + descLines.length * 3.5);
+
+      // Check for page overflow
+      if (y + rowHeight > 270) {
+        doc.addPage();
+        y = 20;
+        y = drawTableHeader(y);
+      }
+
+      // Alternating row background
+      if (index % 2 === 1) {
+        doc.setFillColor(250, 250, 250);
+        doc.rect(leftMargin, y, contentWidth, rowHeight, 'F');
+      }
+
+      // Bottom border for row
+      doc.setDrawColor(244, 244, 245);
+      doc.setLineWidth(0.2);
+      doc.line(leftMargin, y + rowHeight, leftMargin + contentWidth, y + rowHeight);
+
+      // Row content
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(82, 82, 91);
+      doc.text(`${index + 1}`, leftMargin + 3, y + 4.5);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(24, 24, 27);
+      doc.text(item.name, leftMargin + 12, y + 4.5);
+
+      if (descLines.length > 0) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(113, 113, 122);
+        doc.text(descLines, leftMargin + 12, y + 8);
+      }
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(24, 24, 27);
+      doc.text(`${item.quantity}`, leftMargin + 110, y + 4.5, { align: 'center' });
+      doc.text(`Rs. ${this.formatCurrency(item.unitPrice)}`, leftMargin + 145, y + 4.5, { align: 'right' });
+
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Rs. ${this.formatCurrency(item.amount)}`, leftMargin + contentWidth - 4, y + 4.5, { align: 'right' });
+
+      y += rowHeight;
+    });
+
+    y += 4;
+
+    // Check if summary box fits on page, else add page
+    if (y + 55 > 270) {
+      doc.addPage();
+      y = 20;
+    }
+
+    // 5. Summary / Financial Totals (Right side)
+    const summaryWidth = 85;
+    const summaryX = leftMargin + contentWidth - summaryWidth;
+    const fin = payload.financials || { subtotal: 0, totalAmount: 0 };
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(82, 82, 91);
+
+    // Subtotal
+    doc.text('Subtotal:', summaryX + 4, y + 4);
+    doc.text(`Rs. ${this.formatCurrency(fin.subtotal)}`, leftMargin + contentWidth - 4, y + 4, { align: 'right' });
+    y += 5.5;
+
+    // Discount if any
+    if (fin.discountAmount && fin.discountAmount > 0) {
+      doc.setTextColor(225, 29, 72); // rose-600
+      doc.text('Discount / Concession:', summaryX + 4, y + 4);
+      doc.text(`- Rs. ${this.formatCurrency(fin.discountAmount)}`, leftMargin + contentWidth - 4, y + 4, { align: 'right' });
+      y += 5.5;
+    }
+
+    // Tax / GST if applicable
+    if (fin.taxAmount && fin.taxAmount > 0) {
+      doc.setTextColor(82, 82, 91);
+      doc.text('GST / Tax (18%):', summaryX + 4, y + 4);
+      doc.text(`Rs. ${this.formatCurrency(fin.taxAmount)}`, leftMargin + contentWidth - 4, y + 4, { align: 'right' });
+      y += 5.5;
+    }
+
+    // Total Box
+    y += 2;
+    doc.setFillColor(24, 24, 27); // zinc-900
+    doc.roundedRect(summaryX, y, summaryWidth, 9, 1.5, 1.5, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(255, 255, 255);
+    doc.text('TOTAL INVESTMENT:', summaryX + 4, y + 6);
+    doc.text(`Rs. ${this.formatCurrency(fin.totalAmount)}`, leftMargin + contentWidth - 4, y + 6, { align: 'right' });
+
+    y += 13;
+
+    // 6. Terms and Payment Notes (Left Box)
+    const terms = payload.terms || '1. 25% advance to confirm booking.\n2. Balance payable upon delivery handover.\n3. Turnaround time: 3-4 weeks for edited deliverables.';
+    const termsLines = doc.splitTextToSize(terms, contentWidth);
+
+    if (y + (termsLines.length * 3.5) + 20 > 275) {
+      doc.addPage();
+      y = 20;
+    }
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(24, 24, 27);
+    doc.text('TERMS & CONDITIONS', leftMargin, y);
+    y += 4;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(113, 113, 122);
+    doc.text(termsLines, leftMargin, y);
+    y += (termsLines.length * 3.5) + 8;
+
+    // Signatory
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(82, 82, 91);
+    doc.text('Authorized Signatory', pageWidth - rightMargin - 40, y);
+    doc.setDrawColor(200, 200, 200);
+    doc.line(pageWidth - rightMargin - 45, y + 6, pageWidth - rightMargin, y + 6);
+
+    // 7. Footer on all pages
+    const pageCount = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(161, 161, 170);
+      doc.text(
+        `Generated by Studio OS — Photography Studio Management System | Page ${i} of ${pageCount}`,
+        pageWidth / 2,
+        290,
+        { align: 'center' }
+      );
+    }
+
+    return doc;
+  }
+
+  // Trigger browser download of genuine PDF
+  downloadPDF(payload: PDFGenerationPayload, filename?: string): void {
+    const doc = this.generateDocumentPDF(payload);
+    const cleanDocNum = payload.documentNumber || 'DOC';
+    const cleanFilename = filename || (
+      payload.documentType === 'quotation'
+        ? `Quotation_${cleanDocNum}.pdf`
+        : `${payload.title.replace(/\s+/g, '_')}_${cleanDocNum}.pdf`
+    );
+
+    if (typeof window !== 'undefined') {
+      doc.save(cleanFilename);
+    }
+  }
+
+  // Output as standard Blob
+  getPDFBlob(payload: PDFGenerationPayload): Blob {
+    const doc = this.generateDocumentPDF(payload);
+    return doc.output('blob');
+  }
+
   // Generate Quotation PDF payload
-  createQuotationPayload(quotation: Quotation, studioSettings?: Partial<FinancialSettings>): PDFGenerationPayload {
+  createQuotationPayload(
+    quotation: Quotation, 
+    studioSettings?: Partial<FinancialSettings> & { supportPhone?: string; supportEmail?: string }
+  ): PDFGenerationPayload {
     return {
       documentType: 'quotation',
       title: 'Quotation / Estimate',
