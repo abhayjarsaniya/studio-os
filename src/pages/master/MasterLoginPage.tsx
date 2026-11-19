@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useMasterAdmin } from '../../context/MasterAdminContext';
 import { unifiedAuthService } from '../../services/unifiedAuthService';
+import { firebaseAuthService } from '../../services/firebaseAuthService';
 import { Crown, Lock, Mail, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { ForgotPasswordModal } from '../../components/auth/ForgotPasswordModal';
 
@@ -20,10 +21,16 @@ export const MasterLoginPage: React.FC = () => {
     confirmPass: string;
   } | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const res = unifiedAuthService.loginMasterAdmin(email, password);
+    let res = await firebaseAuthService.login(email, password, 'MASTER_ADMIN');
+    if (!res.success) {
+      const fallback = unifiedAuthService.loginMasterAdmin(email, password);
+      if (fallback.success && fallback.session) {
+        res = { success: true, session: fallback.session, account: fallback.session.account as any };
+      }
+    }
     if (res.success && res.session) {
       localStorage.setItem('studio_os_master_token', res.session.token);
       localStorage.setItem('studio_os_session_token', res.session.token);

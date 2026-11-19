@@ -28,7 +28,7 @@ export const StudioLoginPage: React.FC = () => {
 
     try {
       const cleanEmail = identifier.trim().toLowerCase();
-      // Authenticate via firebaseAuthService with unifiedAuthService.login verification
+      // Authenticate via real FirebaseAuthService
       let res = await firebaseAuthService.login(cleanEmail, password);
       if (!res.success) {
         const fallback = unifiedAuthService.login(cleanEmail, password);
@@ -61,14 +61,20 @@ export const StudioLoginPage: React.FC = () => {
           setChangePassModal({
             isOpen: true,
             accountId: account.id,
-            targetRoute: (res.session as any)?.targetRoute || '#/app/dashboard',
+            targetRoute: (res as any)?.targetRoute || (res.session as any)?.targetRoute || '#/app/dashboard',
             newPass: '',
             confirmPass: ''
           });
           return;
         }
 
-        window.location.hash = (res.session as any)?.targetRoute || (account.accountType === 'MASTER_ADMIN' ? '#/master/dashboard' : '#/app/dashboard');
+        // Trigger context refresh
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('studio_data_updated'));
+        }
+
+        const targetRoute = (res as any)?.targetRoute || (res.session as any)?.targetRoute || (account.accountType === 'MASTER_ADMIN' ? '#/master/dashboard' : '#/app/dashboard');
+        window.location.hash = targetRoute;
       } else {
         setError(res.error || 'Invalid email or password.');
       }

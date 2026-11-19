@@ -68,10 +68,50 @@ export class FirestoreService {
 
   // Path Resolution Helper (Multi-Tenant Architecture)
   getCollectionPath(studioId: string, collectionName: string): string {
-    if (!studioId || studioId === 'platform_system' || studioId === 'platform') {
+    if (collectionName === 'users' || studioId === 'users') {
+      return 'users';
+    }
+    if ((collectionName === 'studios' || studioId === 'studios') && (!studioId || studioId === 'studios' || studioId === 'root')) {
+      return 'studios';
+    }
+    if (collectionName === 'studioDirectory' || studioId === 'studioDirectory') {
+      return 'studioDirectory';
+    }
+    if (collectionName === 'masterAdmins' || studioId === 'masterAdmins') {
+      return 'masterAdmins';
+    }
+    if (!studioId || studioId === 'platform_system' || studioId === 'platform' || studioId === 'root') {
       return `platform/${collectionName}/items`;
     }
     return `studios/${studioId}/${collectionName}`;
+  }
+
+  // Save Document to a Root Collection directly (e.g. users/{uid}, studios/{studioId})
+  async saveRootDocument<T extends Record<string, any>>(
+    collectionName: string,
+    docId: string,
+    data: T,
+    merge: boolean = true
+  ): Promise<{ success: boolean; error?: string }> {
+    if (!db) {
+      return { success: false, error: 'Firestore not initialized' };
+    }
+
+    try {
+      const cleanData = JSON.parse(JSON.stringify(data));
+      const docRef = doc(db, collectionName, docId);
+      const payload = {
+        ...cleanData,
+        id: docId,
+        _updatedAt: serverTimestamp(),
+        _clientTimestamp: new Date().toISOString()
+      };
+      await setDoc(docRef, payload, { merge });
+      return { success: true };
+    } catch (error: any) {
+      console.warn(`[FirestoreService.saveRootDocument] Error writing to ${collectionName}/${docId}:`, error);
+      return { success: false, error: error.message };
+    }
   }
 
   // Save a Single Document (Auto-Save Engine)
