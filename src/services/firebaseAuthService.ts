@@ -9,7 +9,7 @@ import {
   User as FirebaseUser
 } from 'firebase/auth';
 import { auth, db, isAuthBypassed } from '../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { firestoreService } from './firestoreService';
 import { unifiedAuthService, UserAccount, UserSession } from './unifiedAuthService';
 import { platformStudioService } from './platformStudioService';
@@ -105,11 +105,35 @@ export class FirebaseAuthService {
               error: 'This account has been disabled. Please contact platform support.'
             };
           }
+          // If user successfully authenticated with Firebase Auth but profile was pending activation,
+          // activate it immediately since they possess valid credentials.
           if (profile.status === 'pending_activation') {
-            return {
-              success: false,
-              error: 'Account is pending activation. Please use the password setup link sent to your email.'
-            };
+            profile.status = 'active';
+            profile.mustChangePassword = false;
+            try {
+              const nowIso = new Date().toISOString();
+              await updateDoc(doc(db, 'users', authUid), {
+                status: 'active',
+                accountStatus: 'active',
+                mustChangePassword: false,
+                isActive: true,
+                activatedAt: nowIso,
+                updatedAt: nowIso
+              });
+              if (profile.studioId) {
+                await updateDoc(doc(db, 'studios', profile.studioId), {
+                  accountStatus: 'active',
+                  updatedAt: nowIso
+                }).catch(() => {});
+                await updateDoc(doc(db, 'studios', profile.studioId, 'members', authUid), {
+                  status: 'active',
+                  isActive: true,
+                  updatedAt: nowIso
+                }).catch(() => {});
+              }
+            } catch (actErr: any) {
+              console.warn('[FirebaseAuth] Auto-activation notice:', actErr?.message);
+            }
           }
 
           // Role & routing resolution
@@ -314,8 +338,16 @@ export class FirebaseAuthService {
 
     // Attempt Firebase Authentication sendPasswordResetEmail
     if (auth && !isAuthBypassed) {
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://studio-os-lemon-nine.vercel.app';
       try {
-        await sendPasswordResetEmail(auth, email);
+        try {
+          await sendPasswordResetEmail(auth, email, {
+            url: `${baseUrl}/#/setup-password`,
+            handleCodeInApp: true
+          });
+        } catch {
+          await sendPasswordResetEmail(auth, email);
+        }
         return {
           success: true,
           message: `Password reset link sent to ${email}. Please check your inbox and follow the instructions.`

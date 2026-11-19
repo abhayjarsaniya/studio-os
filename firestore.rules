@@ -17,7 +17,7 @@ service cloud.firestore {
       return isAuthenticated() && (
         exists(/databases/$(database)/documents/masterAdmins/$(request.auth.uid)) ||
         exists(/databases/$(database)/documents/platform/admins/$(request.auth.uid)) ||
-        request.auth.token.email in ['admin@studio-os.com', 'masteradmin@studioos.internal']
+        request.auth.token.email in ['admin@studio-os.com', 'masteradmin@studioos.internal', 'jarsaniya.abhay@gmail.com', 'abhayjarsaniya@gmail.com']
       );
     }
 
@@ -97,6 +97,11 @@ service cloud.firestore {
     match /platformAuditLogs/{logId} {
       allow read: if isPlatformAdmin();
       allow write: if isPlatformAdmin();
+    }
+
+    match /setupTokens/{tokenId} {
+      allow read: if true;
+      allow write: if isPlatformAdmin() || (isAuthenticated() && request.auth.uid != null);
     }
 
     match /platformNotifications/{notifId} {

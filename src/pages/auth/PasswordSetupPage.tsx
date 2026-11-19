@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { auth, db, isAuthBypassed } from '../../lib/firebase';
+import { verifyPasswordResetCode, confirmPasswordReset } from 'firebase/auth';
+import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { realAccountProvisionService, SetupTokenRecord } from '../../services/realAccountProvisionService';
+import { unifiedAuthService } from '../../services/unifiedAuthService';
 import { Camera, Lock, Eye, EyeOff, CheckCircle2, AlertCircle, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 
 export const PasswordSetupPage: React.FC = () => {
   const [token, setToken] = useState<string>('');
+  const [oobCode, setOobCode] = useState<string>('');
   const [emailParam, setEmailParam] = useState<string>('');
   const [tokenRecord, setTokenRecord] = useState<SetupTokenRecord | null>(null);
   const [tokenError, setTokenError] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState<boolean>(true);
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -15,47 +21,118 @@ export const PasswordSetupPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Parse token and email from window.location.hash or query params
+  // Parse token / oobCode and email from window.location.hash or search params
   useEffect(() => {
-    const parseUrl = () => {
+    let isMounted = true;
+
+    const parseAndVerify = async () => {
+      setVerifying(true);
+      setTokenError(null);
+
       let rawQuery = '';
-      if (window.location.hash.includes('?')) {
-        rawQuery = window.location.hash.split('?')[1];
-      } else if (window.location.search) {
-        rawQuery = window.location.search.substring(1);
+      if (typeof window !== 'undefined') {
+        if (window.location.hash.includes('?')) {
+          rawQuery = window.location.hash.split('?')[1];
+        } else if (window.location.search) {
+          rawQuery = window.location.search.substring(1);
+        }
       }
 
       const params = new URLSearchParams(rawQuery);
-      const parsedToken = params.get('token') || params.get('oobCode') || '';
-      const parsedEmail = params.get('email') || '';
+      const parsedOobCode = params.get('oobCode') || '';
+      const parsedToken = params.get('token') || '';
+      const parsedEmail = (params.get('email') || '').trim().toLowerCase();
 
+      setOobCode(parsedOobCode);
       setToken(parsedToken);
       setEmailParam(parsedEmail);
 
-      if (!parsedToken) {
-        setTokenError('Activation link is incomplete or missing a valid token. Please check your invitation email.');
+      // 1. Firebase Auth Action Code (oobCode)
+      if (parsedOobCode && auth && !isAuthBypassed) {
+        try {
+          const verifiedEmail = await verifyPasswordResetCode(auth, parsedOobCode);
+          if (!isMounted) return;
+          const cleanEmail = verifiedEmail.trim().toLowerCase();
+          setEmailParam(cleanEmail);
+
+          // Find associated user record in Firestore to populate studio info
+          let userDocData: any = null;
+          if (db) {
+            try {
+              const usersRef = collection(db, 'users');
+              const q = query(usersRef, where('email', '==', cleanEmail));
+              const snap = await getDocs(q);
+              if (!snap.empty) {
+                userDocData = { id: snap.docs[0].id, ...snap.docs[0].data() };
+              }
+            } catch (fsErr) {
+              console.warn('[PasswordSetupPage] Firestore lookup notice:', fsErr);
+            }
+          }
+
+          setTokenRecord({
+            token: parsedOobCode,
+            email: cleanEmail,
+            role: userDocData?.role || 'studio_owner',
+            studioId: userDocData?.studioId || '',
+            studioName: userDocData?.studioName || 'Studio OS',
+            displayName: userDocData?.displayName || cleanEmail,
+            authUid: userDocData?.uid || userDocData?.id || '',
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + 3600000).toISOString(),
+            used: false
+          });
+          setTokenError(null);
+        } catch (err: any) {
+          if (!isMounted) return;
+          const code = err.code || '';
+          if (code === 'auth/invalid-action-code') {
+            setTokenError('This password setup link is invalid or has already been used. Please request a new setup link.');
+          } else if (code === 'auth/expired-action-code') {
+            setTokenError('This password setup link has expired. Please request a new setup link from your studio administrator.');
+          } else {
+            setTokenError(err.message || 'Unable to verify setup link. Please contact support.');
+          }
+        } finally {
+          if (isMounted) setVerifying(false);
+        }
         return;
       }
 
-      const verifyRes = realAccountProvisionService.verifySetupToken(parsedToken, parsedEmail);
+      // 2. Direct Setup Token
+      const effectiveToken = parsedToken || parsedOobCode;
+      if (!effectiveToken) {
+        if (isMounted) {
+          setTokenError('Activation link is incomplete or missing a valid token. Please check your invitation email.');
+          setVerifying(false);
+        }
+        return;
+      }
+
+      const verifyRes = await realAccountProvisionService.verifySetupTokenAsync(effectiveToken, parsedEmail);
+      if (!isMounted) return;
+
       if (!verifyRes.valid || !verifyRes.record) {
         setTokenError(verifyRes.error || 'This setup link is invalid or has already been used.');
       } else {
         setTokenRecord(verifyRes.record);
         setTokenError(null);
       }
+      setVerifying(false);
     };
 
-    parseUrl();
-    window.addEventListener('hashchange', parseUrl);
-    return () => window.removeEventListener('hashchange', parseUrl);
+    parseAndVerify();
+    window.addEventListener('hashchange', parseAndVerify);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('hashchange', parseAndVerify);
+    };
   }, []);
 
   // Password Strength Indicators
   const hasMinLength = password.length >= 8;
   const hasNumber = /[0-9]/.test(password);
   const hasLetter = /[a-zA-Z]/.test(password);
-  const hasSpecial = /[^a-zA-Z0-9]/.test(password);
   const isMatch = password && password === confirmPassword;
   const isFormValid = hasMinLength && hasNumber && hasLetter && isMatch;
 
@@ -80,23 +157,92 @@ export const PasswordSetupPage: React.FC = () => {
 
     setLoading(true);
     try {
-      const email = tokenRecord?.email || emailParam;
-      const res = await realAccountProvisionService.completeInitialPasswordSetup(token, email, password);
+      const email = (tokenRecord?.email || emailParam).trim().toLowerCase();
 
-      if (res.success) {
+      // Case A: Confirm password reset directly using Firebase Auth Action Code
+      if (oobCode && auth && !isAuthBypassed) {
+        await confirmPasswordReset(auth, oobCode, password);
+        console.log(`[PasswordSetupPage] confirmPasswordReset succeeded for ${email}`);
+
+        // Update Firestore user record to active
+        if (db) {
+          try {
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, where('email', '==', email));
+            const snap = await getDocs(q);
+            for (const uDoc of snap.docs) {
+              const uData = uDoc.data();
+              await updateDoc(doc(db, 'users', uDoc.id), {
+                status: 'active',
+                accountStatus: 'active',
+                mustChangePassword: false,
+                isActive: true,
+                activatedAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              });
+
+              if (uData.studioId) {
+                try {
+                  await updateDoc(doc(db, 'studios', uData.studioId), {
+                    accountStatus: 'active',
+                    updatedAt: new Date().toISOString()
+                  });
+                } catch {}
+
+                try {
+                  await updateDoc(doc(db, 'studios', uData.studioId, 'members', uDoc.id), {
+                    status: 'active',
+                    isActive: true,
+                    updatedAt: new Date().toISOString()
+                  });
+                } catch {}
+              }
+            }
+          } catch (fsErr: any) {
+            console.warn('[PasswordSetupPage] Firestore status activation notice:', fsErr?.message);
+          }
+        }
+
+        // Also update local unifiedAuthService record if present
+        const localAcct = unifiedAuthService.findAccountByIdentifier(email);
+        if (localAcct) {
+          unifiedAuthService.changePassword(localAcct.id, password);
+          const fresh = unifiedAuthService.getAccount(localAcct.id);
+          if (fresh) {
+            fresh.mustChangePassword = false;
+            fresh.status = 'active';
+            unifiedAuthService.saveAccount(fresh);
+          }
+        }
+
         setSuccess(true);
       } else {
-        setErrorMessage(res.error || 'Failed to complete password setup. Please try again.');
+        // Case B: Direct Setup Token
+        const effectiveToken = token || oobCode;
+        const res = await realAccountProvisionService.completeInitialPasswordSetup(effectiveToken, email, password);
+        if (res.success) {
+          setSuccess(true);
+        } else {
+          setErrorMessage(res.error || 'Failed to complete password setup. Please try again.');
+        }
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'An unexpected error occurred during password setup.');
+      console.error('[PasswordSetupPage] Password setup error:', err);
+      const code = err.code || '';
+      if (code === 'auth/invalid-action-code') {
+        setErrorMessage('This setup link has already been used or has expired. Please request a new setup link.');
+      } else if (code === 'auth/weak-password') {
+        setErrorMessage('Password is too weak. Please include at least 8 characters with letters and numbers.');
+      } else {
+        setErrorMessage(err.message || 'An unexpected error occurred during password setup.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleProceedToLogin = () => {
-    window.location.hash = '#/studio/login';
+    window.location.hash = '#/login';
   };
 
   return (
@@ -121,8 +267,14 @@ export const PasswordSetupPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Success State */}
-        {success ? (
+        {/* Loading / Verifying State */}
+        {verifying ? (
+          <div className="text-center py-8 space-y-3">
+            <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-xs text-zinc-500 font-medium">Verifying your secure activation link...</p>
+          </div>
+        ) : success ? (
+          /* Success State */
           <div className="text-center py-6 space-y-4">
             <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-8 h-8" />
@@ -130,7 +282,7 @@ export const PasswordSetupPage: React.FC = () => {
             <div>
               <h2 className="text-lg font-bold text-zinc-900">Account Successfully Activated!</h2>
               <p className="text-xs text-zinc-600 mt-1">
-                Your password has been securely saved. You can now log in using your registered email address:
+                Your password has been securely saved in Firebase Authentication. You can now log in using your registered email address:
               </p>
               <div className="mt-2 py-1.5 px-3 bg-zinc-100 rounded-lg text-xs font-bold text-zinc-800 inline-block font-mono">
                 {tokenRecord?.email || emailParam}
@@ -159,7 +311,7 @@ export const PasswordSetupPage: React.FC = () => {
             </div>
             <div className="pt-2">
               <button
-                onClick={() => window.location.hash = '#/studio/login'}
+                onClick={() => window.location.hash = '#/login'}
                 className="w-full min-h-[46px] px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs tracking-tight transition-all cursor-pointer touch-manipulation"
               >
                 Back to Login Page
@@ -276,7 +428,7 @@ export const PasswordSetupPage: React.FC = () => {
 
             <div className="text-center pt-2">
               <a
-                href="#/studio/login"
+                href="#/login"
                 className="text-xs text-zinc-500 hover:text-zinc-800 transition-colors"
               >
                 Already set your password? <span className="font-bold underline">Sign In</span>

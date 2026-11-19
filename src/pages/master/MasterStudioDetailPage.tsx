@@ -621,70 +621,74 @@ export const MasterStudioDetailPage: React.FC = () => {
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-zinc-200 space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Studio Owner Account</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Studio Owner & Firebase Identity</h3>
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-orange-50 text-orange-700 border border-orange-200">
+                  Firebase Managed
+                </span>
+              </div>
               <div className="text-xs space-y-2">
-                <div className="flex justify-between py-1 border-b border-zinc-200">
-                  <span className="text-zinc-400">Designation</span>
-                  <span className="font-bold text-zinc-800">Studio Owner (Studio Level Authority)</span>
+                <div className="flex justify-between py-1 border-b border-zinc-100">
+                  <span className="text-zinc-400">Owner Name</span>
+                  <span className="font-bold text-zinc-800">{(studio as any).ownerName || studio.title || studio.name + ' Owner'}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-zinc-200">
-                  <span className="text-zinc-400">Login Email</span>
-                  <span className="font-mono text-zinc-800">{studio.email}</span>
+                <div className="flex justify-between py-1 border-b border-zinc-100">
+                  <span className="text-zinc-400">Registered Gmail</span>
+                  <span className="font-mono text-zinc-800 font-semibold">{studio.ownerEmail || studio.email}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-zinc-200">
-                  <span className="text-zinc-400">Account Health</span>
-                  <span className="text-emerald-600 font-bold">Active & Verified</span>
+                <div className="flex justify-between py-1 border-b border-zinc-100">
+                  <span className="text-zinc-400">Firebase Auth UID</span>
+                  <span className="font-mono text-zinc-600 text-xs bg-zinc-50 px-1.5 py-0.5 rounded">
+                    {(studio as any).ownerUid || (studio as any).ownerAuthUid || 'Auth UID Linked'}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-zinc-100">
+                  <span className="text-zinc-400">Account Activation</span>
+                  <span className={`font-bold ${((studio as any).accountStatus === 'active') ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    {((studio as any).accountStatus === 'active') ? 'Active & Initialized' : 'Pending Activation'}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-zinc-100">
+                  <span className="text-zinc-400">Created On</span>
+                  <span className="text-zinc-700">{new Date(studio.createdAt || Date.now()).toLocaleDateString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between py-1">
-                  <span className="text-zinc-400">Storage Used</span>
-                  <span className="text-zinc-800">{((studio.storageUsageMb || 1200) / 1024).toFixed(1)} GB / 15.0 GB (8%)</span>
+                  <span className="text-zinc-400">Password Visibility</span>
+                  <span className="text-zinc-500 italic">Restricted (Firebase Protected)</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Password Management & Account Handover Section */}
+          {/* Secure Firebase Account Actions Section */}
           <div className="bg-white p-6 rounded-2xl border border-zinc-200 space-y-4 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-100">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center">
-                  <KeyRound className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-700 flex items-center justify-center">
+                  <KeyRound className="w-5 h-5 text-orange-600" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-zinc-900 font-display">Studio Owner Password & Account Management</h3>
-                  <p className="text-xs text-zinc-500">Manage login credentials, set temporary passwords, dispatch reset emails, or share via WhatsApp.</p>
+                  <h3 className="text-sm font-bold text-zinc-900 font-display">Studio Owner Authentication & Access Controls</h3>
+                  <p className="text-xs text-zinc-500">Dispatch activation links or official Firebase password reset emails. Master Admin never sees owner passwords.</p>
                 </div>
               </div>
               <span className="px-2.5 py-1 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200 self-start sm:self-auto">
-                No Repeated Reset Enforced
+                Direct Firebase Auth
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
               <button
                 type="button"
-                onClick={handleResetOwnerPassword}
-                className="p-3.5 rounded-xl border border-zinc-200 hover:border-amber-400 hover:bg-amber-50/50 text-left transition-all group cursor-pointer"
+                onClick={handleResendSetupLink}
+                className="p-3.5 rounded-xl border border-zinc-200 hover:border-orange-400 hover:bg-orange-50/50 text-left transition-all group cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <Key className="w-4 h-4 text-amber-600" />
-                  <span className="text-xs font-mono text-zinc-400 group-hover:text-amber-700">Auto-Gen</span>
+                  <Key className="w-4 h-4 text-orange-600" />
+                  <span className="text-xs font-mono text-zinc-400 group-hover:text-orange-700">Setup Link</span>
                 </div>
-                <div className="text-xs font-bold text-zinc-900">Reset Owner Password</div>
-                <div className="text-xs text-zinc-500 mt-0.5">Generates secure temporary password & opens handover panel</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleOpenSetPassword}
-                className="p-3.5 rounded-xl border border-zinc-200 hover:border-indigo-400 hover:bg-indigo-50/50 text-left transition-all group cursor-pointer"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <Lock className="w-4 h-4 text-indigo-600" />
-                  <span className="text-xs font-mono text-zinc-400 group-hover:text-indigo-700">Custom</span>
-                </div>
-                <div className="text-xs font-bold text-zinc-900">Set New Temp Password</div>
-                <div className="text-xs text-zinc-500 mt-0.5">Specify or randomize password with live preview</div>
+                <div className="text-xs font-bold text-zinc-900">Send / Resend Setup Link</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Generates secure activation link & dispatches to {studio.ownerEmail || studio.email}</div>
               </button>
 
               <button
@@ -694,23 +698,23 @@ export const MasterStudioDetailPage: React.FC = () => {
               >
                 <div className="flex items-center justify-between mb-2">
                   <Mail className="w-4 h-4 text-emerald-600" />
-                  <span className="text-xs font-mono text-zinc-400 group-hover:text-emerald-700">Firebase</span>
+                  <span className="text-xs font-mono text-zinc-400 group-hover:text-emerald-700">Reset Link</span>
                 </div>
-                <div className="text-xs font-bold text-zinc-900">Send Reset Email</div>
-                <div className="text-xs text-zinc-500 mt-0.5">Dispatches official Firebase reset link to {studio.email}</div>
+                <div className="text-xs font-bold text-zinc-900">Send Password Reset Link</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Dispatches official Firebase password recovery email with in-app setup</div>
               </button>
 
               <button
                 type="button"
-                onClick={handleShareLoginDetails}
-                className="p-3.5 rounded-xl border border-zinc-200 hover:border-purple-400 hover:bg-purple-50/50 text-left transition-all group cursor-pointer"
+                onClick={handleOpenEdit}
+                className="p-3.5 rounded-xl border border-zinc-200 hover:border-indigo-400 hover:bg-indigo-50/50 text-left transition-all group cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <Share2 className="w-4 h-4 text-purple-600" />
-                  <span className="text-xs font-mono text-zinc-400 group-hover:text-purple-700">WhatsApp / Copy</span>
+                  <Edit3 className="w-4 h-4 text-indigo-600" />
+                  <span className="text-xs font-mono text-zinc-400 group-hover:text-indigo-700">Profile</span>
                 </div>
-                <div className="text-xs font-bold text-zinc-900">Share Login Details</div>
-                <div className="text-xs text-zinc-500 mt-0.5">Clean handover panel with WhatsApp native click-to-chat</div>
+                <div className="text-xs font-bold text-zinc-900">Edit Studio & Owner Details</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Update owner name, phone number, address, and studio settings</div>
               </button>
             </div>
           </div>

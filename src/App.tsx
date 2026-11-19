@@ -287,12 +287,19 @@ export function App() {
   const employeeSession = unifiedAuthService.getEmployeeSession();
   const ownerSession = unifiedAuthService.getStudioOwnerSession();
 
-  // 0. Account Setup & Password Activation Link
-  if (
+  // 0. Account Setup & Password Activation Link (Handles Firebase oobCode & Setup Tokens)
+  const isSetupOrResetRoute =
+    (typeof window !== 'undefined' &&
+      (window.location.search.includes('oobCode') ||
+        window.location.search.includes('mode=resetPassword') ||
+        window.location.hash.includes('oobCode') ||
+        window.location.hash.includes('mode=resetPassword'))) ||
     currentRoute.startsWith('#/setup-password') ||
+    currentRoute.startsWith('#/reset-password') ||
     currentRoute.startsWith('#/auth/action') ||
-    currentRoute.startsWith('#/activate')
-  ) {
+    currentRoute.startsWith('#/activate');
+
+  if (isSetupOrResetRoute) {
     return (
       <ErrorBoundary fallbackTitle="Studio OS Account Activation Error">
         <PasswordSetupPage />
