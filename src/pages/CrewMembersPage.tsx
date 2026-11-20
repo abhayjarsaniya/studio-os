@@ -4,6 +4,7 @@ import { useStudio } from '../context/StudioContext';
 import { unifiedAuthService } from '../services/unifiedAuthService';
 import { firebaseAuthService } from '../services/firebaseAuthService';
 import { realAccountProvisionService } from '../services/realAccountProvisionService';
+import { googleAuthInvitationService } from '../services/googleAuthInvitationService';
 import { Employee, EmploymentStatus } from '../types';
 import { 
   Users, 
@@ -205,15 +206,34 @@ export const CrewMembersPage: React.FC = () => {
 
       employees.unshift(res.employee);
 
+      let inviteLink = res.setupLink;
+      try {
+        const gInvite = await googleAuthInvitationService.createEmployeeInvitation(
+          studioId,
+          {
+            fullName: formData.fullName.trim(),
+            email: formData.email.trim(),
+            roleId: selectedRole?.id || 'photographer',
+            roleName: selectedRole?.name || 'Photographer',
+            department: formData.department,
+            mobile: formData.mobile.trim()
+          },
+          currentUser?.name || 'Studio Owner'
+        );
+        inviteLink = gInvite.invitationLink;
+      } catch (e) {
+        // fallback
+      }
+
       setGeneratedCreds({
         name: res.employee.fullName,
         username: res.email,
-        password: res.initialPassword || formData.initialPassword || 'Set via secure link',
+        password: res.initialPassword || formData.initialPassword || 'Continue with Google',
         loginUrl: `${window.location.origin}/#/login`,
         phone: res.employee.phone || formData.whatsapp,
         email: res.email,
         isReset: false,
-        setupLink: res.setupLink
+        setupLink: inviteLink
       } as any);
 
       setIsAddModalOpen(false);

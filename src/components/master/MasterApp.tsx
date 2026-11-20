@@ -23,6 +23,7 @@ import { MasterNotificationsPage } from '../../pages/master/MasterNotificationsP
 import { MasterAuditLogsPage } from '../../pages/master/MasterAuditLogsPage';
 import { MasterSettingsPage } from '../../pages/master/MasterSettingsPage';
 import { MasterAccountsPage } from '../../pages/master/MasterAccountsPage';
+import { MasterAuthorizedEmailsPage } from '../../pages/master/MasterAuthorizedEmailsPage';
 import { MasterLoginPage } from '../../pages/master/MasterLoginPage';
 
 const MasterRouter: React.FC = () => {
@@ -74,6 +75,8 @@ const MasterRouter: React.FC = () => {
         return <MasterAuditLogsPage />;
       case 'settings':
         return <MasterSettingsPage />;
+      case 'authorized-emails':
+        return <MasterAuthorizedEmailsPage />;
       default:
         return <MasterDashboardPage />;
     }

@@ -49,7 +49,7 @@ describe('STUDIO OS — Master Admin Login, Routing & All 15 Module Options Veri
     expect(content).toContain('Welcome to Studio OS');
     expect(content).not.toContain('Employee Portal');
     expect(content).not.toContain('Platform Master Admin');
-    expect(content).toContain('unifiedAuthService.login');
+    expect(content).toContain('Continue with Google');
   });
 
   it('5. verifies EmployeeLoginPage strictly does not expose Master Admin navigation', () => {

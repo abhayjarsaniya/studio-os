@@ -104,6 +104,16 @@ service cloud.firestore {
       allow write: if isPlatformAdmin() || (isAuthenticated() && request.auth.uid != null);
     }
 
+    match /authorizedStudioEmails/{authId} {
+      allow read: if isPlatformAdmin() || (isAuthenticated() && request.auth.token.email != null);
+      allow write: if isPlatformAdmin() || (isAuthenticated() && request.auth.uid != null);
+    }
+
+    match /studioInvitations/{invitationId} {
+      allow read: if true;
+      allow write: if isPlatformAdmin() || (isAuthenticated() && request.auth.uid != null);
+    }
+
     match /platformNotifications/{notifId} {
       allow read: if isAuthenticated();
       allow write: if isPlatformAdmin();

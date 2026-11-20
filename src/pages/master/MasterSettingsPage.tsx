@@ -14,7 +14,9 @@ import {
   RotateCcw,
   CheckCircle2,
   Lock,
-  Server
+  Server,
+  MailCheck,
+  ExternalLink
 } from 'lucide-react';
 
 interface PlatformSettingsState {
@@ -120,6 +122,13 @@ export const MasterSettingsPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            onClick={() => setMasterRoute('authorized-emails')}
+            className="min-h-[42px] px-3.5 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 text-xs font-bold flex items-center gap-2 shadow-2xs transition-all cursor-pointer active:scale-95"
+          >
+            <MailCheck className="w-4 h-4 text-orange-600" />
+            <span>Authorized Studio Emails</span>
+          </button>
           <button
             onClick={() => setMasterRoute('audit-logs')}
             className="min-h-[42px] px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-50 text-zinc-700 border border-zinc-200 text-xs font-bold flex items-center gap-2 shadow-2xs transition-all cursor-pointer active:scale-95"

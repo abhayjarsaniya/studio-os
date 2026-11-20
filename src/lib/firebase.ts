@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getFirestore, connectFirestoreEmulator, Firestore } from 'firebase/firestore';
-import { getAuth, connectAuthEmulator, Auth } from 'firebase/auth';
+import { getAuth, connectAuthEmulator, Auth, GoogleAuthProvider } from 'firebase/auth';
 import { getStorage, connectStorageEmulator, FirebaseStorage } from 'firebase/storage';
 
 const env = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : (typeof process !== 'undefined' ? process.env : {}) as any;
@@ -22,6 +22,8 @@ let app: FirebaseApp;
 let db: Firestore;
 let auth: Auth;
 let storage: FirebaseStorage;
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 try {
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
@@ -38,4 +40,4 @@ try {
   console.warn('Firebase initialization in preview mode:', error);
 }
 
-export { app, db, auth, storage };
+export { app, db, auth, storage, googleProvider };

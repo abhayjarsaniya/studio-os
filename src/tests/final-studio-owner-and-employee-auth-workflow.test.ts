@@ -11,7 +11,7 @@ describe('STUDIO OS — Final Studio Owner and Employee Authentication Workflow'
   const testStudioName = `Shiv Studio ${timestamp}`;
 
   beforeEach(() => {
-    TenantStore.clearAll?.();
+    (TenantStore as any).clearAll?.();
   });
 
   it('1. Master Admin creates studio with Initial Password, setting account active and mustChangePassword false', async () => {
@@ -34,7 +34,7 @@ describe('STUDIO OS — Final Studio Owner and Employee Authentication Workflow'
     expect(result.studio.id).toBeDefined();
     expect(result.ownerEmail).toBe(testOwnerEmail);
     expect(result.initialPassword).toBe(testInitialPassword);
-    expect(result.studio.accountStatus).toBe('active');
+    expect((result.studio as any).accountStatus).toBe('active');
     expect(result.authUid).toBeDefined();
 
     // Verify studio is immediately visible in platformStudioService
@@ -85,7 +85,7 @@ describe('STUDIO OS — Final Studio Owner and Employee Authentication Workflow'
     expect(empResult.success).toBe(true);
     expect(empResult.email).toBe(empEmail);
     expect(empResult.initialPassword).toBe(empPassword);
-    expect(empResult.employee.accountStatus).toBe('active');
+    expect((empResult.employee as any).accountStatus).toBe('active');
 
     // 4. Employee logs in directly at common login page with email and Initial Password
     const empLogin = await firebaseAuthService.login(

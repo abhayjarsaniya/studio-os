@@ -6,6 +6,7 @@ import { DesktopHeader } from './components/layout/DesktopHeader';
 import { MobileHeader } from './components/layout/MobileHeader';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { StudioLoginPage } from './pages/StudioLoginPage';
+import { StudioRegistrationPage } from './pages/auth/StudioRegistrationPage';
 import { PasswordSetupPage } from './pages/auth/PasswordSetupPage';
 import { EmployeeLoginPage } from './pages/EmployeeLoginPage';
 import { EmployeeDashboardPage } from './pages/EmployeeDashboardPage';
@@ -307,11 +308,34 @@ export function App() {
     );
   }
 
+  // 0.1 One-Time Studio Registration Invitation Route
+  const isRegistrationInvitationRoute =
+    currentRoute.startsWith('#/signup') ||
+    currentRoute.startsWith('#/register') ||
+    (typeof window !== 'undefined' &&
+      (window.location.pathname.includes('/signup') || window.location.search.includes('token=')));
+
+  if (isRegistrationInvitationRoute) {
+    return (
+      <ErrorBoundary fallbackTitle="Studio Registration Error">
+        <StudioRegistrationPage />
+      </ErrorBoundary>
+    );
+  }
+
+  // Dedicated Master Admin Login
+  if (currentRoute === '#/master/login') {
+    return (
+      <ErrorBoundary fallbackTitle="Master Admin Login Error">
+        <MasterLoginPage />
+      </ErrorBoundary>
+    );
+  }
+
   // 1. One Single Common Login Route for All Users
   if (
     currentRoute === '#/login' ||
     currentRoute === '#/studio/login' ||
-    currentRoute === '#/master/login' ||
     currentRoute === '#/employee/login'
   ) {
     return (
