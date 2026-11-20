@@ -29,6 +29,7 @@ export interface CreateStudioPayload {
   address: string;
   city: string;
   state: string;
+  initialPassword?: string;
   subscriptionPlan?: string;
   subscriptionStatus?: 'active' | 'trial' | 'pending';
   logoUrl?: string;
@@ -43,6 +44,7 @@ export interface ProvisionStudioResult {
   ownerEmployee: Employee;
   authUid: string;
   ownerEmail: string;
+  initialPassword?: string;
   setupLink: string;
   setupToken: string;
   emailStatus: 'sent' | 'pending' | 'delivered' | 'failed';
@@ -63,6 +65,7 @@ export interface AddEmployeePayload {
   dailyRate?: string;
   monthlySalary?: string;
   joiningDate?: string;
+  initialPassword?: string;
   status?: 'active' | 'inactive';
 }
 
@@ -71,6 +74,7 @@ export interface ProvisionEmployeeResult {
   employee: Employee;
   authUid: string;
   email: string;
+  initialPassword?: string;
   setupLink: string;
   setupToken: string;
   emailStatus: 'sent' | 'pending' | 'delivered' | 'failed';
@@ -342,9 +346,17 @@ export class RealAccountProvisionService {
     const ownerEmpId = `emp_owner_${studioId}`;
 
     // 3. Create real Firebase Authentication account for Studio Owner
-    const initialTempPassword = `InitPass#${Math.random().toString(36).slice(2, 8)}99!`;
+    const isDirectPassword = Boolean(payload.initialPassword && payload.initialPassword.trim().length >= 6);
+    const initialTempPassword = isDirectPassword 
+      ? payload.initialPassword!.trim() 
+      : `InitPass#${Math.random().toString(36).slice(2, 8)}99!`;
     const authResult = await this.createFirebaseAuthUser(cleanEmail, initialTempPassword);
     const authUid = authResult.uid;
+
+    const initialAccountStatus: 'active' | 'pending_activation' = isDirectPassword
+      ? (payload.subscriptionStatus === 'pending' ? 'pending_activation' : 'active')
+      : 'pending_activation';
+    const mustChange = !isDirectPassword;
 
     // 4. Generate secure expiring single-use setup token (valid for 7 days)
     const setupToken = this.generateSecureToken();
@@ -375,7 +387,7 @@ export class RealAccountProvisionService {
       website: payload.website?.trim(),
       lifecycleStatus: 'active',
       isHidden: false,
-      accountStatus: 'pending_activation',
+      accountStatus: initialAccountStatus,
       setupToken,
       setupTokenExpiry: expiry.toISOString(),
       setupLink,
@@ -484,7 +496,7 @@ export class RealAccountProvisionService {
             state: payload.state.trim() || 'Gujarat',
             gstNumber: payload.gstNumber?.trim() || '',
             website: payload.website?.trim() || '',
-            accountStatus: 'pending_activation',
+            accountStatus: initialAccountStatus,
             lifecycleStatus: 'active',
             subscriptionStatus: payload.subscriptionStatus === 'active' ? 'active' : 'trial',
             currency: 'INR',
@@ -529,8 +541,9 @@ export class RealAccountProvisionService {
             studioName,
             phone: mobile,
             portal: 'Studio Owner',
-            status: 'pending_activation',
-            mustChangePassword: true,
+            status: initialAccountStatus,
+            isActive: initialAccountStatus === 'active',
+            mustChangePassword: mustChange,
             setupToken,
             setupTokenExpiry: expiry.toISOString(),
             createdAt: now.toISOString(),
@@ -544,8 +557,8 @@ export class RealAccountProvisionService {
             displayName: ownerName,
             role: 'owner',
             membershipType: 'OWNER',
-            status: 'pending_activation',
-            isActive: true,
+            status: initialAccountStatus,
+            isActive: initialAccountStatus === 'active',
             joinedAt: now.toISOString()
           }, { merge: true })
         ]);
@@ -555,7 +568,7 @@ export class RealAccountProvisionService {
       }
     }
 
-    // 8. Register in Unified Auth Service with mustChangePassword = true
+    // 8. Register in Unified Auth Service
     unifiedAuthService.provisionStudioOwner({
       authUid,
       studioId,
@@ -567,12 +580,12 @@ export class RealAccountProvisionService {
       temporaryPassword: initialTempPassword
     });
 
-    // Mark mustChangePassword = true and pending_activation in unifiedAuthService
+    // Mark mustChangePassword and status in unifiedAuthService
     const storedAccount = unifiedAuthService.findAccountByIdentifier(cleanEmail);
     if (storedAccount) {
-      storedAccount.mustChangePassword = true;
-      storedAccount.status = 'pending_activation' as any;
-      (storedAccount as any).accountStatus = 'pending_activation';
+      storedAccount.mustChangePassword = mustChange;
+      storedAccount.status = initialAccountStatus as any;
+      (storedAccount as any).accountStatus = initialAccountStatus;
       unifiedAuthService.saveAccount(storedAccount);
     }
 
@@ -631,6 +644,7 @@ export class RealAccountProvisionService {
       ownerEmployee,
       authUid,
       ownerEmail: cleanEmail,
+      initialPassword: initialTempPassword,
       setupLink,
       setupToken,
       emailStatus
@@ -665,9 +679,15 @@ export class RealAccountProvisionService {
     const empNumber = payload.employeeNumber?.trim() || `CREW-${String(studioEmployees.length + 1).padStart(3, '0')}`;
 
     // Create Firebase Auth user
-    const initialTempPassword = `CrewInit#${Math.random().toString(36).slice(2, 8)}77!`;
+    const isDirectPassword = Boolean(payload.initialPassword && payload.initialPassword.trim().length >= 6);
+    const initialTempPassword = isDirectPassword 
+      ? payload.initialPassword!.trim() 
+      : `CrewInit#${Math.random().toString(36).slice(2, 8)}77!`;
     const authResult = await this.createFirebaseAuthUser(cleanEmail, initialTempPassword);
     const authUid = authResult.uid;
+
+    const initialAccountStatus: 'active' | 'pending_activation' = isDirectPassword ? 'active' : 'pending_activation';
+    const mustChange = !isDirectPassword;
 
     // Generate secure token
     const setupToken = this.generateSecureToken();
@@ -699,7 +719,7 @@ export class RealAccountProvisionService {
       dateOfJoining: payload.joiningDate || now.toISOString().split('T')[0],
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
-      accountStatus: 'pending_activation',
+      accountStatus: initialAccountStatus,
       setupToken,
       setupTokenExpiry: expiry.toISOString(),
       setupLink,
@@ -739,8 +759,9 @@ export class RealAccountProvisionService {
             department: payload.department || 'Photography',
             phone: mobile,
             portal: 'Employee',
-            status: 'pending_activation',
-            mustChangePassword: true,
+            status: initialAccountStatus,
+            isActive: initialAccountStatus === 'active',
+            mustChangePassword: mustChange,
             setupToken,
             setupTokenExpiry: expiry.toISOString(),
             createdAt: now.toISOString(),
@@ -755,7 +776,8 @@ export class RealAccountProvisionService {
             role: payload.roleId || 'employee',
             membershipType: 'EMPLOYEE',
             employeeId,
-            status: 'pending_activation',
+            status: initialAccountStatus,
+            isActive: initialAccountStatus === 'active',
             joinedAt: now.toISOString()
           }, { merge: true })
         ]);
@@ -781,8 +803,10 @@ export class RealAccountProvisionService {
 
     const storedAccount = unifiedAuthService.findAccountByIdentifier(cleanEmail);
     if (storedAccount) {
-      storedAccount.mustChangePassword = true;
-      (storedAccount as any).accountStatus = 'pending_activation';
+      storedAccount.mustChangePassword = mustChange;
+      storedAccount.status = initialAccountStatus as any;
+      (storedAccount as any).accountStatus = initialAccountStatus;
+      unifiedAuthService.saveAccount(storedAccount);
     }
 
     // Save Token Record
@@ -818,6 +842,7 @@ export class RealAccountProvisionService {
       employee: newEmployee,
       authUid,
       email: cleanEmail,
+      initialPassword: initialTempPassword,
       setupLink,
       setupToken,
       emailStatus

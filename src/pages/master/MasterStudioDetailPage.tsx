@@ -178,7 +178,7 @@ export const MasterStudioDetailPage: React.FC = () => {
         ownerEmail: res.ownerEmail || studio.email,
         username: res.username || 'shreeji.owner',
         temporaryPassword: res.temporaryPassword,
-        loginUrl: `${window.location.origin}/#/studio/login`
+        loginUrl: `${window.location.origin}/#/login`
       });
       setIsHandoverOpen(true);
       showToast(`Temporary password generated: ${res.temporaryPassword}`);

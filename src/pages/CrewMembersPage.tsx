@@ -197,6 +197,7 @@ export const CrewMembersPage: React.FC = () => {
           employeeNumber: newEmpNumber,
           dailyRate: formData.dailyRate,
           joiningDate: formData.joiningDate,
+          initialPassword: formData.initialPassword?.trim() || undefined,
           status: (formData.status === 'inactive' ? 'inactive' : 'active') as 'active' | 'inactive'
         },
         currentUser?.name || 'Studio Owner'
@@ -207,8 +208,8 @@ export const CrewMembersPage: React.FC = () => {
       setGeneratedCreds({
         name: res.employee.fullName,
         username: res.email,
-        password: 'Set via secure link',
-        loginUrl: `${window.location.origin}/#/studio/login`,
+        password: res.initialPassword || formData.initialPassword || 'Set via secure link',
+        loginUrl: `${window.location.origin}/#/login`,
         phone: res.employee.phone || formData.whatsapp,
         email: res.email,
         isReset: false,
@@ -363,7 +364,7 @@ export const CrewMembersPage: React.FC = () => {
       name: emp.fullName,
       username,
       password: newTempPassword,
-      loginUrl: `${window.location.origin}/#/employee/login`,
+      loginUrl: `${window.location.origin}/#/login`,
       phone: emp.phone || (emp as any).whatsapp,
       email: emp.email,
       isReset: true
