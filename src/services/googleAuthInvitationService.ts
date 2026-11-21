@@ -1126,12 +1126,113 @@ class GoogleAuthInvitationService {
 
     // 1. Check Master Admin Authority
     if (MASTER_ADMIN_EMAILS.includes(cleanEmail)) {
-      const sessionToken = `g_master_${googleUser.uid}_${Date.now()}`;
+      let masterAcc = unifiedAuthService.findAccountByIdentifier(cleanEmail);
+      if (!masterAcc) {
+        const allAccounts = unifiedAuthService.listStoredAccounts();
+        masterAcc = allAccounts.find(
+          a => a.accountType === 'MASTER_ADMIN' && 
+          (a.email.toLowerCase() === cleanEmail || a.loginId.toLowerCase() === cleanEmail)
+        );
+      }
+      if (!masterAcc) {
+        masterAcc = {
+          id: cleanEmail === 'jarsaniya.abhay@gmail.com' ? 'admin_master_abhay' : `admin_master_${Date.now()}`,
+          accountType: 'MASTER_ADMIN',
+          loginId: cleanEmail,
+          email: cleanEmail,
+          displayName: googleUser.displayName || 'Abhay Jarsaniya (Master Admin)',
+          roleId: 'master_super_admin',
+          roleTitle: 'Master Super Admin',
+          status: 'active',
+          passwordHash: 'GOOGLE_OAUTH_MASTER_ADMIN',
+          salt: 'salt_master_oauth',
+          mustChangePassword: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        unifiedAuthService.saveAccount(masterAcc);
+      }
+
+      masterAcc.lastLoginAt = new Date().toISOString();
+      if (googleUser.displayName && (!masterAcc.displayName || masterAcc.displayName === 'Platform Master Owner')) {
+        masterAcc.displayName = googleUser.displayName;
+      }
+      unifiedAuthService.saveAccount(masterAcc);
+
+      const session = unifiedAuthService.createSession(masterAcc);
+      const sessionToken = session.token;
+
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('studio_os_master_token', sessionToken);
         localStorage.setItem('studio_os_session_token', sessionToken);
         localStorage.setItem('studio_os_user_role', 'platform_master_admin');
+        localStorage.removeItem('studio_os_active_studio_id_v2');
+        localStorage.removeItem('studio_os_active_employee_id');
       }
+
+      // Update current_master_admin in TenantStore
+      TenantStore.set('global_platform_master', 'current_master_admin', {
+        id: googleUser.uid || masterAcc.id,
+        name: googleUser.displayName || masterAcc.displayName || 'Abhay Jarsaniya',
+        email: cleanEmail,
+        role: 'master_super_admin',
+        permissions: [
+          'view_studios',
+          'manage_studios',
+          'view_subscriptions',
+          'manage_subscriptions',
+          'manage_plans',
+          'view_revenue',
+          'record_payments',
+          'manage_refunds',
+          'manage_announcements',
+          'manage_support',
+          'manage_admins',
+          'view_audit_logs',
+          'manage_settings',
+          'manage_global_rbac',
+          'manage_features',
+          'view_consolidated_reports'
+        ],
+        status: 'active',
+        createdAt: masterAcc.createdAt
+      });
+
+      // Firestore persistence: write to /users/{uid} and /masterAdmins/{uid}
+      if (!isTest && db && !isAuthBypassed && googleUser.uid) {
+        try {
+          const now = new Date().toISOString();
+          await Promise.allSettled([
+            setDoc(doc(db, 'users', googleUser.uid), {
+              uid: googleUser.uid,
+              email: cleanEmail,
+              displayName: googleUser.displayName || 'Abhay Jarsaniya',
+              photoURL: googleUser.photoURL || null,
+              role: 'platform_master_admin',
+              accountType: 'MASTER_ADMIN',
+              portal: 'Master Admin',
+              status: 'active',
+              isActive: true,
+              authProvider: 'google.com',
+              updatedAt: now
+            }, { merge: true }),
+            setDoc(doc(db, 'masterAdmins', googleUser.uid), {
+              uid: googleUser.uid,
+              email: cleanEmail,
+              displayName: googleUser.displayName || 'Abhay Jarsaniya',
+              role: 'master_super_admin',
+              accountType: 'MASTER_ADMIN',
+              status: 'active',
+              isActive: true,
+              authProvider: 'google.com',
+              updatedAt: now
+            }, { merge: true })
+          ]);
+        } catch (e: any) {
+          console.warn('[loginWithGoogle] Master Admin Firestore write notice:', e.message);
+        }
+      }
+
       return {
         success: true,
         user: googleUser,

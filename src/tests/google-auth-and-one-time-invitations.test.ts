@@ -6,6 +6,20 @@ import {
 } from '../services/googleAuthInvitationService';
 import { TenantStore } from '../services/tenantStore';
 import { platformStudioService } from '../services/platformStudioService';
+import { unifiedAuthService } from '../services/unifiedAuthService';
+
+// Ensure localStorage mock is present in Node/Vitest environment
+if (typeof (globalThis as any).localStorage === 'undefined') {
+  const store = new Map<string, string>();
+  (globalThis as any).localStorage = {
+    getItem: (key: string) => store.get(key) || null,
+    setItem: (key: string, value: string) => { store.set(key, value); },
+    removeItem: (key: string) => { store.delete(key); },
+    clear: () => { store.clear(); },
+    key: (index: number) => Array.from(store.keys())[index] || null,
+    get length() { return store.size; }
+  };
+}
 
 describe('STUDIO OS — Google Sign-In & One-Time Studio Registration Invitations (16-Point Audit)', () => {
   const timestamp = Date.now();
@@ -205,6 +219,32 @@ describe('STUDIO OS — Google Sign-In & One-Time Studio Registration Invitation
     expect(loginRes.success).toBe(true);
     expect(loginRes.role).toBe('owner');
     expect(loginRes.studioId).toBe(registeredStudioId);
+  });
+
+  // Test 14b: Master Admin connects Google account jarsaniya.abhay@gmail.com and opens Master Admin panel
+  it('14b. Master Admin connects Google account jarsaniya.abhay@gmail.com and opens Master Admin panel', async () => {
+    const masterGoogleUid = 'g_uid_abhay_jarsaniya_master';
+    const masterEmail = 'jarsaniya.abhay@gmail.com';
+
+    const loginRes = await googleAuthInvitationService.loginWithGoogle({
+      uid: masterGoogleUid,
+      email: masterEmail,
+      displayName: 'Abhay Jarsaniya'
+    });
+
+    expect(loginRes.success).toBe(true);
+    expect(loginRes.role).toBe('platform_master_admin');
+    expect(loginRes.targetRoute).toBe('#/master/dashboard');
+
+    // Verify session in unifiedAuthService
+    const masterSession = unifiedAuthService.getMasterSession();
+    expect(masterSession).toBeDefined();
+    expect(masterSession?.account.accountType).toBe('MASTER_ADMIN');
+    expect(masterSession?.account.email.toLowerCase()).toBe(masterEmail.toLowerCase());
+
+    // Verify localStorage tokens are set
+    expect(localStorage.getItem('studio_os_master_token')).toBeDefined();
+    expect(localStorage.getItem('studio_os_user_role')).toBe('platform_master_admin');
   });
 
   // Test 15: Employee invitation and Google login work
