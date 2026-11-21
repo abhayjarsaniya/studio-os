@@ -36,8 +36,11 @@ export class MasterMigrationService {
   // Run idempotent migration on system startup
   migrate(): { success: boolean; message: string } {
     try {
-      // 1. Seed Gujarat Demo Studios
-      demoStudioSeedService.seedAllDemoStudios(false);
+      // 1. Production SaaS: Zero demo studios automatically seeded on startup
+      const isTestEnv = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+      if (isTestEnv) {
+        demoStudioSeedService.seedAllDemoStudios(true);
+      }
 
       // 2. Ensure Master Admin user exists in TenantStore
       const existingMaster = TenantStore.get('global_platform_master', 'current_master_admin');

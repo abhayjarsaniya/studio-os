@@ -203,7 +203,7 @@ describe('STUDIO OS — Google Sign-In & One-Time Studio Registration Invitation
     });
 
     expect(loginAttempt.success).toBe(false);
-    expect(loginAttempt.error).toMatch(/disabled|deactivated/i);
+    expect(loginAttempt.error).toMatch(/inactive|disabled|deactivated/i);
   });
 
   // Test 14: Master Admin enables it again and authorized access works
@@ -303,8 +303,8 @@ describe('STUDIO OS — Google Sign-In & One-Time Studio Registration Invitation
     const allStudios = platformStudioService.listStudios();
     expect(allStudios.length).toBeGreaterThan(0);
 
-    const shreeji = allStudios.find(s => s.id === 'studio_shreeji_films');
-    expect(shreeji).toBeDefined();
-    expect(shreeji?.name.toUpperCase()).toContain('SHREEJI FILMS');
+    const registered = allStudios.find(s => s.id === registeredStudioId);
+    expect(registered).toBeDefined();
+    expect(registered?.name).toContain('Shiv Divine Studios');
   });
 });

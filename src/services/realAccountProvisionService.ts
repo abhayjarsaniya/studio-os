@@ -17,6 +17,7 @@ import { platformAuditService } from './platformAuditService';
 import { Studio, Employee, Branch } from '../types/schema';
 import { platformSubscriptionManager } from './platformSubscriptionManager';
 import { platformStudioService } from './platformStudioService';
+import { googleAuthInvitationService, AuthorizedStudioEmail } from './googleAuthInvitationService';
 
 const API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_API_KEY) || 'AIzaSyBdN6SpgPVAVD6JPEHbnfa_I2wM6BEodhk';
 const AUTH_REST_URL = 'https://identitytoolkit.googleapis.com/v1';
@@ -628,6 +629,30 @@ export class RealAccountProvisionService {
       });
     }
 
+    // 12. Register Owner in Authorized Emails Registry with both login methods enabled
+    try {
+      const authEmailId = `auth_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      const authRecord: AuthorizedStudioEmail = {
+        id: authEmailId,
+        email: cleanEmail,
+        ownerName,
+        role: 'studio_owner',
+        status: 'enabled',
+        allowPasswordLogin: true,
+        allowGoogleLogin: true,
+        invitationStatus: 'accepted',
+        registeredUid: authUid,
+        linkedStudioId: studioId,
+        linkedStudioName: studioName,
+        createdBy: actingAdminName,
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString()
+      };
+      await googleAuthInvitationService.saveOrUpdateAuthorizedEmail(authRecord);
+    } catch (e: any) {
+      console.warn('[RealAccountProvisionService] Auth registry notice:', e?.message);
+    }
+
     // Log Audit
     platformAuditService.log({
       adminId: 'admin_sys',
@@ -835,6 +860,30 @@ export class RealAccountProvisionService {
       }
     } catch {
       emailStatus = 'pending';
+    }
+
+    // Register Employee in Authorized Emails Registry
+    try {
+      const authEmailId = `auth_emp_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      const authRecord: AuthorizedStudioEmail = {
+        id: authEmailId,
+        email: cleanEmail,
+        ownerName: fullName,
+        role: 'employee',
+        status: 'enabled',
+        allowPasswordLogin: true,
+        allowGoogleLogin: true,
+        invitationStatus: 'accepted',
+        registeredUid: authUid,
+        linkedStudioId: studioId,
+        linkedStudioName: studioName,
+        createdBy: creatorName,
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString()
+      };
+      await googleAuthInvitationService.saveOrUpdateAuthorizedEmail(authRecord);
+    } catch (e: any) {
+      console.warn('[RealAccountProvisionService] Employee auth registry notice:', e?.message);
     }
 
     return {

@@ -37,11 +37,6 @@ export class PlatformEventsService {
    * Aggregates events across all studios on the platform.
    */
   listAllPlatformEvents(filters?: PlatformEventFilters): PlatformEventItem[] {
-    // Ensure demo studios are seeded if empty
-    if (!demoStudioSeedService.isSeeded()) {
-      demoStudioSeedService.seedAllDemoStudios();
-    }
-
     const studios = platformStudioService.listStudios();
     let allEvents: PlatformEventItem[] = [];
 

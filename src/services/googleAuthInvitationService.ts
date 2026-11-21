@@ -10,7 +10,7 @@ import {
   query, 
   where 
 } from 'firebase/firestore';
-import { signInWithPopup, signOut } from 'firebase/auth';
+import { signInWithPopup, signOut, signInWithEmailAndPassword } from 'firebase/auth';
 import { TenantStore } from './tenantStore';
 import { unifiedAuthService } from './unifiedAuthService';
 import { platformAuditService } from './platformAuditService';
@@ -21,7 +21,10 @@ export interface AuthorizedStudioEmail {
   id: string;
   email: string;
   ownerName?: string;
+  role?: 'studio_owner' | 'employee' | 'platform_master_admin';
   status: 'enabled' | 'disabled';
+  allowPasswordLogin?: boolean;
+  allowGoogleLogin?: boolean;
   invitationStatus: 'not_sent' | 'sent' | 'accepted' | 'expired';
   invitationTokenHash?: string;
   invitationCreatedAt?: string;
@@ -29,6 +32,7 @@ export interface AuthorizedStudioEmail {
   registeredUid?: string | null;
   linkedStudioId?: string | null;
   linkedStudioName?: string | null;
+  lastLoginAt?: string | null;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -168,6 +172,9 @@ class GoogleAuthInvitationService {
   async addAuthorizedEmail(payload: {
     email: string;
     ownerName?: string;
+    role?: 'studio_owner' | 'employee' | 'platform_master_admin';
+    allowPasswordLogin?: boolean;
+    allowGoogleLogin?: boolean;
     sendInvitationImmediately?: boolean;
     createdBy?: string;
   }): Promise<{ record: AuthorizedStudioEmail; invitationLink?: string; rawToken?: string }> {
@@ -189,7 +196,10 @@ class GoogleAuthInvitationService {
       id,
       email: cleanEmail,
       ownerName: payload.ownerName?.trim() || '',
+      role: payload.role || 'studio_owner',
       status: 'enabled',
+      allowPasswordLogin: payload.allowPasswordLogin ?? true,
+      allowGoogleLogin: payload.allowGoogleLogin ?? true,
       invitationStatus: 'not_sent',
       registeredUid: null,
       linkedStudioId: null,
@@ -218,7 +228,7 @@ class GoogleAuthInvitationService {
       const invitationRecord: StudioInvitationRecord = {
         id: tokenHash,
         tokenHash,
-        type: 'studio_owner',
+        type: (payload.role === 'employee' ? 'employee' : 'studio_owner'),
         email: cleanEmail,
         ownerName: payload.ownerName?.trim(),
         authorizedEmailId: id,
@@ -237,7 +247,10 @@ class GoogleAuthInvitationService {
     const isTest = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
     if (!isTest && db && !isAuthBypassed) {
       try {
-        await setDoc(doc(db, 'authorizedStudioEmails', id), newRecord, { merge: true });
+        await Promise.allSettled([
+          setDoc(doc(db, 'authorizedStudioEmails', id), newRecord, { merge: true }),
+          setDoc(doc(db, 'authorizedEmails', id), newRecord, { merge: true })
+        ]);
       } catch (err: any) {
         console.warn('[GoogleAuthInvitationService] Firestore save error:', err?.message);
       }
@@ -499,6 +512,131 @@ class GoogleAuthInvitationService {
       targetId: id,
       details: `Deleted authorization for "${item.email}". Preserved studio business data.`
     });
+  }
+
+  async togglePasswordLogin(id: string, allow: boolean, actingAdmin = 'Master Admin'): Promise<void> {
+    const all = await this.listAuthorizedEmails();
+    const item = all.find(i => i.id === id);
+    if (!item) throw new Error('Authorized email not found.');
+
+    item.allowPasswordLogin = allow;
+    item.updatedAt = new Date().toISOString();
+    TenantStore.set('platform_system', this.localKey, all);
+
+    const isTest = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+    if (!isTest && db && !isAuthBypassed) {
+      try {
+        await Promise.allSettled([
+          updateDoc(doc(db, 'authorizedStudioEmails', id), {
+            allowPasswordLogin: allow,
+            updatedAt: item.updatedAt
+          }),
+          updateDoc(doc(db, 'authorizedEmails', id), {
+            allowPasswordLogin: allow,
+            updatedAt: item.updatedAt
+          })
+        ]);
+      } catch (e: any) {
+        console.warn('[togglePasswordLogin] Firestore notice:', e.message);
+      }
+    }
+
+    platformAuditService.log({
+      adminId: 'admin_master',
+      adminName: actingAdmin,
+      action: 'TOGGLE_PASSWORD_LOGIN',
+      targetType: 'studio_owner',
+      targetId: id,
+      details: `${allow ? 'Enabled' : 'Disabled'} password login for "${item.email}".`
+    });
+  }
+
+  async toggleGoogleLogin(id: string, allow: boolean, actingAdmin = 'Master Admin'): Promise<void> {
+    const all = await this.listAuthorizedEmails();
+    const item = all.find(i => i.id === id);
+    if (!item) throw new Error('Authorized email not found.');
+
+    item.allowGoogleLogin = allow;
+    item.updatedAt = new Date().toISOString();
+    TenantStore.set('platform_system', this.localKey, all);
+
+    const isTest = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+    if (!isTest && db && !isAuthBypassed) {
+      try {
+        await Promise.allSettled([
+          updateDoc(doc(db, 'authorizedStudioEmails', id), {
+            allowGoogleLogin: allow,
+            updatedAt: item.updatedAt
+          }),
+          updateDoc(doc(db, 'authorizedEmails', id), {
+            allowGoogleLogin: allow,
+            updatedAt: item.updatedAt
+          })
+        ]);
+      } catch (e: any) {
+        console.warn('[toggleGoogleLogin] Firestore notice:', e.message);
+      }
+    }
+
+    platformAuditService.log({
+      adminId: 'admin_master',
+      adminName: actingAdmin,
+      action: 'TOGGLE_GOOGLE_LOGIN',
+      targetType: 'studio_owner',
+      targetId: id,
+      details: `${allow ? 'Enabled' : 'Disabled'} Google Sign-In for "${item.email}".`
+    });
+  }
+
+  async resetUserPassword(email: string, actingAdmin = 'Master Admin'): Promise<{ success: boolean; message: string }> {
+    const cleanEmail = this.normalizeEmail(email);
+    // Dispatch Firebase password reset
+    const isTest = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+    if (!isTest) {
+      try {
+        const { realAccountProvisionService } = await import('./realAccountProvisionService');
+        await realAccountProvisionService.dispatchFirebasePasswordReset(cleanEmail);
+      } catch (err: any) {
+        console.warn('[resetUserPassword] Firebase dispatch notice:', err?.message);
+      }
+    }
+
+    platformAuditService.log({
+      adminId: 'admin_master',
+      adminName: actingAdmin,
+      action: 'RESET_USER_PASSWORD',
+      targetType: 'studio_owner',
+      targetId: cleanEmail,
+      details: `Dispatched password reset instructions to "${cleanEmail}".`
+    });
+
+    return {
+      success: true,
+      message: `Password reset link has been dispatched to ${cleanEmail}.`
+    };
+  }
+
+  async saveOrUpdateAuthorizedEmail(record: AuthorizedStudioEmail): Promise<void> {
+    const all = await this.listAuthorizedEmails();
+    const idx = all.findIndex(i => i.id === record.id || i.email.toLowerCase() === record.email.toLowerCase());
+    if (idx >= 0) {
+      all[idx] = { ...all[idx], ...record };
+    } else {
+      all.unshift(record);
+    }
+    TenantStore.set('platform_system', this.localKey, all);
+
+    const isTest = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+    if (!isTest && db && !isAuthBypassed) {
+      try {
+        await Promise.allSettled([
+          setDoc(doc(db, 'authorizedStudioEmails', record.id), record, { merge: true }),
+          setDoc(doc(db, 'authorizedEmails', record.id), record, { merge: true })
+        ]);
+      } catch (e: any) {
+        console.warn('[saveOrUpdateAuthorizedEmail] Firestore notice:', e.message);
+      }
+    }
   }
 
   // -------------------------------------------------------------
@@ -848,7 +986,14 @@ class GoogleAuthInvitationService {
     }
 
     // Set browser session tokens
-    if (typeof localStorage !== 'undefined') {
+    if (storedAcc) {
+      const session = unifiedAuthService.createSession(storedAcc);
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('studio_os_session_token', session.token);
+        localStorage.setItem('studio_os_user_role', 'owner');
+        localStorage.setItem('studio_os_active_studio_id_v2', studioId);
+      }
+    } else if (typeof localStorage !== 'undefined') {
       const sessionToken = `g_sess_${googleUser.uid}_${Date.now()}`;
       localStorage.setItem('studio_os_session_token', sessionToken);
       localStorage.setItem('studio_os_user_role', 'owner');
@@ -1065,11 +1210,23 @@ class GoogleAuthInvitationService {
       initialPassword: 'GoogleOAuthCrew!2026'
     });
 
-    if (typeof localStorage !== 'undefined') {
+    const storedEmpAcc = unifiedAuthService.findAccountByIdentifier(cleanGoogleEmail);
+    if (storedEmpAcc) {
+      storedEmpAcc.status = 'active';
+      unifiedAuthService.saveAccount(storedEmpAcc);
+      const session = unifiedAuthService.createSession(storedEmpAcc);
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('studio_os_session_token', session.token);
+        localStorage.setItem('studio_os_user_role', 'employee');
+        localStorage.setItem('studio_os_active_studio_id_v2', studioId);
+        localStorage.setItem('studio_os_active_employee_id', employeeId);
+      }
+    } else if (typeof localStorage !== 'undefined') {
       const sessionToken = `g_emp_${googleUser.uid}_${Date.now()}`;
       localStorage.setItem('studio_os_session_token', sessionToken);
       localStorage.setItem('studio_os_user_role', 'employee');
       localStorage.setItem('studio_os_active_studio_id_v2', studioId);
+      localStorage.setItem('studio_os_active_employee_id', employeeId);
     }
 
     return { success: true, studioId };
@@ -1162,12 +1319,13 @@ class GoogleAuthInvitationService {
       const session = unifiedAuthService.createSession(masterAcc);
       const sessionToken = session.token;
 
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem('studio_os_master_token', sessionToken);
-        localStorage.setItem('studio_os_session_token', sessionToken);
-        localStorage.setItem('studio_os_user_role', 'platform_master_admin');
-        localStorage.removeItem('studio_os_active_studio_id_v2');
-        localStorage.removeItem('studio_os_active_employee_id');
+      const storage = typeof window !== 'undefined' ? window.localStorage : (typeof globalThis !== 'undefined' ? (globalThis as any).localStorage : null);
+      if (storage) {
+        storage.setItem('studio_os_master_token', sessionToken);
+        storage.setItem('studio_os_session_token', sessionToken);
+        storage.setItem('studio_os_user_role', 'platform_master_admin');
+        storage.removeItem('studio_os_active_studio_id_v2');
+        storage.removeItem('studio_os_active_employee_id');
       }
 
       // Update current_master_admin in TenantStore
@@ -1322,20 +1480,27 @@ class GoogleAuthInvitationService {
 
     // 3. If User Profile exists, check authorization & status
     if (userProfile) {
-      // Check if Master Admin disabled this authorized email
+      // Check if Master Admin disabled this authorized email or restricted Google Sign-In
       const allAuth = await this.listAuthorizedEmails();
       const authRecord = allAuth.find(a => a.email.toLowerCase() === cleanEmail);
       if (authRecord && authRecord.status === 'disabled') {
         return {
           success: false,
-          error: 'Your studio access has been deactivated or disabled by Master Admin. Please contact support.'
+          error: 'Your account is currently inactive. Please contact the platform administrator to reactivate your access.'
+        };
+      }
+
+      if (authRecord && authRecord.allowGoogleLogin === false) {
+        return {
+          success: false,
+          error: 'Google Sign-In has not been enabled for this email by the platform administrator. Please sign in with your email and password or contact your administrator.'
         };
       }
 
       if (userProfile.status === 'inactive' || userProfile.status === 'disabled') {
         return {
           success: false,
-          error: 'Your account is deactivated. Please contact your studio administrator.'
+          error: 'Your account is currently inactive. Please contact the platform administrator to reactivate your access.'
         };
       }
 
@@ -1344,18 +1509,10 @@ class GoogleAuthInvitationService {
       const role = isOwner ? 'owner' : 'employee';
       const targetRoute = isOwner ? '#/app/dashboard' : '#/employee/dashboard';
 
-      if (typeof localStorage !== 'undefined') {
-        const sessionToken = `g_sess_${googleUser.uid}_${Date.now()}`;
-        localStorage.setItem('studio_os_session_token', sessionToken);
-        localStorage.setItem('studio_os_user_role', role);
-        if (studioId) {
-          localStorage.setItem('studio_os_active_studio_id_v2', studioId);
-        }
-      }
-
-      // Sync session into unifiedAuthService
-      if (isOwner) {
-        unifiedAuthService.provisionStudioOwner({
+      // Ensure account in unifiedAuthService
+      let userAcc = unifiedAuthService.findAccountByIdentifier(cleanEmail);
+      if (!userAcc && isOwner) {
+        userAcc = unifiedAuthService.provisionStudioOwner({
           authUid: googleUser.uid,
           studioId,
           studioName: userProfile.studioName || 'Studio OS',
@@ -1364,7 +1521,47 @@ class GoogleAuthInvitationService {
           mobile: userProfile.phone || '9876543210',
           username: cleanEmail,
           temporaryPassword: 'GoogleOAuth2026!'
-        });
+        }).account;
+      }
+      if (!userAcc && !isOwner) {
+        userAcc = unifiedAuthService.provisionEmployee({
+          studioId,
+          studioName: userProfile.studioName || 'Studio OS',
+          employeeName: userProfile.displayName || 'Crew Member',
+          employeeId: userProfile.employeeId || `emp_${Date.now()}`,
+          email: cleanEmail,
+          mobile: userProfile.phone || '',
+          username: cleanEmail,
+          roleId: userProfile.role || 'photographer',
+          roleTitle: userProfile.designation || 'Photographer',
+          initialPassword: 'GoogleOAuthCrew!2026'
+        }).account;
+      }
+
+      if (userAcc) {
+        userAcc.status = 'active';
+        unifiedAuthService.saveAccount(userAcc);
+      }
+
+      const session = userAcc ? unifiedAuthService.createSession(userAcc) : null;
+      const sessionToken = session?.token || `g_sess_${googleUser.uid}_${Date.now()}`;
+
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('studio_os_session_token', sessionToken);
+        localStorage.setItem('studio_os_user_role', role);
+        if (studioId) {
+          localStorage.setItem('studio_os_active_studio_id_v2', studioId);
+        }
+      }
+
+      if (authRecord) {
+        authRecord.lastLoginAt = new Date().toISOString();
+        this.saveOrUpdateAuthorizedEmail(authRecord);
+      }
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('studio_os_auth_changed'));
+        window.dispatchEvent(new CustomEvent('studio_data_updated', { detail: { studioId } }));
       }
 
       return {
@@ -1384,7 +1581,14 @@ class GoogleAuthInvitationService {
       if (authorized.status === 'disabled') {
         return {
           success: false,
-          error: 'Your email authorization is currently disabled by Master Admin.'
+          error: 'Your account is currently inactive. Please contact the platform administrator to reactivate your access.'
+        };
+      }
+
+      if (authorized.allowGoogleLogin === false) {
+        return {
+          success: false,
+          error: 'Google Sign-In has not been enabled for this email by the platform administrator. Please sign in with your email and password or contact your administrator.'
         };
       }
 
@@ -1401,6 +1605,114 @@ class GoogleAuthInvitationService {
     return {
       success: false,
       error: `This Google account (${cleanEmail}) is not authorized to access Studio OS. Please contact Master Admin or your Studio Administrator for an invitation link.`
+    };
+  }
+
+  // -------------------------------------------------------------
+  // EMAIL + PASSWORD LOGIN (Common Login Page)
+  // -------------------------------------------------------------
+
+  async loginWithPassword(email: string, password: string): Promise<{
+    success: boolean;
+    role?: string;
+    studioId?: string;
+    targetRoute?: string;
+    error?: string;
+  }> {
+    const cleanEmail = this.normalizeEmail(email);
+    if (!cleanEmail || !password) {
+      return { success: false, error: 'Please enter both your email address and password.' };
+    }
+
+    // 1. Check Master Admin Credentials
+    if (MASTER_ADMIN_EMAILS.includes(cleanEmail)) {
+      const res = unifiedAuthService.loginMasterAdmin(cleanEmail, password);
+      if (res.success && res.session) {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('studio_os_master_token', res.session.token);
+          localStorage.setItem('studio_os_session_token', res.session.token);
+          localStorage.setItem('studio_os_user_role', 'platform_master_admin');
+          localStorage.removeItem('studio_os_active_studio_id_v2');
+          localStorage.removeItem('studio_os_active_employee_id');
+        }
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('studio_os_auth_changed'));
+          window.dispatchEvent(new Event('studio_data_updated'));
+        }
+        return {
+          success: true,
+          role: 'platform_master_admin',
+          targetRoute: '#/master/dashboard'
+        };
+      }
+      return { success: false, error: res.error || 'Invalid Master Admin credentials.' };
+    }
+
+    // 2. Check Authorization & Password Method Policy
+    const allAuth = await this.listAuthorizedEmails();
+    const authRecord = allAuth.find(a => a.email.toLowerCase() === cleanEmail);
+
+    if (authRecord) {
+      if (authRecord.status === 'disabled') {
+        return {
+          success: false,
+          error: 'Your account is currently inactive. Please contact the platform administrator to reactivate your access.'
+        };
+      }
+
+      if (authRecord.allowPasswordLogin === false) {
+        return {
+          success: false,
+          error: 'Password login has been disabled for this account by the platform administrator. Please use Google Sign-In or contact your administrator.'
+        };
+      }
+    }
+
+    // 3. Try Firebase Auth (if online & enabled)
+    const isTest = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+    if (!isTest && auth && !isAuthBypassed) {
+      try {
+        await signInWithEmailAndPassword(auth, cleanEmail, password);
+      } catch (fbErr: any) {
+        console.warn('[loginWithPassword] Firebase auth attempt:', fbErr?.code || fbErr?.message);
+      }
+    }
+
+    // 4. Authenticate against Unified Auth Service
+    const authRes = unifiedAuthService.login(cleanEmail, password);
+    if (!authRes.success || !authRes.session) {
+      return { success: false, error: authRes.error || 'Invalid email or password.' };
+    }
+
+    const session = authRes.session;
+    const isOwner = session.account.accountType === 'STUDIO_OWNER';
+    const role = isOwner ? 'owner' : 'employee';
+    const studioId = session.account.studioId || '';
+    const targetRoute = isOwner ? '#/app/dashboard' : '#/employee/dashboard';
+
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('studio_os_session_token', session.token);
+      localStorage.setItem('studio_os_user_role', role);
+      if (studioId) {
+        localStorage.setItem('studio_os_active_studio_id_v2', studioId);
+      }
+    }
+
+    if (authRecord) {
+      authRecord.lastLoginAt = new Date().toISOString();
+      await this.saveOrUpdateAuthorizedEmail(authRecord);
+    }
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('studio_os_auth_changed'));
+      window.dispatchEvent(new CustomEvent('studio_data_updated', { detail: { studioId } }));
+    }
+
+    return {
+      success: true,
+      role,
+      studioId,
+      targetRoute
     };
   }
 

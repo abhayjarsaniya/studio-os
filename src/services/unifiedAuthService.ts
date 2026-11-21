@@ -84,8 +84,10 @@ export class UnifiedAuthService {
         }
       }
 
-      // Default Studio Owners
-      const defaultOwners = [
+      // Default Studio Owners (Test environment only)
+      const isTestEnv = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+      if (isTestEnv) {
+        const defaultOwners = [
         {
           id: 'usr_owner_shreeji_primary',
           loginId: 'aarav_shreeji',
@@ -273,6 +275,7 @@ export class UnifiedAuthService {
           this.saveAccount(existingEmp);
         }
       }
+      }
 
       // Sanitize all established accounts so mustChangePassword is permanently false
       const allAccs = this.listStoredAccounts();
@@ -303,7 +306,12 @@ export class UnifiedAuthService {
   }
 
   listStoredAccounts(): UserAccount[] {
-    return TenantStore.get<UserAccount>('platform_system', GLOBAL_ACCOUNTS_KEY) || [];
+    const list = TenantStore.get<UserAccount>('platform_system', GLOBAL_ACCOUNTS_KEY);
+    if (!list || list.length === 0) {
+      this.ensureDefaultAccounts();
+      return TenantStore.get<UserAccount>('platform_system', GLOBAL_ACCOUNTS_KEY) || [];
+    }
+    return list;
   }
 
   public saveAccount(account: UserAccount): void {
@@ -700,7 +708,7 @@ export class UnifiedAuthService {
     const masterToken = storage.getItem('studio_os_master_token');
     if (masterToken) {
       const s = this.validateSession(masterToken);
-      if (s && s.account.accountType === 'MASTER_ADMIN') return s;
+      if (s) return s;
     }
     const token = storage.getItem('studio_os_session_token');
     if (token) {
@@ -752,11 +760,38 @@ export class UnifiedAuthService {
       }
     }
 
+    // Auto-revive Studio Owner or Employee session if browser was refreshed
+    if (!session && (token.startsWith('sess_') || token.startsWith('g_sess_') || token.startsWith('g_emp_'))) {
+      const storage = typeof window !== 'undefined' ? window.localStorage : (typeof globalThis !== 'undefined' ? (globalThis as any).localStorage : null);
+      if (storage) {
+        const role = storage.getItem('studio_os_user_role');
+        const studioId = storage.getItem('studio_os_active_studio_id_v2');
+        const allAccounts = this.listStoredAccounts();
+
+        if (role === 'owner' && studioId) {
+          const ownerAcc = allAccounts.find(a => a.accountType === 'STUDIO_OWNER' && a.studioId === studioId && a.status === 'active');
+          if (ownerAcc) {
+            session = this.createSession(ownerAcc);
+          }
+        } else if (role === 'employee' && studioId) {
+          const empId = storage.getItem('studio_os_active_employee_id');
+          const empAcc = allAccounts.find(a => (a.accountType === 'EMPLOYEE' || a.accountType === 'EXTERNAL_SUPPLIER') && a.studioId === studioId && a.status === 'active' && (!empId || a.id === empId));
+          if (empAcc) {
+            session = this.createSession(empAcc);
+          }
+        }
+      }
+    }
+
     if (!session) return null;
 
     if (new Date(session.expiresAt).getTime() < Date.now()) {
       this.logoutSession(token);
       return null;
+    }
+
+    if (session.account && session.account.accountType === 'MASTER_ADMIN') {
+      return session;
     }
 
     // Check if the underlying account was deactivated

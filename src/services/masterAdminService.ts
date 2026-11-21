@@ -22,20 +22,14 @@ import { ShreejiBookingSeedService } from './shreejiBookingSeedService';
 export class MasterAdminService {
   // Ensure demo or production dataset is seeded
   private ensureSeeded(): void {
+    // Production SaaS: zero demo studios automatically created
     try {
       const isTestEnv = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
       if (isTestEnv) {
         const seeded = TenantStore.get('global_platform_master', 'demo_studios_seeded_master');
         if (!seeded) {
-          demoStudioSeedService.seedAllDemoStudios(false);
+          demoStudioSeedService.seedAllDemoStudios(true);
           TenantStore.set('global_platform_master', 'demo_studios_seeded_master', true);
-        }
-      } else {
-        const seeded = TenantStore.get('global_platform_master', 'shreeji_production_seeded_master');
-        if (!seeded) {
-          ShreejiBookingSeedService.seedAllSampleBookings(false, 'studio_shreeji_films');
-          ShreejiBookingSeedService.seedAllSampleBookings(false, 'std_demo_royal');
-          TenantStore.set('global_platform_master', 'shreeji_production_seeded_master', true);
         }
       }
     } catch (e) {

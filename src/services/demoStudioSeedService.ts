@@ -161,8 +161,9 @@ export class DemoStudioSeedService {
   }
 
   seedAllDemoStudios(force = false): { studiosSeeded: number; eventsSeeded: number } {
-    if (this.isSeeded() && !force) {
-      return { studiosSeeded: 5, eventsSeeded: 120 };
+    // Production SaaS: zero demo studios automatically created
+    if (!force) {
+      return { studiosSeeded: 0, eventsSeeded: 0 };
     }
 
     let totalEvents = 0;

@@ -254,6 +254,11 @@ export class PlatformStudioService {
   }
 
   public ensureSeeded(): void {
+    const isTestEnv = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+    if (!isTestEnv) {
+      // In production SaaS: zero draft or demo studios created automatically
+      return;
+    }
     const meta = this.getStudiosMeta();
     let changed = false;
     for (const d of DRAFT_STUDIOS_DEF) {
@@ -276,15 +281,12 @@ export class PlatformStudioService {
   }
 
   private getStudiosMeta(): Record<string, { lifecycleStatus: StudioLifecycleStatus; internalNotes: string[] }> {
-    return TenantStore.getSingle<Record<string, { lifecycleStatus: StudioLifecycleStatus; internalNotes: string[] }>>(
+    const existing = TenantStore.getSingle<Record<string, { lifecycleStatus: StudioLifecycleStatus; internalNotes: string[] }>>(
       'platform_system',
       this.STORE_KEY
-    ) || {
-      studio_shreeji_films: { lifecycleStatus: 'active', internalNotes: ['Official Single Tenant Production Studio — Gujarat Flagship'] },
-      studio_draft_001: { lifecycleStatus: 'draft', internalNotes: ['Draft studio 1 pending owner configuration'] },
-      studio_draft_002: { lifecycleStatus: 'draft', internalNotes: ['Draft studio 2 pending owner configuration'] },
-      studio_draft_003: { lifecycleStatus: 'draft', internalNotes: ['Draft studio 3 pending owner configuration'] }
-    };
+    );
+    if (existing) return existing;
+    return {};
   }
 
   private saveStudiosMeta(meta: Record<string, { lifecycleStatus: StudioLifecycleStatus; internalNotes: string[] }>): void {
@@ -301,19 +303,8 @@ export class PlatformStudioService {
     const meta = this.getStudiosMeta();
     const subs = platformSubscriptionManager.listSubscriptions();
 
-    const isTestEnv = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
     const studioIds = Object.keys(meta);
-    const defaultKnown = isTestEnv
-      ? [
-          'studio_royal_001',
-          'studio_creative_002',
-          'studio_royal_frames_001',
-          'studio_moments_002',
-          'studio_pixelcraft_003',
-          'studio_shutter_stories_004',
-          'studio_golden_hour_005'
-        ]
-      : ['studio_shreeji_films'];
+    const defaultKnown: string[] = [];
     defaultKnown.forEach(id => {
       if (!studioIds.includes(id)) studioIds.push(id);
     });

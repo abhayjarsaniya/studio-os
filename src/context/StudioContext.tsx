@@ -29,10 +29,11 @@ export const StudioProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const [currentStudioId, setCurrentStudioId] = useState<string>(() => {
+    const isTestEnv = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
     if (typeof window !== 'undefined' && window.localStorage) {
-      return localStorage.getItem(ACTIVE_STUDIO_STORAGE_KEY) || 'std_demo_royal';
+      return localStorage.getItem(ACTIVE_STUDIO_STORAGE_KEY) || (isTestEnv ? 'std_demo_royal' : '');
     }
-    return 'std_demo_royal';
+    return isTestEnv ? 'std_demo_royal' : '';
   });
 
   const [currentBranchId, setCurrentBranchIdState] = useState<string | 'all'>(() => {

@@ -271,17 +271,27 @@ const MainLayout: React.FC = () => {
 };
 
 export function App() {
+  const [, setAuthVersion] = React.useState<number>(0);
   const [currentRoute, setCurrentRoute] = React.useState<string>(() => {
     return typeof window !== 'undefined' ? (window.location.hash || '#/login') : '#/login';
   });
 
   React.useEffect(() => {
     portalAccountProvisionService.syncWithUnifiedAuthService();
-    const handleHashChange = () => {
+    const handleAuthChange = () => {
+      setAuthVersion(v => v + 1);
       setCurrentRoute(window.location.hash || '#/login');
     };
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('hashchange', handleAuthChange);
+    window.addEventListener('studio_os_auth_changed', handleAuthChange);
+    window.addEventListener('studio_data_updated', handleAuthChange);
+    window.addEventListener('storage', handleAuthChange);
+    return () => {
+      window.removeEventListener('hashchange', handleAuthChange);
+      window.removeEventListener('studio_os_auth_changed', handleAuthChange);
+      window.removeEventListener('studio_data_updated', handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
+    };
   }, []);
 
   const masterSession = unifiedAuthService.getMasterSession();

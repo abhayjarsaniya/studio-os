@@ -629,12 +629,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Reload data whenever currentStudio.id changes!
   const loadTenantData = useCallback((studioId: string) => {
     try {
-      if (studioId === 'studio_shreeji_films' || studioId === 'std_demo_royal') {
+      const isTestEnv = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+      if (isTestEnv && (studioId === 'studio_shreeji_films' || studioId === 'std_demo_royal')) {
         const seeded = TenantStore.getSingle(studioId, ShreejiBookingSeedService.SEED_FLAG_KEY);
         if (!seeded) {
           ShreejiBookingSeedService.seedAllSampleBookings(false, studioId);
-          ShreejiBookingSeedService.seedAllSampleBookings(false, 'studio_shreeji_films');
-          ShreejiBookingSeedService.seedAllSampleBookings(false, 'std_demo_royal');
         }
       }
 
