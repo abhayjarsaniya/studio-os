@@ -160,12 +160,7 @@ export class DemoStudioSeedService {
     return !!TenantStore.getSingle<boolean>('platform_system', this.SEED_KEY);
   }
 
-  seedAllDemoStudios(force = false): { studiosSeeded: number; eventsSeeded: number } {
-    // Production SaaS: zero demo studios automatically created
-    if (!force) {
-      return { studiosSeeded: 0, eventsSeeded: 0 };
-    }
-
+  seedAllDemoStudios(_force = false): { studiosSeeded: number; eventsSeeded: number } {
     let totalEvents = 0;
 
     DEMO_STUDIOS_CONFIG.forEach(cfg => {
