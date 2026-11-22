@@ -298,37 +298,22 @@ export function App() {
   const employeeSession = unifiedAuthService.getEmployeeSession();
   const ownerSession = unifiedAuthService.getStudioOwnerSession();
 
-  // 0. Account Setup & Password Activation Link (Handles Firebase oobCode & Setup Tokens)
-  const isSetupOrResetRoute =
-    (typeof window !== 'undefined' &&
-      (window.location.search.includes('oobCode') ||
-        window.location.search.includes('mode=resetPassword') ||
-        window.location.hash.includes('oobCode') ||
-        window.location.hash.includes('mode=resetPassword'))) ||
+  // 0. Obsolete registration & password reset routes redirect to #/login
+  const isObsoleteAuthRoute =
     currentRoute.startsWith('#/setup-password') ||
     currentRoute.startsWith('#/reset-password') ||
+    currentRoute.startsWith('#/signup') ||
+    currentRoute.startsWith('#/register') ||
     currentRoute.startsWith('#/auth/action') ||
     currentRoute.startsWith('#/activate');
 
-  if (isSetupOrResetRoute) {
+  if (isObsoleteAuthRoute) {
+    if (typeof window !== 'undefined') {
+      window.location.hash = '#/login';
+    }
     return (
-      <ErrorBoundary fallbackTitle="Studio OS Account Activation Error">
-        <PasswordSetupPage />
-      </ErrorBoundary>
-    );
-  }
-
-  // 0.1 One-Time Studio Registration Invitation Route
-  const isRegistrationInvitationRoute =
-    currentRoute.startsWith('#/signup') ||
-    currentRoute.startsWith('#/register') ||
-    (typeof window !== 'undefined' &&
-      (window.location.pathname.includes('/signup') || window.location.search.includes('token=')));
-
-  if (isRegistrationInvitationRoute) {
-    return (
-      <ErrorBoundary fallbackTitle="Studio Registration Error">
-        <StudioRegistrationPage />
+      <ErrorBoundary fallbackTitle="Studio OS Login Error">
+        <StudioLoginPage />
       </ErrorBoundary>
     );
   }

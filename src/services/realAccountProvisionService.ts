@@ -25,14 +25,20 @@ const AUTH_REST_URL = 'https://identitytoolkit.googleapis.com/v1';
 export interface CreateStudioPayload {
   name: string;
   ownerName: string;
-  ownerEmail: string;
-  ownerMobile: string;
-  address: string;
-  city: string;
-  state: string;
+  loginId?: string;
+  username?: string;
   initialPassword?: string;
+  confirmPassword?: string;
+  ownerEmail?: string;
+  ownerMobile?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
   subscriptionPlan?: string;
+  planId?: string;
   subscriptionStatus?: 'active' | 'trial' | 'pending';
+  status?: 'active' | 'trial' | 'inactive' | 'suspended';
   logoUrl?: string;
   gstNumber?: string;
   website?: string;
@@ -41,10 +47,13 @@ export interface CreateStudioPayload {
 
 export interface ProvisionStudioResult {
   success: boolean;
+  studioId?: string;
   studio: Studio;
   ownerEmployee: Employee;
   authUid: string;
   ownerEmail: string;
+  loginId?: string;
+  username?: string;
   initialPassword?: string;
   setupLink: string;
   setupToken: string;
@@ -310,20 +319,9 @@ export class RealAccountProvisionService {
     payload: CreateStudioPayload,
     actingAdminName = 'Master Admin'
   ): Promise<ProvisionStudioResult> {
-    const cleanEmail = this.normalizeEmail(payload.ownerEmail);
-    const studioName = payload.name.trim();
-    const ownerName = payload.ownerName.trim();
-    const mobile = payload.ownerMobile.trim();
-
-    // 1. Validate Email
-    if (!this.isValidEmail(cleanEmail)) {
-      throw new Error(`Invalid email address format: "${payload.ownerEmail}". Please provide a valid email.`);
-    }
-
-    // Validate that Studio Owner email is a valid Gmail address
-    if (!this.isGmailAddress(cleanEmail)) {
-      throw new Error(`Studio Owner must use a valid Gmail address (ending in @gmail.com or @googlemail.com). Provided: "${payload.ownerEmail}"`);
-    }
+    const studioName = (payload.name || '').trim();
+    const ownerName = (payload.ownerName || '').trim();
+    const mobile = (payload.ownerMobile || payload.phone || '').trim();
 
     if (!studioName) {
       throw new Error('Studio Name is required.');
@@ -331,15 +329,46 @@ export class RealAccountProvisionService {
     if (!ownerName) {
       throw new Error('Owner Name is required.');
     }
-    if (!mobile) {
-      throw new Error('Owner Phone Number is required.');
+
+    // Determine Login ID / Username
+    const rawLoginId = payload.loginId || payload.username || (payload.ownerEmail ? payload.ownerEmail.split('@')[0] : ownerName.toLowerCase().replace(/[^a-z0-9]/g, '_'));
+    const loginId = rawLoginId.toLowerCase().trim();
+
+    if (!loginId) {
+      throw new Error('Login ID / Username is required.');
+    }
+    if (loginId.length < 3) {
+      throw new Error('Login ID must be at least 3 characters long.');
+    }
+    if (/\s/.test(loginId)) {
+      throw new Error('Login ID cannot contain spaces.');
     }
 
-    // 2. Generate or reuse unique Studio ID (handling retries and duplicate Gmail addresses safely)
+    // Password validation & confirmation check
+    const initialTempPassword = (payload.initialPassword || '').trim() || `Studio#${Math.floor(1000 + Math.random() * 9000)}`;
+    if (initialTempPassword.length < 6) {
+      throw new Error('Initial Password must be at least 6 characters long.');
+    }
+    if (payload.confirmPassword && payload.confirmPassword.trim() !== initialTempPassword) {
+      throw new Error('Initial Password and Confirm Password do not match.');
+    }
+
+    // Determine clean internal email
+    const cleanEmail = payload.ownerEmail 
+      ? this.normalizeEmail(payload.ownerEmail)
+      : `${loginId}@studio-os.internal`;
+
+    // 2. Generate or reuse unique Studio ID
     const existingStudios = platformStudioService.listStudios();
     const existingStudio = existingStudios.find(s => 
-      s.ownerEmail?.toLowerCase() === cleanEmail || (s as any).email?.toLowerCase() === cleanEmail
+      s.ownerEmail?.toLowerCase() === cleanEmail || (s as any).email?.toLowerCase() === cleanEmail || (s as any).ownerUsername?.toLowerCase() === loginId
     );
+
+    // Check Login ID uniqueness across platform accounts
+    const existingAcc = unifiedAuthService.findAccountByIdentifier(loginId);
+    if (existingAcc && existingAcc.studioId && existingAcc.studioId !== existingStudio?.id) {
+      throw new Error(`Login ID "${loginId}" is already taken. Please choose another username.`);
+    }
 
     const slug = studioName.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 16);
     const uniqueSuffix = Math.random().toString(36).slice(2, 6);
@@ -347,17 +376,12 @@ export class RealAccountProvisionService {
     const ownerEmpId = `emp_owner_${studioId}`;
 
     // 3. Create real Firebase Authentication account for Studio Owner
-    const isDirectPassword = Boolean(payload.initialPassword && payload.initialPassword.trim().length >= 6);
-    const initialTempPassword = isDirectPassword 
-      ? payload.initialPassword!.trim() 
-      : `InitPass#${Math.random().toString(36).slice(2, 8)}99!`;
+    const isDirectPassword = true;
     const authResult = await this.createFirebaseAuthUser(cleanEmail, initialTempPassword);
     const authUid = authResult.uid;
 
-    const initialAccountStatus: 'active' | 'pending_activation' = isDirectPassword
-      ? (payload.subscriptionStatus === 'pending' ? 'pending_activation' : 'active')
-      : 'pending_activation';
-    const mustChange = !isDirectPassword;
+    const initialAccountStatus: 'active' | 'inactive' = (payload.status === 'inactive' || payload.subscriptionStatus === 'pending') ? 'inactive' : 'active';
+    const mustChange = false;
 
     // 4. Generate secure expiring single-use setup token (valid for 7 days)
     const setupToken = this.generateSecureToken();
@@ -365,7 +389,7 @@ export class RealAccountProvisionService {
     const expiry = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://studio-os-lemon-nine.vercel.app';
-    const setupLink = `${baseUrl}/#/setup-password?token=${setupToken}&email=${encodeURIComponent(cleanEmail)}&studioId=${studioId}`;
+    const setupLink = `${baseUrl}/#/login`;
 
     // 5. Build Studio record
     const newStudio: Studio = {
@@ -577,14 +601,18 @@ export class RealAccountProvisionService {
       ownerName,
       email: cleanEmail,
       mobile,
-      username: cleanEmail,
-      temporaryPassword: initialTempPassword
+      username: loginId,
+      loginId,
+      initialPassword: initialTempPassword,
+      status: initialAccountStatus as any,
+      mustChangePassword: false
     });
 
     // Mark mustChangePassword and status in unifiedAuthService
-    const storedAccount = unifiedAuthService.findAccountByIdentifier(cleanEmail);
+    const storedAccount = unifiedAuthService.findAccountByIdentifier(loginId) || unifiedAuthService.findAccountByIdentifier(cleanEmail);
     if (storedAccount) {
-      storedAccount.mustChangePassword = mustChange;
+      storedAccount.loginId = loginId;
+      storedAccount.mustChangePassword = false;
       storedAccount.status = initialAccountStatus as any;
       (storedAccount as any).accountStatus = initialAccountStatus;
       unifiedAuthService.saveAccount(storedAccount);
@@ -665,10 +693,13 @@ export class RealAccountProvisionService {
 
     return {
       success: true,
+      studioId,
       studio: newStudio,
       ownerEmployee,
       authUid,
       ownerEmail: cleanEmail,
+      loginId,
+      username: loginId,
       initialPassword: initialTempPassword,
       setupLink,
       setupToken,
@@ -1168,32 +1199,33 @@ export class RealAccountProvisionService {
     };
   }
 
-  // 6. UPDATE OWNER DETAILS (EMAIL & NAME) CONSISTENTLY
+  // 6. UPDATE OWNER DETAILS (NAME, LOGIN ID & EMAIL) CONSISTENTLY
   async updateStudioOwnerDetails(
     studioId: string,
     newOwnerName: string,
-    newOwnerEmail: string,
-    actingAdmin = 'Master Admin'
+    newOwnerEmail?: string,
+    actingAdmin = 'Master Admin',
+    newLoginId?: string
   ): Promise<{ success: boolean; error?: string }> {
-    const cleanEmail = this.normalizeEmail(newOwnerEmail);
-    if (!this.isValidEmail(cleanEmail)) {
-      return { success: false, error: 'Invalid email address format.' };
-    }
-    if (!this.isGmailAddress(cleanEmail)) {
-      return { success: false, error: 'Studio Owner must use a valid Gmail address (@gmail.com).' };
-    }
-
     const studio = TenantStore.get(studioId, 'profile') as unknown as Studio;
     if (!studio) {
       return { success: false, error: 'Studio not found.' };
     }
 
+    const cleanEmail = newOwnerEmail ? this.normalizeEmail(newOwnerEmail) : (studio.ownerEmail || studio.email || `${studioId}@studio-os.internal`);
+    const cleanLoginId = newLoginId ? newLoginId.trim().toLowerCase().replace(/\s+/g, '_') : undefined;
+
     const oldEmail = studio.ownerEmail || studio.email;
     const now = new Date().toISOString();
 
     // Update Studio profile
-    studio.ownerName = newOwnerName.trim();
-    studio.title = newOwnerName.trim();
+    if (newOwnerName) {
+      studio.ownerName = newOwnerName.trim();
+      studio.title = newOwnerName.trim();
+    }
+    if (cleanLoginId) {
+      (studio as any).ownerUsername = cleanLoginId;
+    }
     studio.ownerEmail = cleanEmail;
     studio.email = cleanEmail;
     studio.updatedAt = now;
@@ -1203,19 +1235,24 @@ export class RealAccountProvisionService {
     const employees = (TenantStore.get(studioId, 'employees') as Employee[]) || [];
     const ownerEmp = employees.find(e => e.roleId === 'owner' || e.roleIds?.includes('owner'));
     if (ownerEmp) {
-      ownerEmp.fullName = newOwnerName.trim();
-      ownerEmp.name = newOwnerName.trim();
+      if (newOwnerName) {
+        ownerEmp.fullName = newOwnerName.trim();
+        ownerEmp.name = newOwnerName.trim();
+      }
       ownerEmp.email = cleanEmail;
       ownerEmp.updatedAt = now;
       TenantStore.set(studioId, 'employees', employees);
     }
 
     // Update Unified Account
-    const oldAccount = unifiedAuthService.findAccountByIdentifier(oldEmail);
-    if (oldAccount) {
-      oldAccount.email = cleanEmail;
-      oldAccount.displayName = newOwnerName.trim();
-      oldAccount.updatedAt = now;
+    const accounts = unifiedAuthService.listStoredAccounts();
+    const ownerAcc = accounts.find(a => (a.studioId === studioId && a.accountType === 'STUDIO_OWNER') || a.email.toLowerCase() === oldEmail?.toLowerCase());
+    if (ownerAcc) {
+      if (newOwnerName) ownerAcc.displayName = newOwnerName.trim();
+      if (cleanLoginId) ownerAcc.loginId = cleanLoginId;
+      ownerAcc.email = cleanEmail;
+      ownerAcc.updatedAt = now;
+      unifiedAuthService.saveAccount(ownerAcc);
     }
 
     // Update in Firestore
@@ -1225,7 +1262,8 @@ export class RealAccountProvisionService {
       if (studio.ownerAuthUid) {
         firestoreService.saveDocument('platform_system', 'users', studio.ownerAuthUid, {
           email: cleanEmail,
-          displayName: newOwnerName.trim(),
+          displayName: newOwnerName?.trim() || studio.ownerName,
+          ...(cleanLoginId ? { username: cleanLoginId, loginId: cleanLoginId } : {}),
           updatedAt: now
         }, true).catch(() => {});
       }
@@ -1237,7 +1275,7 @@ export class RealAccountProvisionService {
       action: 'UPDATE_STUDIO_OWNER_DETAILS',
       targetType: 'studio',
       targetId: studioId,
-      details: `Updated Studio "${studio.name}" owner to ${newOwnerName} (${cleanEmail}).`
+      details: `Updated Studio "${studio.name}" owner to ${newOwnerName || studio.ownerName} (${cleanLoginId || ownerAcc?.loginId || cleanEmail}).`
     });
 
     return { success: true };

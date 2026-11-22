@@ -54,32 +54,27 @@ export const StudioHandoverModal: React.FC<StudioHandoverModalProps> = ({
   };
 
   const copyAllDetails = () => {
-    const fullText = `=== STUDIO OS CLIENT LOGIN HANDOVER ===
+    const fullText = `=== STUDIO OS STUDIO OWNER CREDENTIALS ===
 Studio: ${data.studioName}
-Studio Login: ${loginUrl}
-Studio ID: ${data.studioId}
+Login URL: ${loginUrl}
 Login ID: ${data.username}
-Temporary Password: ${data.temporaryPassword}
+Password: ${data.temporaryPassword}
 
-Please keep these login details secure.
-You can change your password anytime from Settings or use Forgot Password on the login page.`;
+Please keep these login details secure.`;
     copyToClipboard(fullText, 'all');
   };
 
   const getWhatsAppMessage = () => {
-    return `Hello,
+    return `Hello ${data.ownerName},
 
-Your Studio OS account has been created successfully.
+Your Studio OS credentials have been configured:
 
 Studio: ${data.studioName}
-Studio Login: ${loginUrl}
-Studio ID: ${data.studioId}
+Login URL: ${loginUrl}
 Login ID: ${data.username}
-Temporary Password: ${data.temporaryPassword}
+Password: ${data.temporaryPassword}
 
-Please keep these login details secure.
-
-You can change your password anytime from Settings or use Forgot Password on the login page.`;
+Please keep these credentials secure.`;
   };
 
   const handleShareWhatsApp = () => {
@@ -209,7 +204,7 @@ You can change your password anytime from Settings or use Forgot Password on the
 
         {/* Security Notice */}
         <p className="text-xs text-zinc-500 leading-relaxed font-sans">
-          <strong>Security note:</strong> For safety, this temporary password is shown once. The studio owner can sign in immediately and change their password anytime from Settings, or use Forgot Password on the login page.
+          <strong>Security note:</strong> For safety, this initial password is shown once. The studio owner can sign in immediately at the Studio OS login page using their Login ID and Password.
         </p>
 
         {/* Action Grid */}
@@ -217,7 +212,7 @@ You can change your password anytime from Settings or use Forgot Password on the
           <button
             type="button"
             onClick={copyAllDetails}
-            className="min-h-[48px] sm:min-h-[44px] py-3 px-4 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-sm sm:text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm touch-manipulation active:scale-[0.98]"
+            className="min-h-[48px] sm:min-h-[44px] py-3 px-4 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-sm sm:text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm touch-manipulation active:scale-[0.98]"
           >
             {copiedKey === 'all' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
             <span>{copiedKey === 'all' ? 'All Details Copied!' : 'Copy All Login Details'}</span>
@@ -230,16 +225,6 @@ You can change your password anytime from Settings or use Forgot Password on the
           >
             <Share2 className="w-4 h-4" />
             <span>Share via WhatsApp</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSendResetEmail}
-            disabled={sendingReset}
-            className="min-h-[48px] sm:min-h-[44px] py-3 px-4 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-semibold text-sm sm:text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer sm:col-span-2 disabled:opacity-50 border border-zinc-200 touch-manipulation active:scale-[0.98]"
-          >
-            <Mail className="w-4 h-4 text-zinc-600" />
-            <span>{sendingReset ? 'Sending Reset Email...' : 'Send Password Reset Email to Owner'}</span>
           </button>
         </div>
 

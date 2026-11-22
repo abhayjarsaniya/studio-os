@@ -81,7 +81,7 @@ export const MasterAccountsPage: React.FC = () => {
 
   const copyResetCredentials = () => {
     if (!resetModal) return;
-    const text = `=== STUDIO OS TEMPORARY CREDENTIALS ===\nAccount: ${resetModal.accountName}\nLogin ID: ${resetModal.loginId}\nTemporary Password: ${resetModal.tempPass}\n* Password change is required on next login.`;
+    const text = `=== STUDIO OS LOGIN CREDENTIALS ===\nAccount: ${resetModal.accountName}\nLogin ID: ${resetModal.loginId}\nNew Password: ${resetModal.tempPass}\nLogin URL: ${window.location.origin}/#/login`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);

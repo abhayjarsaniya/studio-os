@@ -6,6 +6,7 @@ import { featureVisibilityService } from '../../services/featureVisibilityServic
 import { platformAuditService } from '../../services/platformAuditService';
 import { firebaseAuthService } from '../../services/firebaseAuthService';
 import { realAccountProvisionService } from '../../services/realAccountProvisionService';
+import { unifiedAuthService } from '../../services/unifiedAuthService';
 import { TenantStore } from '../../services/tenantStore';
 import { StudioHandoverModal, StudioHandoverData } from '../../components/master/StudioHandoverModal';
 import { 
@@ -49,7 +50,6 @@ export const MasterStudioDetailPage: React.FC = () => {
   const [isEditStudioOpen, setIsEditStudioOpen] = useState(false);
   const [isSetPasswordOpen, setIsSetPasswordOpen] = useState(false);
   const [customPasswordInput, setCustomPasswordInput] = useState('');
-  const [linkModalData, setLinkModalData] = useState<{ email: string; link: string; copied: boolean } | null>(null);
 
   // Draft Studio Activation State
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
@@ -76,7 +76,8 @@ export const MasterStudioDetailPage: React.FC = () => {
     renewalDate: '',
     lifecycleStatus: 'active' as any,
     ownerName: '',
-    ownerEmail: ''
+    ownerEmail: '',
+    loginId: ''
   });
 
   const showToast = (msg: string) => {
@@ -121,6 +122,10 @@ export const MasterStudioDetailPage: React.FC = () => {
   // Open Edit Studio
   const handleOpenEdit = () => {
     if (!studio) return;
+    const accounts = unifiedAuthService.listStoredAccounts();
+    const ownerAcc = accounts.find(a => (a.studioId === studio.id && a.accountType === 'STUDIO_OWNER') || a.email.toLowerCase() === (studio.ownerEmail || studio.email || '').toLowerCase());
+    const ownerLoginId = ownerAcc?.loginId || (studio as any).ownerUsername || (studio.ownerEmail ? studio.ownerEmail.split('@')[0] : studio.id);
+
     setEditFormData({
       name: studio.name || '',
       phone: studio.phone || '',
@@ -134,7 +139,8 @@ export const MasterStudioDetailPage: React.FC = () => {
       renewalDate: studio.subscription?.validUntil ? studio.subscription.validUntil.slice(0, 10) : new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
       lifecycleStatus: studio.lifecycleStatus || 'active',
       ownerName: (studio as any).ownerName || studio.title || '',
-      ownerEmail: studio.ownerEmail || studio.email || ''
+      ownerEmail: studio.ownerEmail || studio.email || '',
+      loginId: ownerLoginId
     });
     setIsEditStudioOpen(true);
   };
@@ -144,20 +150,19 @@ export const MasterStudioDetailPage: React.FC = () => {
     try {
       masterAdminService.updateStudio(studioId, editFormData, 'Master Admin');
 
-      if (editFormData.ownerName || editFormData.ownerEmail) {
-        const updateRes = await realAccountProvisionService.updateStudioOwnerDetails(
-          studioId,
-          editFormData.ownerName || (studio as any).ownerName || studio.name,
-          editFormData.ownerEmail || studio.ownerEmail || studio.email,
-          'Master Admin'
-        );
-        if (!updateRes.success) {
-          alert(updateRes.error);
-          return;
-        }
+      const updateRes = await realAccountProvisionService.updateStudioOwnerDetails(
+        studioId,
+        editFormData.ownerName || (studio as any).ownerName || studio.name,
+        editFormData.ownerEmail || studio.ownerEmail || studio.email,
+        'Master Admin',
+        editFormData.loginId
+      );
+      if (!updateRes.success) {
+        alert(updateRes.error);
+        return;
       }
 
-      showToast('Studio profile and owner identity updated successfully!');
+      showToast('Studio profile and owner credentials updated successfully!');
       setIsEditStudioOpen(false);
       triggerRefresh();
     } catch (err: any) {
@@ -298,38 +303,19 @@ export const MasterStudioDetailPage: React.FC = () => {
     }
   };
 
-  const handleSendResetEmail = async () => {
+  const handleToggleDeactivate = () => {
     if (!studio) return;
-    const targetEmail = studio.ownerEmail || studio.email;
-    try {
-      const res = await firebaseAuthService.sendPasswordReset(targetEmail);
-      if (res.success) {
-        showToast(`Password reset link dispatched to ${targetEmail}`);
-      } else {
-        alert(res.error || 'Failed to dispatch reset email.');
+    const isCurrentlyActive = studio.lifecycleStatus === 'active';
+    if (isCurrentlyActive) {
+      if (window.confirm(`Deactivate studio "${studio.name}"? Studio owner and staff will not be able to sign in until reactivated.`)) {
+        masterAdminService.suspendStudio(studioId, 'Deactivated by Master Admin from detail view');
+        showToast('Studio account deactivated.');
+        triggerRefresh();
       }
-    } catch (e: any) {
-      alert(e.message || 'Error dispatching password reset email.');
-    }
-  };
-
-  const handleResendSetupLink = async () => {
-    if (!studio) return;
-    const targetEmail = studio.ownerEmail || studio.email;
-    try {
-      const res = await realAccountProvisionService.resendSetupLink(targetEmail, 'studio_owner', studio.id);
-      if (res.success) {
-        setLinkModalData({
-          email: targetEmail,
-          link: res.setupLink,
-          copied: false
-        });
-        showToast(`Setup link dispatched to ${targetEmail}!`);
-      } else {
-        alert(res.error || 'Failed to generate setup link.');
-      }
-    } catch (e: any) {
-      alert(e.message || 'Error generating setup link.');
+    } else {
+      masterAdminService.reactivateStudio(studioId, 'Reactivated by Master Admin from detail view');
+      showToast('Studio account reactivated.');
+      triggerRefresh();
     }
   };
 
@@ -433,34 +419,25 @@ export const MasterStudioDetailPage: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {studio.lifecycleStatus === 'draft' ? (
-            <button
-              onClick={() => setIsActivateModalOpen(true)}
-              className="min-h-[44px] px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white flex items-center gap-1.5 transition-all shadow-md shadow-purple-600/20 cursor-pointer touch-manipulation active:scale-95"
-            >
-              <Sparkles className="w-4 h-4 text-purple-200" />
-              <span>Configure & Activate</span>
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={handleResendSetupLink}
-                className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
-                title="Send or resend secure activation link to owner"
-              >
-                <Key className="w-4 h-4 text-orange-600" />
-                <span>Send Setup Link</span>
-              </button>
-              <button
-                onClick={handleSendResetEmail}
-                className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
-                title="Dispatch official Firebase password reset email"
-              >
-                <Mail className="w-4 h-4 text-emerald-600" />
-                <span>Password Reset</span>
-              </button>
-            </>
-          )}
+          <button
+            onClick={handleOpenSetPassword}
+            className="min-h-[44px] px-3.5 py-2 text-xs font-bold rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
+            title="Set a new password for the studio owner"
+          >
+            <Key className="w-4 h-4 text-orange-600" />
+            <span>Change Owner Password</span>
+          </button>
+
+          <button
+            onClick={handleToggleDeactivate}
+            className={`min-h-[44px] px-3.5 py-2 text-xs font-bold rounded-xl border flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95 ${
+              studio.lifecycleStatus === 'active'
+                ? 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300'
+                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300'
+            }`}
+          >
+            <span>{studio.lifecycleStatus === 'active' ? 'Deactivate Studio' : 'Reactivate Studio'}</span>
+          </button>
 
           <button
             onClick={handleOpenEdit}
@@ -622,9 +599,13 @@ export const MasterStudioDetailPage: React.FC = () => {
 
             <div className="bg-white p-5 rounded-2xl border border-zinc-200 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Studio Owner & Firebase Identity</h3>
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-orange-50 text-orange-700 border border-orange-200">
-                  Firebase Managed
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Studio Owner & Authentication Details</h3>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
+                  studio.lifecycleStatus === 'active' 
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                    : 'bg-rose-50 text-rose-700 border border-rose-200'
+                }`}>
+                  {studio.lifecycleStatus === 'active' ? 'Active' : 'Suspended / Deactivated'}
                 </span>
               </div>
               <div className="text-xs space-y-2">
@@ -633,19 +614,19 @@ export const MasterStudioDetailPage: React.FC = () => {
                   <span className="font-bold text-zinc-800">{(studio as any).ownerName || studio.title || studio.name + ' Owner'}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-zinc-100">
-                  <span className="text-zinc-400">Registered Gmail</span>
-                  <span className="font-mono text-zinc-800 font-semibold">{studio.ownerEmail || studio.email}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-zinc-100">
-                  <span className="text-zinc-400">Firebase Auth UID</span>
-                  <span className="font-mono text-zinc-600 text-xs bg-zinc-50 px-1.5 py-0.5 rounded">
-                    {(studio as any).ownerUid || (studio as any).ownerAuthUid || 'Auth UID Linked'}
+                  <span className="text-zinc-400">Login ID / Username</span>
+                  <span className="font-mono text-zinc-800 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60">
+                    {(studio as any).ownerUsername || (studio as any).ownerName?.toLowerCase().replace(/\s+/g, '_') || studio.id}
                   </span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-zinc-100">
-                  <span className="text-zinc-400">Account Activation</span>
-                  <span className={`font-bold ${((studio as any).accountStatus === 'active') ? 'text-emerald-600' : 'text-amber-600'}`}>
-                    {((studio as any).accountStatus === 'active') ? 'Active & Initialized' : 'Pending Activation'}
+                  <span className="text-zinc-400">Contact Email</span>
+                  <span className="font-mono text-zinc-800 font-semibold">{studio.ownerEmail || studio.email}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-zinc-100">
+                  <span className="text-zinc-400">Account Access</span>
+                  <span className={`font-bold ${studio.lifecycleStatus === 'active' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {studio.lifecycleStatus === 'active' ? 'Login Enabled' : 'Login Disabled (Deactivated)'}
                   </span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-zinc-100">
@@ -653,55 +634,45 @@ export const MasterStudioDetailPage: React.FC = () => {
                   <span className="text-zinc-700">{new Date(studio.createdAt || Date.now()).toLocaleDateString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between py-1">
-                  <span className="text-zinc-400">Password Visibility</span>
-                  <span className="text-zinc-500 italic">Restricted (Firebase Protected)</span>
+                  <span className="text-zinc-400">Password Encryption</span>
+                  <span className="text-zinc-500 italic">Argon2/Salted Hash (Plaintext Never Stored)</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Secure Firebase Account Actions Section */}
+          {/* Studio Owner Account & Security Controls Section */}
           <div className="bg-white p-6 rounded-2xl border border-zinc-200 space-y-4 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-100">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-700 flex items-center justify-center">
-                  <KeyRound className="w-5 h-5 text-orange-600" />
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center">
+                  <KeyRound className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-zinc-900 font-display">Studio Owner Authentication & Access Controls</h3>
-                  <p className="text-xs text-zinc-500">Dispatch activation links or official Firebase password reset emails. Master Admin never sees owner passwords.</p>
+                  <h3 className="text-sm font-bold text-zinc-900 font-display">Studio Owner Credentials & Access Controls</h3>
+                  <p className="text-xs text-zinc-500">Change owner password directly or update login credentials. Changes take effect immediately.</p>
                 </div>
               </div>
-              <span className="px-2.5 py-1 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200 self-start sm:self-auto">
-                Direct Firebase Auth
+              <span className="px-2.5 py-1 rounded-full text-xs font-bold uppercase bg-zinc-100 text-zinc-700 border border-zinc-200 self-start sm:self-auto">
+                Direct Master Authority
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
               <button
                 type="button"
-                onClick={handleResendSetupLink}
-                className="p-3.5 rounded-xl border border-zinc-200 hover:border-orange-400 hover:bg-orange-50/50 text-left transition-all group cursor-pointer"
+                onClick={() => {
+                  setCustomPasswordInput('');
+                  setIsSetPasswordOpen(true);
+                }}
+                className="p-3.5 rounded-xl border border-zinc-200 hover:border-amber-400 hover:bg-amber-50/50 text-left transition-all group cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <Key className="w-4 h-4 text-orange-600" />
-                  <span className="text-xs font-mono text-zinc-400 group-hover:text-orange-700">Setup Link</span>
+                  <Key className="w-4 h-4 text-amber-600" />
+                  <span className="text-xs font-mono text-zinc-400 group-hover:text-amber-700">Immediate</span>
                 </div>
-                <div className="text-xs font-bold text-zinc-900">Send / Resend Setup Link</div>
-                <div className="text-xs text-zinc-500 mt-0.5">Generates secure activation link & dispatches to {studio.ownerEmail || studio.email}</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleSendResetEmail}
-                className="p-3.5 rounded-xl border border-zinc-200 hover:border-emerald-400 hover:bg-emerald-50/50 text-left transition-all group cursor-pointer"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <Mail className="w-4 h-4 text-emerald-600" />
-                  <span className="text-xs font-mono text-zinc-400 group-hover:text-emerald-700">Reset Link</span>
-                </div>
-                <div className="text-xs font-bold text-zinc-900">Send Password Reset Link</div>
-                <div className="text-xs text-zinc-500 mt-0.5">Dispatches official Firebase password recovery email with in-app setup</div>
+                <div className="text-xs font-bold text-zinc-900">Change Owner Password</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Set a new password. Old password stops working instantly.</div>
               </button>
 
               <button
@@ -711,10 +682,33 @@ export const MasterStudioDetailPage: React.FC = () => {
               >
                 <div className="flex items-center justify-between mb-2">
                   <Edit3 className="w-4 h-4 text-indigo-600" />
-                  <span className="text-xs font-mono text-zinc-400 group-hover:text-indigo-700">Profile</span>
+                  <span className="text-xs font-mono text-zinc-400 group-hover:text-indigo-700">Identity</span>
                 </div>
                 <div className="text-xs font-bold text-zinc-900">Edit Studio & Owner Details</div>
-                <div className="text-xs text-zinc-500 mt-0.5">Update owner name, phone number, address, and studio settings</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Update owner name, Login ID / username, contact phone, and studio info.</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleToggleDeactivate}
+                className={`p-3.5 rounded-xl border text-left transition-all group cursor-pointer ${
+                  studio.lifecycleStatus === 'active'
+                    ? 'border-zinc-200 hover:border-rose-400 hover:bg-rose-50/50'
+                    : 'border-emerald-300 hover:border-emerald-500 hover:bg-emerald-50/50'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <ShieldAlert className={`w-4 h-4 ${studio.lifecycleStatus === 'active' ? 'text-rose-600' : 'text-emerald-600'}`} />
+                  <span className="text-xs font-mono text-zinc-400">Toggle</span>
+                </div>
+                <div className="text-xs font-bold text-zinc-900">
+                  {studio.lifecycleStatus === 'active' ? 'Deactivate Studio Account' : 'Reactivate Studio Account'}
+                </div>
+                <div className="text-xs text-zinc-500 mt-0.5">
+                  {studio.lifecycleStatus === 'active' 
+                    ? 'Suspends login access for owner and staff immediately.' 
+                    : 'Restores login access for owner and staff immediately.'}
+                </div>
               </button>
             </div>
           </div>
@@ -1137,20 +1131,43 @@ export const MasterStudioDetailPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-zinc-600 uppercase mb-1">Studio Contact Email *</label>
+                  <label className="block text-xs font-bold text-zinc-600 uppercase mb-1">Studio Owner Full Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editFormData.ownerName}
+                    onChange={e => setEditFormData({ ...editFormData, ownerName: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-amber-400"
+                    placeholder="Owner Full Name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-zinc-600 uppercase mb-1">Owner Login ID / Username *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editFormData.loginId}
+                    onChange={e => setEditFormData({ ...editFormData, loginId: e.target.value.toLowerCase().replace(/\s+/g, '_') })}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 font-mono font-bold focus:outline-none focus:border-amber-400"
+                    placeholder="e.g. aarav_patel"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-zinc-600 uppercase mb-1">Studio Contact Email</label>
                   <input
                     type="email"
-                    required
                     value={editFormData.email}
                     onChange={e => setEditFormData({ ...editFormData, email: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-amber-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-zinc-600 uppercase mb-1">Owner Login Email *</label>
+                  <label className="block text-xs font-bold text-zinc-600 uppercase mb-1">Owner Email</label>
                   <input
                     type="email"
-                    required
                     value={editFormData.ownerEmail}
                     onChange={e => setEditFormData({ ...editFormData, ownerEmail: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 focus:outline-none focus:border-amber-400"
@@ -1263,7 +1280,7 @@ export const MasterStudioDetailPage: React.FC = () => {
         </div>
       )}
 
-      {/* Set Custom Password Modal */}
+      {/* Set / Change Owner Password Modal */}
       {isSetPasswordOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-zinc-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
@@ -1273,8 +1290,8 @@ export const MasterStudioDetailPage: React.FC = () => {
                   <KeyRound className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-zinc-900 font-display">Set Owner Temporary Password</h3>
-                  <p className="text-xs text-zinc-500">Configure or auto-generate a secure temporary password.</p>
+                  <h3 className="text-base font-bold text-zinc-900 font-display">Change Studio Owner Password</h3>
+                  <p className="text-xs text-zinc-500">Configure or auto-generate a new password.</p>
                 </div>
               </div>
               <button
@@ -1288,14 +1305,14 @@ export const MasterStudioDetailPage: React.FC = () => {
             <form onSubmit={handleSaveCustomPassword} className="space-y-4 text-xs">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-bold text-zinc-600 uppercase">Temporary Password *</label>
+                  <label className="block text-xs font-bold text-zinc-600 uppercase">New Password *</label>
                   <button
                     type="button"
                     onClick={handleGenerateSecurePassword}
                     className="text-amber-700 hover:underline font-bold text-xs flex items-center gap-1 cursor-pointer"
                   >
                     <Sparkles className="w-3 h-3" />
-                    <span>Generate Secure</span>
+                    <span>Auto-Generate Strong</span>
                   </button>
                 </div>
                 <input
@@ -1303,12 +1320,16 @@ export const MasterStudioDetailPage: React.FC = () => {
                   required
                   value={customPasswordInput}
                   onChange={e => setCustomPasswordInput(e.target.value)}
+                  placeholder="Enter min. 6 characters"
                   className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 font-mono text-sm font-bold bg-zinc-50 text-zinc-900 focus:outline-none focus:border-amber-400"
                 />
               </div>
 
-              <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-xl text-xs text-amber-900">
-                Saving will set this temporary password and open the official handover panel to copy or share directly via WhatsApp.
+              <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-xl text-xs text-amber-900 space-y-1">
+                <p className="font-bold">Immediate Effect:</p>
+                <p>• The previous password stops working immediately across all devices.</p>
+                <p>• The new password works immediately with the owner's Login ID.</p>
+                <p>• Plaintext passwords are never displayed in the platform overview.</p>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100">
@@ -1323,7 +1344,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold transition-all shadow-sm cursor-pointer"
                 >
-                  Save & Open Handover
+                  Save & Update Password
                 </button>
               </div>
             </form>
@@ -1448,71 +1469,6 @@ export const MasterStudioDetailPage: React.FC = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-      {/* SETUP LINK DISPATCH MODAL */}
-      {linkModalData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl border border-zinc-200 shadow-2xl w-full max-w-md p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-600">
-                  <Key className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-zinc-900 font-display">Setup Link Generated</h3>
-                  <p className="text-xs text-zinc-500">{linkModalData.email}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setLinkModalData(null)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center gap-2 font-medium">
-              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Password setup invitation link has been dispatched to {linkModalData.email}.</span>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-zinc-600 uppercase">Single-Use Setup Link (7-Day Expiry)</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  readOnly
-                  value={linkModalData.link}
-                  className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 font-mono text-xs bg-zinc-50 text-zinc-800 select-all focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigator.clipboard.writeText(linkModalData.link);
-                    setLinkModalData({ ...linkModalData, copied: true });
-                    setTimeout(() => {
-                      if (linkModalData) setLinkModalData({ ...linkModalData, copied: false });
-                    }, 2500);
-                  }}
-                  className="min-h-[42px] px-3.5 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0"
-                >
-                  {linkModalData.copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  <span>{linkModalData.copied ? 'Copied' : 'Copy'}</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="pt-2 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setLinkModalData(null)}
-                className="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs cursor-pointer"
-              >
-                Done
-              </button>
-            </div>
           </div>
         </div>
       )}

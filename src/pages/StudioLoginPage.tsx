@@ -1,19 +1,50 @@
 import React, { useState } from 'react';
 import { googleAuthInvitationService } from '../services/googleAuthInvitationService';
-import { Camera, AlertCircle, Eye, EyeOff, Lock, Mail, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Camera, AlertCircle, Eye, EyeOff, Lock, User, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export const StudioLoginPage: React.FC = () => {
-  const [email, setEmail] = useState<string>('');
+  const [loginId, setLoginId] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [googleLoading, setGoogleLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [infoMessage, setInfoMessage] = useState<string | null>(null);
+
+  const handlePasswordSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    const cleanId = loginId.trim();
+    if (!cleanId) {
+      setError('Please enter your Login ID or Username.');
+      return;
+    }
+    if (!password) {
+      setError('Please enter your password.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await googleAuthInvitationService.loginWithPassword(cleanId, password);
+      if (res.success && res.targetRoute) {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('studio_os_auth_changed'));
+          window.dispatchEvent(new Event('studio_data_updated'));
+          window.location.hash = res.targetRoute;
+        }
+      } else {
+        setError(res.error || 'Invalid Login ID or password.');
+      }
+    } catch (err: any) {
+      setError(err?.message || 'An error occurred during sign in.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleContinueWithGoogle = async () => {
     setError(null);
-    setInfoMessage(null);
     setGoogleLoading(true);
 
     try {
@@ -34,67 +65,13 @@ export const StudioLoginPage: React.FC = () => {
     }
   };
 
-  const handlePasswordSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setInfoMessage(null);
-
-    const cleanEmail = email.trim();
-    if (!cleanEmail) {
-      setError('Please enter your registered email address.');
-      return;
-    }
-    if (!password) {
-      setError('Please enter your password.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await googleAuthInvitationService.loginWithPassword(cleanEmail, password);
-      if (res.success && res.targetRoute) {
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('studio_os_auth_changed'));
-          window.dispatchEvent(new Event('studio_data_updated'));
-          window.location.hash = res.targetRoute;
-        }
-      } else {
-        setError(res.error || 'Invalid email or password.');
-      }
-    } catch (err: any) {
-      setError(err?.message || 'An error occurred during sign in.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    setError(null);
-    setInfoMessage(null);
-    const cleanEmail = email.trim();
-    if (!cleanEmail) {
-      setError('Please enter your email address above, then click Forgot Password.');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const res = await googleAuthInvitationService.resetUserPassword(cleanEmail);
-      setInfoMessage(res.message || `Password reset instructions sent to ${cleanEmail}.`);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to dispatch password reset request.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen w-full bg-zinc-50 flex flex-col justify-center items-center p-4 selection:bg-orange-100 selection:text-orange-900 font-sans">
       <div className="w-full max-w-md bg-white border border-zinc-200/90 rounded-3xl p-6 sm:p-10 shadow-xl shadow-zinc-200/50 relative overflow-hidden">
         {/* Subtle decorative glow */}
         <div className="absolute -top-14 -right-14 w-40 h-40 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
 
-        {/* Clean Logo & Welcome Header */}
+        {/* Studio OS Logo & Header */}
         <div className="flex flex-col items-center text-center mb-7">
           <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 text-white flex items-center justify-center shadow-md shadow-zinc-400/20 mb-3.5">
             <Camera className="w-8 h-8 text-orange-400 stroke-[2.2]" />
@@ -102,7 +79,7 @@ export const StudioLoginPage: React.FC = () => {
           <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight font-display">
             Welcome to Studio OS
           </h1>
-          <p className="text-xs text-zinc-500 mt-1 max-w-xs">
+          <p className="text-xs text-zinc-500 mt-1 max-w-xs font-medium">
             Photography & Cinematography Studio Operating System
           </p>
         </div>
@@ -115,23 +92,81 @@ export const StudioLoginPage: React.FC = () => {
           </div>
         )}
 
-        {/* Info / Success Alert */}
-        {infoMessage && (
-          <div className="mb-5 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-2.5 animate-in fade-in duration-150">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-            <div className="leading-relaxed font-medium">{infoMessage}</div>
+        {/* Experience 1: Studio Owner & Staff Login */}
+        <form onSubmit={handlePasswordSignIn} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-zinc-700 mb-1.5 uppercase tracking-wider">
+              Login ID / Username
+            </label>
+            <div className="relative">
+              <User className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3.5" />
+              <input
+                type="text"
+                required
+                autoCapitalize="none"
+                autoCorrect="off"
+                value={loginId}
+                onChange={e => setLoginId(e.target.value)}
+                placeholder="Enter your Login ID (e.g. aarav_patel)"
+                className="w-full pl-10 pr-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-medium text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 transition-all"
+              />
+            </div>
           </div>
-        )}
 
-        {/* Continue with Google */}
-        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-zinc-700 mb-1.5 uppercase tracking-wider">
+              Password
+            </label>
+            <div className="relative">
+              <Lock className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3.5" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••••••"
+                className="w-full pl-10 pr-10 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(prev => !prev)}
+                className="absolute right-3.5 top-3 text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer"
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading || googleLoading}
+            className="w-full min-h-[46px] py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] disabled:opacity-60"
+          >
+            <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </form>
+
+        {/* Clean Divider: Platform Administrator */}
+        <div className="relative flex py-6 items-center">
+          <div className="flex-grow border-t border-zinc-200"></div>
+          <span className="flex-shrink mx-3 text-xs uppercase tracking-wider text-zinc-400 font-bold flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-zinc-400" />
+            Platform Administrator
+          </span>
+          <div className="flex-grow border-t border-zinc-200"></div>
+        </div>
+
+        {/* Experience 2: Platform Administrator Login */}
+        <div>
           <button
             type="button"
             onClick={handleContinueWithGoogle}
             disabled={googleLoading || loading}
-            className="w-full min-h-[50px] py-3 px-4 rounded-2xl bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-sm border border-zinc-300 shadow-xs hover:shadow transition-all flex items-center justify-center gap-3 cursor-pointer touch-manipulation active:scale-[0.99] disabled:opacity-60"
+            className="w-full min-h-[48px] py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-xs border border-zinc-300 shadow-xs hover:shadow transition-all flex items-center justify-center gap-3 cursor-pointer touch-manipulation active:scale-[0.99] disabled:opacity-60"
           >
-            <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -151,90 +186,15 @@ export const StudioLoginPage: React.FC = () => {
             </svg>
             <span>{googleLoading ? 'Connecting to Google...' : 'Continue with Google'}</span>
           </button>
-
-          {/* Divider */}
-          <div className="relative flex py-2 items-center">
-            <div className="flex-grow border-t border-zinc-200"></div>
-            <span className="flex-shrink mx-3 text-xs uppercase tracking-wider text-zinc-400 font-bold">
-              or sign in with password
-            </span>
-            <div className="flex-grow border-t border-zinc-200"></div>
-          </div>
-
-          {/* Email + Password Form */}
-          <form onSubmit={handlePasswordSignIn} className="space-y-3.5">
-            <div>
-              <label className="block text-xs font-bold text-zinc-700 mb-1">Email Address</label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3.5" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="name@gmail.com"
-                  className="w-full pl-10 pr-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 transition-all"
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-bold text-zinc-700">Password</label>
-                <button
-                  type="button"
-                  onClick={handleForgotPassword}
-                  className="text-xs text-orange-600 hover:text-orange-700 font-bold transition-colors cursor-pointer"
-                >
-                  Forgot Password?
-                </button>
-              </div>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3.5" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(prev => !prev)}
-                  className="absolute right-3.5 top-3 text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer"
-                  title={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading || googleLoading}
-              className="w-full min-h-[46px] py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] disabled:opacity-60"
-            >
-              <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </form>
-
-          <div className="p-3 bg-zinc-50 border border-zinc-200/80 rounded-2xl text-xs text-zinc-500 text-center leading-relaxed">
-            Authorized Studio Owners and Employees can sign in using their registered email and password or Continue with Google.
-          </div>
+          <p className="text-xs text-zinc-400 text-center mt-2">
+            Restricted to authorized Master Admin (<span className="font-mono">jarsaniya.abhay@gmail.com</span>)
+          </p>
         </div>
 
         {/* Minimal Footer */}
-        <div className="mt-7 pt-4 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-400">
+        <div className="mt-8 pt-4 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-400">
           <span>Enterprise Cloud 2026</span>
-          <a
-            href="#/master/login"
-            className="text-zinc-400 hover:text-zinc-600 font-medium transition-colors cursor-pointer"
-            title="Administrator Login"
-          >
-            Console
-          </a>
+          <span className="font-medium text-zinc-400">Multi-Tenant Isolated</span>
         </div>
       </div>
     </div>

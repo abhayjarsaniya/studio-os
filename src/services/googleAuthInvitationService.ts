@@ -16,6 +16,7 @@ import { unifiedAuthService } from './unifiedAuthService';
 import { platformAuditService } from './platformAuditService';
 import { Studio, Employee, Branch } from '../types/schema';
 import { platformStudioService } from './platformStudioService';
+import { rateLimitService } from './rateLimitService';
 
 export interface AuthorizedStudioEmail {
   id: string;
@@ -80,12 +81,9 @@ export interface StudioRegistrationData {
   description?: string;
 }
 
-// Master Admin allowed email addresses
+// Master Admin allowed email addresses (Strictly one single Master Admin)
 export const MASTER_ADMIN_EMAILS = [
-  'jarsaniya.abhay@gmail.com',
-  'abhayjarsaniya@gmail.com',
-  'admin@studio-os.com',
-  'masteradmin@studioos.internal'
+  'jarsaniya.abhay@gmail.com'
 ];
 
 export async function hashInvitationToken(token: string): Promise<string> {
@@ -1281,7 +1279,7 @@ class GoogleAuthInvitationService {
 
     const cleanEmail = this.normalizeEmail(googleUser.email);
 
-    // 1. Check Master Admin Authority
+    // 1. Check Master Admin Authority (Strictly only jarsaniya.abhay@gmail.com)
     if (MASTER_ADMIN_EMAILS.includes(cleanEmail)) {
       let masterAcc = unifiedAuthService.findAccountByIdentifier(cleanEmail);
       if (!masterAcc) {
@@ -1293,7 +1291,7 @@ class GoogleAuthInvitationService {
       }
       if (!masterAcc) {
         masterAcc = {
-          id: cleanEmail === 'jarsaniya.abhay@gmail.com' ? 'admin_master_abhay' : `admin_master_${Date.now()}`,
+          id: 'admin_master_abhay',
           accountType: 'MASTER_ADMIN',
           loginId: cleanEmail,
           email: cleanEmail,
@@ -1399,235 +1397,40 @@ class GoogleAuthInvitationService {
       };
     }
 
-    // 2. Check if user profile already exists in Firestore `/users/{uid}`
-    let userProfile: any = null;
-    if (!isTest && db && !isAuthBypassed) {
-      try {
-        const uSnap = await getDoc(doc(db, 'users', googleUser.uid));
-        if (uSnap.exists()) {
-          userProfile = uSnap.data();
-        } else {
-          // Fallback query by email if account was previously created with email/password
-          const q = query(collection(db, 'users'), where('email', '==', cleanEmail));
-          const qSnap = await getDocs(q);
-          if (!qSnap.empty) {
-            userProfile = qSnap.docs[0].data();
-            // Link UID to this document
-            await setDoc(doc(db, 'users', googleUser.uid), {
-              ...userProfile,
-              uid: googleUser.uid,
-              authProvider: 'google.com',
-              updatedAt: new Date().toISOString()
-            }, { merge: true });
-          }
-        }
-      } catch (err: any) {
-        console.warn('[loginWithGoogle] Firestore lookup notice:', err.message);
-      }
-    }
-
-    // Check TenantStore cachedProfiles
-    if (!userProfile) {
-      const cachedProfiles = (TenantStore.get('platform_system', 'user_profiles') as any[]) || [];
-      const matchCached = cachedProfiles.find(p => p.uid === googleUser.uid || p.email.toLowerCase() === cleanEmail);
-      if (matchCached) {
-        userProfile = matchCached;
-      }
-    }
-
-    // Check TenantStore fallback or migration mapping
-    if (!userProfile) {
-      const allStudios = platformStudioService.listStudios();
-      const matchedStudio = allStudios.find(s => 
-        s.ownerEmail?.toLowerCase() === cleanEmail || (s as any).email?.toLowerCase() === cleanEmail
-      );
-      if (matchedStudio) {
-        userProfile = {
-          uid: googleUser.uid,
-          email: cleanEmail,
-          displayName: matchedStudio.ownerName || matchedStudio.name,
-          role: 'studio_owner',
-          accountType: 'STUDIO_OWNER',
-          studioId: matchedStudio.id,
-          studioName: matchedStudio.name,
-          status: 'active'
-        };
-      }
-    }
-
-    // Check Employee match across studios
-    if (!userProfile) {
-      const allStudios = platformStudioService.listStudios();
-      for (const st of allStudios) {
-        const emps = (TenantStore.get(st.id, 'employees') as Employee[]) || [];
-        const emp = emps.find(e => this.normalizeEmail(e.email) === cleanEmail);
-        if (emp) {
-          userProfile = {
-            uid: googleUser.uid,
-            email: cleanEmail,
-            displayName: emp.fullName,
-            role: emp.roleId || 'photographer',
-            accountType: 'EMPLOYEE',
-            studioId: st.id,
-            studioName: st.name,
-            employeeId: emp.id,
-            status: emp.employmentStatus === 'inactive' ? 'inactive' : 'active'
-          };
-          break;
-        }
-      }
-    }
-
-    // 3. If User Profile exists, check authorization & status
-    if (userProfile) {
-      // Check if Master Admin disabled this authorized email or restricted Google Sign-In
-      const allAuth = await this.listAuthorizedEmails();
-      const authRecord = allAuth.find(a => a.email.toLowerCase() === cleanEmail);
-      if (authRecord && authRecord.status === 'disabled') {
-        return {
-          success: false,
-          error: 'Your account is currently inactive. Please contact the platform administrator to reactivate your access.'
-        };
-      }
-
-      if (authRecord && authRecord.allowGoogleLogin === false) {
-        return {
-          success: false,
-          error: 'Google Sign-In has not been enabled for this email by the platform administrator. Please sign in with your email and password or contact your administrator.'
-        };
-      }
-
-      if (userProfile.status === 'inactive' || userProfile.status === 'disabled') {
-        return {
-          success: false,
-          error: 'Your account is currently inactive. Please contact the platform administrator to reactivate your access.'
-        };
-      }
-
-      const studioId = userProfile.studioId || '';
-      const isOwner = userProfile.role === 'studio_owner' || userProfile.accountType === 'STUDIO_OWNER';
-      const role = isOwner ? 'owner' : 'employee';
-      const targetRoute = isOwner ? '#/app/dashboard' : '#/employee/dashboard';
-
-      // Ensure account in unifiedAuthService
-      let userAcc = unifiedAuthService.findAccountByIdentifier(cleanEmail);
-      if (!userAcc && isOwner) {
-        userAcc = unifiedAuthService.provisionStudioOwner({
-          authUid: googleUser.uid,
-          studioId,
-          studioName: userProfile.studioName || 'Studio OS',
-          ownerName: userProfile.displayName || 'Studio Owner',
-          email: cleanEmail,
-          mobile: userProfile.phone || '9876543210',
-          username: cleanEmail,
-          temporaryPassword: 'GoogleOAuth2026!'
-        }).account;
-      }
-      if (!userAcc && !isOwner) {
-        userAcc = unifiedAuthService.provisionEmployee({
-          studioId,
-          studioName: userProfile.studioName || 'Studio OS',
-          employeeName: userProfile.displayName || 'Crew Member',
-          employeeId: userProfile.employeeId || `emp_${Date.now()}`,
-          email: cleanEmail,
-          mobile: userProfile.phone || '',
-          username: cleanEmail,
-          roleId: userProfile.role || 'photographer',
-          roleTitle: userProfile.designation || 'Photographer',
-          initialPassword: 'GoogleOAuthCrew!2026'
-        }).account;
-      }
-
-      if (userAcc) {
-        userAcc.status = 'active';
-        unifiedAuthService.saveAccount(userAcc);
-      }
-
-      const session = userAcc ? unifiedAuthService.createSession(userAcc) : null;
-      const sessionToken = session?.token || `g_sess_${googleUser.uid}_${Date.now()}`;
-
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem('studio_os_session_token', sessionToken);
-        localStorage.setItem('studio_os_user_role', role);
-        if (studioId) {
-          localStorage.setItem('studio_os_active_studio_id_v2', studioId);
-        }
-      }
-
-      if (authRecord) {
-        authRecord.lastLoginAt = new Date().toISOString();
-        this.saveOrUpdateAuthorizedEmail(authRecord);
-      }
-
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('studio_os_auth_changed'));
-        window.dispatchEvent(new CustomEvent('studio_data_updated', { detail: { studioId } }));
-      }
-
-      return {
-        success: true,
-        user: googleUser,
-        role,
-        studioId,
-        targetRoute
-      };
-    }
-
-    // 4. User is NOT yet registered. Check if email is in `authorizedStudioEmails`
-    const allAuth = await this.listAuthorizedEmails();
-    const authorized = allAuth.find(a => a.email.toLowerCase() === cleanEmail);
-
-    if (authorized) {
-      if (authorized.status === 'disabled') {
-        return {
-          success: false,
-          error: 'Your account is currently inactive. Please contact the platform administrator to reactivate your access.'
-        };
-      }
-
-      if (authorized.allowGoogleLogin === false) {
-        return {
-          success: false,
-          error: 'Google Sign-In has not been enabled for this email by the platform administrator. Please sign in with your email and password or contact your administrator.'
-        };
-      }
-
-      // Authorized, but needs to complete one-time registration
-      return {
-        success: false,
-        needsRegistration: true,
-        user: googleUser,
-        error: `Welcome ${googleUser.displayName || cleanEmail}! Your email is authorized, but you haven't completed your studio setup yet. Please use your registration invitation link or contact Master Admin.`
-      };
-    }
-
-    // 5. Arbitrary Google account: Reject access cleanly
+    // Google Sign-In is EXCLUSIVELY for Platform Master Admin (jarsaniya.abhay@gmail.com)
     return {
       success: false,
-      error: `This Google account (${cleanEmail}) is not authorized to access Studio OS. Please contact Master Admin or your Studio Administrator for an invitation link.`
+      error: `Access Denied: Google Sign-In is exclusively reserved for Platform Master Admin (jarsaniya.abhay@gmail.com). Studio Owners and Employees must sign in with their Login ID and Password.`
     };
   }
 
   // -------------------------------------------------------------
-  // EMAIL + PASSWORD LOGIN (Common Login Page)
+  // USERNAME / LOGIN ID + PASSWORD LOGIN (Common Login Page)
   // -------------------------------------------------------------
 
-  async loginWithPassword(email: string, password: string): Promise<{
+  async loginWithPassword(emailOrLoginId: string, password: string): Promise<{
     success: boolean;
     role?: string;
     studioId?: string;
     targetRoute?: string;
     error?: string;
   }> {
-    const cleanEmail = this.normalizeEmail(email);
-    if (!cleanEmail || !password) {
-      return { success: false, error: 'Please enter both your email address and password.' };
+    const cleanId = (emailOrLoginId || '').trim().toLowerCase();
+    if (!cleanId || !password) {
+      return { success: false, error: 'Please enter both your Login ID and password.' };
+    }
+
+    // Rate limit check
+    const rl = rateLimitService.checkRateLimit(cleanId);
+    if (!rl.allowed) {
+      return { success: false, error: rl.message };
     }
 
     // 1. Check Master Admin Credentials
-    if (MASTER_ADMIN_EMAILS.includes(cleanEmail)) {
-      const res = unifiedAuthService.loginMasterAdmin(cleanEmail, password);
+    if (MASTER_ADMIN_EMAILS.includes(cleanId)) {
+      const res = unifiedAuthService.loginMasterAdmin(cleanId, password);
       if (res.success && res.session) {
+        rateLimitService.resetAttempts(cleanId);
         if (typeof localStorage !== 'undefined') {
           localStorage.setItem('studio_os_master_token', res.session.token);
           localStorage.setItem('studio_os_session_token', res.session.token);
@@ -1645,44 +1448,19 @@ class GoogleAuthInvitationService {
           targetRoute: '#/master/dashboard'
         };
       }
+      rateLimitService.recordFailedAttempt(cleanId);
       return { success: false, error: res.error || 'Invalid Master Admin credentials.' };
     }
 
-    // 2. Check Authorization & Password Method Policy
-    const allAuth = await this.listAuthorizedEmails();
-    const authRecord = allAuth.find(a => a.email.toLowerCase() === cleanEmail);
-
-    if (authRecord) {
-      if (authRecord.status === 'disabled') {
-        return {
-          success: false,
-          error: 'Your account is currently inactive. Please contact the platform administrator to reactivate your access.'
-        };
-      }
-
-      if (authRecord.allowPasswordLogin === false) {
-        return {
-          success: false,
-          error: 'Password login has been disabled for this account by the platform administrator. Please use Google Sign-In or contact your administrator.'
-        };
-      }
-    }
-
-    // 3. Try Firebase Auth (if online & enabled)
-    const isTest = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
-    if (!isTest && auth && !isAuthBypassed) {
-      try {
-        await signInWithEmailAndPassword(auth, cleanEmail, password);
-      } catch (fbErr: any) {
-        console.warn('[loginWithPassword] Firebase auth attempt:', fbErr?.code || fbErr?.message);
-      }
-    }
-
-    // 4. Authenticate against Unified Auth Service
-    const authRes = unifiedAuthService.login(cleanEmail, password);
+    // 2. Check if user account exists in unified auth
+    const authRes = unifiedAuthService.login(cleanId, password);
     if (!authRes.success || !authRes.session) {
-      return { success: false, error: authRes.error || 'Invalid email or password.' };
+      rateLimitService.recordFailedAttempt(cleanId);
+      return { success: false, error: authRes.error || 'Invalid Login ID or password.' };
     }
+
+    // Reset rate limit on success
+    rateLimitService.resetAttempts(cleanId);
 
     const session = authRes.session;
     const isOwner = session.account.accountType === 'STUDIO_OWNER';
@@ -1696,11 +1474,6 @@ class GoogleAuthInvitationService {
       if (studioId) {
         localStorage.setItem('studio_os_active_studio_id_v2', studioId);
       }
-    }
-
-    if (authRecord) {
-      authRecord.lastLoginAt = new Date().toISOString();
-      await this.saveOrUpdateAuthorizedEmail(authRecord);
     }
 
     if (typeof window !== 'undefined') {

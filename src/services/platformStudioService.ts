@@ -966,8 +966,11 @@ export class PlatformStudioService {
         username = ownerAcc.loginId;
         email = ownerAcc.email;
         unifiedAuthService.changePassword(ownerAcc.id, temporaryPassword);
-        ownerAcc.mustChangePassword = mustChangePassword;
-        (unifiedAuthService as any).saveAccount?.(ownerAcc);
+        const updatedAcc = unifiedAuthService.getAccount(ownerAcc.id);
+        if (updatedAcc) {
+          updatedAcc.mustChangePassword = mustChangePassword;
+          unifiedAuthService.saveAccount(updatedAcc);
+        }
       }
     } catch (e) {
       // Continue safely
