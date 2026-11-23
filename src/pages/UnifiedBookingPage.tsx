@@ -174,6 +174,23 @@ export const UnifiedBookingPage: React.FC = () => {
 
   // Keep first function's date and venue in sync with Step 2 inputs if not overridden
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash.includes('?')) {
+      try {
+        const queryStr = window.location.hash.split('?')[1];
+        const params = new URLSearchParams(queryStr);
+        if (params.get('date')) setEventDate(params.get('date')!);
+        if (params.get('name')) setCustomerName(params.get('name')!);
+        if (params.get('phone')) setCustomerPhone(params.get('phone')!);
+        if (params.get('event')) setEventName(params.get('event')!);
+        if (params.get('category')) setEventCategory(params.get('category')!);
+        if (params.get('venue')) setVenue(params.get('venue')!);
+      } catch (e) {
+        console.warn('[UnifiedBookingPage] Query param parsing warning:', e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (eventDate) {
       setFunctions(prev => prev.map((f, i) => (i === 0 && !f.date) ? { ...f, date: eventDate } : f));
     }

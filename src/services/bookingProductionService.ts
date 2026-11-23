@@ -30,24 +30,272 @@ export class BookingProductionService {
   private static BOOKINGS_COLLECTION = 'studio_bookings_v2';
   private static CUSTOMER_NOTES_COLLECTION = 'studio_customer_notes_v2';
 
-  // Helper to get bookings list
+  // Helper to get bookings list with auto-reconciliation for converted quotations and calendar events
   listBookings(studioId: string, includeDeleted = false): BookingRecord[] {
-    const raw = TenantStore.get(studioId, BookingProductionService.BOOKINGS_COLLECTION) as BookingRecord[];
-    if (Array.isArray(raw) && raw.length > 0) {
-      return includeDeleted ? raw : raw.filter(b => !b.isDeleted);
-    }
-    // Only seed demo bookings for historical demo/test studios (not for new production studios)
+    let raw = TenantStore.get(studioId, BookingProductionService.BOOKINGS_COLLECTION) as BookingRecord[];
+    let list: BookingRecord[] = Array.isArray(raw) ? [...raw] : [];
+
+    // Only seed demo bookings for historical demo/test studios if completely empty
     const isDemoOrTest = studioId === 'std_demo_royal' || 
       studioId === 'studio_shreeji_films' || 
       studioId === 'studio_royal_001' || 
       studioId.includes('test') || 
       studioId.startsWith('studio_demo_');
 
-    if (isDemoOrTest) {
-      const list = this.seedDemoBookings(studioId);
-      return includeDeleted ? list : list.filter(b => !b.isDeleted);
+    if (list.length === 0 && isDemoOrTest) {
+      list = this.seedDemoBookings(studioId);
     }
-    return Array.isArray(raw) ? raw : [];
+
+    // Auto-reconcile: Materialize any converted quotations or studio events into BookingRecord items
+    let hasMutated = false;
+    try {
+      // 1. Reconcile converted quotations
+      const quotations = (TenantStore.get(studioId, 'quotations') as any[]) || [];
+      const convertedQuotes = quotations.filter(q => q && (q.status === 'Converted to Booking' || q.status === 'Accepted'));
+
+      for (const q of convertedQuotes) {
+        const alreadyExists = list.some(b => 
+          b.id === q.convertedBookingId || 
+          b.id === q.convertedEventId ||
+          b.id === `bkg_quo_${q.id}` ||
+          (b.customerName?.trim().toLowerCase() === q.customerName?.trim().toLowerCase() && 
+           b.eventName?.trim().toLowerCase() === (q.eventName || `${q.eventCategory || 'Wedding'} Shoot`).trim().toLowerCase())
+        );
+
+        if (!alreadyExists) {
+          const bookingId = q.convertedBookingId || q.convertedEventId || `bkg_quo_${q.id}`;
+          const bkgNumber = q.convertedBookingNumber || `BKG-2026-${String(list.length + 1).padStart(4, '0')}`;
+          const eventDate = q.eventDate || new Date().toISOString().split('T')[0];
+          const eventName = q.eventName || `${q.eventCategory || 'Wedding'} Shoot`;
+          const venue = q.eventVenue || 'Studio / Main Stage';
+          const city = q.eventCity || 'Ahmedabad';
+          const grandTotal = Number(q.grandTotal || q.subtotal || 0);
+          const advance = Number(q.advancePaid || q.advanceReceived || 0);
+
+          const syncedBooking: BookingRecord = {
+            id: bookingId,
+            studioId,
+            bookingNumber: bkgNumber,
+            status: 'deal_confirmed',
+            customerId: q.customerId || `cust_${Date.now()}`,
+            customerName: q.customerName || 'Client',
+            customerPhone: q.customerPhone || '9876543210',
+            customerWhatsApp: q.customerPhone || '9876543210',
+            customerEmail: q.customerEmail,
+            eventName,
+            category: q.eventCategory || 'Wedding',
+            mainEventDate: eventDate,
+            startDate: eventDate,
+            venue,
+            city,
+            description: q.additionalNotes || `Converted from Quotation #${q.quotationNumber}`,
+            numberOfDays: 1,
+            numberOfFunctions: 1,
+            functions: [
+              {
+                id: `fn_${bookingId}_1`,
+                bookingId,
+                name: eventName,
+                category: q.eventCategory || 'Wedding',
+                date: eventDate,
+                startTime: '10:00 AM',
+                endTime: '06:00 PM',
+                venue,
+                city,
+                assignedPhotographerIds: [],
+                assignedVideographerIds: [],
+                assignedDroneOperatorIds: [],
+                assignedEditorIds: [],
+                assignedSupplierIds: [],
+                deliverables: (q.items || []).map((it: any, idx: number) => ({
+                  id: `del_${bookingId}_${idx + 1}`,
+                  bookingId,
+                  functionId: `fn_${bookingId}_1`,
+                  functionName: eventName,
+                  name: it.description || it.title || 'Coverage',
+                  category: 'photography',
+                  deliveryMethod: 'Google Drive',
+                  requiredQty: it.quantity || 1,
+                  completedQty: 0,
+                  unit: 'items',
+                  deadlineType: 'relative_to_shoot',
+                  deadlineDays: 7,
+                  calculatedDeadline: eventDate,
+                  priority: 'normal',
+                  stage: 'not_started',
+                  isDelivered: false,
+                  isPartiallyDelivered: false
+                })),
+                priority: 'normal',
+                status: 'scheduled'
+              }
+            ],
+            deliverables: (q.items || []).map((it: any, idx: number) => ({
+              id: `del_${bookingId}_${idx + 1}`,
+              bookingId,
+              functionId: `fn_${bookingId}_1`,
+              functionName: eventName,
+              name: it.description || it.title || 'Coverage',
+              category: 'photography',
+              deliveryMethod: 'Google Drive',
+              requiredQty: it.quantity || 1,
+              completedQty: 0,
+              unit: 'items',
+              deadlineType: 'relative_to_shoot',
+              deadlineDays: 7,
+              calculatedDeadline: eventDate,
+              priority: 'normal',
+              stage: 'not_started',
+              isDelivered: false,
+              isPartiallyDelivered: false
+            })),
+            financials: {
+              originalQuotation: grandTotal,
+              negotiatedDiscount: Number(q.discount || 0),
+              finalAgreedAmount: grandTotal,
+              advanceRequired: Number(q.advanceRequired || Math.round(grandTotal * 0.25)),
+              advanceReceived: advance,
+              isAdvanceConfirmed: advance > 0,
+              verifiedPaymentsReceived: advance,
+              remainingBalance: Math.max(0, grandTotal - advance),
+              paymentMilestones: []
+            },
+            billingVersions: [],
+            notes: [],
+            createdAt: q.convertedAt || q.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            createdBy: 'Quotation Conversion'
+          };
+          list.unshift(syncedBooking);
+          hasMutated = true;
+        }
+      }
+
+      // 2. Reconcile events from TenantStore.get('events')
+      const events = (TenantStore.get(studioId, 'events') as StudioEvent[]) || [];
+      for (const ev of events) {
+        if (!ev || ev.isDeleted || !ev.name) continue;
+        const alreadyExists = list.some(b => 
+          b.id === ev.id || 
+          (b.customerName?.trim().toLowerCase() === ev.customerName?.trim().toLowerCase() && 
+           b.eventName?.trim().toLowerCase() === ev.name?.trim().toLowerCase() &&
+           (b.mainEventDate || b.startDate) === (ev.startDate || ev.endDate))
+        );
+
+        if (!alreadyExists) {
+          const bookingId = ev.id || `bkg_ev_${Date.now()}`;
+          const bkgNumber = ev.eventNumber || `BKG-2026-${String(list.length + 1).padStart(4, '0')}`;
+          const eventDate = ev.startDate || new Date().toISOString().split('T')[0];
+          const budget = Number(ev.estimatedBudget || (ev as any).budget || 0);
+          const advance = Number(ev.advancePaid || (ev as any).paidAmount || 0);
+
+          const syncedBooking: BookingRecord = {
+            id: bookingId,
+            studioId,
+            bookingNumber: bkgNumber,
+            status: ev.status === 'Completed' ? 'completed' : ev.status === 'Cancelled' ? 'cancelled' : advance > 0 ? 'deal_confirmed' : 'event_scheduled',
+            customerId: ev.customerId || `cust_${Date.now()}`,
+            customerName: ev.customerName || 'Client',
+            customerPhone: ev.customerPhone || '9876543210',
+            customerWhatsApp: ev.customerPhone || '9876543210',
+            customerEmail: (ev as any).customerEmail || (ev as any).email,
+            eventName: ev.name,
+            category: ev.category || 'Wedding',
+            mainEventDate: eventDate,
+            startDate: eventDate,
+            venue: ev.venue || 'Main Venue',
+            city: ev.venueCity || 'Ahmedabad',
+            description: ev.description || '',
+            numberOfDays: 1,
+            numberOfFunctions: 1,
+            functions: [
+              {
+                id: `fn_${bookingId}_1`,
+                bookingId,
+                name: ev.name,
+                category: ev.category || 'Wedding',
+                date: eventDate,
+                startTime: ev.startTime || '10:00 AM',
+                endTime: ev.endTime || '06:00 PM',
+                venue: ev.venue || 'Main Venue',
+                city: ev.venueCity || 'Ahmedabad',
+                assignedPhotographerIds: [],
+                assignedVideographerIds: [],
+                assignedDroneOperatorIds: [],
+                assignedEditorIds: [],
+                assignedSupplierIds: [],
+                deliverables: (ev.deliverables || []).map((dName: string, idx: number) => ({
+                  id: `del_${bookingId}_${idx + 1}`,
+                  bookingId,
+                  functionId: `fn_${bookingId}_1`,
+                  functionName: ev.name,
+                  name: dName,
+                  category: 'photography',
+                  deliveryMethod: 'Google Drive',
+                  requiredQty: 1,
+                  completedQty: 0,
+                  unit: 'items',
+                  deadlineType: 'relative_to_shoot',
+                  deadlineDays: 7,
+                  calculatedDeadline: eventDate,
+                  priority: 'normal',
+                  stage: 'not_started',
+                  isDelivered: false,
+                  isPartiallyDelivered: false
+                })),
+                priority: 'normal',
+                status: 'scheduled'
+              }
+            ],
+            deliverables: (ev.deliverables || []).map((dName: string, idx: number) => ({
+              id: `del_${bookingId}_${idx + 1}`,
+              bookingId,
+              functionId: `fn_${bookingId}_1`,
+              functionName: ev.name,
+              name: dName,
+              category: 'photography',
+              deliveryMethod: 'Google Drive',
+              requiredQty: 1,
+              completedQty: 0,
+              unit: 'items',
+              deadlineType: 'relative_to_shoot',
+              deadlineDays: 7,
+              calculatedDeadline: eventDate,
+              priority: 'normal',
+              stage: 'not_started',
+              isDelivered: false,
+              isPartiallyDelivered: false
+            })),
+            financials: {
+              originalQuotation: budget,
+              negotiatedDiscount: 0,
+              finalAgreedAmount: budget,
+              advanceRequired: Math.round(budget * 0.25),
+              advanceReceived: advance,
+              isAdvanceConfirmed: advance > 0,
+              verifiedPaymentsReceived: advance,
+              remainingBalance: Math.max(0, budget - advance),
+              paymentMilestones: []
+            },
+            billingVersions: [],
+            notes: [],
+            createdAt: ev.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            createdBy: ev.createdBy || 'Calendar / Event System'
+          };
+          list.unshift(syncedBooking);
+          hasMutated = true;
+        }
+      }
+    } catch (reconcileErr) {
+      console.warn('[bookingProductionService.listBookings] Reconciliation warning:', reconcileErr);
+    }
+
+    if (hasMutated) {
+      TenantStore.set(studioId, BookingProductionService.BOOKINGS_COLLECTION, list);
+    }
+
+    return includeDeleted ? list : list.filter(b => !b.isDeleted);
   }
 
   // Get single booking

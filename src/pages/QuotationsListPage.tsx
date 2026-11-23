@@ -209,17 +209,25 @@ export const QuotationsListPage: React.FC = () => {
       </div>
 
       {successBanner && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3 text-emerald-800 text-xs font-medium">
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-emerald-800 text-xs font-medium animate-in fade-in duration-200">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
             <span>{successBanner}</span>
           </div>
-          <button
-            onClick={() => setSuccessBanner(null)}
-            className="text-emerald-700 hover:text-emerald-900 font-bold"
-          >
-            Dismiss
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setActiveTab('bookings')}
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs cursor-pointer transition-all"
+            >
+              View in Bookings Directory →
+            </button>
+            <button
+              onClick={() => setSuccessBanner(null)}
+              className="text-emerald-700 hover:text-emerald-900 font-bold px-2 py-1"
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 
@@ -367,9 +375,19 @@ export const QuotationsListPage: React.FC = () => {
                             <span>Convert</span>
                           </button>
                         ) : (
-                          <span className="text-xs text-purple-700 font-bold px-2 py-0.5 bg-purple-50 rounded-md">
-                            Converted
-                          </span>
+                          <button
+                            onClick={() => {
+                              if ((q as any).convertedBookingId) {
+                                window.location.hash = `#/app/bookings/${(q as any).convertedBookingId}`;
+                              }
+                              setActiveTab('bookings');
+                            }}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold transition-all cursor-pointer"
+                            title="Open in Booking Directory"
+                          >
+                            <CheckCircle2 className="w-3 h-3 text-purple-600" />
+                            <span>Converted →</span>
+                          </button>
                         )}
 
                         {q.status !== 'Converted to Booking' && (

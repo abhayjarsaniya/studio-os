@@ -15,7 +15,10 @@ import {
   ExternalLink,
   Users,
   X,
-  ChevronDown
+  ChevronDown,
+  CheckCircle2,
+  Sparkles,
+  Check
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { NewBookingButton } from '../components/common/NewBookingButton';
@@ -299,6 +302,131 @@ export const CalendarPage: React.FC = () => {
     return conflicts;
   };
 
+  // Instant Calendar Shoot Booking Modal State
+  const [isInstantShootModalOpen, setIsInstantShootModalOpen] = useState(false);
+  const [instantForm, setInstantForm] = useState({
+    eventName: '',
+    category: 'Wedding',
+    customerName: '',
+    customerPhone: '',
+    eventDate: formattedSelectedDayStr,
+    startTime: '10:00 AM',
+    endTime: '06:00 PM',
+    venue: '',
+    city: currentStudio?.city || 'Ahmedabad',
+    agreedAmount: 120000,
+    advancePaid: 30000
+  });
+  const [isSavingInstant, setIsSavingInstant] = useState(false);
+  const [instantError, setInstantError] = useState('');
+  const [calendarToast, setCalendarToast] = useState<string | null>(null);
+
+  const openInstantBookingModal = (dateStr?: string) => {
+    const targetDate = dateStr || formattedSelectedDayStr;
+    setInstantForm({
+      eventName: '',
+      category: 'Wedding',
+      customerName: '',
+      customerPhone: '',
+      eventDate: targetDate,
+      startTime: '10:00 AM',
+      endTime: '06:00 PM',
+      venue: '',
+      city: currentStudio?.city || 'Ahmedabad',
+      agreedAmount: 120000,
+      advancePaid: 30000
+    });
+    setInstantError('');
+    setIsInstantShootModalOpen(true);
+  };
+
+  const handleSaveInstantShoot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setInstantError('');
+
+    const eventName = instantForm.eventName.trim();
+    const customerName = instantForm.customerName.trim();
+    const customerPhone = instantForm.customerPhone.trim();
+    const targetDate = instantForm.eventDate.trim() || formattedSelectedDayStr;
+    const venue = instantForm.venue.trim() || 'Main Studio / Venue';
+    const city = instantForm.city.trim() || currentStudio?.city || 'Ahmedabad';
+    const agreedAmount = Number(instantForm.agreedAmount) || 0;
+    const advancePaid = Number(instantForm.advancePaid) || 0;
+
+    if (!eventName) {
+      setInstantError('Please enter an event or shoot name.');
+      return;
+    }
+    if (!customerName) {
+      setInstantError('Please enter client full name.');
+      return;
+    }
+    if (!customerPhone || customerPhone.length < 6) {
+      setInstantError('Please enter a valid client phone number.');
+      return;
+    }
+
+    setIsSavingInstant(true);
+    try {
+      const created = bookingProductionService.createBooking(studioId, {
+        customerName,
+        customerPhone,
+        customerWhatsApp: customerPhone,
+        eventName,
+        category: instantForm.category || 'Wedding',
+        mainEventDate: targetDate,
+        startDate: targetDate,
+        endDate: targetDate,
+        venue,
+        city,
+        description: `Direct calendar shoot booking for ${customerName}.`,
+        agreedAmount,
+        advancePayment: advancePaid,
+        advanceReceived: advancePaid,
+        paymentStatus: advancePaid > 0 ? 'partially_paid' : 'pending',
+        functions: [
+          {
+            name: eventName,
+            category: instantForm.category || 'Wedding',
+            date: targetDate,
+            startTime: instantForm.startTime,
+            endTime: instantForm.endTime,
+            venue,
+            city,
+            deliverablesConfig: [
+              {
+                name: `${instantForm.category} High-Res Stills`,
+                category: 'photography',
+                requiredQty: 100,
+                unit: 'photos',
+                deadlineDays: 7
+              },
+              {
+                name: `${instantForm.category} Teaser Reel`,
+                category: 'video',
+                requiredQty: 1,
+                unit: 'video',
+                deadlineDays: 14
+              }
+            ]
+          }
+        ],
+        createdBy: 'Studio Owner'
+      });
+
+      setIsInstantShootModalOpen(false);
+      setDataVersion(v => v + 1);
+      window.dispatchEvent(new Event('studio_data_updated'));
+      setCalendarToast(`Booking ${created.bookingNumber} ("${created.eventName}") scheduled! Active on Calendar & Booking Directory.`);
+      setTimeout(() => setCalendarToast(null), 5000);
+    } catch (err: any) {
+      console.error('[handleSaveInstantShoot] Error:', err);
+      setInstantError(err.message || 'Failed to create shoot. Please try again.');
+    } finally {
+      setIsSavingInstant(false);
+    }
+  };
+
   // Handle click on a date cell in month view (Requirement 5)
   const handleDateClick = (dayNumber: number) => {
     setSelectedDay(dayNumber);
@@ -306,60 +434,14 @@ export const CalendarPage: React.FC = () => {
     const eventsOnThisDay = combinedCalendarEvents.filter(e => e.startDate === targetDateStr);
 
     if (eventsOnThisDay.length === 0) {
-      // EMPTY DATE: Automatically open New Event Booking with this date pre-filled!
-      setEditingEvent({
-        id: '',
-        studioId,
-        eventNumber: '',
-        name: '',
-        title: '',
-        customerId: '',
-        customerName: '',
-        customerPhone: '',
-        category: 'Wedding',
-        startDate: targetDateStr,
-        startTime: '10:00',
-        endDate: targetDateStr,
-        endTime: '18:00',
-        venue: '',
-        venueCity: currentStudio?.city || 'Ahmedabad',
-        priority: 'High',
-        status: 'Confirmed',
-        assignedTeamIds: [],
-        estimatedBudget: 120000,
-        advancePaid: 50000,
-        notes: ''
-      } as unknown as StudioEvent);
-      setIsEventFormOpen(true);
+      // EMPTY DATE: Instantly open Quick Shoot Modal with this date pre-filled!
+      openInstantBookingModal(targetDateStr);
     }
   };
 
   // Open New Booking for selected day
   const handleCreateBookingForDay = () => {
-    setEditingEvent({
-      id: '',
-      studioId,
-      eventNumber: '',
-      name: '',
-      title: '',
-      customerId: '',
-      customerName: '',
-      customerPhone: '',
-      category: 'Wedding',
-      startDate: formattedSelectedDayStr,
-      startTime: '10:00',
-      endDate: formattedSelectedDayStr,
-      endTime: '18:00',
-      venue: '',
-      venueCity: currentStudio?.city || 'Ahmedabad',
-      priority: 'High',
-      status: 'Confirmed',
-      assignedTeamIds: [],
-      estimatedBudget: 120000,
-      advancePaid: 50000,
-      notes: ''
-    } as unknown as StudioEvent);
-    setIsEventFormOpen(true);
+    openInstantBookingModal(formattedSelectedDayStr);
   };
 
   return (
@@ -411,10 +493,7 @@ export const CalendarPage: React.FC = () => {
           {/* Compact Plus (+) Button for Mobile (48–56px touch target, Shiny Orange signature) */}
           <button
             type="button"
-            onClick={() => {
-              setEditingEvent(null);
-              setIsEventFormOpen(true);
-            }}
+            onClick={() => openInstantBookingModal()}
             className="min-w-[48px] min-h-[48px] w-12 h-12 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white flex items-center justify-center shadow-md shadow-orange-500/25 active:scale-95 transition-all cursor-pointer shrink-0 border border-orange-400/30"
             aria-label="New Booking"
             title="Create New Booking"
@@ -485,10 +564,7 @@ export const CalendarPage: React.FC = () => {
           </div>
 
           <NewBookingButton
-            onClick={() => {
-              setEditingEvent(null);
-              setIsEventFormOpen(true);
-            }}
+            onClick={() => openInstantBookingModal()}
           />
         </div>
       </div>
@@ -943,6 +1019,268 @@ export const CalendarPage: React.FC = () => {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {calendarToast && (
+        <div className="fixed top-5 right-5 z-50 p-4 rounded-2xl bg-emerald-900 text-white shadow-2xl border border-emerald-700 flex items-center gap-3 text-xs font-semibold animate-in fade-in slide-in-from-top-4">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+          <span>{calendarToast}</span>
+          <button onClick={() => setCalendarToast(null)} className="ml-2 text-emerald-300 hover:text-white cursor-pointer">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Quick Instant Shoot Creation Modal (1-Step, Zero Friction) */}
+      {isInstantShootModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in overflow-y-auto"
+          onClick={() => setIsInstantShootModalOpen(false)}
+        >
+          <div 
+            className="bg-white rounded-3xl border border-zinc-200/90 shadow-2xl max-w-lg w-full p-5 sm:p-7 space-y-4 my-8"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 border border-orange-200 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-orange-600" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base sm:text-lg font-bold text-zinc-900 font-display">
+                      Schedule Shoot / Event
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-orange-700 border border-orange-200">
+                      Instant Booking
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-500 font-medium">
+                    Quickly add shoot to Calendar & Booking Directory
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsInstantShootModalOpen(false)}
+                className="w-8 h-8 rounded-xl hover:bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-zinc-700 cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Error Message */}
+            {instantError && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{instantError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveInstantShoot} className="space-y-4">
+              {/* Event / Shoot Name */}
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">
+                  Event / Shoot Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Rahul & Pooja Wedding or Pre-Wedding Shoot"
+                  value={instantForm.eventName}
+                  onChange={e => setInstantForm(f => ({ ...f, eventName: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 font-medium bg-zinc-50 focus:bg-white"
+                />
+              </div>
+
+              {/* Event Category Chips */}
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1.5">
+                  Category
+                </label>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {['Wedding', 'Pre-Wedding', 'Engagement', 'Reception', 'Haldi / Mehndi', 'Maternity', 'Corporate', 'Birthday'].map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setInstantForm(f => ({ ...f, category: cat }))}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        instantForm.category === cat
+                          ? 'bg-zinc-900 text-white shadow-xs'
+                          : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Client Info Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">
+                    Client Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Rahul Patel"
+                    value={instantForm.customerName}
+                    onChange={e => setInstantForm(f => ({ ...f, customerName: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 font-medium bg-zinc-50 focus:bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">
+                    Mobile / WhatsApp *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="e.g. 9876543210"
+                    value={instantForm.customerPhone}
+                    onChange={e => setInstantForm(f => ({ ...f, customerPhone: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 font-medium bg-zinc-50 focus:bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* Date & Time Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">
+                    Shoot Date *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={instantForm.eventDate}
+                    onChange={e => setInstantForm(f => ({ ...f, eventDate: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 font-medium bg-zinc-50 focus:bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">
+                    Start Time
+                  </label>
+                  <input
+                    type="text"
+                    value={instantForm.startTime}
+                    onChange={e => setInstantForm(f => ({ ...f, startTime: e.target.value }))}
+                    placeholder="10:00 AM"
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 font-medium bg-zinc-50 focus:bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">
+                    End Time
+                  </label>
+                  <input
+                    type="text"
+                    value={instantForm.endTime}
+                    onChange={e => setInstantForm(f => ({ ...f, endTime: e.target.value }))}
+                    placeholder="06:00 PM"
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 font-medium bg-zinc-50 focus:bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* Venue & City Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">
+                    Venue / Location
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Grand Heritage Lawn"
+                    value={instantForm.venue}
+                    onChange={e => setInstantForm(f => ({ ...f, venue: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 font-medium bg-zinc-50 focus:bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    value={instantForm.city}
+                    onChange={e => setInstantForm(f => ({ ...f, city: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 font-medium bg-zinc-50 focus:bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* Financials Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-zinc-50 rounded-2xl border border-zinc-200/70">
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">
+                    Agreed Package (₹)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1000"
+                    value={instantForm.agreedAmount}
+                    onChange={e => setInstantForm(f => ({ ...f, agreedAmount: parseInt(e.target.value) || 0 }))}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 font-mono font-bold bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-1">
+                    Advance Paid (₹)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1000"
+                    value={instantForm.advancePaid}
+                    onChange={e => setInstantForm(f => ({ ...f, advancePaid: parseInt(e.target.value) || 0 }))}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 text-xs text-emerald-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 font-mono font-bold bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* Form Buttons */}
+              <div className="pt-2 space-y-2.5">
+                <button
+                  type="submit"
+                  disabled={isSavingInstant}
+                  className="w-full min-h-[46px] py-2.5 px-4 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98 disabled:opacity-60"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span>{isSavingInstant ? 'Saving Shoot...' : '⚡ Save & Schedule Shoot'}</span>
+                </button>
+
+                <div className="flex items-center justify-between text-xs pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsInstantShootModalOpen(false);
+                      window.location.hash = `#/app/bookings/new?date=${encodeURIComponent(instantForm.eventDate || formattedSelectedDayStr)}&name=${encodeURIComponent(instantForm.customerName)}&phone=${encodeURIComponent(instantForm.customerPhone)}&event=${encodeURIComponent(instantForm.eventName)}&category=${encodeURIComponent(instantForm.category)}&venue=${encodeURIComponent(instantForm.venue)}`;
+                    }}
+                    className="text-orange-600 hover:text-orange-800 font-bold underline cursor-pointer"
+                  >
+                    Need multi-function crew & gear? Open 8-step wizard →
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsInstantShootModalOpen(false)}
+                    className="text-zinc-500 hover:text-zinc-800 font-bold px-2 py-1 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       )}

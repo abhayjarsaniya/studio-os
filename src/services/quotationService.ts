@@ -6,6 +6,7 @@ import { invoiceService } from './invoiceService';
 import { eventService } from './eventService';
 import { customerService } from './customerService';
 import { StudioEvent } from '../types';
+import { bookingProductionService } from './bookingProductionService';
 
 export interface PhotographyPackageTemplate {
   id: string;
@@ -554,15 +555,54 @@ export class QuotationService {
       createdBy: operator
     });
 
-    // 3. Mark Quotation as Converted to Booking
+    // 3. Create or sync BookingRecord in bookingProductionService for Booking Directory
+    let bookingRecord: any;
+    try {
+      bookingRecord = bookingProductionService.createBooking(studioId, {
+        customerId: quotation.customerId,
+        customerName: quotation.customerName,
+        customerPhone: quotation.customerPhone || '9820112233',
+        customerEmail: quotation.customerEmail,
+        eventName: eventName,
+        category: quotation.eventCategory || 'Wedding',
+        mainEventDate: eventDate,
+        startDate: eventDate,
+        venue,
+        city: (quotation as any).eventCity || 'Ahmedabad',
+        description: quotation.additionalNotes || `Converted from Quotation #${quotation.quotationNumber}`,
+        agreedAmount: quotation.grandTotal,
+        advancePayment: (quotation as any).advanceRequired || 0,
+        functions: [
+          {
+            name: quotation.eventName || `${quotation.eventCategory || 'Event'} Shoot`,
+            category: quotation.eventCategory || 'Wedding',
+            date: eventDate,
+            venue,
+            city: (quotation as any).eventCity || 'Ahmedabad',
+            deliverablesConfig: quotation.items.map(item => ({
+              name: item.description,
+              category: 'photography',
+              requiredQty: item.quantity || 1
+            }))
+          }
+        ],
+        createdBy: operator
+      });
+    } catch (bkgErr) {
+      console.warn('[quotationService.convertQuotationToBooking] bookingProductionService warning:', bkgErr);
+    }
+
+    // 4. Mark Quotation as Converted to Booking
     const updatedQuotation = this.updateQuotation(studioId, quotation.id, {
       status: 'Converted to Booking',
       convertedEventId: event.id,
+      convertedBookingId: bookingRecord?.id || event.id,
+      convertedBookingNumber: bookingRecord?.bookingNumber,
       convertedInvoiceId: invoice.id,
       convertedAt: new Date().toISOString()
-    }, operator);
+    } as any, operator);
 
-    // 4. Update Customer status to Booked if customer exists, or register
+    // 5. Update Customer status to Booked if customer exists, or register
     try {
       const cust = customerService.getCustomer(studioId, quotation.customerId);
       if (cust) {
