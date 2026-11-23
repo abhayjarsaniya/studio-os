@@ -305,96 +305,44 @@ export class CrossDeviceAuthService {
       const email = userFields?.email?.stringValue || verifiedEmail;
       const accountType = userFields?.accountType?.stringValue || (role === 'owner' ? 'STUDIO_OWNER' : 'EMPLOYEE');
 
-      // Hydrate Studio Profile from Cloud Firestore
+      // Hydrate Studio Profile from User Record
       if (studioId) {
-        let studioProfile: Studio | null = null;
-        try {
-          const projectId = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_PROJECT_ID) || 'studio-os-live-2026';
-          const sRes = await fetch(
-            `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/studios/${studioId}`,
-            { headers: { Authorization: `Bearer ${authData.idToken}` } }
-          );
-          if (sRes.ok) {
-            const sDoc = await sRes.json();
-            const sF = sDoc.fields || {};
-            studioProfile = {
-              id: studioId,
-              tenantId: studioId,
-              name: sF.name?.stringValue || studioName || 'My Studio',
-              title: sF.ownerName?.stringValue || displayName,
-              email: sF.ownerEmail?.stringValue || email,
-              phone: sF.ownerPhone?.stringValue || phone,
-              address: sF.address?.stringValue || '',
-              city: sF.city?.stringValue || '',
-              state: sF.state?.stringValue || 'Gujarat',
-              gstNumber: sF.gstNumber?.stringValue || '',
-              website: sF.website?.stringValue || '',
-              lifecycleStatus: 'active',
-              subscription: {
-                planId: 'studio_os_monthly',
-                planName: 'Studio OS Monthly',
-                pricePerMonth: 500,
-                currency: 'INR',
-                status: 'active',
-                validUntil: '2027-12-31',
-                autoRenew: true
-              },
-              settings: {
-                defaultCurrency: 'INR',
-                timezone: 'Asia/Kolkata',
-                dateFormat: 'DD/MM/YYYY',
-                timeFormat: '12h',
-                allowDirectWhatsApp: true,
-                watermarkEnabled: true,
-                invoicePrefix: 'INV',
-                eventPrefix: 'EV'
-              },
-              storageUsageMb: 0,
-              storageQuotaMb: 15360,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              createdBy: 'Master Admin'
-            };
-          }
-        } catch {}
-
-        if (!studioProfile) {
-          studioProfile = {
-            id: studioId,
-            tenantId: studioId,
-            name: studioName || 'My Studio',
-            title: displayName,
-            email,
-            phone,
-            address: '',
-            city: '',
-            lifecycleStatus: 'active',
-            subscription: {
-              planId: 'studio_os_monthly',
-              planName: 'Studio OS Monthly',
-              pricePerMonth: 500,
-              currency: 'INR',
-              status: 'active',
-              validUntil: '2027-12-31',
-              autoRenew: true
-            },
-            settings: {
-              defaultCurrency: 'INR',
-              timezone: 'Asia/Kolkata',
-              dateFormat: 'DD/MM/YYYY',
-              timeFormat: '12h',
-              allowDirectWhatsApp: true,
-              watermarkEnabled: true,
-              invoicePrefix: 'INV',
-              eventPrefix: 'EV'
-            },
-            storageUsageMb: 0,
-            storageQuotaMb: 15360,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            createdBy: 'Master Admin'
-          };
-        }
+        const studioProfile: Studio = {
+          id: studioId,
+          tenantId: studioId,
+          name: studioName || 'My Studio',
+          title: displayName,
+          email,
+          phone,
+          address: '',
+          city: '',
+          state: 'Gujarat',
+          lifecycleStatus: 'active',
+          subscription: {
+            planId: 'studio_os_monthly',
+            planName: 'Studio OS Monthly',
+            pricePerMonth: 500,
+            currency: 'INR',
+            status: 'active',
+            validUntil: '2027-12-31',
+            autoRenew: true
+          },
+          settings: {
+            defaultCurrency: 'INR',
+            timezone: 'Asia/Kolkata',
+            dateFormat: 'DD/MM/YYYY',
+            timeFormat: '12h',
+            allowDirectWhatsApp: true,
+            watermarkEnabled: true,
+            invoicePrefix: 'INV',
+            eventPrefix: 'EV'
+          },
+          storageUsageMb: 0,
+          storageQuotaMb: 15360,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          createdBy: 'Master Admin'
+        };
 
         // Hydrate TenantStore
         TenantStore.set(studioId, 'profile', studioProfile);
@@ -429,19 +377,9 @@ export class CrossDeviceAuthService {
       };
 
       unifiedAuthService.saveAccount(accountObj);
-
-      const token = `tok_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-      const session: UserSession = {
-        token,
-        account: accountObj,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      };
-
-      const activeSessions = TenantStore.get<UserSession>('platform_system', 'active_sessions') || [];
-      TenantStore.set('platform_system', 'active_sessions', [...activeSessions.filter(s => s.account.id !== authUid), session]);
-
+      const session = unifiedAuthService.createSession(accountObj);
       const targetRoute = role === 'owner' ? '#/app/dashboard' : '#/employee/dashboard';
-      this.persistSession(token, role, studioId, accountObj);
+      this.persistSession(session.token, role, studioId, accountObj);
       rateLimitService.resetAttempts(cleanId);
 
       return {
