@@ -18,6 +18,7 @@ import { Studio, Employee, Branch } from '../types/schema';
 import { platformSubscriptionManager } from './platformSubscriptionManager';
 import { platformStudioService } from './platformStudioService';
 import { googleAuthInvitationService, AuthorizedStudioEmail } from './googleAuthInvitationService';
+import { crossDeviceAuthService } from './crossDeviceAuthService';
 
 const API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_API_KEY) || 'AIzaSyBdN6SpgPVAVD6JPEHbnfa_I2wM6BEodhk';
 const AUTH_REST_URL = 'https://identitytoolkit.googleapis.com/v1';
@@ -616,6 +617,8 @@ export class RealAccountProvisionService {
       storedAccount.status = initialAccountStatus as any;
       (storedAccount as any).accountStatus = initialAccountStatus;
       unifiedAuthService.saveAccount(storedAccount);
+      // Ensure cross-device availability in Firestore
+      await crossDeviceAuthService.registerInCloudRegistry(storedAccount, authUid, initialTempPassword);
     }
 
     // 9. Save Token Record
@@ -863,6 +866,13 @@ export class RealAccountProvisionService {
       storedAccount.status = initialAccountStatus as any;
       (storedAccount as any).accountStatus = initialAccountStatus;
       unifiedAuthService.saveAccount(storedAccount);
+
+      // Register in Cloud Account Registry for Cross-Device Login
+      try {
+        await crossDeviceAuthService.registerInCloudRegistry(storedAccount, authUid, initialTempPassword);
+      } catch (err: any) {
+        console.warn('[RealAccountProvisionService] Employee cross-device registry failed:', err?.message);
+      }
     }
 
     // Save Token Record

@@ -17,6 +17,7 @@ import { platformAuditService } from './platformAuditService';
 import { Studio, Employee, Branch } from '../types/schema';
 import { platformStudioService } from './platformStudioService';
 import { rateLimitService } from './rateLimitService';
+import { crossDeviceAuthService } from './crossDeviceAuthService';
 
 export interface AuthorizedStudioEmail {
   id: string;
@@ -1415,78 +1416,7 @@ class GoogleAuthInvitationService {
     targetRoute?: string;
     error?: string;
   }> {
-    const cleanId = (emailOrLoginId || '').trim().toLowerCase();
-    if (!cleanId || !password) {
-      return { success: false, error: 'Please enter both your Login ID and password.' };
-    }
-
-    // Rate limit check
-    const rl = rateLimitService.checkRateLimit(cleanId);
-    if (!rl.allowed) {
-      return { success: false, error: rl.message };
-    }
-
-    // 1. Check Master Admin Credentials
-    if (MASTER_ADMIN_EMAILS.includes(cleanId)) {
-      const res = unifiedAuthService.loginMasterAdmin(cleanId, password);
-      if (res.success && res.session) {
-        rateLimitService.resetAttempts(cleanId);
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('studio_os_master_token', res.session.token);
-          localStorage.setItem('studio_os_session_token', res.session.token);
-          localStorage.setItem('studio_os_user_role', 'platform_master_admin');
-          localStorage.removeItem('studio_os_active_studio_id_v2');
-          localStorage.removeItem('studio_os_active_employee_id');
-        }
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('studio_os_auth_changed'));
-          window.dispatchEvent(new Event('studio_data_updated'));
-        }
-        return {
-          success: true,
-          role: 'platform_master_admin',
-          targetRoute: '#/master/dashboard'
-        };
-      }
-      rateLimitService.recordFailedAttempt(cleanId);
-      return { success: false, error: res.error || 'Invalid Master Admin credentials.' };
-    }
-
-    // 2. Check if user account exists in unified auth
-    const authRes = unifiedAuthService.login(cleanId, password);
-    if (!authRes.success || !authRes.session) {
-      rateLimitService.recordFailedAttempt(cleanId);
-      return { success: false, error: authRes.error || 'Invalid Login ID or password.' };
-    }
-
-    // Reset rate limit on success
-    rateLimitService.resetAttempts(cleanId);
-
-    const session = authRes.session;
-    const isOwner = session.account.accountType === 'STUDIO_OWNER';
-    const role = isOwner ? 'owner' : 'employee';
-    const studioId = session.account.studioId || '';
-    const targetRoute = isOwner ? '#/app/dashboard' : '#/employee/dashboard';
-
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('studio_os_session_token', session.token);
-      localStorage.setItem('studio_os_user_role', role);
-      if (studioId) {
-        localStorage.setItem('studio_os_active_studio_id_v2', studioId);
-      }
-    }
-
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('studio_os_auth_changed'));
-      window.dispatchEvent(new CustomEvent('studio_data_updated', { detail: { studioId } }));
-    }
-
-    return {
-      success: true,
-      role,
-      studioId,
-      targetRoute
-    };
+    return crossDeviceAuthService.login(emailOrLoginId, password);
   }
 
   async logout(): Promise<void> {

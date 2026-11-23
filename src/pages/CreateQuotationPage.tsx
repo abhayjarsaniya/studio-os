@@ -372,6 +372,11 @@ export const CreateQuotationPage: React.FC = () => {
   };
 
   const handleShareWhatsApp = () => {
+    if ((currentStudio?.settings as any)?.allowDirectWhatsApp === false) {
+      alert('WhatsApp Click-to-Chat has been administratively disabled for this studio by Platform Master Admin.');
+      return;
+    }
+
     const quote = savedQuotation || handleSaveQuotation('Sent');
     if (!quote) return;
 

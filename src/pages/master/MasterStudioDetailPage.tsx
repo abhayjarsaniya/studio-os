@@ -5,6 +5,8 @@ import { globalRbacService } from '../../services/globalRbacService';
 import { featureVisibilityService } from '../../services/featureVisibilityService';
 import { platformAuditService } from '../../services/platformAuditService';
 import { firebaseAuthService } from '../../services/firebaseAuthService';
+import { db } from '../../lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import { realAccountProvisionService } from '../../services/realAccountProvisionService';
 import { unifiedAuthService } from '../../services/unifiedAuthService';
 import { TenantStore } from '../../services/tenantStore';
@@ -352,6 +354,37 @@ export const MasterStudioDetailPage: React.FC = () => {
       showToast(`Subscription extended by +${days} days (valid until ${new Date(newDate).toLocaleDateString('en-IN')})`);
       triggerRefresh();
     }
+  };
+
+  // Toggle feature override (e.g. WhatsApp Click-to-Chat)
+  const handleToggleFeature = async (featureKey: string, featureName: string) => {
+    if (!studio) return;
+    const currentOverride = featureVisibilityService.getStudioPlatformOverride(studio.id);
+    const isCurrentlyEnabled = currentOverride.featureOverrides[featureKey] !== false && 
+      (featureKey !== 'whatsapp' || (studio.settings as any)?.allowDirectWhatsApp !== false);
+    const nextState = !isCurrentlyEnabled;
+
+    featureVisibilityService.setStudioPlatformOverride(studio.id, featureKey, nextState, 'Master Admin');
+
+    if (featureKey === 'whatsapp') {
+      const updatedSettings = {
+        ...(studio.settings || {}),
+        allowDirectWhatsApp: nextState
+      };
+      studio.settings = updatedSettings as any;
+      TenantStore.set(studio.id, 'profile', studio);
+
+      if (db) {
+        try {
+          await setDoc(doc(db, 'studios', studio.id), { settings: updatedSettings }, { merge: true });
+        } catch (err) {
+          console.warn('[MasterStudioDetailPage] Could not persist WhatsApp setting to Firestore:', err);
+        }
+      }
+    }
+
+    showToast(`${featureName} is now ${nextState ? 'Active' : 'Disabled'} for this studio`);
+    triggerRefresh();
   };
 
   // Features list
@@ -1014,32 +1047,87 @@ export const MasterStudioDetailPage: React.FC = () => {
       )}
 
       {/* TAB 7: FEATURE VISIBILITY */}
-      {activeTab === 'features' && (
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-sm font-bold text-zinc-900 font-display">Feature Visibility (5-Tier Engine)</h3>
-            <p className="text-xs text-zinc-500">
-              Individual feature toggles for {studio.name}. Overrides studio owner preferences when forced by Master Admin.
-            </p>
-          </div>
-
-          <div className="bg-white border border-zinc-200 rounded-2xl divide-y divide-zinc-100">
-            {featureList.map(f => (
-              <div key={f.key} className="p-4 flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-bold text-zinc-800">{f.name}</div>
-                  <div className="text-xs text-zinc-500">Tier 1 Global: Enabled | Tier 2 Plan: Included</div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-xs font-bold uppercase bg-emerald-500/20 text-emerald-300">
-                    Active (Global)
-                  </span>
-                </div>
+      {activeTab === 'features' && (() => {
+        const studioOverrides = featureVisibilityService.getStudioPlatformOverride(studio.id);
+        return (
+          <div className="space-y-4">
+            <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl flex items-start gap-3">
+              <ShieldAlert className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-sm font-bold text-zinc-900 font-display">Master Admin Feature Governance</h3>
+                <p className="text-xs text-zinc-600 mt-0.5">
+                  Platform overrides for <strong>{studio.name}</strong>. Disabling a feature here immediately revokes access for the studio owner and employees and prevents them from enabling it in their studio settings.
+                </p>
               </div>
-            ))}
+            </div>
+
+            <div className="bg-white border border-zinc-200 rounded-2xl divide-y divide-zinc-100 shadow-xs">
+              {featureList.map(f => {
+                const isOverridden = studioOverrides.featureOverrides[f.key] !== undefined;
+                const isEnabled = f.key === 'whatsapp' 
+                  ? ((studio.settings as any)?.allowDirectWhatsApp !== false && studioOverrides.featureOverrides['whatsapp'] !== false)
+                  : (studioOverrides.featureOverrides[f.key] !== false);
+
+                return (
+                  <div key={f.key} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-zinc-900">{f.name}</span>
+                        {f.key === 'whatsapp' && (
+                          <span className="px-2 py-0.5 rounded text-xs font-extrabold uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
+                            Per-Studio Direct WhatsApp
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-zinc-500">
+                        {f.key === 'whatsapp'
+                          ? 'Controls WhatsApp Click-to-Chat buttons on Customer profiles, Booking workspace, and Quotations.'
+                          : 'Platform standard feature tier. Can be restricted per studio.'}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono">
+                        <span>Governance: {isOverridden ? 'Studio Platform Override' : 'Global Default'}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 self-end sm:self-center">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase border flex items-center gap-1.5 ${
+                        isEnabled 
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
+                          : 'bg-rose-50 text-rose-800 border-rose-300'
+                      }`}>
+                        <span className={`w-2 h-2 rounded-full ${isEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                        {isEnabled ? 'Active' : 'Disabled'}
+                      </span>
+
+                      <button
+                        onClick={() => handleToggleFeature(f.key, f.name)}
+                        className={`min-h-[44px] min-w-[120px] px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer touch-manipulation active:scale-95 shadow-xs ${
+                          isEnabled
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100'
+                            : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/20'
+                        }`}
+                        title={`Click to ${isEnabled ? 'disable' : 'enable'} ${f.name}`}
+                      >
+                        {isEnabled ? (
+                          <>
+                            <Lock className="w-4 h-4" />
+                            <span>Disable</span>
+                          </>
+                        ) : (
+                          <>
+                            <Unlock className="w-4 h-4" />
+                            <span>Enable</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* TAB 8: ACTIVITY HISTORY */}
       {activeTab === 'activity' && (

@@ -1,7 +1,16 @@
-import { MessageTemplate, MessageTemplateSchema, WhatsAppLog, WhatsAppLogSchema, WhatsAppLogStatus } from '../types/schema';
+import { MessageTemplate, MessageTemplateSchema, WhatsAppLog, WhatsAppLogSchema, WhatsAppLogStatus, Studio } from '../types/schema';
 import { TenantStore } from './tenantStore';
 import { auditService } from './auditService';
 import { normalizePhoneNumber } from './customerService';
+
+export interface StudioWhatsAppConfig {
+  studioId: string;
+  enabled: boolean;
+  businessNumber: string;
+  countryCode: string;
+  defaultMessage: string;
+  updatedAt: string;
+}
 
 export interface DynamicTemplateContext {
   customer_name?: string;
@@ -156,6 +165,52 @@ export const DEFAULT_16_WHATSAPP_TEMPLATES: Array<Omit<MessageTemplate, 'id' | '
 ];
 
 export class WhatsAppService {
+  getStudioConfig(studioId: string): StudioWhatsAppConfig {
+    if (!studioId) throw new Error('[whatsappService.getStudioConfig]: studioId is required');
+    const existing = TenantStore.getSingle<StudioWhatsAppConfig>(studioId, 'whatsappConfig');
+    if (existing) return existing;
+
+    const studio = TenantStore.getSingle<Studio>(studioId, 'profile');
+    const defaultConfig: StudioWhatsAppConfig = {
+      studioId,
+      enabled: studio?.settings?.allowDirectWhatsApp !== false,
+      businessNumber: studio?.phone || '',
+      countryCode: '+91',
+      defaultMessage: 'Hello {customer_name}, greetings from {studio_name}!',
+      updatedAt: new Date().toISOString()
+    };
+    return defaultConfig;
+  }
+
+  saveStudioConfig(studioId: string, config: Partial<StudioWhatsAppConfig>, operatorId = 'Studio Owner'): StudioWhatsAppConfig {
+    if (!studioId) throw new Error('[whatsappService.saveStudioConfig]: studioId is required');
+    const current = this.getStudioConfig(studioId);
+    const updated: StudioWhatsAppConfig = {
+      ...current,
+      ...config,
+      studioId,
+      updatedAt: new Date().toISOString()
+    };
+    TenantStore.set(studioId, 'whatsappConfig', updated);
+
+    // Also sync to studio profile settings
+    const studio = TenantStore.getSingle<Studio>(studioId, 'profile');
+    if (studio) {
+      if (!studio.settings) studio.settings = {} as any;
+      if (typeof updated.enabled === 'boolean') {
+        studio.settings.allowDirectWhatsApp = updated.enabled;
+      }
+      TenantStore.set(studioId, 'profile', studio);
+    }
+
+    auditService.log(studioId, operatorId, 'UPDATE_WHATSAPP_CONFIG', 'studioSettings', studioId, {
+      enabled: updated.enabled,
+      businessNumber: updated.businessNumber
+    });
+
+    return updated;
+  }
+
   initializeDefaultTemplates(studioId: string): MessageTemplate[] {
     return this.listTemplates(studioId);
   }

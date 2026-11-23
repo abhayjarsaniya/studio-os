@@ -33,6 +33,7 @@ import {
   Trash2, 
   IndianRupee, 
   PackageCheck, 
+  Lock,
   Sparkles,
   ChevronDown,
   X,
@@ -2756,15 +2757,22 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                  <a
-                    href={activeWhatsAppUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 min-h-[50px] sm:min-h-[44px] px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer touch-manipulation active:scale-98"
-                  >
-                    <Send className="w-4 h-4" />
-                    <span>Send on WhatsApp</span>
-                  </a>
+                  {currentStudio?.settings?.allowDirectWhatsApp === false ? (
+                    <div className="flex-1 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>WhatsApp Click-to-Chat is administratively disabled by Platform Master Admin.</span>
+                    </div>
+                  ) : (
+                    <a
+                      href={activeWhatsAppUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 min-h-[50px] sm:min-h-[44px] px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm sm:text-xs flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer touch-manipulation active:scale-98"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>Send on WhatsApp</span>
+                    </a>
+                  )}
 
                   <button
                     onClick={() => {

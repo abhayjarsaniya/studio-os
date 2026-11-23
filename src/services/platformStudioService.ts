@@ -13,6 +13,7 @@ import { platformAuditService } from './platformAuditService';
 import { employeeAuthService } from './employeeAuthService';
 import { unifiedAuthService, generateCryptoSalt, hashCredential } from './unifiedAuthService';
 import { firestoreService } from './firestoreService';
+import { crossDeviceAuthService } from './crossDeviceAuthService';
 import { studioA, studioB } from '../data/multiTenantDemoData';
 import { shreejiStudio } from './studioService';
 
@@ -478,9 +479,19 @@ export class PlatformStudioService {
       } catch (e) {
         // continue
       }
+      try {
+        crossDeviceAuthService.updateStudioAccountStatus(studioId, 'suspended');
+      } catch (e) {
+        // continue
+      }
     } else if (newStatus === 'active' && prevStatus === 'suspended') {
       try {
         platformSubscriptionManager.transitionStatus(studioId, 'active', `Reactivated: ${reason}`, actingAdminName);
+      } catch (e) {
+        // continue
+      }
+      try {
+        crossDeviceAuthService.updateStudioAccountStatus(studioId, 'active');
       } catch (e) {
         // continue
       }
@@ -970,6 +981,12 @@ export class PlatformStudioService {
         if (updatedAcc) {
           updatedAcc.mustChangePassword = mustChangePassword;
           unifiedAuthService.saveAccount(updatedAcc);
+
+          try {
+            crossDeviceAuthService.registerInCloudRegistry(updatedAcc, (updatedAcc as any).authUid || updatedAcc.id, temporaryPassword);
+          } catch (regErr) {
+            console.warn('[PlatformStudioService] Cloud registry sync note:', regErr);
+          }
         }
       }
     } catch (e) {

@@ -90,6 +90,11 @@ export const QuotationsListPage: React.FC = () => {
   };
 
   const handleShareWhatsApp = (quotation: Quotation) => {
+    if ((currentStudio?.settings as any)?.allowDirectWhatsApp === false) {
+      alert('WhatsApp Click-to-Chat has been administratively disabled for this studio by Platform Master Admin.');
+      return;
+    }
+
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
     const publicUrl = `${origin}${pathname}#/quote/${quotation.id}`;

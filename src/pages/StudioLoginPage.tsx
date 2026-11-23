@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { crossDeviceAuthService } from '../services/crossDeviceAuthService';
 import { googleAuthInvitationService } from '../services/googleAuthInvitationService';
 import { Camera, AlertCircle, Eye, EyeOff, Lock, User, ArrowRight, ShieldCheck } from 'lucide-react';
 
@@ -26,7 +27,7 @@ export const StudioLoginPage: React.FC = () => {
 
     setLoading(true);
     try {
-      const res = await googleAuthInvitationService.loginWithPassword(cleanId, password);
+      const res = await crossDeviceAuthService.login(cleanId, password);
       if (res.success && res.targetRoute) {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('studio_os_auth_changed'));

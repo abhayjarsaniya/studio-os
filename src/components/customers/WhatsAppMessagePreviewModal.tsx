@@ -14,7 +14,8 @@ import {
   ExternalLink, 
   CheckCircle2, 
   X,
-  FileText
+  FileText,
+  Lock
 } from 'lucide-react';
 
 export const WhatsAppMessagePreviewModal: React.FC = () => {
@@ -38,6 +39,8 @@ export const WhatsAppMessagePreviewModal: React.FC = () => {
   const [missingKeys, setMissingKeys] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
   const [launchedLog, setLaunchedLog] = useState<WhatsAppLog | null>(null);
+
+  const isWhatsAppDisabled = Boolean((studio as any)?.settings?.allowDirectWhatsApp === false);
 
   // Initialize or update template when modal opens
   useEffect(() => {
@@ -267,9 +270,14 @@ export const WhatsAppMessagePreviewModal: React.FC = () => {
           <Button
             variant="primary"
             size="sm"
+            disabled={isWhatsAppDisabled}
             icon={<MessageCircle className="w-4 h-4 text-white" />}
             onClick={handleOpenWhatsApp}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white border-transparent"
+            className={`text-white border-transparent ${
+              isWhatsAppDisabled 
+                ? 'bg-zinc-400 opacity-50 cursor-not-allowed' 
+                : 'bg-emerald-600 hover:bg-emerald-700'
+            }`}
           >
             <span>Open WhatsApp Chat</span>
             <ExternalLink className="w-3.5 h-3.5 ml-1 opacity-80" />
