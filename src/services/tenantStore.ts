@@ -40,6 +40,22 @@ export class TenantStore {
     return `studio_os_${studioId.trim()}_${collection}`;
   }
 
+  static getStorageKeys(): string[] {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const keys: string[] = [];
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const k = window.localStorage.key(i);
+        if (k) keys.push(k);
+      }
+      return keys;
+    }
+    return Object.keys(memoryStorage);
+  }
+
+  static rawGet(key: string): string | null {
+    return storageGet(key);
+  }
+
   static initializeDefaults(): void {
     const initializedKey = 'studio_os_tenants_initialized_v5';
     if (!storageGet(initializedKey)) {

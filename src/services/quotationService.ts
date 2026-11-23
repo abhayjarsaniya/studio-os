@@ -168,6 +168,50 @@ export class QuotationService {
     return this.listQuotations(studioId).find(q => q.id === quotationId);
   }
 
+  /**
+   * Public Customer Quotation Resolver:
+   * Safely retrieves a quotation by unique ID for unauthenticated client view
+   * without exposing other studio or customer records.
+   */
+  getQuotationPublic(quotationId: string): { quotation: Quotation; studio?: any } | null {
+    if (!quotationId || typeof quotationId !== 'string') return null;
+
+    // 1. Scan storage for tenant quotation collections
+    const storageKeys = TenantStore.getStorageKeys();
+    for (const key of storageKeys) {
+      if (key && key.startsWith('studio_os_') && key.endsWith('_quotations')) {
+        try {
+          const raw = TenantStore.rawGet(key);
+          if (raw) {
+            const list = JSON.parse(raw) as Quotation[];
+            const found = list.find(q => q.id === quotationId);
+            if (found) {
+              const studioProfile = TenantStore.getSingle<any>(found.studioId, 'profile') || null;
+              return { quotation: found, studio: studioProfile };
+            }
+          }
+        } catch {
+          // continue scan
+        }
+      }
+    }
+
+    // 2. Also check default demo/royal studios if applicable
+    for (const sid of ['studio_royal_001', 'studio_creative_002']) {
+      try {
+        const q = this.getQuotation(sid, quotationId);
+        if (q) {
+          const studioProfile = TenantStore.getSingle<any>(sid, 'profile') || null;
+          return { quotation: q, studio: studioProfile };
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    return null;
+  }
+
   createQuotation(
     studioId: string,
     data: {
@@ -361,6 +405,54 @@ export class QuotationService {
 
     TenantStore.set(studioId, 'quotations', quotations.filter(q => q.id !== quotationId));
     auditService.log(studioId, operatorId, 'DELETE_QUOTATION', 'quotation', quotationId, { quotationNumber: target.quotationNumber });
+  }
+
+  duplicateQuotation(studioId: string, quotationId: string, operatorId: string = 'system'): Quotation {
+    if (!studioId) throw new Error('[quotationService.duplicateQuotation]: studioId is required');
+    const original = this.getQuotation(studioId, quotationId);
+    if (!original) throw new Error(`Quotation ${quotationId} not found`);
+
+    const newQuotation = this.createQuotation(
+      studioId,
+      {
+        customerId: original.customerId,
+        customerName: original.customerName,
+        customerPhone: original.customerPhone,
+        customerEmail: original.customerEmail,
+        customerAddress: original.customerAddress,
+        eventCategory: original.eventCategory,
+        eventName: `${original.eventName || 'Quotation'} (Copy)`,
+        eventDate: original.eventDate,
+        eventVenue: original.eventVenue,
+        venue: original.venue,
+        packageName: original.packageName,
+        items: original.items.map(item => ({
+          title: item.title,
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          discount: item.discount,
+          taxRate: item.taxRate,
+          taxAmount: item.taxAmount
+        })),
+        subtotal: original.subtotal,
+        discount: original.discount,
+        taxRate: original.taxRate,
+        grandTotal: original.grandTotal,
+        advanceAmount: original.advanceAmount,
+        paymentTerms: original.paymentTerms,
+        notes: original.notes,
+        status: 'Draft'
+      },
+      operatorId
+    );
+
+    auditService.log(studioId, operatorId, 'DUPLICATE_QUOTATION', 'quotation', newQuotation.id, {
+      originalId: quotationId,
+      newQuotationNumber: newQuotation.quotationNumber
+    });
+
+    return newQuotation;
   }
 
   /**

@@ -18,7 +18,8 @@ import {
   IndianRupee,
   PackageCheck,
   ChevronRight,
-  Phone
+  Phone,
+  FileText
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
@@ -187,16 +188,29 @@ export const DashboardPage: React.FC = () => {
           </h1>
         </div>
 
-        <button
-          onClick={() => {
-            setActiveTab('create-booking');
-            window.location.hash = '#/app/bookings/new';
-          }}
-          className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-base sm:text-sm tracking-tight shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98] flex items-center justify-center gap-2"
-        >
-          <Plus className="w-4 h-4 text-white shrink-0 stroke-[2.5]" />
-          <span>+ New Booking</span>
-        </button>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            onClick={() => {
+              setActiveTab('create-quotation');
+              window.location.hash = '#/app/quotation/new';
+            }}
+            className="flex-1 sm:flex-none min-h-[50px] sm:min-h-[44px] px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs sm:text-sm tracking-tight shadow-sm border border-zinc-700 transition-all cursor-pointer touch-manipulation active:scale-[0.98] flex items-center justify-center gap-2"
+          >
+            <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>+ Quick Quotation</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('create-booking');
+              window.location.hash = '#/app/bookings/new';
+            }}
+            className="flex-1 sm:flex-none min-h-[50px] sm:min-h-[44px] px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm tracking-tight shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98] flex items-center justify-center gap-2"
+          >
+            <Plus className="w-4 h-4 text-white shrink-0 stroke-[2.5]" />
+            <span>+ New Booking</span>
+          </button>
+        </div>
       </div>
 
       {/* 2. Exactly 4 Key Indicator Cards */}
@@ -460,6 +474,34 @@ export const DashboardPage: React.FC = () => {
             </h2>
 
             <div className="space-y-2.5 font-sans">
+              <button
+                onClick={() => {
+                  setActiveTab('create-quotation');
+                  window.location.hash = '#/app/quotation/new';
+                }}
+                className="w-full min-h-[50px] sm:min-h-[46px] px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700 text-base sm:text-sm font-semibold flex items-center justify-between transition-all cursor-pointer shadow-xs touch-manipulation active:scale-[0.98]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>+ Quick Quotation</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveTab('quotations');
+                  window.location.hash = '#/app/quotations';
+                }}
+                className="w-full min-h-[50px] sm:min-h-[46px] px-4 py-2.5 rounded-xl bg-amber-50/70 hover:bg-amber-100 text-amber-950 border border-amber-200/80 text-base sm:text-sm font-semibold flex items-center justify-between transition-all cursor-pointer shadow-2xs touch-manipulation active:scale-[0.98]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <FileText className="w-4 h-4 text-amber-700 shrink-0" />
+                  <span>Manage Quotations</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-amber-600" />
+              </button>
+
               <button
                 onClick={() => {
                   setActiveTab('create-booking');

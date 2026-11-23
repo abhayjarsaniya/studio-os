@@ -53,6 +53,15 @@ export const DesktopHeader: React.FC = () => {
           <span className="truncate max-w-[150px] font-semibold text-zinc-900">{currentStudio.name}</span>
         </div>
 
+        {/* Quick Quotation Header Button */}
+        <button
+          onClick={() => setActiveTab('create-quotation')}
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <span>Quick Quotation</span>
+        </button>
+
         {/* Authenticated User Role Badge (Non-clickable, derived from backend membership) */}
         <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs font-medium text-zinc-700">
           <Shield className="w-3.5 h-3.5 text-emerald-600" />

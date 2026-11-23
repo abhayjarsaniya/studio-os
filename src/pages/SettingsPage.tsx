@@ -4,6 +4,8 @@ import { useStudio } from '../context/StudioContext';
 import { unifiedAuthService } from '../services/unifiedAuthService';
 import { firebaseAuthService } from '../services/firebaseAuthService';
 import { studioService } from '../services/studioService';
+import { StudioServicesSettings } from '../components/settings/StudioServicesSettings';
+import { WhatsAppTemplatesSettings } from '../components/settings/WhatsAppTemplatesSettings';
 import { 
   Building2, 
   Lock, 
@@ -26,15 +28,19 @@ import {
   HelpCircle,
   Loader2,
   Share2,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Layers,
+  MessageSquare
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const { studio, currentUser } = useApp();
   const { currentStudio, refreshStudioData } = useStudio();
 
-  // Tab: profile | security
-  const [activeTab, setActiveTab] = useState<'profile' | 'security'>('profile');
+  const studioId = currentStudio.id || 'studio_royal_001';
+
+  // Tab: profile | services | whatsapp | security
+  const [activeTab, setActiveTab] = useState<'profile' | 'services' | 'whatsapp' | 'security'>('profile');
 
   // Profile Form State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -239,6 +245,30 @@ export const SettingsPage: React.FC = () => {
         >
           <Building2 className="w-4 h-4" />
           <span>Studio Profile</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('services')}
+          className={`pb-2.5 px-3 border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+            activeTab === 'services'
+              ? 'border-zinc-900 text-zinc-900'
+              : 'border-transparent text-zinc-500 hover:text-zinc-800'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          <span>Services Catalog</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('whatsapp')}
+          className={`pb-2.5 px-3 border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+            activeTab === 'whatsapp'
+              ? 'border-zinc-900 text-zinc-900'
+              : 'border-transparent text-zinc-500 hover:text-zinc-800'
+          }`}
+        >
+          <MessageSquare className="w-4 h-4" />
+          <span>WhatsApp & Templates</span>
         </button>
 
         <button
@@ -546,7 +576,17 @@ export const SettingsPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 2: SECURITY & PASSWORD */}
+      {/* TAB 2: STUDIO SERVICES */}
+      {activeTab === 'services' && (
+        <StudioServicesSettings studioId={studioId} />
+      )}
+
+      {/* TAB 3: WHATSAPP MESSAGE TEMPLATES */}
+      {activeTab === 'whatsapp' && (
+        <WhatsAppTemplatesSettings studioId={studioId} />
+      )}
+
+      {/* TAB 4: SECURITY & PASSWORD */}
       {activeTab === 'security' && (
         <div className="p-6 rounded-3xl bg-white border border-zinc-200 shadow-xs space-y-6">
           <div className="pb-4 border-b border-zinc-100 flex items-start justify-between">

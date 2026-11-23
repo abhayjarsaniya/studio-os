@@ -11,13 +11,16 @@ export interface DynamicTemplateContext {
   event_category?: string;
   event_date?: string;
   event_venue?: string;
+  event_location?: string;
   booking_id?: string;
   quotation_amount?: string | number;
+  total_amount?: string | number;
   advance_amount?: string | number;
   pending_amount?: string | number;
   delivery_date?: string;
   assigned_employee?: string;
   custom_message?: string;
+  quotation_link?: string;
   [key: string]: string | number | undefined;
 }
 
@@ -283,7 +286,8 @@ export class WhatsAppService {
   }
 
   /**
-   * Replaces dynamic placeholders safely and flags any unresolved variables
+   * Replaces dynamic placeholders safely and flags any unresolved variables.
+   * Supports both single {variable} and double {{variable}} syntax.
    */
   replacePlaceholders(
     templateText: string,
@@ -296,14 +300,26 @@ export class WhatsAppService {
     hasUnresolved: boolean; 
   } {
     let resultText = templateText;
-    const matches = templateText.match(/\{\{([a-zA-Z0-9_]+)\}\}/g) || [];
+    // Map synonymous aliases
+    const resolvedContext: Record<string, string | number | undefined> = {
+      ...context,
+      event_location: context.event_location ?? context.event_venue,
+      event_venue: context.event_venue ?? context.event_location,
+      total_amount: context.total_amount ?? context.quotation_amount,
+      quotation_amount: context.quotation_amount ?? context.total_amount
+    };
+
+    // Match both {{var}} and {var}
+    const doubleMatches = templateText.match(/\{\{([a-zA-Z0-9_]+)\}\}/g) || [];
+    const singleMatches = templateText.match(/(?<!\{)\{([a-zA-Z0-9_]+)\}(?!\})/g) || [];
+    const allMatches = [...doubleMatches, ...singleMatches];
     const missingPlaceholders: string[] = [];
 
-    matches.forEach(m => {
-      const key = m.replace(/[\{\}]/g, '');
-      const value = context[key];
+    allMatches.forEach(token => {
+      const key = token.replace(/[\{\}]/g, '');
+      const value = resolvedContext[key];
       if (value !== undefined && value !== null && String(value).trim() !== '') {
-        resultText = resultText.split(m).join(String(value));
+        resultText = resultText.split(token).join(String(value));
       } else {
         missingPlaceholders.push(key);
       }
@@ -317,6 +333,34 @@ export class WhatsAppService {
       missingKeys: missing,
       hasUnresolved: missing.length > 0
     };
+  }
+
+  getDefaultQuotationTemplate(studioId: string): MessageTemplate | undefined {
+    const templates = this.listTemplates(studioId);
+    return templates.find(t => t.isDefault && (t.category === 'Billing' || t.title.toLowerCase().includes('quotation'))) ||
+           templates.find(t => t.title.toLowerCase().includes('quotation')) ||
+           templates[0];
+  }
+
+  setDefaultQuotationTemplate(studioId: string, templateId: string, operatorId: string = 'system'): MessageTemplate {
+    if (!studioId) throw new Error('[whatsappService.setDefaultQuotationTemplate]: studioId is required');
+    const templates = this.listTemplates(studioId);
+    const target = templates.find(t => t.id === templateId);
+    if (!target) throw new Error(`Template ${templateId} not found`);
+
+    const updated = templates.map(t => {
+      if (t.id === templateId) {
+        return { ...t, isDefault: true, updatedAt: new Date().toISOString() };
+      }
+      if (t.category === 'Billing' || t.title.toLowerCase().includes('quotation')) {
+        return { ...t, isDefault: false, updatedAt: new Date().toISOString() };
+      }
+      return t;
+    });
+
+    TenantStore.set(studioId, 'messageTemplates', updated);
+    auditService.log(studioId, operatorId, 'SET_DEFAULT_TEMPLATE', 'messageTemplate', templateId, { title: target.title });
+    return updated.find(t => t.id === templateId)!;
   }
 
   /**

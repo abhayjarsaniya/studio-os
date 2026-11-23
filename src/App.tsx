@@ -36,6 +36,8 @@ import { CreateBookingPage } from './pages/CreateBookingPage';
 import { UnifiedBookingPage } from './pages/UnifiedBookingPage';
 import { CrewMembersPage } from './pages/CrewMembersPage';
 import { CreateQuotationPage } from './pages/CreateQuotationPage';
+import { QuotationsListPage } from './pages/QuotationsListPage';
+import { PublicQuotationPage } from './pages/PublicQuotationPage';
 import { BookingsWorkspacePage } from './pages/BookingsWorkspacePage';
 import { DeliveriesPage } from './pages/DeliveriesPage';
 
@@ -122,6 +124,8 @@ const MainLayout: React.FC = () => {
         return <UnifiedBookingPage />;
       case 'crew':
         return <CrewMembersPage />;
+      case 'quotations':
+        return <QuotationsListPage />;
       case 'create-quotation':
         return <CreateQuotationPage />;
       case 'deliveries':
@@ -297,6 +301,15 @@ export function App() {
   const masterSession = unifiedAuthService.getMasterSession();
   const employeeSession = unifiedAuthService.getEmployeeSession();
   const ownerSession = unifiedAuthService.getStudioOwnerSession();
+
+  // Public Customer Quotation View (accessible publicly without login)
+  if (currentRoute.startsWith('#/quote/') || currentRoute.startsWith('#/quotation/')) {
+    return (
+      <ErrorBoundary fallbackTitle="Quotation View Error">
+        <PublicQuotationPage />
+      </ErrorBoundary>
+    );
+  }
 
   // 0. Obsolete registration & password reset routes redirect to #/login
   const isObsoleteAuthRoute =

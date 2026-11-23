@@ -5,7 +5,8 @@ import {
   Calendar, 
   BookOpen,
   PlusCircle, 
-  Users
+  Users,
+  FileText
 } from 'lucide-react';
 
 export const MobileBottomNav: React.FC = () => {
@@ -33,20 +34,20 @@ export const MobileBottomNav: React.FC = () => {
         </div>
       </button>
 
-      {/* 2. Calendar */}
+      {/* 2. Quotations */}
       <button
         onClick={() => {
-          setActiveTab('calendar');
-          window.location.hash = '#/app/calendar';
+          setActiveTab('quotations');
+          window.location.hash = '#/app/quotations';
         }}
         className={`flex flex-col items-center justify-center flex-1 min-h-[52px] py-1 transition-transform active:scale-95 cursor-pointer touch-manipulation ${
-          activeTab === 'calendar' ? 'text-orange-600 font-bold' : 'text-zinc-500 hover:text-zinc-700'
+          activeTab === 'quotations' || activeTab === 'create-quotation' ? 'text-orange-600 font-bold' : 'text-zinc-500 hover:text-zinc-700'
         }`}
       >
-        <Calendar className="w-5 h-5 mb-0.5" />
+        <FileText className="w-5 h-5 mb-0.5" />
         <div className="relative inline-flex flex-col items-center">
-          <span className="text-xs font-semibold">Calendar</span>
-          {activeTab === 'calendar' && <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-orange-500 rounded-full" />}
+          <span className="text-xs font-semibold">Quotes</span>
+          {(activeTab === 'quotations' || activeTab === 'create-quotation') && <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-orange-500 rounded-full" />}
         </div>
       </button>
 

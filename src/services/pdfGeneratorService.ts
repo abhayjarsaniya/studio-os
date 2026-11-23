@@ -761,6 +761,11 @@ export class PDFGeneratorService {
     }
   }
 
+  // Alias for downloadPDF
+  downloadDocumentPDF(payload: PDFGenerationPayload, filename?: string): void {
+    this.downloadPDF(payload, filename);
+  }
+
   // Output as standard Blob
   getPDFBlob(payload: PDFGenerationPayload): Blob {
     const doc = this.generateDocumentPDF(payload);
@@ -770,15 +775,28 @@ export class PDFGeneratorService {
   // Generate Quotation PDF payload
   createQuotationPayload(
     quotation: Quotation, 
-    studioSettings?: Partial<FinancialSettings> & { supportPhone?: string; supportEmail?: string }
+    studioSettings?: Partial<FinancialSettings> & { 
+      name?: string; 
+      address?: string; 
+      city?: string; 
+      pincode?: string;
+      supportPhone?: string; 
+      supportEmail?: string; 
+      [key: string]: any;
+    }
   ): PDFGenerationPayload {
+    const resolvedSettings: any = studioSettings ? {
+      ...studioSettings,
+      legalName: studioSettings.name || studioSettings.legalName,
+      businessAddress: studioSettings.address || studioSettings.businessAddress
+    } : undefined;
     return {
       documentType: 'quotation',
       title: 'Quotation / Estimate',
       documentNumber: quotation.quotationNumber,
       date: quotation.createdAt.split('T')[0],
-      dueDate: quotation.validUntil,
-      studioSettings,
+      dueDate: quotation.validUntil || quotation.expiryDate,
+      studioSettings: resolvedSettings,
       customer: {
         name: quotation.customerName,
         phone: quotation.customerPhone,
@@ -788,27 +806,27 @@ export class PDFGeneratorService {
       event: {
         name: quotation.eventName || 'Photography Shoot',
         category: quotation.eventCategory,
-        venue: quotation.venue
+        venue: quotation.venue || quotation.eventVenue
       },
       items: quotation.items.map(it => ({
-        name: it.title,
+        name: it.title || it.description,
         description: it.description,
         quantity: it.quantity,
         unitPrice: it.unitPrice,
         taxRate: it.taxRate,
-        amount: it.totalPrice
+        amount: it.totalPrice ?? it.amount ?? (it.quantity * it.unitPrice)
       })),
       financials: {
         subtotal: quotation.subtotal,
-        discountAmount: quotation.discountAmount,
-        cgst: quotation.cgst,
-        sgst: quotation.sgst,
-        igst: quotation.igst,
-        taxAmount: quotation.taxAmount,
-        totalAmount: quotation.totalAmount
+        discountAmount: quotation.discountAmount ?? quotation.discount ?? 0,
+        cgst: quotation.cgst || 0,
+        sgst: quotation.sgst || 0,
+        igst: quotation.igst || 0,
+        taxAmount: quotation.taxAmount || 0,
+        totalAmount: quotation.grandTotal ?? quotation.totalAmount ?? quotation.subtotal
       },
-      notes: quotation.notes,
-      terms: quotation.termsAndConditions
+      notes: quotation.notes || quotation.additionalNotes,
+      terms: quotation.termsAndConditions || quotation.paymentTerms
     };
   }
 

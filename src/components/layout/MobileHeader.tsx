@@ -18,7 +18,9 @@ import {
   LogOut,
   Settings,
   ChevronRight,
-  Crown
+  Crown,
+  Sparkles,
+  FileText
 } from 'lucide-react';
 import { SaveIndicator } from '../common/SaveIndicator';
 
@@ -127,15 +129,27 @@ export const MobileHeader: React.FC = () => {
             {/* Nav list */}
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5 touch-scroll">
               <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider px-3 py-1">Core Modules</div>
-              {/* Primary Action: New Booking */}
-              <div className="pb-2">
+              {/* Primary Actions: Quick Quotation & New Booking */}
+              <div className="pb-2 space-y-2">
+                <button
+                  onClick={() => {
+                    setActiveTab('create-quotation');
+                    setMobileDrawerOpen(false);
+                    window.location.hash = '#/app/quotation/new';
+                  }}
+                  className="w-full min-h-[46px] px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 touch-manipulation bg-zinc-900 hover:bg-zinc-800 text-white shadow-xs border border-zinc-700 cursor-pointer active:scale-[0.98] transition-all"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span>+ Quick Quotation</span>
+                </button>
+
                 <button
                   onClick={() => {
                     setActiveTab('create-booking');
                     setMobileDrawerOpen(false);
                     window.location.hash = '#/app/bookings/new';
                   }}
-                  className="w-full min-h-[48px] px-4 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 touch-manipulation bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-md shadow-orange-500/25 border border-orange-400/30 cursor-pointer active:scale-[0.98] transition-all"
+                  className="w-full min-h-[46px] px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 touch-manipulation bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-md shadow-orange-500/25 border border-orange-400/30 cursor-pointer active:scale-[0.98] transition-all"
                 >
                   <Plus className="w-4 h-4 text-white stroke-[2.5]" />
                   <span>+ New Booking</span>
@@ -155,6 +169,21 @@ export const MobileHeader: React.FC = () => {
               >
                 <LayoutDashboard className="w-4 h-4 text-zinc-600" />
                 <span>Dashboard</span>
+              </button>
+
+              {/* 2. Quotations */}
+              <button
+                onClick={() => {
+                  setActiveTab('quotations');
+                  setMobileDrawerOpen(false);
+                  window.location.hash = '#/app/quotations';
+                }}
+                className={`w-full min-h-[48px] px-3.5 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 touch-manipulation transition-colors ${
+                  activeTab === 'quotations' || activeTab === 'create-quotation' ? 'text-orange-600 font-bold bg-orange-50/60' : 'text-zinc-700 hover:bg-zinc-100/70'
+                }`}
+              >
+                <FileText className="w-4 h-4 text-zinc-600" />
+                <span>Quotations</span>
               </button>
 
               {/* 2. Calendar */}

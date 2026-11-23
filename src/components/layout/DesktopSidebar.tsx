@@ -13,7 +13,9 @@ import {
   LogOut,
   Settings as SettingsIcon,
   X,
-  Crown
+  Crown,
+  Sparkles,
+  FileText
 } from 'lucide-react';
 import { SettingsPage } from '../../pages/SettingsPage';
 import { NewBookingButton } from '../common/NewBookingButton';
@@ -119,21 +121,32 @@ export const DesktopSidebar: React.FC = () => {
           </div>
         </div>
 
-        {/* Quick Action: New Booking */}
-        <div className="px-3.5 pt-3.5 pb-2">
+        {/* Quick Actions: Quick Quotation & New Booking */}
+        <div className="px-3.5 pt-3.5 pb-2 space-y-2">
+          <button
+            onClick={() => {
+              setActiveTab('create-quotation');
+              window.location.hash = '#/app/quotation/new';
+            }}
+            className="w-full min-h-[44px] flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold tracking-tight shadow-sm border border-zinc-700 transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span>+ Quick Quotation</span>
+          </button>
+
           <button
             onClick={() => {
               setActiveTab('create-booking');
               window.location.hash = '#/app/bookings/new';
             }}
-            className="w-full min-h-[48px] flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-sm font-bold tracking-tight shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
+            className="w-full min-h-[44px] flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold tracking-tight shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
           >
             <PlusCircle className="w-4 h-4 text-white shrink-0 stroke-[2.5]" />
             <span>+ New Booking</span>
           </button>
         </div>
 
-        {/* Primary Studio Navigation: Strictly 4 Core Modules */}
+        {/* Primary Studio Navigation: Core Modules */}
         <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
           <div className="text-xs font-bold tracking-wider text-zinc-400 uppercase px-3 pb-1">
             Studio Menu
@@ -151,7 +164,19 @@ export const DesktopSidebar: React.FC = () => {
             }}
           />
 
-          {/* 2. Calendar */}
+          {/* 2. Quotations */}
+          <SidebarItem
+            id="quotations"
+            icon={<FileText className="w-4 h-4" />}
+            label="Quotations"
+            active={activeTab === 'quotations' || activeTab === 'create-quotation'}
+            onClick={() => {
+              setActiveTab('quotations');
+              window.location.hash = '#/app/quotations';
+            }}
+          />
+
+          {/* 3. Calendar */}
           <SidebarItem
             id="calendar"
             icon={<Calendar className="w-4 h-4" />}
@@ -163,7 +188,7 @@ export const DesktopSidebar: React.FC = () => {
             }}
           />
 
-          {/* 3. Bookings */}
+          {/* 4. Bookings */}
           <SidebarItem
             id="bookings"
             icon={<BookOpen className="w-4 h-4" />}
@@ -175,7 +200,7 @@ export const DesktopSidebar: React.FC = () => {
             }}
           />
 
-          {/* 4. Crew */}
+          {/* 5. Crew */}
           <SidebarItem
             id="crew"
             icon={<Users className="w-4 h-4" />}
