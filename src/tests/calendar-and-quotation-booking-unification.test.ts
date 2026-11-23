@@ -9,7 +9,7 @@ const TEST_STUDIO = 'studio_unification_test_' + Date.now();
 
 describe('Studio OS: Calendar Instant Booking & Quotation to Booking Directory Unification', () => {
   beforeEach(() => {
-    TenantStore.clearAll?.();
+    (TenantStore as any).clearAll?.();
   });
 
   it('1. Converting a quotation automatically creates a BookingRecord in Booking Directory', () => {
@@ -30,18 +30,15 @@ describe('Studio OS: Calendar Instant Booking & Quotation to Booking Directory U
       eventCategory: 'Wedding',
       eventDate: '2026-11-28',
       eventVenue: 'The Grand Heritage Lawn, Ahmedabad',
-      eventCity: 'Ahmedabad',
       items: [
         {
           description: 'Traditional & Candid Photography',
-          category: 'Photography',
           quantity: 1,
           unitPrice: 50000,
           amount: 50000
         },
         {
           description: 'Cinematic Wedding Film & Teaser',
-          category: 'Cinematography',
           quantity: 1,
           unitPrice: 60000,
           amount: 60000
@@ -49,8 +46,7 @@ describe('Studio OS: Calendar Instant Booking & Quotation to Booking Directory U
       ],
       subtotal: 110000,
       grandTotal: 121540,
-      advanceRequired: 30000,
-      createdBy: 'Studio Owner'
+      advanceAmount: 30000
     });
 
     expect(quotation.status).toBe('Draft');
