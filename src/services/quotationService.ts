@@ -588,6 +588,14 @@ export class QuotationService {
         ],
         createdBy: operator
       });
+      if (bookingRecord?.id) {
+        bookingRecord = bookingProductionService.updateBookingStatus(
+          studioId,
+          bookingRecord.id,
+          'deal_confirmed',
+          `Converted from Quotation #${quotation.quotationNumber}`
+        );
+      }
     } catch (bkgErr) {
       console.warn('[quotationService.convertQuotationToBooking] bookingProductionService warning:', bkgErr);
     }

@@ -32,6 +32,9 @@ export class BookingProductionService {
 
   // Helper to get bookings list with auto-reconciliation for converted quotations and calendar events
   listBookings(studioId: string, includeDeleted = false): BookingRecord[] {
+    if (!studioId || typeof studioId !== 'string' || !studioId.trim()) {
+      return [];
+    }
     let raw = TenantStore.get(studioId, BookingProductionService.BOOKINGS_COLLECTION) as BookingRecord[];
     let list: BookingRecord[] = Array.isArray(raw) ? [...raw] : [];
 
