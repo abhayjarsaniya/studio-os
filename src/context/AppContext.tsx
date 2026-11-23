@@ -82,6 +82,7 @@ import { financialSettingsService } from '../services/financialSettingsService';
 import { pdfGeneratorService } from '../services/pdfGeneratorService';
 import { TenantStore } from '../services/tenantStore';
 import { ShreejiBookingSeedService } from '../services/shreejiBookingSeedService';
+import { unifiedAuthService } from '../services/unifiedAuthService';
 
 export type EventViewMode = 'list' | 'calendar' | 'kanban' | 'mobile';
 
@@ -520,14 +521,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Role Switcher State
   const [currentRole, setCurrentRole] = useState<UserRole>('owner');
   const [isRoleSwitcherOpen, setIsRoleSwitcherOpen] = useState(false);
+  const ownerSession = unifiedAuthService.getStudioOwnerSession();
+  const defaultOwnerName = ownerSession?.account?.displayName || 'Studio Owner';
   const currentUser = users.find(u => u.role === currentRole) || users[0] || {
-    id: 'usr_default',
-    name: 'Studio Director',
-    email: currentStudio.email,
+    id: ownerSession?.account?.id || 'usr_default',
+    name: defaultOwnerName,
+    email: ownerSession?.account?.email || currentStudio.email,
     phone: currentStudio.phone,
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
     role: 'owner' as UserRole,
-    roleTitle: 'Creative Director',
+    roleTitle: 'Studio Owner',
     specialization: ['Direction'],
     activeEventsCount: 0
   };
