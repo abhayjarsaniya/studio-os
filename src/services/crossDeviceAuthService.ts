@@ -220,196 +220,285 @@ export class CrossDeviceAuthService {
       return { success: false, error: res.error || 'Invalid Master Admin credentials.' };
     }
 
-    // 2. QUERY CENTRAL FIRESTORE ACCOUNT REGISTRY
-    let registryEntry: AccountRegistryEntry | null = null;
+    // 2. CANDIDATE EMAILS FOR DIRECT FIREBASE AUTHENTICATION
+    // A Studio Owner or Employee may sign in with their Login ID (e.g. "abhaystudio") or full email
+    const candidateEmails: string[] = [];
+    if (cleanId.includes('@')) {
+      candidateEmails.push(cleanId);
+    } else {
+      candidateEmails.push(`${cleanId}@studio-os.internal`);
+      candidateEmails.push(`${cleanId}@gmail.com`);
+    }
 
-    if (!isTestRunner && db) {
-      try {
-        // Direct lookup by cleanId (loginId or email)
-        const docSnap = await getDoc(doc(db, 'accountRegistry', cleanId));
-        if (docSnap.exists()) {
-          registryEntry = docSnap.data() as AccountRegistryEntry;
-        } else {
-          // Fallback query across users collection
-          const usersRef = collection(db, 'users');
-          const q = query(usersRef, where('loginId', '==', cleanId));
-          const querySnap = await getDocs(q);
-          if (!querySnap.empty) {
-            const uData = querySnap.docs[0].data();
-            registryEntry = {
-              loginId: uData.loginId || cleanId,
-              email: uData.email || `${cleanId}@studio-os.internal`,
-              authUid: querySnap.docs[0].id,
-              accountType: uData.accountType || (uData.role === 'studio_owner' ? 'STUDIO_OWNER' : 'EMPLOYEE'),
-              role: uData.role === 'studio_owner' ? 'owner' : (uData.role || 'employee'),
-              roleTitle: uData.roleTitle || 'Studio Member',
-              studioId: uData.studioId,
-              studioName: uData.studioName,
-              displayName: uData.displayName || cleanId,
-              status: uData.status || (uData.isActive === false ? 'deactivated' : 'active'),
-              passwordHash: uData.passwordHash || '',
-              salt: uData.salt || '',
-              createdAt: uData.createdAt || new Date().toISOString(),
-              updatedAt: uData.updatedAt || new Date().toISOString()
-            };
+    // Check if local store knows an email for this Login ID
+    const localMatch = unifiedAuthService.findAccountByIdentifier(cleanId);
+    if (localMatch?.email && !candidateEmails.includes(this.normalize(localMatch.email))) {
+      candidateEmails.unshift(this.normalize(localMatch.email));
+    }
+
+    let authData: any = null;
+    let verifiedEmail = '';
+
+    // A. DIRECT FIREBASE AUTHENTICATION (Real Google Backend)
+    if (!isTestRunner) {
+      for (const email of candidateEmails) {
+        try {
+          const authRes = await fetch(`${AUTH_REST_URL}/accounts:signInWithPassword?key=${API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: passwordPlain, returnSecureToken: true })
+          });
+          const data = await authRes.json();
+          if (authRes.ok && data.localId) {
+            authData = data;
+            verifiedEmail = email;
+            break;
           }
+        } catch (e: any) {
+          console.warn('[CrossDeviceAuth] Firebase Auth candidate notice:', e?.message);
         }
-      } catch (err: any) {
-        console.warn('[CrossDeviceAuth] Cloud registry lookup notice:', err?.message);
       }
     }
 
-    // Fallback to local accounts if Firestore offline or in test runner
-    if (!registryEntry) {
-      const localAcc = unifiedAuthService.findAccountByIdentifier(cleanId);
-      if (localAcc) {
-        registryEntry = {
-          loginId: localAcc.loginId,
-          email: localAcc.email,
-          authUid: (localAcc as any).authUid || localAcc.id,
-          accountType: localAcc.accountType,
-          role: localAcc.accountType === 'STUDIO_OWNER' ? 'owner' : 'employee',
-          roleTitle: localAcc.roleTitle,
+    // B. IF FIREBASE AUTH SUCCEEDED: FETCH REAL CLOUD USER PROFILE & HYDRATE
+    if (authData && authData.localId && authData.idToken) {
+      const authUid = authData.localId;
+
+      // Sign in client Firebase SDK in browser
+      if (auth && !isAuthBypassed && verifiedEmail) {
+        try {
+          await signInWithEmailAndPassword(auth, verifiedEmail, passwordPlain);
+        } catch {}
+      }
+
+      let userFields: any = null;
+      try {
+        const projectId = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_PROJECT_ID) || 'studio-os-live-2026';
+        const userRes = await fetch(
+          `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/users/${authUid}`,
+          { headers: { Authorization: `Bearer ${authData.idToken}` } }
+        );
+        if (userRes.ok) {
+          const uDoc = await userRes.json();
+          userFields = uDoc.fields || {};
+        }
+      } catch (err: any) {
+        console.warn('[CrossDeviceAuth] Firestore user doc fetch note:', err?.message);
+      }
+
+      // Check status
+      const status = userFields?.status?.stringValue || (userFields?.isActive?.booleanValue === false ? 'deactivated' : 'active');
+      if (status !== 'active') {
+        rateLimitService.recordFailedAttempt(cleanId);
+        return {
+          success: false,
+          error: `Account is ${status}. Access has been disabled by Platform Admin.`
+        };
+      }
+
+      const role = userFields?.role?.stringValue === 'studio_owner' || userFields?.role?.stringValue === 'owner' ? 'owner' : (userFields?.role?.stringValue || 'employee');
+      const studioId = userFields?.studioId?.stringValue || '';
+      const studioName = userFields?.studioName?.stringValue || '';
+      const displayName = userFields?.displayName?.stringValue || cleanId;
+      const phone = userFields?.phone?.stringValue || '';
+      const loginId = userFields?.loginId?.stringValue || cleanId;
+      const email = userFields?.email?.stringValue || verifiedEmail;
+      const accountType = userFields?.accountType?.stringValue || (role === 'owner' ? 'STUDIO_OWNER' : 'EMPLOYEE');
+
+      // Hydrate Studio Profile from Cloud Firestore
+      if (studioId) {
+        let studioProfile: Studio | null = null;
+        try {
+          const projectId = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_PROJECT_ID) || 'studio-os-live-2026';
+          const sRes = await fetch(
+            `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/studios/${studioId}`,
+            { headers: { Authorization: `Bearer ${authData.idToken}` } }
+          );
+          if (sRes.ok) {
+            const sDoc = await sRes.json();
+            const sF = sDoc.fields || {};
+            studioProfile = {
+              id: studioId,
+              tenantId: studioId,
+              name: sF.name?.stringValue || studioName || 'My Studio',
+              title: sF.ownerName?.stringValue || displayName,
+              email: sF.ownerEmail?.stringValue || email,
+              phone: sF.ownerPhone?.stringValue || phone,
+              address: sF.address?.stringValue || '',
+              city: sF.city?.stringValue || '',
+              state: sF.state?.stringValue || 'Gujarat',
+              gstNumber: sF.gstNumber?.stringValue || '',
+              website: sF.website?.stringValue || '',
+              lifecycleStatus: 'active',
+              subscription: {
+                planId: 'studio_os_monthly',
+                planName: 'Studio OS Monthly',
+                pricePerMonth: 500,
+                currency: 'INR',
+                status: 'active',
+                validUntil: '2027-12-31',
+                autoRenew: true
+              },
+              settings: {
+                defaultCurrency: 'INR',
+                timezone: 'Asia/Kolkata',
+                dateFormat: 'DD/MM/YYYY',
+                timeFormat: '12h',
+                allowDirectWhatsApp: true,
+                watermarkEnabled: true,
+                invoicePrefix: 'INV',
+                eventPrefix: 'EV'
+              },
+              storageUsageMb: 0,
+              storageQuotaMb: 15360,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              createdBy: 'Master Admin'
+            };
+          }
+        } catch {}
+
+        if (!studioProfile) {
+          studioProfile = {
+            id: studioId,
+            tenantId: studioId,
+            name: studioName || 'My Studio',
+            title: displayName,
+            email,
+            phone,
+            address: '',
+            city: '',
+            lifecycleStatus: 'active',
+            subscription: {
+              planId: 'studio_os_monthly',
+              planName: 'Studio OS Monthly',
+              pricePerMonth: 500,
+              currency: 'INR',
+              status: 'active',
+              validUntil: '2027-12-31',
+              autoRenew: true
+            },
+            settings: {
+              defaultCurrency: 'INR',
+              timezone: 'Asia/Kolkata',
+              dateFormat: 'DD/MM/YYYY',
+              timeFormat: '12h',
+              allowDirectWhatsApp: true,
+              watermarkEnabled: true,
+              invoicePrefix: 'INV',
+              eventPrefix: 'EV'
+            },
+            storageUsageMb: 0,
+            storageQuotaMb: 15360,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            createdBy: 'Master Admin'
+          };
+        }
+
+        // Hydrate TenantStore
+        TenantStore.set(studioId, 'profile', studioProfile);
+
+        // Register in platform studios meta
+        const meta = TenantStore.getSingle<Record<string, any>>('platform_system', 'platform_studios_meta') || {};
+        meta[studioId] = {
+          lifecycleStatus: 'active',
+          internalNotes: ['Hydrated from Cloud User Profile on cross-device login']
+        };
+        TenantStore.set('platform_system', 'platform_studios_meta', meta);
+      }
+
+      // Build UserAccount object
+      const accountObj: UserAccount = {
+        id: authUid,
+        accountType: accountType as any,
+        loginId,
+        email,
+        phone,
+        displayName,
+        studioId,
+        studioName,
+        roleId: role,
+        roleTitle: role === 'owner' ? 'Studio Owner' : 'Studio Member',
+        status: 'active',
+        passwordHash: '',
+        salt: '',
+        mustChangePassword: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      unifiedAuthService.saveAccount(accountObj);
+
+      const token = `tok_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      const session: UserSession = {
+        token,
+        account: accountObj,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      };
+
+      const activeSessions = TenantStore.get<UserSession>('platform_system', 'active_sessions') || [];
+      TenantStore.set('platform_system', 'active_sessions', [...activeSessions.filter(s => s.account.id !== authUid), session]);
+
+      const targetRoute = role === 'owner' ? '#/app/dashboard' : '#/employee/dashboard';
+      this.persistSession(token, role, studioId, accountObj);
+      rateLimitService.resetAttempts(cleanId);
+
+      return {
+        success: true,
+        role,
+        studioId,
+        targetRoute,
+        session
+      };
+    }
+
+    // C. LOCAL STORED ACCOUNTS FALLBACK (For offline environments & test runner)
+    const localAcc = unifiedAuthService.findAccountByIdentifier(cleanId);
+    if (localAcc) {
+      if (localAcc.status !== 'active') {
+        rateLimitService.recordFailedAttempt(cleanId);
+        return {
+          success: false,
+          error: `Account is ${localAcc.status}. Access has been disabled by Platform Admin.`
+        };
+      }
+
+      let isPasswordValid = false;
+      if (localAcc.passwordHash && localAcc.salt) {
+        const computedHash = hashCredential(passwordPlain, localAcc.salt);
+        if (computedHash === localAcc.passwordHash) {
+          isPasswordValid = true;
+        }
+      }
+
+      if (isPasswordValid) {
+        const isOwner = localAcc.accountType === 'STUDIO_OWNER';
+        const role = isOwner ? 'owner' : 'employee';
+        const targetRoute = isOwner ? '#/app/dashboard' : '#/employee/dashboard';
+        const token = `tok_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+        const session: UserSession = {
+          token,
+          account: localAcc,
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        };
+
+        this.persistSession(token, role, localAcc.studioId, localAcc);
+        rateLimitService.resetAttempts(cleanId);
+
+        return {
+          success: true,
+          role,
           studioId: localAcc.studioId,
-          studioName: localAcc.studioName,
-          displayName: localAcc.displayName,
-          phone: localAcc.phone,
-          status: localAcc.status,
-          passwordHash: localAcc.passwordHash,
-          salt: localAcc.salt,
-          mustChangePassword: localAcc.mustChangePassword,
-          createdAt: localAcc.createdAt,
-          updatedAt: localAcc.updatedAt
+          targetRoute,
+          session
         };
       }
     }
 
-    if (!registryEntry) {
-      rateLimitService.recordFailedAttempt(cleanId);
-      return { success: false, error: 'Invalid Login ID or password.' };
-    }
-
-    // 3. CHECK DEACTIVATION / SUSPENSION STATUS
-    if (registryEntry.status !== 'active') {
-      rateLimitService.recordFailedAttempt(cleanId);
-      return { 
-        success: false, 
-        error: `Account is ${registryEntry.status}. Access has been disabled by Platform Admin.` 
-      };
-    }
-
-    // 4. VERIFY CREDENTIALS
-    let isPasswordValid = false;
-    let authUid = registryEntry.authUid;
-
-    // A. Check Firebase Auth REST API (Authenticates on real Google backend)
-    if (!isTestRunner && registryEntry.email) {
-      try {
-        const authResponse = await fetch(`${AUTH_REST_URL}/accounts:signInWithPassword?key=${API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: registryEntry.email,
-            password: passwordPlain,
-            returnSecureToken: true
-          })
-        });
-
-        const authData = await authResponse.json();
-        if (authResponse.ok && authData.localId) {
-          isPasswordValid = true;
-          authUid = authData.localId;
-          // Also sign in SDK if browser
-          if (auth && !isAuthBypassed) {
-            try {
-              await signInWithEmailAndPassword(auth, registryEntry.email, passwordPlain);
-            } catch {}
-          }
-        }
-      } catch (e: any) {
-        console.warn('[CrossDeviceAuth] Firebase Auth REST notice:', e.message);
-      }
-    }
-
-    // B. Check Salted Cryptographic Hash Fallback
-    if (!isPasswordValid && registryEntry.passwordHash && registryEntry.salt) {
-      const computedHash = hashCredential(passwordPlain, registryEntry.salt);
-      if (computedHash === registryEntry.passwordHash) {
-        isPasswordValid = true;
-      }
-    }
-
-    if (!isPasswordValid) {
-      rateLimitService.recordFailedAttempt(cleanId);
-      return { success: false, error: 'Invalid Login ID or password.' };
-    }
-
-    // Reset rate limit attempts upon successful authentication
-    rateLimitService.resetAttempts(cleanId);
-
-    // 5. HYDRATE MULTI-TENANT STUDIO DATA ON THIS DEVICE
-    const studioId = registryEntry.studioId || '';
-    if (studioId && !isTestRunner && db) {
-      try {
-        // Fetch studio document from Firestore
-        const studioSnap = await getDoc(doc(db, 'studios', studioId, 'profile', studioId));
-        if (studioSnap.exists()) {
-          const studioData = studioSnap.data() as Studio;
-          TenantStore.set(studioId, 'profile', studioData);
-        } else {
-          const rootStudioSnap = await getDoc(doc(db, 'studios', studioId));
-          if (rootStudioSnap.exists()) {
-            TenantStore.set(studioId, 'profile', rootStudioSnap.data() as Studio);
-          }
-        }
-      } catch (e: any) {
-        console.warn('[CrossDeviceAuth] Studio hydration notice:', e.message);
-      }
-    }
-
-    // 6. BUILD SESSION & PERSIST
-    const isOwner = registryEntry.accountType === 'STUDIO_OWNER';
-    const role = isOwner ? 'owner' : 'employee';
-    const targetRoute = isOwner ? '#/app/dashboard' : '#/employee/dashboard';
-
-    const accountObj: UserAccount = {
-      id: registryEntry.authUid || `usr_${cleanId}`,
-      accountType: registryEntry.accountType,
-      loginId: registryEntry.loginId,
-      email: registryEntry.email,
-      phone: registryEntry.phone,
-      displayName: registryEntry.displayName,
-      studioId: registryEntry.studioId,
-      studioName: registryEntry.studioName,
-      roleId: role,
-      roleTitle: registryEntry.roleTitle,
-      status: registryEntry.status,
-      passwordHash: registryEntry.passwordHash,
-      salt: registryEntry.salt,
-      mustChangePassword: registryEntry.mustChangePassword || false,
-      createdAt: registryEntry.createdAt,
-      updatedAt: registryEntry.updatedAt
-    };
-
-    // Save into local unifiedAuth store so subsequent local checks pass
-    unifiedAuthService.saveAccount(accountObj);
-
-    const token = `tok_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-    const session: UserSession = {
-      token,
-      account: accountObj,
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-    };
-
-    this.persistSession(token, role, studioId, accountObj);
-
-    return {
-      success: true,
-      role,
-      studioId,
-      targetRoute,
-      session
-    };
+    // Invalid credentials
+    rateLimitService.recordFailedAttempt(cleanId);
+    return { success: false, error: 'Invalid Login ID or password.' };
   }
 
   private persistSession(token: string, role: string, studioId?: string, account?: any): void {
