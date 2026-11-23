@@ -13,6 +13,7 @@ import { auditService } from './auditService';
 import { notificationService } from './notificationService';
 import { workflowService } from './workflowService';
 import { taskDependencyService } from './taskDependencyService';
+import { firestoreService } from './firestoreService';
 
 export interface TaskFilterOptions {
   assignedToId?: string;
@@ -144,6 +145,7 @@ export class TaskService {
 
     TaskSchema.parse(newTask);
     TenantStore.set(studioId, 'tasks', [newTask, ...tasks]);
+    firestoreService.saveDocument(studioId, 'tasks', newTask.id, newTask).catch(() => {});
 
     // Send assignment notification if assigned to employee
     if (newTask.assignedToId) {
@@ -203,6 +205,7 @@ export class TaskService {
     TaskSchema.parse(updated);
     tasks[index] = updated;
     TenantStore.set(studioId, 'tasks', tasks);
+    firestoreService.saveDocument(studioId, 'tasks', updated.id, updated).catch(() => {});
 
     auditService.log(
       studioId,
@@ -325,6 +328,7 @@ export class TaskService {
     if (!studioId) throw new Error('[taskService.deleteTask]: studioId is required');
     const tasks = this.listTasks(studioId);
     TenantStore.set(studioId, 'tasks', tasks.filter(t => t.id !== taskId));
+    firestoreService.deleteDocument(studioId, 'tasks', taskId).catch(() => {});
     auditService.log(studioId, 'system', 'DELETE_TASK', 'task', taskId, {});
   }
 

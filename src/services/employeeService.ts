@@ -2,6 +2,7 @@ import { Employee, EmployeeSchema, EmploymentStatus } from '../types/schema';
 import { TenantStore } from './tenantStore';
 import { auditService } from './auditService';
 import { authCredentialService } from './authCredentialService';
+import { firestoreService } from './firestoreService';
 
 export class EmployeeService {
   listEmployees(studioId: string): Employee[] {
@@ -88,6 +89,7 @@ export class EmployeeService {
 
     EmployeeSchema.parse(newEmployee);
     TenantStore.set(studioId, 'employees', [...all, newEmployee]);
+    firestoreService.saveDocument(studioId, 'employees', newEmployee.id, newEmployee).catch(() => {});
 
     auditService.log(
       studioId,
@@ -116,6 +118,7 @@ export class EmployeeService {
     EmployeeSchema.parse(updated);
     all[index] = updated;
     TenantStore.set(studioId, 'employees', all);
+    firestoreService.saveDocument(studioId, 'employees', all[index].id, all[index]).catch(() => {});
 
     auditService.log(
       studioId,
@@ -148,6 +151,7 @@ export class EmployeeService {
 
     const filtered = all.filter(e => e.id !== id);
     TenantStore.set(studioId, 'employees', filtered);
+    firestoreService.deleteDocument(studioId, 'employees', id).catch(() => {});
 
     auditService.log(
       studioId,

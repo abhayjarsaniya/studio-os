@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { useStudio } from '../context/StudioContext';
 import { quotationService } from '../services/quotationService';
@@ -33,11 +33,18 @@ export const QuotationsListPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
+  const [dataVersion, setDataVersion] = useState(0);
+
+  useEffect(() => {
+    const handleUpdate = () => setDataVersion(v => v + 1);
+    window.addEventListener('studio_data_updated', handleUpdate);
+    return () => window.removeEventListener('studio_data_updated', handleUpdate);
+  }, []);
 
   // Load all studio quotations
   const quotations = useMemo(() => {
     return quotationService.listQuotations(studioId);
-  }, [studioId, successBanner]);
+  }, [studioId, successBanner, dataVersion]);
 
   // Filtered quotations
   const filteredQuotations = useMemo(() => {

@@ -143,6 +143,24 @@ export class TenantStore {
     }
   }
 
+  /**
+   * Set data received directly from Firebase Cloud Sync without echoing a save back to Firestore
+   */
+  static setFromCloud<T>(studioId: string, collection: string, data: T): void {
+    this.assertStudioId(studioId);
+    const key = this.getKey(studioId, collection);
+    storageSet(key, JSON.stringify(data));
+  }
+
+  static clearAll(): void {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.clear();
+    }
+    for (const key of Object.keys(memoryStorage)) {
+      delete memoryStorage[key];
+    }
+  }
+
   static set<T>(studioId: string, collection: string, data: T): void {
     this.assertStudioId(studioId);
     const key = this.getKey(studioId, collection);

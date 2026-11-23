@@ -1,5 +1,6 @@
 import { StudioEvent, EventSchema, EventStatus, StatusChangeRecord, EventAttachment, EventAssignment } from '../types/schema';
 import { TenantStore } from './tenantStore';
+import { firestoreService } from './firestoreService';
 
 export const eventService = {
   listEvents(studioId: string): StudioEvent[] {
@@ -89,6 +90,7 @@ export const eventService = {
 
     EventSchema.parse(newEvent);
     TenantStore.set(studioId, 'events', [newEvent, ...events]);
+    firestoreService.saveDocument(studioId, 'events', newEvent.id, newEvent).catch(() => {});
     return newEvent;
   },
 
@@ -145,6 +147,7 @@ export const eventService = {
     });
     if (!updated) throw new Error(`Event ${eventId} not found in studio ${studioId}`);
     TenantStore.set(studioId, 'events', newList);
+    firestoreService.saveDocument(studioId, 'events', updated.id, updated).catch(() => {});
     return updated;
   },
 
@@ -227,5 +230,6 @@ export const eventService = {
     if (!studioId) throw new Error('[eventService.deleteEvent]: studioId is required');
     const events = this.listEvents(studioId);
     TenantStore.set(studioId, 'events', events.filter(e => e.id !== eventId));
+    firestoreService.deleteDocument(studioId, 'events', eventId).catch(() => {});
   }
 };

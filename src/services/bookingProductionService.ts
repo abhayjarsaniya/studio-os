@@ -38,12 +38,10 @@ export class BookingProductionService {
     let raw = TenantStore.get(studioId, BookingProductionService.BOOKINGS_COLLECTION) as BookingRecord[];
     let list: BookingRecord[] = Array.isArray(raw) ? [...raw] : [];
 
-    // Only seed demo bookings for historical demo/test studios if completely empty
+    // Only seed demo bookings for historical demo studios if completely empty
     const isDemoOrTest = studioId === 'std_demo_royal' || 
       studioId === 'studio_shreeji_films' || 
-      studioId === 'studio_royal_001' || 
-      studioId.includes('test') || 
-      studioId.startsWith('studio_demo_');
+      studioId === 'studio_royal_001';
 
     if (list.length === 0 && isDemoOrTest) {
       list = this.seedDemoBookings(studioId);
@@ -388,7 +386,10 @@ export class BookingProductionService {
     const isTestRunner = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
     if (!isTestRunner) {
       try {
-        await firestoreService.saveDocument(studioId, 'bookings', booking.id, booking);
+        await Promise.all([
+          firestoreService.saveDocument(studioId, 'bookings', booking.id, booking),
+          firestoreService.saveDocument(studioId, 'studio_bookings_v2', booking.id, booking)
+        ]);
         // Subcollections
         (booking.deliverables || []).forEach(del => {
           firestoreService.saveDocument(studioId, `bookings/${booking.id}/deliverables`, del.id, del).catch(() => {});
@@ -557,6 +558,7 @@ export class BookingProductionService {
     const isTestRunner = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
     if (!isTestRunner) {
       firestoreService.saveDocument(studioId, 'bookings', bookingId, { isDeleted: true }).catch(() => {});
+      firestoreService.saveDocument(studioId, 'studio_bookings_v2', bookingId, { isDeleted: true }).catch(() => {});
       firestoreService.saveDocument(studioId, 'events', bookingId, { isDeleted: true }).catch(() => {});
     }
     return true;
@@ -1144,6 +1146,7 @@ export class BookingProductionService {
     // Recalculate balances
     const previousBalance = booking.financials.remainingBalance;
     booking.financials.verifiedPaymentsReceived += verifiedAmount;
+    (booking.financials as any).paidAmount = booking.financials.verifiedPaymentsReceived;
     booking.financials.remainingBalance = Math.max(0, booking.financials.finalAgreedAmount - booking.financials.verifiedPaymentsReceived);
     const newBalance = booking.financials.remainingBalance;
 

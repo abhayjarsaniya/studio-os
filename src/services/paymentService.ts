@@ -4,6 +4,7 @@ import { invoiceService } from './invoiceService';
 import { financialSettingsService } from './financialSettingsService';
 import { customerService } from './customerService';
 import { auditService } from './auditService';
+import { firestoreService } from './firestoreService';
 
 export interface PaymentFilterOptions {
   invoiceId?: string;
@@ -179,6 +180,7 @@ export class PaymentService {
     // Save payment
     const payments = TenantStore.get<Payment>(studioId, 'payments');
     TenantStore.set(studioId, 'payments', [newPayment, ...payments]);
+    firestoreService.saveDocument(studioId, 'payments', newPayment.id, newPayment).catch(() => {});
 
     // Update invoice paid & pending amount
     const newPaidAmount = Math.round((currentPaid + newPayment.amount) * 100) / 100;
@@ -196,6 +198,7 @@ export class PaymentService {
     const invoices = TenantStore.get<Invoice>(studioId, 'invoices');
     const updatedInvoices = invoices.map(i => i.id === invoice.id ? updatedInvoice : i);
     TenantStore.set(studioId, 'invoices', updatedInvoices);
+    firestoreService.saveDocument(studioId, 'invoices', updatedInvoice.id, updatedInvoice).catch(() => {});
 
     // Update customer totalSpent and outstandingBalance if customer exists
     try {
@@ -321,6 +324,7 @@ export class PaymentService {
     const invoices = TenantStore.get<Invoice>(studioId, 'invoices');
     const updatedInvoices = invoices.map(i => i.id === invoice.id ? updatedInvoice : i);
     TenantStore.set(studioId, 'invoices', updatedInvoices);
+    firestoreService.saveDocument(studioId, 'invoices', updatedInvoice.id, updatedInvoice).catch(() => {});
 
     // Update customer outstandingBalance and totalSpent
     try {

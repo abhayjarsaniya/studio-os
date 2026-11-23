@@ -1,5 +1,6 @@
 import { StudioNotification, StudioNotificationSchema } from '../types/schema';
 import { TenantStore } from './tenantStore';
+import { firestoreService } from './firestoreService';
 
 export const notificationService = {
   listNotifications(studioId: string): StudioNotification[] {
@@ -18,6 +19,7 @@ export const notificationService = {
     };
     StudioNotificationSchema.parse(newNotif);
     TenantStore.set(studioId, 'notifications', [newNotif, ...notifs]);
+    firestoreService.saveDocument(studioId, 'notifications', newNotif.id, newNotif).catch(() => {});
     return newNotif;
   },
 

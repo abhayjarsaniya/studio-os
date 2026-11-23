@@ -4,6 +4,7 @@ import { studioService } from '../services/studioService';
 import { branchService } from '../services/branchService';
 import { memberService } from '../services/memberService';
 import { studioA } from '../data/multiTenantDemoData';
+import { cloudSyncService } from '../services/cloudSyncService';
 
 interface StudioContextType {
   currentStudio: Studio;
@@ -91,6 +92,16 @@ export const StudioProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   useEffect(() => {
     loadStudioSubData(currentStudio.id);
+
+    // Continuous Real-Time Cross-Device Synchronization
+    const sId = currentStudio.id;
+    if (sId) {
+      cloudSyncService.hydrateStudioFromCloud(sId);
+      const stopSync = cloudSyncService.startRealtimeSync(sId);
+      return () => {
+        stopSync();
+      };
+    }
   }, [currentStudio.id]);
 
   const switchStudio = (studioId: string) => {

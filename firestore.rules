@@ -26,6 +26,8 @@ service cloud.firestore {
       return isAuthenticated() && (
         isPlatformAdmin() ||
         request.auth.token.email in ['aarav@shreejifilms.in', 'contact@shreejifilms.in'] ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.studioId == studioId) ||
         (exists(/databases/$(database)/documents/studios/$(studioId)/members/$(request.auth.uid)) &&
          (get(/databases/$(database)/documents/studios/$(studioId)/members/$(request.auth.uid)).data.status == 'active' ||
           get(/databases/$(database)/documents/studios/$(studioId)/members/$(request.auth.uid)).data.isActive == true)) ||
@@ -37,6 +39,10 @@ service cloud.firestore {
     function isStudioOwner(studioId) {
       return isAuthenticated() && (
         isPlatformAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.studioId == studioId &&
+         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['owner', 'studio_owner'] ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.accountType == 'STUDIO_OWNER')) ||
         (isStudioMember(studioId) && 
          get(/databases/$(database)/documents/studios/$(studioId)/members/$(request.auth.uid)).data.role == 'owner') ||
         request.auth.token.email in ['aarav@shreejifilms.in', 'contact@shreejifilms.in']

@@ -13,6 +13,7 @@ import { unifiedAuthService, hashCredential, generateCryptoSalt, UserAccount, Us
 import { TenantStore } from './tenantStore';
 import { rateLimitService } from './rateLimitService';
 import { Studio } from '../types/schema';
+import { cloudSyncService } from './cloudSyncService';
 
 const API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_API_KEY) || 'AIzaSyBdN6SpgPVAVD6JPEHbnfa_I2wM6BEodhk';
 const AUTH_REST_URL = 'https://identitytoolkit.googleapis.com/v1';
@@ -354,6 +355,14 @@ export class CrossDeviceAuthService {
           internalNotes: ['Hydrated from Cloud User Profile on cross-device login']
         };
         TenantStore.set('platform_system', 'platform_studios_meta', meta);
+
+        // Immediate Authoritative Cloud Hydration: Pull all customers, bookings, quotations, payments, crew
+        try {
+          await cloudSyncService.hydrateStudioFromCloud(studioId);
+          cloudSyncService.startRealtimeSync(studioId);
+        } catch (syncErr) {
+          console.warn('[CrossDeviceAuth] Hydrate studio data warning:', syncErr);
+        }
       }
 
       // Build UserAccount object

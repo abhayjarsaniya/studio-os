@@ -2,6 +2,7 @@ import { Expense, ExpenseSchema, ExpenseApprovalStatus } from '../types/schema';
 import { TenantStore } from './tenantStore';
 import { financialSettingsService } from './financialSettingsService';
 import { auditService } from './auditService';
+import { firestoreService } from './firestoreService';
 
 export const DEFAULT_20_EXPENSE_CATEGORIES = [
   'Camera Equipment',
@@ -159,6 +160,7 @@ export class ExpenseService {
 
     const expenses = TenantStore.get<Expense>(studioId, 'expenses');
     TenantStore.set(studioId, 'expenses', [newExpense, ...expenses]);
+    firestoreService.saveDocument(studioId, 'expenses', newExpense.id, newExpense).catch(() => {});
 
     auditService.log({
       studioId,

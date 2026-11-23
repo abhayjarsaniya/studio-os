@@ -1,6 +1,7 @@
 import { FinancialSettings, FinancialSettingsSchema } from '../types/schema';
 import { TenantStore } from './tenantStore';
 import { auditService } from './auditService';
+import { firestoreService } from './firestoreService';
 
 export const DEFAULT_FINANCIAL_SETTINGS: Omit<FinancialSettings, 'studioId'> = {
   legalName: 'Royal Weddings Studio Pvt Ltd',
@@ -61,6 +62,7 @@ export class FinancialSettingsService {
 
     FinancialSettingsSchema.parse(updated);
     TenantStore.set(studioId, 'financialSettings', [updated]);
+    firestoreService.saveDocument(studioId, 'financialSettings', 'settings', updated).catch(() => {});
 
     auditService.log(
       studioId,

@@ -7,6 +7,7 @@ import { eventService } from './eventService';
 import { customerService } from './customerService';
 import { StudioEvent } from '../types';
 import { bookingProductionService } from './bookingProductionService';
+import { firestoreService } from './firestoreService';
 
 export interface PhotographyPackageTemplate {
   id: string;
@@ -321,6 +322,7 @@ export class QuotationService {
 
     QuotationSchema.parse(newQuotation);
     TenantStore.set(studioId, 'quotations', [newQuotation, ...quotations]);
+    firestoreService.saveDocument(studioId, 'quotations', newQuotation.id, newQuotation).catch(() => {});
 
     auditService.log(
       studioId,
@@ -370,6 +372,7 @@ export class QuotationService {
     QuotationSchema.parse(updated);
     quotations[index] = updated;
     TenantStore.set(studioId, 'quotations', quotations);
+    firestoreService.saveDocument(studioId, 'quotations', updated.id, updated).catch(() => {});
 
     auditService.log(
       studioId,
@@ -405,6 +408,7 @@ export class QuotationService {
     }
 
     TenantStore.set(studioId, 'quotations', quotations.filter(q => q.id !== quotationId));
+    firestoreService.deleteDocument(studioId, 'quotations', quotationId).catch(() => {});
     auditService.log(studioId, operatorId, 'DELETE_QUOTATION', 'quotation', quotationId, { quotationNumber: target.quotationNumber });
   }
 

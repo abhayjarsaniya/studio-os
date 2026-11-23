@@ -2,6 +2,7 @@ import { Customer, CustomerSchema, CustomerStatus, CustomerPreferences, Customer
 import { TenantStore } from './tenantStore';
 import { auditService } from './auditService';
 import { notificationService } from './notificationService';
+import { firestoreService } from './firestoreService';
 
 export interface NormalizedPhone {
   raw: string;
@@ -316,6 +317,7 @@ export class CustomerService {
 
     CustomerSchema.parse(newCustomer);
     TenantStore.set(studioId, 'customers', [newCustomer, ...customers]);
+    firestoreService.saveDocument(studioId, 'customers', newCustomer.id, newCustomer).catch(() => {});
 
     auditService.log(
       studioId,
@@ -355,6 +357,7 @@ export class CustomerService {
     CustomerSchema.parse(updated);
     customers[index] = updated;
     TenantStore.set(studioId, 'customers', customers);
+    firestoreService.saveDocument(studioId, 'customers', updated.id, updated).catch(() => {});
 
     auditService.log(
       studioId,
@@ -375,6 +378,7 @@ export class CustomerService {
     if (!target) return;
 
     TenantStore.set(studioId, 'customers', customers.filter(c => c.id !== customerId));
+    firestoreService.deleteDocument(studioId, 'customers', customerId).catch(() => {});
     auditService.log(studioId, operatorId, 'DELETE_CUSTOMER', 'customer', customerId, { name: target.name });
   }
 
