@@ -142,10 +142,10 @@ export class FirestoreService {
         _clientTimestamp: new Date().toISOString()
       };
 
-      // Resilient write with 3500ms timeout to prevent hanging on flaky networks or auth queue
+      // Resilient write with 10000ms timeout to allow initial WebChannel handshake on slow networks
       const writePromise = setDoc(docRef, payload, { merge });
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Cloud sync timeout: saved to resilient local storage')), 3500)
+        setTimeout(() => reject(new Error('Cloud sync timeout: saved to resilient local storage')), 10000)
       );
       await Promise.race([writePromise, timeoutPromise]);
 
