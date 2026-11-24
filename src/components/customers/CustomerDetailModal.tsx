@@ -101,23 +101,23 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   const [fuTime, setFuTime] = useState('11:00');
   const [fuReason, setFuReason] = useState('Follow up on quotation & shoot dates');
 
-  if (!customer) return null;
-
   const customerBookings = React.useMemo(() => {
+    if (!customer) return [];
     try {
       return bookingProductionService.listBookings(studio.id).filter(b => b.customerId === customer.id || b.customerPhone === customer.phone);
     } catch {
       return [];
     }
-  }, [studio.id, customer.id, customer.phone]);
+  }, [studio.id, customer?.id, customer?.phone]);
 
   const customerQuotations = React.useMemo(() => {
+    if (!customer) return [];
     try {
       return quotationService.listQuotations(studio.id).filter(q => q.customerId === customer.id || q.customerPhone === customer.phone);
     } catch {
       return [];
     }
-  }, [studio.id, customer.id, customer.phone]);
+  }, [studio.id, customer?.id, customer?.phone]);
 
   const customerFunctions = React.useMemo(() => {
     return customerBookings.flatMap(b => b.functions || []);
@@ -128,12 +128,15 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   }, [customerBookings]);
 
   const customerBookingNotes = React.useMemo(() => {
+    if (!customer) return [];
     try {
       return bookingProductionService.listCustomerNotes(studio.id, customer.id, true);
     } catch {
       return [];
     }
-  }, [studio.id, customer.id]);
+  }, [studio.id, customer?.id]);
+
+  if (!customer) return null;
 
   const customerEvents = events.filter(e => e.customerId === customer.id);
   const upcomingEvents = customerEvents.filter(e => e.status !== 'Completed' && e.status !== 'Cancelled');

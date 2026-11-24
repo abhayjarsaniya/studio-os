@@ -235,10 +235,10 @@ export const CalendarPage: React.FC = () => {
   };
 
   const handleToday = () => {
-    // Jump to November 15, 2026 (current application demo date)
-    setCurrentYear(2026);
-    setCurrentMonth(10);
-    setSelectedDay(15);
+    const now = new Date();
+    setCurrentYear(now.getFullYear());
+    setCurrentMonth(now.getMonth());
+    setSelectedDay(now.getDate());
   };
 
   // Helper to calculate days in month & offset
@@ -637,7 +637,8 @@ export const CalendarPage: React.FC = () => {
                   const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                   const eventsOnDay = combinedCalendarEvents.filter(e => e.startDate === dateStr);
                   const isSelected = selectedDay === day;
-                  const isToday = day === 15 && currentMonth === 10 && currentYear === 2026;
+                  const now = new Date();
+                  const isToday = day === now.getDate() && currentMonth === now.getMonth() && currentYear === now.getFullYear();
                   const hasMultiple = eventsOnDay.length > 1;
 
                   return (
