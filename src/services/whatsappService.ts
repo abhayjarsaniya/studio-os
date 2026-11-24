@@ -2,6 +2,7 @@ import { MessageTemplate, MessageTemplateSchema, WhatsAppLog, WhatsAppLogSchema,
 import { TenantStore } from './tenantStore';
 import { auditService } from './auditService';
 import { normalizePhoneNumber } from './customerService';
+import { firestoreService } from './firestoreService';
 
 export interface StudioWhatsAppConfig {
   studioId: string;
@@ -212,23 +213,23 @@ export class WhatsAppService {
   }
 
   initializeDefaultTemplates(studioId: string): MessageTemplate[] {
-    return this.listTemplates(studioId);
+    if (!studioId) throw new Error('[whatsappService.initializeDefaultTemplates]: studioId is required');
+    const seeded = DEFAULT_16_WHATSAPP_TEMPLATES.map((tmpl, idx) => ({
+      ...tmpl,
+      id: `msgt_${studioId}_${idx + 1}`,
+      studioId,
+      createdAt: new Date().toISOString()
+    }));
+    TenantStore.set(studioId, 'messageTemplates', seeded);
+    firestoreService.saveCollectionBatch(studioId, 'messageTemplates', seeded).catch(() => {});
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('studio_data_updated'));
+    return seeded;
   }
 
   listTemplates(studioId: string): MessageTemplate[] {
     if (!studioId) throw new Error('[whatsappService.listTemplates]: studioId is required');
-    let all = TenantStore.get<MessageTemplate>(studioId, 'messageTemplates');
-    if (all.length === 0) {
-      // Seed 16 default templates
-      all = DEFAULT_16_WHATSAPP_TEMPLATES.map((tmpl, idx) => ({
-        ...tmpl,
-        id: `msgt_${studioId}_${idx + 1}`,
-        studioId,
-        createdAt: new Date().toISOString()
-      }));
-      TenantStore.set(studioId, 'messageTemplates', all);
-    }
-    return all;
+    const all = TenantStore.get<MessageTemplate>(studioId, 'messageTemplates');
+    return Array.isArray(all) ? all : [];
   }
 
   getTemplate(studioId: string, templateId: string): MessageTemplate | undefined {
@@ -270,6 +271,8 @@ export class WhatsAppService {
 
     MessageTemplateSchema.parse(newTemplate);
     TenantStore.set(studioId, 'messageTemplates', [...templates, newTemplate]);
+    firestoreService.saveDocument(studioId, 'messageTemplates', newTemplate.id, newTemplate).catch(() => {});
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('studio_data_updated'));
 
     auditService.log(studioId, operatorId, 'CREATE_MESSAGE_TEMPLATE', 'messageTemplate', newTemplate.id, { title: newTemplate.title });
     return newTemplate;
@@ -302,6 +305,8 @@ export class WhatsAppService {
     MessageTemplateSchema.parse(updated);
     templates[index] = updated;
     TenantStore.set(studioId, 'messageTemplates', templates);
+    firestoreService.saveDocument(studioId, 'messageTemplates', updated.id, updated).catch(() => {});
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('studio_data_updated'));
 
     auditService.log(studioId, operatorId, 'UPDATE_MESSAGE_TEMPLATE', 'messageTemplate', templateId, { updates: Object.keys(updates) });
     return updated;
@@ -328,11 +333,10 @@ export class WhatsAppService {
     const templates = this.listTemplates(studioId);
     const target = templates.find(t => t.id === templateId);
     if (!target) return;
-    if (target.isDefault) {
-      throw new Error(`Default template "${target.title}" cannot be deleted.`);
-    }
 
     TenantStore.set(studioId, 'messageTemplates', templates.filter(t => t.id !== templateId));
+    firestoreService.deleteDocument(studioId, 'messageTemplates', templateId).catch(() => {});
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('studio_data_updated'));
     auditService.log(studioId, operatorId, 'DELETE_MESSAGE_TEMPLATE', 'messageTemplate', templateId, { title: target.title });
   }
 

@@ -69,7 +69,7 @@ export class EmployeeService {
       employeeNumber,
       fullName: data.fullName.trim(),
       profilePhoto: data.profilePhoto,
-      phone: data.phone,
+      phone: data.phone || '',
       email: data.email.trim(),
       address: data.address,
       joiningDate: data.joiningDate || new Date().toISOString().split('T')[0],

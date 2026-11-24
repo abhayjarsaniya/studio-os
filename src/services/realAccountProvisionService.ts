@@ -482,10 +482,25 @@ export class RealAccountProvisionService {
       updatedAt: now.toISOString()
     };
 
-    // 7. Save Studio, Branch, and Employee in TenantStore
+    // 7. Save clean initial studio workspace (ZERO demo/sample business records, 0 employees/crew)
     TenantStore.set(studioId, 'profile', newStudio);
     TenantStore.set(studioId, 'branches', [defaultBranch]);
-    TenantStore.set(studioId, 'employees', [ownerEmployee]);
+    TenantStore.set(studioId, 'employees', []);
+    TenantStore.set(studioId, 'customers', []);
+    TenantStore.set(studioId, 'studio_bookings_v2', []);
+    TenantStore.set(studioId, 'bookings', []);
+    TenantStore.set(studioId, 'events', []);
+    TenantStore.set(studioId, 'quotations', []);
+    TenantStore.set(studioId, 'invoices', []);
+    TenantStore.set(studioId, 'payments', []);
+    TenantStore.set(studioId, 'expenses', []);
+    TenantStore.set(studioId, 'services', []);
+    TenantStore.set(studioId, 'packages', []);
+    TenantStore.set(studioId, 'deliverablesCatalog', []);
+    TenantStore.set(studioId, 'eventCategories', []);
+    TenantStore.set(studioId, 'messageTemplates', []);
+    TenantStore.set(studioId, 'notifications', []);
+    TenantStore.set(studioId, 'tasks', []);
 
     // Register in platformStudioService meta immediately
     try {
@@ -544,16 +559,18 @@ export class RealAccountProvisionService {
             registeredAt: now.toISOString()
           }, { merge: true }),
 
-          // 3. Studio profile document
+          // 3. Studio profile documents (canonical + studioId key)
           setDoc(doc(db, 'studios', studioId, 'profile', studioId), newStudio, { merge: true }),
+          setDoc(doc(db, 'studios', studioId, 'profile', 'profile'), newStudio, { merge: true }),
 
           // 4. Branch document
           setDoc(doc(db, 'studios', studioId, 'branches', defaultBranch.id), defaultBranch, { merge: true }),
 
-          // 5. Owner employee document
-          setDoc(doc(db, 'studios', studioId, 'employees', ownerEmployee.id), {
-            ...ownerEmployee,
-            authUid
+          // 5. Initial application settings document
+          setDoc(doc(db, 'studios', studioId, 'settings', 'settings'), {
+            ...newStudio.settings,
+            studioId,
+            updatedAt: now.toISOString()
           }, { merge: true }),
 
           // 6. User profile document in ROOT /users/{authUid}

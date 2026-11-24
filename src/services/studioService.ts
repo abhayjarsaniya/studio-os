@@ -81,7 +81,43 @@ export const studioService = {
           id: canonicalId
         };
       }
-      return shreejiStudio;
+      return {
+        id: studioId,
+        tenantId: studioId,
+        name: 'My Studio',
+        title: '',
+        tagline: '',
+        phone: '',
+        email: '',
+        address: '',
+        city: '',
+        state: '',
+        pincode: '',
+        gstNumber: '',
+        subscription: {
+          planId: 'studio_os_monthly',
+          planName: 'Studio OS Monthly',
+          pricePerMonth: 500,
+          currency: 'INR',
+          status: 'active',
+          validUntil: '2027-12-31',
+          autoRenew: true
+        },
+        settings: {
+          defaultCurrency: 'INR',
+          timezone: 'Asia/Kolkata',
+          dateFormat: 'DD/MM/YYYY',
+          timeFormat: '12h',
+          allowDirectWhatsApp: true,
+          watermarkEnabled: false,
+          invoicePrefix: 'INV',
+          eventPrefix: 'EV'
+        },
+        storageUsageMb: 0,
+        storageQuotaMb: 15360,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      } as Studio;
     }
     return studio;
   },

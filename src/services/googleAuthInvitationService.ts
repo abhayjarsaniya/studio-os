@@ -854,7 +854,20 @@ class GoogleAuthInvitationService {
     // 3. Save to TenantStore
     TenantStore.set(studioId, 'profile', newStudio);
     TenantStore.set(studioId, 'branches', [defaultBranch]);
-    TenantStore.set(studioId, 'employees', [ownerEmployee]);
+    TenantStore.set(studioId, 'employees', []);
+    TenantStore.set(studioId, 'customers', []);
+    TenantStore.set(studioId, 'studio_bookings_v2', []);
+    TenantStore.set(studioId, 'bookings', []);
+    TenantStore.set(studioId, 'events', []);
+    TenantStore.set(studioId, 'quotations', []);
+    TenantStore.set(studioId, 'invoices', []);
+    TenantStore.set(studioId, 'payments', []);
+    TenantStore.set(studioId, 'expenses', []);
+    TenantStore.set(studioId, 'services', []);
+    TenantStore.set(studioId, 'packages', []);
+    TenantStore.set(studioId, 'deliverablesCatalog', []);
+    TenantStore.set(studioId, 'eventCategories', []);
+    TenantStore.set(studioId, 'messageTemplates', []);
 
     // Register studio in platform metadata
     try {

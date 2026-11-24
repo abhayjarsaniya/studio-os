@@ -16,7 +16,8 @@ import {
   Globe, 
   MessageCircle, 
   AlertCircle,
-  Save
+  Save,
+  Edit3
 } from 'lucide-react';
 
 interface Props {
@@ -39,6 +40,7 @@ export const WhatsAppTemplatesSettings: React.FC<Props> = ({ studioId }) => {
   );
 
   const [isAddingTemplate, setIsAddingTemplate] = useState(false);
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
   const [templateTitle, setTemplateTitle] = useState('');
   const [templateCategory, setTemplateCategory] = useState('Billing');
   const [templateBody, setTemplateBody] = useState('');
@@ -85,19 +87,29 @@ export const WhatsAppTemplatesSettings: React.FC<Props> = ({ studioId }) => {
     e.preventDefault();
     if (!templateTitle.trim() || !templateBody.trim()) return;
     try {
-      whatsappService.createTemplate(studioId, {
-        title: templateTitle.trim(),
-        category: templateCategory,
-        body: templateBody.trim()
-      }, 'Studio Owner');
+      if (editingTemplateId) {
+        whatsappService.updateTemplate(studioId, editingTemplateId, {
+          title: templateTitle.trim(),
+          category: templateCategory,
+          body: templateBody.trim()
+        }, 'Studio Owner');
+        setNotice('Message template updated!');
+      } else {
+        whatsappService.createTemplate(studioId, {
+          title: templateTitle.trim(),
+          category: templateCategory,
+          body: templateBody.trim()
+        }, 'Studio Owner');
+        setNotice('New message template created!');
+      }
       setTemplatesList(whatsappService.listTemplates(studioId));
       setTemplateTitle('');
       setTemplateBody('');
+      setEditingTemplateId(null);
       setIsAddingTemplate(false);
-      setNotice('New message template created!');
       setTimeout(() => setNotice(null), 3000);
     } catch (err: any) {
-      alert(err.message || 'Error creating template');
+      alert(err.message || 'Error saving template');
     }
   };
 
@@ -385,6 +397,41 @@ export const WhatsAppTemplatesSettings: React.FC<Props> = ({ studioId }) => {
         )}
 
         {/* Templates List */}
+        {templatesList.length === 0 ? (
+          <div className="p-8 text-center rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/60 space-y-3">
+            <MessageSquare className="w-8 h-8 text-zinc-300 mx-auto" />
+            <p className="text-sm font-bold text-zinc-700">No WhatsApp templates created yet</p>
+            <p className="text-xs text-zinc-500 max-w-md mx-auto">
+              Create your own studio WhatsApp message templates or optionally load starter templates to customize.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingTemplateId(null);
+                  setTemplateTitle('');
+                  setTemplateBody('');
+                  setIsAddingTemplate(true);
+                }}
+                className="px-4 py-2 rounded-xl bg-zinc-900 text-white text-xs font-bold cursor-pointer"
+              >
+                + Create Custom Template
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const seeded = whatsappService.initializeDefaultTemplates(studioId);
+                  setTemplatesList(seeded);
+                  setNotice('Loaded starter WhatsApp templates — you can edit or delete any of them.');
+                  setTimeout(() => setNotice(null), 3500);
+                }}
+                className="px-4 py-2 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-bold cursor-pointer"
+              >
+                Load Starter Templates
+              </button>
+            </div>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {templatesList.map((tmpl) => (
             <div
@@ -419,32 +466,46 @@ export const WhatsAppTemplatesSettings: React.FC<Props> = ({ studioId }) => {
                   {tmpl.placeholders?.length || 0} variables
                 </span>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   {(!tmpl.isDefault || (!tmpl.title.toLowerCase().includes('quotation') && tmpl.category !== 'Billing')) && (
                     <button
                       type="button"
                       onClick={() => handleSetDefaultTemplate(tmpl.id)}
-                      className="min-h-[44px] px-3.5 py-1.5 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-800 text-xs font-bold transition-all cursor-pointer touch-manipulation active:scale-95"
+                      className="min-h-[40px] px-3 py-1.5 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-800 text-xs font-bold transition-all cursor-pointer touch-manipulation active:scale-95"
                     >
-                      Set as Default Quotation
+                      Set Default
                     </button>
                   )}
 
-                  {!tmpl.isDefault && (
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteTemplate(tmpl.id)}
-                      className="min-h-[44px] min-w-[44px] p-2 rounded-lg text-zinc-400 hover:text-rose-600 transition-colors cursor-pointer flex items-center justify-center touch-manipulation active:scale-95"
-                      title="Delete Template"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingTemplateId(tmpl.id);
+                      setTemplateTitle(tmpl.title);
+                      setTemplateCategory(tmpl.category);
+                      setTemplateBody(tmpl.body);
+                      setIsAddingTemplate(true);
+                    }}
+                    className="min-h-[40px] min-w-[40px] p-2 rounded-lg text-zinc-400 hover:text-zinc-900 transition-colors cursor-pointer flex items-center justify-center"
+                    title="Edit Template"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteTemplate(tmpl.id)}
+                    className="min-h-[40px] min-w-[40px] p-2 rounded-lg text-zinc-400 hover:text-rose-600 transition-colors cursor-pointer flex items-center justify-center touch-manipulation active:scale-95"
+                    title="Delete Template"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
+        )}
       </div>
     </div>
   );

@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { DeliverableSpecification, DeliverableCategory } from '../../types/bookingProduction';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
+import { useStudio } from '../../context/StudioContext';
+import { studioCatalogService } from '../../services/studioCatalogService';
 
 export interface DeliverableCatalogItem {
   id: string;
@@ -224,12 +226,40 @@ export const DeliverablesSelectorModal: React.FC<DeliverablesSelectorModalProps>
   bookingId,
   functionName
 }) => {
+  const { currentStudio } = useStudio();
+  const studioId = currentStudio?.id || '';
   const modalRef = useRef<HTMLDivElement>(null);
   useOutsideClick(modalRef, onClose, isOpen);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | DeliverableCategory>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(initialSelectedIds));
+  const [catalogVersion, setCatalogVersion] = useState(0);
+
+  // Inline "+ Add Deliverable" state
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newCategory, setNewCategory] = useState<DeliverableCategory>('photography');
+  const [newQty, setNewQty] = useState<number>(1);
+  const [newUnit, setNewUnit] = useState('items');
+
+  const studioCatalog: DeliverableCatalogItem[] = useMemo(() => {
+    const saved = studioId ? studioCatalogService.listDeliverables(studioId) : [];
+    const mapped: DeliverableCatalogItem[] = saved.map(d => ({
+      id: d.id,
+      name: d.name,
+      category: d.category,
+      unit: d.unit || 'items',
+      defaultQty: d.defaultQty || 1,
+      description: d.description || '',
+      presetTags: []
+    }));
+    const isDemo = studioId === 'studio_shreeji_films' || studioId === 'std_demo_royal';
+    if (mapped.length === 0 && isDemo) {
+      return MASTER_DELIVERABLES_CATALOG;
+    }
+    return mapped;
+  }, [studioId, catalogVersion, isOpen]);
 
   // Sync initialSelectedIds when modal opens
   useEffect(() => {
@@ -237,6 +267,7 @@ export const DeliverablesSelectorModal: React.FC<DeliverablesSelectorModalProps>
       setSelectedIds(new Set(initialSelectedIds));
       setSearchQuery('');
       setSelectedCategory('all');
+      setIsAddingNew(false);
     }
   }, [isOpen, initialSelectedIds]);
 
@@ -252,17 +283,38 @@ export const DeliverablesSelectorModal: React.FC<DeliverablesSelectorModalProps>
 
   // Filter items by category and search
   const filteredCatalog = useMemo(() => {
-    return MASTER_DELIVERABLES_CATALOG.filter(item => {
+    return studioCatalog.filter(item => {
       if (selectedCategory !== 'all' && item.category !== selectedCategory) {
         return false;
       }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        return item.name.toLowerCase().includes(q) || item.description.toLowerCase().includes(q);
+        return item.name.toLowerCase().includes(q) || (item.description || '').toLowerCase().includes(q);
       }
       return true;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [studioCatalog, selectedCategory, searchQuery]);
+
+  const handleAddInlineDeliverable = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim() || !studioId) return;
+    const created = studioCatalogService.createDeliverable(studioId, {
+      name: newName.trim(),
+      category: newCategory,
+      defaultQty: Math.max(1, Number(newQty) || 1),
+      unit: newUnit.trim() || 'items'
+    });
+    setCatalogVersion(v => v + 1);
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.add(created.id);
+      return next;
+    });
+    setNewName('');
+    setNewQty(1);
+    setNewUnit('items');
+    setIsAddingNew(false);
+  };
 
   const toggleItem = (id: string) => {
     setSelectedIds(prev => {
@@ -289,13 +341,8 @@ export const DeliverablesSelectorModal: React.FC<DeliverablesSelectorModalProps>
     });
   };
 
-  const applyPreset = (tag: 'wedding' | 'pre_wedding') => {
-    const presetItems = MASTER_DELIVERABLES_CATALOG.filter(i => i.presetTags.includes(tag));
-    setSelectedIds(new Set(presetItems.map(i => i.id)));
-  };
-
   const handleConfirm = () => {
-    const selectedItems = MASTER_DELIVERABLES_CATALOG.filter(i => selectedIds.has(i.id));
+    const selectedItems = studioCatalog.filter(i => selectedIds.has(i.id));
     onApply(selectedItems);
     onClose();
   };
@@ -389,38 +436,88 @@ export const DeliverablesSelectorModal: React.FC<DeliverablesSelectorModalProps>
               ))}
             </div>
 
-            {/* Quick Actions: Select All / Clear / Presets */}
+            {/* Quick Actions: Select All / Clear / + Add Deliverable */}
             <div className="flex items-center gap-1.5 text-xs">
+              {filteredCatalog.length > 0 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={selectAllFiltered}
+                    className="min-h-[36px] px-2.5 py-1 rounded-lg border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 font-semibold cursor-pointer"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearAllFiltered}
+                    className="min-h-[36px] px-2.5 py-1 rounded-lg border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 font-semibold cursor-pointer"
+                  >
+                    Clear All
+                  </button>
+                </>
+              )}
               <button
                 type="button"
-                onClick={selectAllFiltered}
-                className="min-h-[36px] px-2.5 py-1 rounded-lg border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 font-semibold cursor-pointer"
+                onClick={() => setIsAddingNew(!isAddingNew)}
+                className="min-h-[36px] px-3 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-bold cursor-pointer flex items-center gap-1"
               >
-                Select All
-              </button>
-              <button
-                type="button"
-                onClick={clearAllFiltered}
-                className="min-h-[36px] px-2.5 py-1 rounded-lg border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 font-semibold cursor-pointer"
-              >
-                Clear All
-              </button>
-              <button
-                type="button"
-                onClick={() => applyPreset('wedding')}
-                className="min-h-[36px] px-2.5 py-1 rounded-lg border border-orange-200 bg-orange-50 text-orange-800 hover:bg-orange-100 font-bold cursor-pointer"
-              >
-                Wedding Preset
-              </button>
-              <button
-                type="button"
-                onClick={() => applyPreset('pre_wedding')}
-                className="min-h-[36px] px-2.5 py-1 rounded-lg border border-orange-200 bg-orange-50 text-orange-800 hover:bg-orange-100 font-bold cursor-pointer"
-              >
-                Pre-Wedding Preset
+                <Plus className="w-3.5 h-3.5 text-amber-400" />
+                <span>+ Add Deliverable</span>
               </button>
             </div>
           </div>
+
+          {/* Inline Add Studio Deliverable Form */}
+          {isAddingNew && (
+            <form onSubmit={handleAddInlineDeliverable} className="p-3 rounded-xl bg-amber-50/80 border border-amber-200 space-y-2.5 text-xs">
+              <div className="font-bold text-amber-950">Add Deliverable to Your Studio Catalog</div>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Edited Photos, Teaser Video"
+                  value={newName}
+                  onChange={e => setNewName(e.target.value)}
+                  className="sm:col-span-2 px-3 py-2 rounded-lg border border-amber-300 bg-white text-xs focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                />
+                <select
+                  value={newCategory}
+                  onChange={e => setNewCategory(e.target.value as DeliverableCategory)}
+                  className="px-2.5 py-2 rounded-lg border border-amber-300 bg-white text-xs"
+                >
+                  <option value="photography">Photography</option>
+                  <option value="video">Video</option>
+                  <option value="physical">Album / Print</option>
+                  <option value="digital">Digital / Cloud</option>
+                </select>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    min="1"
+                    value={newQty}
+                    onChange={e => setNewQty(Number(e.target.value) || 1)}
+                    className="w-16 px-2 py-2 rounded-lg border border-amber-300 bg-white font-mono text-xs"
+                    placeholder="Qty"
+                  />
+                  <input
+                    type="text"
+                    value={newUnit}
+                    onChange={e => setNewUnit(e.target.value)}
+                    className="flex-1 min-w-0 px-2 py-2 rounded-lg border border-amber-300 bg-white text-xs"
+                    placeholder="Unit"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setIsAddingNew(false)} className="px-3 py-1.5 rounded-lg text-zinc-600 font-semibold hover:bg-zinc-200/50 cursor-pointer">
+                  Cancel
+                </button>
+                <button type="submit" className="px-3.5 py-1.5 rounded-lg bg-zinc-900 text-white font-bold hover:bg-zinc-800 cursor-pointer">
+                  Save & Select
+                </button>
+              </div>
+            </form>
+          )}
         </div>
 
         {/* Scrollable Checklist Items with large 48px touch rows */}
@@ -469,8 +566,25 @@ export const DeliverablesSelectorModal: React.FC<DeliverablesSelectorModalProps>
           })}
 
           {filteredCatalog.length === 0 && (
-            <div className="p-8 text-center text-xs text-zinc-400">
-              No deliverables matching "{searchQuery}".
+            <div className="p-8 text-center space-y-2">
+              <p className="text-xs sm:text-sm font-bold text-zinc-700">
+                {studioCatalog.length === 0
+                  ? 'No deliverables configured in your studio yet'
+                  : `No deliverables matching "${searchQuery}".`}
+              </p>
+              <p className="text-xs text-zinc-500">
+                Add deliverables using "+ Add Deliverable" above — they save directly to your studio catalog.
+              </p>
+              {!isAddingNew && (
+                <button
+                  type="button"
+                  onClick={() => setIsAddingNew(true)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold cursor-pointer mt-1"
+                >
+                  <Plus className="w-3.5 h-3.5 text-amber-400" />
+                  <span>+ Add Your First Deliverable</span>
+                </button>
+              )}
             </div>
           )}
         </div>

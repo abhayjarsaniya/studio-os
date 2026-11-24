@@ -789,7 +789,7 @@ export class BookingProductionService {
       });
     });
 
-    const agreedPrice = (data as any).agreedAmount ?? (data as any).agreedPrice ?? data.financials?.finalAgreedAmount ?? data.financials?.originalQuotation ?? data.initialQuotationAmount ?? data.originalQuotation ?? 150000;
+    const agreedPrice = (data as any).agreedAmount ?? (data as any).agreedPrice ?? data.financials?.finalAgreedAmount ?? data.financials?.originalQuotation ?? data.initialQuotationAmount ?? data.originalQuotation ?? 0;
     const advancePaid = (data as any).advancePayment ?? (data as any).advanceAmount ?? data.financials?.verifiedPaymentsReceived ?? data.financials?.advanceReceived ?? data.advanceReceived ?? 0;
 
     const record: BookingRecord = {

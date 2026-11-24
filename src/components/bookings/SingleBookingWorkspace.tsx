@@ -230,13 +230,13 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
   // Album & Production Specifications State (Section 7)
   const [albumFormData, setAlbumFormData] = useState({
-    albumType: 'Premium Flush Mount Acrylic',
-    size: '12x36',
-    sheets: 35,
-    copies: 2,
-    paperFinish: 'Velvet Matte',
-    printingVendor: 'Shreeji Color Lab',
-    notes: 'Laser engraved wooden box with couple names'
+    albumType: '',
+    size: '',
+    sheets: 0,
+    copies: 0,
+    paperFinish: '',
+    printingVendor: '',
+    notes: ''
   });
 
   // New Sub-event / Function Form State (Section 2)
@@ -272,6 +272,18 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
         originalQuotation: booking.financials?.originalQuotation || 0,
         negotiatedDiscount: booking.financials?.negotiatedDiscount || 0
       });
+      const specs = (booking as any).albumSpecs;
+      if (specs) {
+        setAlbumFormData({
+          albumType: specs.albumType || '',
+          size: specs.size || '',
+          sheets: specs.sheets || 0,
+          copies: specs.copies || 0,
+          paperFinish: specs.paperFinish || '',
+          printingVendor: specs.printingVendor || '',
+          notes: specs.notes || ''
+        });
+      }
     }
   }, [booking]);
 
@@ -363,16 +375,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
   // Event-specific Deliverables Checklist (independent per booking, saves to Firestore)
   const checklistItems = useMemo(() => {
-    let rawDeliverables = booking.deliverables;
-    if (!Array.isArray(rawDeliverables) || rawDeliverables.length === 0) {
-      rawDeliverables = generateDeliverablesForCategory(
-        booking.category || 'Wedding',
-        booking.id,
-        booking.mainEventDate || booking.startDate || new Date().toISOString().split('T')[0]
-      );
-      booking.deliverables = rawDeliverables;
-      bookingProductionService.saveBooking(studioId, booking);
-    }
+    const rawDeliverables = Array.isArray(booking.deliverables) ? booking.deliverables : [];
 
     return rawDeliverables.map(del => {
       const isDone = del.isDelivered || del.stage === 'delivered' || del.stage === 'customer_confirmation';
@@ -819,7 +822,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
   // 1-Tap PDF Generators
   const handleGeneratePdf = (type: 'quotation' | 'invoice' | 'receipt' | 'summary') => {
     setIsPdfDropdownOpen(false);
-    const studioName = currentStudio?.name || 'Shreeji Films and Photography';
+    const studioName = currentStudio?.name || 'Studio OS';
     const cleanDate = booking.mainEventDate || booking.startDate || new Date().toISOString().split('T')[0];
 
     if (type === 'quotation') {
@@ -891,7 +894,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
           paidAmount: verifiedPaymentsReceived,
           pendingAmount: remainingBalance
         },
-        terms: 'Thank you for choosing Shreeji Films & Photography. Please settle any balance due upon completion.'
+        terms: `Thank you for choosing ${studioName}. Please settle any balance due upon completion.`
       });
     } else if (type === 'receipt') {
       openPdfViewer({
@@ -925,7 +928,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
           paidAmount: verifiedPaymentsReceived,
           pendingAmount: remainingBalance
         },
-        terms: 'Official payment receipt. Verified by Shreeji Films and Photography.'
+        terms: `Official payment receipt. Verified by ${studioName}.`
       });
     } else {
       // Summary PDF
@@ -1003,7 +1006,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
   // Pre-formatted WhatsApp Messages
   const whatsappMessages = useMemo(() => {
-    const studioName = currentStudio?.name || 'Shreeji Films and Photography';
+    const studioName = currentStudio?.name || 'Studio OS';
     const cust = booking.customerName || 'Valued Client';
     const ev = booking.eventName || 'Event';
     const dt = booking.mainEventDate || booking.startDate || '';
@@ -2553,6 +2556,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   onChange={e => handleUpdateAlbumSpecs({ size: e.target.value })}
                   className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px] cursor-pointer"
                 >
+                  <option value="">-- Select Album Size --</option>
                   <option value="12x36">12x36 (Wide Panoramic)</option>
                   <option value="12x30">12x30 (Standard Wedding)</option>
                   <option value="10x24">10x24 (Compact Wedding)</option>
@@ -2596,6 +2600,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   onChange={e => handleUpdateAlbumSpecs({ paperFinish: e.target.value })}
                   className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px] cursor-pointer"
                 >
+                  <option value="">-- Select Paper Finish --</option>
                   <option value="Velvet Matte">Velvet Matte</option>
                   <option value="Metallic Non-Tearable">Metallic Non-Tearable</option>
                   <option value="Silk Matte Luster">Silk Matte Luster</option>
@@ -2613,7 +2618,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
                   value={albumFormData.printingVendor}
                   onChange={e => handleUpdateAlbumSpecs({ printingVendor: e.target.value })}
                   className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-semibold text-zinc-900 focus:bg-white focus:ring-2 focus:ring-orange-500 min-h-[48px]"
-                  placeholder="e.g. Shreeji Color Lab / Canvera"
+                  placeholder="e.g. Print Lab / Vendor Name"
                 />
               </div>
 

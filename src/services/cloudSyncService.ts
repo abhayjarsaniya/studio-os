@@ -45,7 +45,7 @@ export class CloudSyncService {
     firestoreService.setStatus('saving', 'Syncing studio data from Firebase Cloud...');
 
     try {
-      // 1. Parallel fetch of all primary business collections from Firestore
+      // 1. Parallel fetch of all primary business & configuration collections from Firestore
       const [
         cloudCustomers,
         cloudBookingsV2,
@@ -57,7 +57,18 @@ export class CloudSyncService {
         cloudTasks,
         cloudNotifications,
         cloudExpenses,
+        cloudServices,
+        cloudPackages,
+        cloudDeliverables,
+        cloudCategories,
+        cloudTemplates,
+        cloudInvoices,
+        cloudLeads,
+        cloudFollowUps,
+        cloudSubEvents,
+        cloudSuppliers,
         cloudProfile,
+        cloudProfileById,
         cloudSettings
       ] = await Promise.all([
         firestoreService.getCollection<any>(cleanStudioId, 'customers'),
@@ -70,7 +81,18 @@ export class CloudSyncService {
         firestoreService.getCollection<any>(cleanStudioId, 'tasks'),
         firestoreService.getCollection<any>(cleanStudioId, 'notifications'),
         firestoreService.getCollection<any>(cleanStudioId, 'expenses'),
+        firestoreService.getCollection<any>(cleanStudioId, 'services'),
+        firestoreService.getCollection<any>(cleanStudioId, 'packages'),
+        firestoreService.getCollection<any>(cleanStudioId, 'deliverablesCatalog'),
+        firestoreService.getCollection<any>(cleanStudioId, 'eventCategories'),
+        firestoreService.getCollection<any>(cleanStudioId, 'messageTemplates'),
+        firestoreService.getCollection<any>(cleanStudioId, 'invoices'),
+        firestoreService.getCollection<any>(cleanStudioId, 'leads'),
+        firestoreService.getCollection<any>(cleanStudioId, 'followUps'),
+        firestoreService.getCollection<any>(cleanStudioId, 'subEvents'),
+        firestoreService.getCollection<any>(cleanStudioId, 'suppliers'),
         firestoreService.getDocument<any>(cleanStudioId, 'profile', 'profile'),
+        firestoreService.getDocument<any>(cleanStudioId, 'profile', cleanStudioId),
         firestoreService.getDocument<any>(cleanStudioId, 'settings', 'settings')
       ]);
 
@@ -80,36 +102,38 @@ export class CloudSyncService {
       (cloudBookingsV2 || []).forEach(b => { if (b && b.id) unifiedBookingsMap.set(b.id, b); });
       const mergedBookings = Array.from(unifiedBookingsMap.values());
 
-      // 3. Hydrate TenantStore with authoritative cloud data
-      if (cloudCustomers.length > 0) {
-        TenantStore.setFromCloud(cleanStudioId, 'customers', cloudCustomers);
-      }
-      if (mergedBookings.length > 0) {
+      // 3. Hydrate TenantStore with authoritative cloud data (including genuine 0-count empties)
+      const syncCol = (col: string, items: any[]) => {
+        if (items.length > 0 || firestoreService.didCollectionFetchSucceed(cleanStudioId, col)) {
+          TenantStore.setFromCloud(cleanStudioId, col, items);
+        }
+      };
+
+      syncCol('customers', cloudCustomers);
+      if (mergedBookings.length > 0 || firestoreService.didCollectionFetchSucceed(cleanStudioId, 'studio_bookings_v2')) {
         TenantStore.setFromCloud(cleanStudioId, 'studio_bookings_v2', mergedBookings);
       }
-      if (cloudEvents.length > 0) {
-        TenantStore.setFromCloud(cleanStudioId, 'events', cloudEvents);
-      }
-      if (cloudQuotations.length > 0) {
-        TenantStore.setFromCloud(cleanStudioId, 'quotations', cloudQuotations);
-      }
-      if (cloudPayments.length > 0) {
-        TenantStore.setFromCloud(cleanStudioId, 'payments', cloudPayments);
-      }
-      if (cloudEmployees.length > 0) {
-        TenantStore.setFromCloud(cleanStudioId, 'employees', cloudEmployees);
-      }
-      if (cloudTasks.length > 0) {
-        TenantStore.setFromCloud(cleanStudioId, 'tasks', cloudTasks);
-      }
-      if (cloudNotifications.length > 0) {
-        TenantStore.setFromCloud(cleanStudioId, 'notifications', cloudNotifications);
-      }
-      if (cloudExpenses.length > 0) {
-        TenantStore.setFromCloud(cleanStudioId, 'expenses', cloudExpenses);
-      }
-      if (cloudProfile) {
-        TenantStore.setFromCloud(cleanStudioId, 'profile', cloudProfile);
+      syncCol('events', cloudEvents);
+      syncCol('quotations', cloudQuotations);
+      syncCol('payments', cloudPayments);
+      syncCol('employees', cloudEmployees);
+      syncCol('tasks', cloudTasks);
+      syncCol('notifications', cloudNotifications);
+      syncCol('expenses', cloudExpenses);
+      syncCol('services', cloudServices);
+      syncCol('packages', cloudPackages);
+      syncCol('deliverablesCatalog', cloudDeliverables);
+      syncCol('eventCategories', cloudCategories);
+      syncCol('messageTemplates', cloudTemplates);
+      syncCol('invoices', cloudInvoices);
+      syncCol('leads', cloudLeads);
+      syncCol('followUps', cloudFollowUps);
+      syncCol('subEvents', cloudSubEvents);
+      syncCol('suppliers', cloudSuppliers);
+
+      const resolvedProfile = cloudProfile || cloudProfileById;
+      if (resolvedProfile) {
+        TenantStore.setFromCloud(cleanStudioId, 'profile', resolvedProfile);
       }
       if (cloudSettings) {
         TenantStore.setFromCloud(cleanStudioId, 'settings', cloudSettings);
@@ -193,7 +217,13 @@ export class CloudSyncService {
       'employees',
       'tasks',
       'notifications',
-      'expenses'
+      'expenses',
+      'services',
+      'packages',
+      'deliverablesCatalog',
+      'eventCategories',
+      'messageTemplates',
+      'invoices'
     ];
 
     collectionsToListen.forEach(colName => {
@@ -204,7 +234,7 @@ export class CloudSyncService {
           (cloudItems) => {
             if (this.isHydrating) return; // Ignore initial echo during hydration
 
-            if (Array.isArray(cloudItems) && cloudItems.length > 0) {
+            if (Array.isArray(cloudItems)) {
               TenantStore.setFromCloud(cleanStudioId, colName, cloudItems);
 
               // Notify all UI consumers and tables

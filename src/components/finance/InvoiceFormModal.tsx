@@ -69,12 +69,12 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
     }
     return [
       {
-        description: 'Wedding Photography & Cinematic Film Package',
+        description: '',
         quantity: 1,
-        unitPrice: 150000,
+        unitPrice: 0,
         discount: 0,
         taxRate: 18,
-        amount: 150000
+        amount: 0
       }
     ];
   });

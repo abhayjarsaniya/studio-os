@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, Plus, Trash2, Sparkles, Receipt } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { quotationService, DEFAULT_10_PHOTOGRAPHY_PACKAGES } from '../../services/quotationService';
+import { useStudio } from '../../context/StudioContext';
+import { studioCatalogService } from '../../services/studioCatalogService';
 import { Quotation } from '../../types/schema';
 
 interface QuotationFormModalProps {
@@ -16,15 +17,21 @@ export const QuotationFormModal: React.FC<QuotationFormModalProps> = ({
   quotationToEdit
 }) => {
   const { customers, createQuotation, updateQuotation } = useApp();
+  const { currentStudio } = useStudio();
+  const studioId = currentStudio?.id || '';
 
-  const [customerId, setCustomerId] = useState(quotationToEdit?.customerId || (customers[0]?.id || ''));
-  const [customerName, setCustomerName] = useState(quotationToEdit?.customerName || (customers[0]?.name || ''));
-  const [customerPhone, setCustomerPhone] = useState(quotationToEdit?.customerPhone || (customers[0]?.phone || ''));
-  const [customerEmail, setCustomerEmail] = useState(quotationToEdit?.customerEmail || (customers[0]?.email || ''));
+  const studioPackages = useMemo(() => {
+    return studioId ? studioCatalogService.listPackages(studioId) : [];
+  }, [studioId, isOpen]);
+
+  const [customerId, setCustomerId] = useState(quotationToEdit?.customerId || '');
+  const [customerName, setCustomerName] = useState(quotationToEdit?.customerName || '');
+  const [customerPhone, setCustomerPhone] = useState(quotationToEdit?.customerPhone || '');
+  const [customerEmail, setCustomerEmail] = useState(quotationToEdit?.customerEmail || '');
   const [eventCategory, setEventCategory] = useState(quotationToEdit?.eventCategory || 'Wedding');
   const [eventDate, setEventDate] = useState(quotationToEdit?.eventDate || new Date().toISOString().split('T')[0]);
   const [eventVenue, setEventVenue] = useState(quotationToEdit?.eventVenue || quotationToEdit?.venue || '');
-  const [packageName, setPackageName] = useState(quotationToEdit?.packageName || 'Bespoke Package');
+  const [packageName, setPackageName] = useState(quotationToEdit?.packageName || '');
   const [expiryDate, setExpiryDate] = useState(() => {
     if (quotationToEdit?.expiryDate || quotationToEdit?.validUntil) {
       return quotationToEdit.expiryDate || quotationToEdit.validUntil!;
@@ -33,7 +40,7 @@ export const QuotationFormModal: React.FC<QuotationFormModalProps> = ({
     d.setDate(d.getDate() + 15);
     return d.toISOString().split('T')[0];
   });
-  const [paymentTerms, setPaymentTerms] = useState(quotationToEdit?.paymentTerms || '20% booking advance, 50% on event day, 30% on final deliverable settlement.');
+  const [paymentTerms, setPaymentTerms] = useState(quotationToEdit?.paymentTerms || '');
   const [additionalNotes, setAdditionalNotes] = useState(quotationToEdit?.additionalNotes || quotationToEdit?.notes || '');
 
   // Line items
@@ -57,12 +64,12 @@ export const QuotationFormModal: React.FC<QuotationFormModalProps> = ({
     }
     return [
       {
-        description: 'Candid & Cinematic Photography Day 1',
+        description: '',
         quantity: 1,
-        unitPrice: 75000,
+        unitPrice: 0,
         discount: 0,
         taxRate: 18,
-        amount: 75000
+        amount: 0
       }
     ];
   });
@@ -79,19 +86,19 @@ export const QuotationFormModal: React.FC<QuotationFormModalProps> = ({
     }
   };
 
-  const applyPackageTemplate = (pkgName: string) => {
-    const pkg = DEFAULT_10_PHOTOGRAPHY_PACKAGES.find(p => p.name === pkgName);
+  const applyPackageTemplate = (pkgId: string) => {
+    const pkg = studioPackages.find(p => p.id === pkgId || p.name === pkgId);
     if (!pkg) return;
 
     setPackageName(pkg.name);
     setEventCategory(pkg.category);
     setItems(pkg.items.map(it => ({
-      description: it.description,
-      quantity: it.quantity,
-      unitPrice: it.unitPrice,
+      description: it.name || it.description || '',
+      quantity: it.qty || 1,
+      unitPrice: it.rate || 0,
       discount: 0,
       taxRate: 18,
-      amount: it.quantity * it.unitPrice
+      amount: (it.qty || 1) * (it.rate || 0)
     })));
   };
 
@@ -202,20 +209,26 @@ export const QuotationFormModal: React.FC<QuotationFormModalProps> = ({
           <div className="bg-amber-50/60 border border-amber-200/60 rounded-lg p-3">
             <div className="flex items-center gap-2 mb-2 text-xs font-semibold text-amber-900">
               <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              <span>1-Click Load Photography Package Template</span>
+              <span>Load Studio Package ({studioPackages.length} configured)</span>
             </div>
-            <select
-              onChange={(e) => e.target.value && applyPackageTemplate(e.target.value)}
-              defaultValue=""
-              className="w-full bg-white border border-zinc-200 rounded px-2.5 py-1.5 text-xs text-zinc-800 focus:outline-none focus:ring-1 focus:ring-amber-500"
-            >
-              <option value="">-- Select from 10 Photography Packages --</option>
-              {DEFAULT_10_PHOTOGRAPHY_PACKAGES.map(pkg => (
-                <option key={pkg.name} value={pkg.name}>
-                  {pkg.name} ({pkg.category}) — ₹{pkg.suggestedPrice.toLocaleString('en-IN')}
-                </option>
-              ))}
-            </select>
+            {studioPackages.length === 0 ? (
+              <p className="text-xs text-zinc-600">
+                No saved packages yet. Add line items below or create reusable packages in Studio Settings.
+              </p>
+            ) : (
+              <select
+                onChange={(e) => e.target.value && applyPackageTemplate(e.target.value)}
+                defaultValue=""
+                className="w-full bg-white border border-zinc-200 rounded px-2.5 py-1.5 text-xs text-zinc-800 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              >
+                <option value="">-- Select from your Studio Packages --</option>
+                {studioPackages.map(pkg => (
+                  <option key={pkg.id} value={pkg.id}>
+                    {pkg.name} ({pkg.category}) — ₹{pkg.basePrice.toLocaleString('en-IN')}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           {/* Client & Event Info Grid */}

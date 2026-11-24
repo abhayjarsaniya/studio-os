@@ -4,6 +4,10 @@ import { useStudio } from '../context/StudioContext';
 import { bookingProductionService } from '../services/bookingProductionService';
 import { calendarVisibilityService } from '../services/calendarVisibilityService';
 import { crewConflictService, CrewConflictInfo } from '../services/crewConflictService';
+import { studioCatalogService } from '../services/studioCatalogService';
+import { studioServiceCatalogService } from '../services/studioServiceCatalogService';
+import { employeeService } from '../services/employeeService';
+import { customerService } from '../services/customerService';
 import { 
   getStudioOwnerProfile, 
   getStudioOwnerCrewMember, 
@@ -146,7 +150,7 @@ export const UnifiedBookingPage: React.FC = () => {
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerWhatsApp, setCustomerWhatsApp] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
-  const [customerCity, setCustomerCity] = useState(currentStudio.city.split(',')[0] || 'Mumbai');
+  const [customerCity, setCustomerCity] = useState(currentStudio.city ? currentStudio.city.split(',')[0] : '');
   const [customerNotes, setCustomerNotes] = useState('');
 
   // Step 2: Event Details
@@ -155,19 +159,19 @@ export const UnifiedBookingPage: React.FC = () => {
   const [eventDate, setEventDate] = useState('');
   const [eventTime, setEventTime] = useState('10:00');
   const [venue, setVenue] = useState('');
-  const [eventLocation, setEventLocation] = useState(currentStudio.city.split(',')[0] || 'Mumbai');
+  const [eventLocation, setEventLocation] = useState(currentStudio.city ? currentStudio.city.split(',')[0] : '');
   const [mainEventDeadline, setMainEventDeadline] = useState('');
 
   // Step 3: Functions (Unlimited) with Independent Crew Allocations
   const [functions, setFunctions] = useState<BookingFunctionState[]>([
     {
       id: 'fn_1',
-      name: 'Wedding Ceremony',
+      name: 'Main Function',
       date: '',
       startTime: '10:00',
-      endTime: '15:00',
+      endTime: '18:00',
       venue: '',
-      notes: 'Main wedding rituals & mandap',
+      notes: '',
       assignedCrew: []
     }
   ]);
@@ -215,14 +219,49 @@ export const UnifiedBookingPage: React.FC = () => {
     setSubEventSearchQuery('');
   }, isSubEventPickerOpen);
 
-  // Step 4: Crew Assignment State
+  // Step 4: Crew Assignment State + Studio Catalog Refresh
   const [selectedCrewFunctionId, setSelectedCrewFunctionId] = useState<string>('all');
   const [crewAssignmentNotice, setCrewAssignmentNotice] = useState<string | null>(null);
   const [activeFunctionTab, setActiveFunctionTab] = useState<string>('all');
+  const [catalogVersion, setCatalogVersion] = useState<number>(0);
+
+  // Inline Add Crew Member state
+  const [isInlineAddCrewOpen, setIsInlineAddCrewOpen] = useState(false);
+  const [inlineCrewName, setInlineCrewName] = useState('');
+  const [inlineCrewPhone, setInlineCrewPhone] = useState('');
+  const [inlineCrewEmail, setInlineCrewEmail] = useState('');
+  const [inlineCrewDesignation, setInlineCrewDesignation] = useState('Photographer');
+
+  // Inline Add Event Type state
+  const [customEventCategoryInput, setCustomEventCategoryInput] = useState('');
+  const [isAddingEventCategory, setIsAddingEventCategory] = useState(false);
+
+  // Listen to real-time catalog/crew updates
+  useEffect(() => {
+    const onUpdate = () => setCatalogVersion(v => v + 1);
+    window.addEventListener('studio_data_updated', onUpdate);
+    return () => window.removeEventListener('studio_data_updated', onUpdate);
+  }, []);
 
   const activeEmployees = useMemo(() => {
     return crewConflictService.getActiveEmployees(studioId);
-  }, [studioId]);
+  }, [studioId, catalogVersion]);
+
+  const studioServicesCatalog = useMemo(() => {
+    return studioId ? studioServiceCatalogService.listServices(studioId) : [];
+  }, [studioId, catalogVersion]);
+
+  const studioPackagesCatalog = useMemo(() => {
+    return studioId ? studioCatalogService.listPackages(studioId) : [];
+  }, [studioId, catalogVersion]);
+
+  const studioEventTypes = useMemo(() => {
+    return studioId ? studioCatalogService.listEventTypes(studioId, 'event') : [];
+  }, [studioId, catalogVersion]);
+
+  const studioFunctionTypes = useMemo(() => {
+    return studioId ? studioCatalogService.listEventTypes(studioId, 'function') : [];
+  }, [studioId, catalogVersion]);
 
   const ownerProfile = useMemo(() => {
     return getStudioOwnerProfile(studioId);
@@ -235,65 +274,67 @@ export const UnifiedBookingPage: React.FC = () => {
     }
   }, [functions, selectedCrewFunctionId]);
 
-  // Step 4: Photography Package (Custom Line Items)
-  const [lineItems, setLineItems] = useState<PackageLineItem[]>(DEFAULT_LINE_ITEMS);
+  // Step 4: Photography Package & Services (Clean empty start for new studios)
+  const [lineItems, setLineItems] = useState<PackageLineItem[]>([]);
   const [newItemName, setNewItemName] = useState('');
   const [newItemQty, setNewItemQty] = useState(1);
-  const [newItemRate, setNewItemRate] = useState(10000);
+  const [newItemRate, setNewItemRate] = useState(0);
   const [newItemDesc, setNewItemDesc] = useState('');
+  const [saveItemToServices, setSaveItemToServices] = useState(true);
 
-  // Step 5: Delivery Requirements
+  // Step 5: Delivery Requirements (Clean empty defaults)
   const [deliverables, setDeliverables] = useState({
-    rawPhotos: true,
-    editedPhotos: true,
-    editedPhotosCount: 350,
-    selectedPhotos: true,
-    traditionalVideo: true,
-    cinematicFilm: true,
-    filmDuration: '45-60 Mins',
-    reelsCount: 5,
-    albumRequired: true,
-    albumType: 'Premium Flush Mount 12x36 Genuine Leather',
-    albumSheets: 40,
-    albumCopies: 2,
-    pendrive: true,
-    onlineLink: true,
-    customRequirement: 'Drone reel within 48 hours for Instagram'
+    rawPhotos: false,
+    editedPhotos: false,
+    editedPhotosCount: 0,
+    selectedPhotos: false,
+    traditionalVideo: false,
+    cinematicFilm: false,
+    filmDuration: '',
+    reelsCount: 0,
+    albumRequired: false,
+    albumType: '',
+    albumSheets: 0,
+    albumCopies: 0,
+    pendrive: false,
+    onlineLink: false,
+    customRequirement: ''
   });
 
-  // Searchable Multi-Select Deliverables Modal State (Requirement 3)
+  // Searchable Multi-Select Deliverables Modal State
   const [isDeliverablesModalOpen, setIsDeliverablesModalOpen] = useState(false);
-  const [selectedDeliverableCatalogIds, setSelectedDeliverableCatalogIds] = useState<string[]>([
-    'raw_photos', 'edited_stills', 'cinematic_teaser', 'social_reels', 'premium_photobook', 'cloud_gallery_1yr'
-  ]);
+  const [selectedDeliverableCatalogIds, setSelectedDeliverableCatalogIds] = useState<string[]>([]);
+  const [selectedCatalogItems, setSelectedCatalogItems] = useState<DeliverableCatalogItem[]>([]);
 
   const handleApplyDeliverables = (items: DeliverableCatalogItem[]) => {
     setSelectedDeliverableCatalogIds(items.map(i => i.id));
-    const hasRaw = items.some(i => i.id === 'raw_photos');
-    const editedItem = items.find(i => i.id === 'edited_stills');
-    const hasCinema = items.some(i => i.id === 'cinematic_teaser' || i.id === 'full_cinematic_film');
-    const reelsItem = items.find(i => i.id === 'social_reels');
+    setSelectedCatalogItems(items);
+    const hasRaw = items.some(i => i.name.toLowerCase().includes('raw'));
+    const editedItem = items.find(i => i.category === 'photography' && !i.name.toLowerCase().includes('raw'));
+    const hasCinema = items.some(i => i.category === 'video');
+    const reelsItem = items.find(i => i.name.toLowerCase().includes('reel'));
     const albumItem = items.find(i => i.category === 'physical');
 
     setDeliverables(prev => ({
       ...prev,
-      rawPhotos: hasRaw,
+      rawPhotos: hasRaw || prev.rawPhotos,
+      editedPhotos: !!editedItem || prev.editedPhotos,
       editedPhotosCount: editedItem ? editedItem.defaultQty : prev.editedPhotosCount,
-      cinematicFilm: hasCinema,
+      cinematicFilm: hasCinema || prev.cinematicFilm,
       reelsCount: reelsItem ? reelsItem.defaultQty : prev.reelsCount,
-      albumRequired: !!albumItem,
+      albumRequired: !!albumItem || prev.albumRequired,
       albumType: albumItem ? albumItem.name : prev.albumType
     }));
   };
 
-  // Step 6: Pricing & Negotiation
+  // Step 6: Pricing & Negotiation (Starts at ₹0)
   const packageTotal = useMemo(() => {
     return lineItems.reduce((acc, item) => acc + (item.qty * item.rate), 0);
   }, [lineItems]);
 
-  const [additionalServices, setAdditionalServices] = useState(15000);
-  const [discount, setDiscount] = useState(10000);
-  const [advancePayment, setAdvancePayment] = useState(50000);
+  const [additionalServices, setAdditionalServices] = useState(0);
+  const [discount, setDiscount] = useState(0);
+  const [advancePayment, setAdvancePayment] = useState(0);
   const [paymentMode, setPaymentMode] = useState('UPI');
 
   const finalNegotiatedAmount = Math.max(0, packageTotal + additionalServices - discount);
@@ -553,24 +594,108 @@ export const UnifiedBookingPage: React.FC = () => {
     setTimeout(() => setCrewAssignmentNotice(null), 3000);
   };
 
-  // Add Line Item
+  // Inline Create Crew Member directly from Step 3 or Step 4
+  const handleSaveInlineCrew = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inlineCrewName.trim()) return;
+    const emp = employeeService.createEmployee(studioId, {
+      fullName: inlineCrewName.trim(),
+      phone: inlineCrewPhone.trim() || '',
+      email: inlineCrewEmail.trim() || `${inlineCrewName.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}@studio-os.internal`,
+      designation: inlineCrewDesignation.trim() || 'Photographer',
+      department: 'Production',
+      roleId: 'role_photographer',
+      roleName: inlineCrewDesignation.trim() || 'Photographer',
+      employmentStatus: 'active'
+    });
+    setCatalogVersion(v => v + 1);
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('studio_data_updated'));
+
+    // Immediately assign newly added crew member to target function(s)
+    handleToggleCrewMemberStep4(emp);
+
+    setInlineCrewName('');
+    setInlineCrewPhone('');
+    setInlineCrewEmail('');
+    setInlineCrewDesignation('Photographer');
+    setIsInlineAddCrewOpen(false);
+    setCrewAssignmentNotice(`Added "${emp.fullName}" to your Studio Crew & assigned!`);
+    setTimeout(() => setCrewAssignmentNotice(null), 3500);
+  };
+
+  // Add Line Item (optionally save directly to Studio Services Catalog)
   const handleAddLineItem = () => {
     if (!newItemName.trim()) return;
+    const rateVal = Number(newItemRate) || 0;
+    const descVal = newItemDesc.trim() || 'Studio service';
+    if (saveItemToServices && studioId) {
+      studioServiceCatalogService.createService(
+        studioId,
+        {
+          name: newItemName.trim(),
+          category: eventCategory || 'Custom',
+          description: descVal,
+          defaultPrice: rateVal,
+          unit: 'Event'
+        },
+        'Studio Owner'
+      );
+      setCatalogVersion(v => v + 1);
+    }
     setLineItems(prev => [
       ...prev,
       {
         id: `item_${Date.now()}`,
         name: newItemName.trim(),
         category: 'custom',
-        description: newItemDesc.trim() || 'Custom booked service',
+        description: descVal,
         qty: newItemQty,
-        rate: newItemRate
+        rate: rateVal
       }
     ]);
     setNewItemName('');
     setNewItemQty(1);
-    setNewItemRate(10000);
+    setNewItemRate(0);
     setNewItemDesc('');
+  };
+
+  const handleApplyStudioPackage = (pkgId: string) => {
+    const pkg = studioPackagesCatalog.find(p => p.id === pkgId);
+    if (!pkg) return;
+    const mapped: PackageLineItem[] = (pkg.items || []).map((it, idx) => ({
+      id: `pkgitem_${pkg.id}_${idx}_${Date.now()}`,
+      name: it.name,
+      category: 'custom',
+      description: it.description || pkg.name,
+      qty: it.qty || 1,
+      rate: it.rate || 0
+    }));
+    setLineItems(mapped.length > 0 ? mapped : [{
+      id: `pkgitem_${pkg.id}_${Date.now()}`,
+      name: pkg.name,
+      category: 'custom',
+      description: pkg.description || 'Studio Package',
+      qty: 1,
+      rate: pkg.basePrice
+    }]);
+  };
+
+  const handleSaveCurrentAsPackage = () => {
+    if (lineItems.length === 0) return;
+    const pkgName = window.prompt('Enter a name to save this as a reusable Studio Package:', `${eventCategory} Package`);
+    if (!pkgName || !pkgName.trim()) return;
+    studioCatalogService.createPackage(studioId, {
+      name: pkgName.trim(),
+      category: eventCategory || 'Wedding',
+      basePrice: packageTotal,
+      items: lineItems.map(li => ({
+        name: li.name,
+        description: li.description,
+        qty: li.qty,
+        rate: li.rate
+      }))
+    });
+    setCatalogVersion(v => v + 1);
   };
 
   const handleRemoveLineItem = (id: string) => {
@@ -643,6 +768,74 @@ export const UnifiedBookingPage: React.FC = () => {
       const bookingId = formBookingIdRef.current;
       const bookingNumber = formBookingNumberRef.current;
 
+    // Build deliverables cleanly ONLY from user selections (no forced presets when empty)
+    const buildDeliverablesForFunction = (fn: BookingFunctionState, idx: number): DeliverableSpecification[] => {
+      if (idx > 0) return [];
+      const list: DeliverableSpecification[] = [];
+      selectedCatalogItems.forEach((item, cIdx) => {
+        list.push({
+          id: `del_${fn.id}_cat_${cIdx}_${Date.now()}`,
+          bookingId,
+          functionId: fn.id,
+          functionName: fn.name,
+          name: item.name,
+          category: item.category,
+          priority: 'normal',
+          stage: 'not_started',
+          deadlineType: 'relative_to_function',
+          deadlineDays: 7,
+          calculatedDeadline: fn.date || eventDate,
+          requiredQty: item.defaultQty || 1,
+          completedQty: 0,
+          unit: item.unit || 'items',
+          deliveryMethod: item.category === 'physical' ? 'Physical Album' : 'Online Gallery',
+          isDelivered: false
+        });
+      });
+
+      if (deliverables.rawPhotos && !selectedCatalogItems.some(i => i.name.toLowerCase().includes('raw'))) {
+        list.push({
+          id: `del_${fn.id}_raw`,
+          bookingId,
+          functionId: fn.id,
+          functionName: fn.name,
+          name: `Raw Photographs - ${fn.name}`,
+          category: 'photography',
+          priority: 'normal',
+          stage: 'not_started',
+          deadlineType: 'relative_to_function',
+          deadlineDays: 2,
+          calculatedDeadline: fn.date || eventDate,
+          requiredQty: 1,
+          completedQty: 0,
+          unit: 'drive',
+          deliveryMethod: 'Online Gallery',
+          isDelivered: false
+        });
+      }
+      if (deliverables.editedPhotosCount > 0 && !selectedCatalogItems.some(i => i.category === 'photography' && !i.name.toLowerCase().includes('raw'))) {
+        list.push({
+          id: `del_${fn.id}_edited`,
+          bookingId,
+          functionId: fn.id,
+          functionName: fn.name,
+          name: `Edited Photos - ${fn.name}`,
+          category: 'photography',
+          priority: 'normal',
+          stage: 'not_started',
+          deadlineType: 'relative_to_function',
+          deadlineDays: 15,
+          calculatedDeadline: fn.date || eventDate,
+          requiredQty: deliverables.editedPhotosCount,
+          completedQty: 0,
+          unit: 'photos',
+          deliveryMethod: 'Online Gallery',
+          isDelivered: false
+        });
+      }
+      return list;
+    };
+
     // Convert functions with their assigned crew
     const fnPlans: FunctionPlan[] = functions.map((fn, idx) => {
       const assignedCrew = (fn.assignedCrew || []).map(c => ({
@@ -687,51 +880,44 @@ export const UnifiedBookingPage: React.FC = () => {
         assignedCrew,
         priority: 'normal',
         status: 'scheduled',
-        deliverables: [
-          {
-            id: `del_${fn.id}_raw`,
-            bookingId,
-            functionId: fn.id,
-            name: `Raw Photographs - ${fn.name}`,
-            category: 'photography',
-            priority: 'normal',
-            stage: 'not_started',
-            deadlineType: 'relative_to_function',
-            deadlineDays: 2,
-            calculatedDeadline: fn.date || eventDate,
-            requiredQty: 500,
-            completedQty: 0,
-            unit: 'frames',
-            deliveryMethod: 'Online Gallery',
-            isDelivered: false
-          },
-          {
-            id: `del_${fn.id}_edited`,
-            bookingId,
-            functionId: fn.id,
-            name: `Edited Portraits - ${fn.name}`,
-            category: 'photography',
-            priority: 'normal',
-            stage: 'not_started',
-            deadlineType: 'relative_to_function',
-            deadlineDays: 15,
-            calculatedDeadline: fn.date || eventDate,
-            requiredQty: deliverables.editedPhotosCount,
-            completedQty: 0,
-            unit: 'photos',
-            deliveryMethod: 'Online Gallery',
-            isDelivered: false
-          }
-        ]
+        deliverables: buildDeliverablesForFunction(fn, idx)
       };
     });
+
+    // Ensure new customer is saved to Studio Customer Directory (Firebase + TenantStore)
+    let resolvedCustomerId = selectedCustomerId || '';
+    if (!resolvedCustomerId && customerName.trim()) {
+      try {
+        const existingMatch = customers.find(c =>
+          (customerPhone.trim() && c.phone === customerPhone.trim()) ||
+          c.name.trim().toLowerCase() === customerName.trim().toLowerCase()
+        );
+        if (existingMatch) {
+          resolvedCustomerId = existingMatch.id;
+        } else {
+          const createdCust = customerService.createCustomer(studioId, {
+            name: customerName.trim(),
+            phone: customerPhone.trim() || '0000000000',
+            whatsappNumber: customerWhatsApp.trim() || customerPhone.trim(),
+            email: customerEmail.trim(),
+            city: customerCity.trim(),
+            notes: customerNotes.trim(),
+            status: status === 'confirmed' ? 'Booked' : 'Lead',
+            customerSource: 'New Booking'
+          } as any);
+          resolvedCustomerId = createdCust.id;
+        }
+      } catch (custErr) {
+        console.warn('[UnifiedBookingPage] Auto-customer create note:', custErr);
+      }
+    }
 
     const newBooking: BookingRecord = {
       id: bookingId,
       studioId,
       bookingNumber,
       status: status === 'confirmed' ? 'deal_confirmed' : 'quotation_sent',
-      customerId: selectedCustomerId || `cust_${Date.now()}`,
+      customerId: resolvedCustomerId || `cust_${Date.now()}`,
       customerName,
       customerPhone,
       customerWhatsApp: customerWhatsApp || customerPhone,
@@ -1088,21 +1274,64 @@ export const UnifiedBookingPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-zinc-500 mb-1">Category / Type</label>
-                  <select
-                    value={eventCategory}
-                    onChange={(e) => setEventCategory(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-900 bg-white"
-                  >
-                    <option value="Wedding">Wedding</option>
-                    <option value="Pre-Wedding">Pre-Wedding</option>
-                    <option value="Engagement">Engagement</option>
-                    <option value="Birthday">Birthday</option>
-                    <option value="Corporate">Corporate</option>
-                    <option value="Baby Shower">Baby Shower</option>
-                    <option value="Fashion">Fashion & Editorial</option>
-                    <option value="Custom">Custom Event</option>
-                  </select>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold uppercase text-zinc-500">Category / Type</label>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingEventCategory(!isAddingEventCategory)}
+                      className="text-xs font-bold text-orange-600 hover:underline cursor-pointer"
+                    >
+                      {isAddingEventCategory ? 'Cancel' : '+ Add Event Type'}
+                    </button>
+                  </div>
+                  {isAddingEventCategory ? (
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        value={customEventCategoryInput}
+                        onChange={(e) => setCustomEventCategoryInput(e.target.value)}
+                        placeholder="e.g. Maternity, Product Shoot"
+                        className="flex-1 px-3 py-2 rounded-xl border border-orange-300 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!customEventCategoryInput.trim()) return;
+                          const created = studioCatalogService.createEventType(studioId, {
+                            name: customEventCategoryInput.trim(),
+                            kind: 'event'
+                          });
+                          setEventCategory(created.name);
+                          setCustomEventCategoryInput('');
+                          setIsAddingEventCategory(false);
+                          setCatalogVersion(v => v + 1);
+                        }}
+                        className="px-3 py-2 rounded-xl bg-zinc-900 text-white font-bold text-xs cursor-pointer"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  ) : (
+                    <select
+                      value={eventCategory}
+                      onChange={(e) => setEventCategory(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-900 bg-white"
+                    >
+                      {studioEventTypes.map(et => (
+                        <option key={et.id} value={et.name}>{et.name}</option>
+                      ))}
+                      {!studioEventTypes.some(et => et.name === 'Wedding') && (
+                        <>
+                          <option value="Wedding">Wedding</option>
+                          <option value="Pre-Wedding">Pre-Wedding</option>
+                          <option value="Engagement">Engagement</option>
+                          <option value="Birthday">Birthday</option>
+                          <option value="Corporate">Corporate</option>
+                          <option value="Custom">Custom Event</option>
+                        </>
+                      )}
+                    </select>
+                  )}
                 </div>
 
                 <div>
@@ -1601,7 +1830,15 @@ export const UnifiedBookingPage: React.FC = () => {
                   </h3>
                 </div>
 
-                <div className="flex items-center gap-2 self-start sm:self-auto">
+                <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setIsInlineAddCrewOpen(!isInlineAddCrewOpen)}
+                    className="min-h-[42px] px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs active:scale-95"
+                  >
+                    <Plus className="w-3.5 h-3.5 text-amber-400" />
+                    <span>+ Add Crew Member</span>
+                  </button>
                   <button
                     type="button"
                     onClick={handleAssignOwnerToAll}
@@ -1613,6 +1850,55 @@ export const UnifiedBookingPage: React.FC = () => {
                   </button>
                 </div>
               </div>
+
+              {/* Inline Create Crew Member Drawer */}
+              {isInlineAddCrewOpen && (
+                <form onSubmit={handleSaveInlineCrew} className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-amber-950 uppercase tracking-wider">Add New Studio Crew Member</span>
+                    <button type="button" onClick={() => setIsInlineAddCrewOpen(false)} className="text-zinc-500 hover:text-zinc-800 font-bold cursor-pointer">✕</button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Full Name *"
+                      value={inlineCrewName}
+                      onChange={(e) => setInlineCrewName(e.target.value)}
+                      className="px-3 py-2 rounded-xl border border-amber-300 bg-white text-xs"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Designation (e.g. Candid Photographer)"
+                      value={inlineCrewDesignation}
+                      onChange={(e) => setInlineCrewDesignation(e.target.value)}
+                      className="px-3 py-2 rounded-xl border border-amber-300 bg-white text-xs"
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Phone Number"
+                      value={inlineCrewPhone}
+                      onChange={(e) => setInlineCrewPhone(e.target.value)}
+                      className="px-3 py-2 rounded-xl border border-amber-300 bg-white text-xs font-mono"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email (optional)"
+                      value={inlineCrewEmail}
+                      onChange={(e) => setInlineCrewEmail(e.target.value)}
+                      className="px-3 py-2 rounded-xl border border-amber-300 bg-white text-xs"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button type="button" onClick={() => setIsInlineAddCrewOpen(false)} className="px-3 py-1.5 rounded-xl text-zinc-600 font-semibold hover:bg-zinc-200/50 cursor-pointer">
+                      Cancel
+                    </button>
+                    <button type="submit" className="px-4 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold cursor-pointer">
+                      Save Crew & Assign
+                    </button>
+                  </div>
+                </form>
+              )}
 
               {/* Notice toast if set */}
               {crewAssignmentNotice && (
@@ -1695,27 +1981,42 @@ export const UnifiedBookingPage: React.FC = () => {
                         </label>
 
                         {/* Active Employees Checkboxes */}
-                        {otherEmployees.map(emp => {
-                          const isAssigned = targetFns.length > 0 && targetFns.every(fn => isMemberAssignedToFunction(fn, emp.id));
-                          return (
-                            <label key={emp.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                              isAssigned
-                                ? 'bg-orange-50/80 border-orange-300 text-orange-950 font-bold shadow-2xs'
-                                : 'bg-white border-zinc-200 hover:border-zinc-300 text-zinc-700'
-                            }`}>
-                              <input
-                                type="checkbox"
-                                checked={isAssigned}
-                                onChange={() => handleToggleCrewMemberStep4(emp)}
-                                className="w-4 h-4 text-orange-600 rounded cursor-pointer accent-orange-600 shrink-0"
-                              />
-                              <div className="min-w-0 truncate">
-                                <span className="text-xs sm:text-sm font-bold truncate block">{emp.fullName}</span>
-                                <span className="text-xs text-zinc-500 font-normal truncate block">{emp.designation || 'Staff'} ({emp.department || 'Studio'})</span>
-                              </div>
-                            </label>
-                          );
-                        })}
+                        {otherEmployees.length === 0 ? (
+                          <div className="sm:col-span-2 p-3 rounded-xl border border-dashed border-zinc-300 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                            <span className="text-zinc-600">
+                              No crew members added yet. You can assign yourself, skip crew for now, or add your first crew member right here.
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setIsInlineAddCrewOpen(true)}
+                              className="px-3 py-1.5 rounded-lg bg-zinc-900 text-white font-bold shrink-0 cursor-pointer"
+                            >
+                              + Add Crew
+                            </button>
+                          </div>
+                        ) : (
+                          otherEmployees.map(emp => {
+                            const isAssigned = targetFns.length > 0 && targetFns.every(fn => isMemberAssignedToFunction(fn, emp.id));
+                            return (
+                              <label key={emp.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                                isAssigned
+                                  ? 'bg-orange-50/80 border-orange-300 text-orange-950 font-bold shadow-2xs'
+                                  : 'bg-white border-zinc-200 hover:border-zinc-300 text-zinc-700'
+                              }`}>
+                                <input
+                                  type="checkbox"
+                                  checked={isAssigned}
+                                  onChange={() => handleToggleCrewMemberStep4(emp)}
+                                  className="w-4 h-4 text-orange-600 rounded cursor-pointer accent-orange-600 shrink-0"
+                                />
+                                <div className="min-w-0 truncate">
+                                  <span className="text-xs sm:text-sm font-bold truncate block">{emp.fullName}</span>
+                                  <span className="text-xs text-zinc-500 font-normal truncate block">{emp.designation || 'Staff'} ({emp.department || 'Studio'})</span>
+                                </div>
+                              </label>
+                            );
+                          })
+                        )}
                       </>
                     );
                   })()}
@@ -1944,9 +2245,10 @@ export const UnifiedBookingPage: React.FC = () => {
           {/* STEP 5: PACKAGE */}
           {currentStep === 5 && (
             <div className="space-y-5 animate-in fade-in duration-150">
-              <div className="border-b border-zinc-100 pb-2.5 flex items-center justify-between">
+              <div className="border-b border-zinc-100 pb-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                  <h3 className="text-base font-bold text-zinc-900 font-display">Step 5 — Photography Package & Line Items</h3>
+                  <h3 className="text-base font-bold text-zinc-900 font-display">Step 5 — Studio Packages & Services</h3>
+                  <p className="text-xs text-zinc-500">Pick from your studio's packages/services or add custom line items.</p>
                 </div>
                 <div className="text-right">
                   <span className="text-xs text-zinc-400 uppercase font-bold block">Package Subtotal</span>
@@ -1954,8 +2256,74 @@ export const UnifiedBookingPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Studio Packages & Services Quick Selector */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3.5 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-amber-950">Load Studio Package ({studioPackagesCatalog.length})</span>
+                    {lineItems.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleSaveCurrentAsPackage}
+                        className="text-xs font-bold text-orange-700 hover:underline cursor-pointer"
+                      >
+                        + Save Items as Package
+                      </button>
+                    )}
+                  </div>
+                  {studioPackagesCatalog.length === 0 ? (
+                    <p className="text-xs text-zinc-500">No packages saved yet. Add line items below and save them as a reusable package.</p>
+                  ) : (
+                    <select
+                      onChange={(e) => e.target.value && handleApplyStudioPackage(e.target.value)}
+                      defaultValue=""
+                      className="w-full px-3 py-2 rounded-xl border border-amber-300 bg-white text-xs font-medium"
+                    >
+                      <option value="">-- Select from your Studio Packages --</option>
+                      {studioPackagesCatalog.map(pkg => (
+                        <option key={pkg.id} value={pkg.id}>
+                          {pkg.name} ({pkg.category}) — ₹{pkg.basePrice.toLocaleString('en-IN')}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80 space-y-2">
+                  <span className="font-bold text-zinc-900 block">Quick-Add Studio Services ({studioServicesCatalog.length})</span>
+                  {studioServicesCatalog.length === 0 ? (
+                    <p className="text-xs text-zinc-500">No catalog services configured yet. Use "+ Add Service Line" below to create one.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                      {studioServicesCatalog.map(svc => (
+                        <button
+                          key={svc.id}
+                          type="button"
+                          onClick={() => setLineItems(prev => [
+                            ...prev,
+                            {
+                              id: `svcitem_${svc.id}_${Date.now()}`,
+                              name: svc.name,
+                              category: 'custom',
+                              description: svc.description || svc.category,
+                              qty: 1,
+                              rate: svc.defaultPrice
+                            }
+                          ])}
+                          className="px-2.5 py-1 rounded-lg bg-white hover:bg-orange-50 border border-zinc-200 hover:border-orange-300 text-xs font-semibold text-zinc-800 cursor-pointer flex items-center gap-1"
+                        >
+                          <Plus className="w-3 h-3 text-orange-600" />
+                          <span>{svc.name}</span>
+                          <span className="font-mono text-zinc-500">₹{svc.defaultPrice.toLocaleString('en-IN')}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Line items table */}
-              <div className="border border-zinc-200 rounded-2xl overflow-hidden text-xs">
+              <div className="border border-zinc-200 rounded-2xl overflow-x-auto text-xs">
                 <table className="w-full text-left">
                   <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 uppercase text-xs font-bold">
                     <tr>
@@ -2009,26 +2377,33 @@ export const UnifiedBookingPage: React.FC = () => {
                         </td>
                       </tr>
                     ))}
+                    {lineItems.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="p-6 text-center text-xs text-zinc-400">
+                          No services added yet. Select a service/package above or add a line item below (optional).
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
 
               {/* Add custom item */}
               <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200/80 space-y-3 text-xs">
-                <span className="font-bold text-zinc-900 text-xs block">+ Add Custom Line Item</span>
+                <span className="font-bold text-zinc-900 text-xs block">+ Add Service Line Item</span>
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <input
                     type="text"
                     value={newItemName}
                     onChange={(e) => setNewItemName(e.target.value)}
-                    placeholder="Service Name (e.g. 360 Video Booth)"
+                    placeholder="Service Name (e.g. Candid Photography)"
                     className="sm:col-span-2 px-3 py-2 rounded-xl border border-zinc-200 bg-white"
                   />
                   <input
                     type="number"
                     value={newItemRate}
                     onChange={(e) => setNewItemRate(parseInt(e.target.value) || 0)}
-                    placeholder="Rate"
+                    placeholder="Rate (₹)"
                     className="px-3 py-2 rounded-xl border border-zinc-200 bg-white font-mono"
                   />
                   <button
@@ -2039,6 +2414,15 @@ export const UnifiedBookingPage: React.FC = () => {
                     Add Service
                   </button>
                 </div>
+                <label className="inline-flex items-center gap-2 text-xs text-zinc-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={saveItemToServices}
+                    onChange={(e) => setSaveItemToServices(e.target.checked)}
+                    className="w-4 h-4 accent-zinc-900 rounded"
+                  />
+                  <span>Save this service to my Studio Services Catalog for future bookings & quotations</span>
+                </label>
               </div>
             </div>
           )}
@@ -2073,19 +2457,21 @@ export const UnifiedBookingPage: React.FC = () => {
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {selectedDeliverableCatalogIds.map(id => {
-                    const item = MASTER_DELIVERABLES_CATALOG.find(m => m.id === id);
-                    if (!item) return null;
-                    return (
-                      <span 
-                        key={id} 
+                  {selectedCatalogItems.length === 0 ? (
+                    <span className="text-xs text-zinc-500">
+                      No deliverables selected yet. Click "Change selection" to choose or add your studio's deliverables (optional).
+                    </span>
+                  ) : (
+                    selectedCatalogItems.map(item => (
+                      <span
+                        key={item.id}
                         className="px-2.5 py-1 rounded-lg bg-white border border-orange-200 text-xs font-semibold text-zinc-800 flex items-center gap-1 shadow-2xs"
                       >
                         <Check className="w-3 h-3 text-orange-600 shrink-0 stroke-[2.5]" />
                         <span>{item.name}</span>
                       </span>
-                    );
-                  })}
+                    ))
+                  )}
                 </div>
               </div>
 

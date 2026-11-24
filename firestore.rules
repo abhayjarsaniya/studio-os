@@ -281,6 +281,36 @@ service cloud.firestore {
         allow write: if isStudioManager(studioId) || isStudioOwner(studioId);
       }
 
+      match /services/{serviceId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioManager(studioId) || isStudioOwner(studioId);
+      }
+
+      match /deliverablesCatalog/{itemId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioManager(studioId) || isStudioOwner(studioId);
+      }
+
+      match /eventCategories/{catId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioManager(studioId) || isStudioOwner(studioId);
+      }
+
+      match /leads/{leadId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /followUps/{followUpId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioMember(studioId);
+      }
+
+      match /workflowTemplates/{tmplId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isStudioManager(studioId) || isStudioOwner(studioId);
+      }
+
       match /events/{eventId} {
         allow read: if isStudioMember(studioId);
         allow write: if isStudioMember(studioId);

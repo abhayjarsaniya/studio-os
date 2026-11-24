@@ -4,11 +4,11 @@ import { auditService } from './auditService';
 import { firestoreService } from './firestoreService';
 
 export const DEFAULT_FINANCIAL_SETTINGS: Omit<FinancialSettings, 'studioId'> = {
-  legalName: 'Royal Weddings Studio Pvt Ltd',
-  businessAddress: 'Bandra West, Mumbai, Maharashtra - 400050',
-  gstin: '27AAAAA0000A1Z5',
-  pan: 'AAAAA0000A',
-  state: 'Maharashtra',
+  legalName: '',
+  businessAddress: '',
+  gstin: '',
+  pan: '',
+  state: '',
   country: 'India',
   currency: 'INR',
   currencySymbol: '₹',
@@ -23,8 +23,8 @@ export const DEFAULT_FINANCIAL_SETTINGS: Omit<FinancialSettings, 'studioId'> = {
   defaultSgstRate: 9,
   defaultIgstRate: 18,
   defaultPaymentTerms: 'Due on Receipt',
-  invoiceFooter: 'Thank you for trusting us to capture your precious milestones!',
-  termsAndConditions: '1. 50% advance booking deposit is required to confirm crew allocation.\n2. Final cinematic video and high-resolution galleries are released upon 100% invoice clearance.\n3. Raw video and photo backup is archived for 90 days from project completion date.',
+  invoiceFooter: 'Thank you for choosing us!',
+  termsAndConditions: '',
   defaultDiscountPercent: 0,
   rounding: true,
   brandAccentColor: '#09090b'
@@ -38,9 +38,14 @@ export class FinancialSettingsService {
       return existing[0];
     }
 
+    const studioProfile = TenantStore.getSingle<any>(studioId, 'profile');
     const initial: FinancialSettings = {
       studioId,
       ...DEFAULT_FINANCIAL_SETTINGS,
+      legalName: studioProfile?.name || '',
+      businessAddress: [studioProfile?.address, studioProfile?.city, studioProfile?.state].filter(Boolean).join(', '),
+      gstin: studioProfile?.gstNumber || '',
+      state: studioProfile?.state || '',
       updatedAt: new Date().toISOString()
     };
     TenantStore.set(studioId, 'financialSettings', [initial]);

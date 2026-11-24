@@ -316,9 +316,9 @@ export const CalendarPage: React.FC = () => {
     startTime: '10:00 AM',
     endTime: '06:00 PM',
     venue: '',
-    city: currentStudio?.city || 'Ahmedabad',
-    agreedAmount: 120000,
-    advancePaid: 30000
+    city: currentStudio?.city || '',
+    agreedAmount: 0,
+    advancePaid: 0
   });
   const [isSavingInstant, setIsSavingInstant] = useState(false);
   const [instantError, setInstantError] = useState('');
@@ -335,9 +335,9 @@ export const CalendarPage: React.FC = () => {
       startTime: '10:00 AM',
       endTime: '06:00 PM',
       venue: '',
-      city: currentStudio?.city || 'Ahmedabad',
-      agreedAmount: 120000,
-      advancePaid: 30000
+      city: currentStudio?.city || '',
+      agreedAmount: 0,
+      advancePaid: 0
     });
     setInstantError('');
     setIsInstantShootModalOpen(true);
@@ -352,7 +352,7 @@ export const CalendarPage: React.FC = () => {
     const customerPhone = instantForm.customerPhone.trim();
     const targetDate = instantForm.eventDate.trim() || formattedSelectedDayStr;
     const venue = instantForm.venue.trim() || 'Main Studio / Venue';
-    const city = instantForm.city.trim() || currentStudio?.city || 'Ahmedabad';
+    const city = instantForm.city.trim() || currentStudio?.city || '';
     const agreedAmount = Number(instantForm.agreedAmount) || 0;
     const advancePaid = Number(instantForm.advancePaid) || 0;
 

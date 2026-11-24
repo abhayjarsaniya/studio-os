@@ -63,14 +63,14 @@ export const CreateQuotationPage: React.FC = () => {
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerCity, setCustomerCity] = useState('');
-  const [eventName, setEventName] = useState('Wedding Photography & Film');
+  const [eventName, setEventName] = useState('');
   const [eventCategory, setEventCategory] = useState('Wedding');
   const [eventDate, setEventDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() + 30);
     return d.toISOString().split('T')[0];
   });
-  const [eventLocation, setEventLocation] = useState('The Grand Heritage Lawn, Ahmedabad');
+  const [eventLocation, setEventLocation] = useState('');
   const [inquiryNotes, setInquiryNotes] = useState('');
 
   // ----------------------------------------------------
@@ -80,11 +80,12 @@ export const CreateQuotationPage: React.FC = () => {
   const [serviceSearchQuery, setServiceSearchQuery] = useState('');
   const [selectedLines, setSelectedLines] = useState<SelectedServiceLine[]>([]);
   const [customServiceName, setCustomServiceName] = useState('');
-  const [customServicePrice, setCustomServicePrice] = useState<number>(15000);
+  const [customServicePrice, setCustomServicePrice] = useState<number>(0);
+  const [saveCustomToCatalog, setSaveCustomToCatalog] = useState<boolean>(true);
   const [isAddingCustomService, setIsAddingCustomService] = useState(false);
 
   // Financial adjustments
-  const [discountAmount, setDiscountAmount] = useState<number>(5000);
+  const [discountAmount, setDiscountAmount] = useState<number>(0);
   const [applyGst, setApplyGst] = useState<boolean>(true);
   const [advancePercent, setAdvancePercent] = useState<number>(50);
   const [validityDays, setValidityDays] = useState<number>(15);
@@ -103,24 +104,15 @@ export const CreateQuotationPage: React.FC = () => {
   const [conversionSuccessMessage, setConversionSuccessMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Load Studio Services Catalog
+  // Load Studio Services Catalog cleanly (starts empty for new studios; syncs in real time)
   useEffect(() => {
-    const services = studioServiceCatalogService.listServices(studioId);
-    setCatalogServices(services);
-
-    // Initial pre-selection of first 2 default services if empty
-    if (selectedLines.length === 0 && services.length > 0) {
-      const initial = services.slice(0, 2).map((s, idx) => ({
-        id: `sel_${idx + 1}`,
-        serviceId: s.id,
-        title: s.name,
-        description: s.description || s.name,
-        quantity: 1,
-        unitPrice: s.defaultPrice,
-        discount: 0
-      }));
-      setSelectedLines(initial);
-    }
+    const reload = () => {
+      const services = studioServiceCatalogService.listServices(studioId);
+      setCatalogServices(services);
+    };
+    reload();
+    window.addEventListener('studio_data_updated', reload);
+    return () => window.removeEventListener('studio_data_updated', reload);
   }, [studioId]);
 
   // Filter matching existing customers
@@ -165,20 +157,39 @@ export const CreateQuotationPage: React.FC = () => {
     }
   };
 
-  // Add custom service on the fly
+  // Add custom service on the fly (optionally saves directly to Studio Services Catalog in Firebase)
   const handleAddCustomService = () => {
     if (!customServiceName.trim()) return;
+    const priceNum = Number(customServicePrice) || 0;
+    let serviceId: string | undefined;
+
+    if (saveCustomToCatalog) {
+      const createdSvc = studioServiceCatalogService.createService(
+        studioId,
+        {
+          name: customServiceName.trim(),
+          category: eventCategory || 'Custom',
+          defaultPrice: priceNum,
+          unit: 'Event'
+        },
+        'Studio Owner'
+      );
+      serviceId = createdSvc.id;
+      setCatalogServices(studioServiceCatalogService.listServices(studioId));
+    }
+
     const newLine: SelectedServiceLine = {
       id: `custom_${Date.now()}`,
+      serviceId,
       title: customServiceName.trim(),
       description: customServiceName.trim(),
       quantity: 1,
-      unitPrice: Number(customServicePrice) || 0,
+      unitPrice: priceNum,
       discount: 0
     };
     setSelectedLines(prev => [...prev, newLine]);
     setCustomServiceName('');
-    setCustomServicePrice(15000);
+    setCustomServicePrice(0);
     setIsAddingCustomService(false);
   };
 
@@ -802,21 +813,32 @@ export const CreateQuotationPage: React.FC = () => {
                   />
                 </div>
               </div>
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAddingCustomService(false)}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-zinc-600 hover:bg-zinc-200/50 cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleAddCustomService}
-                  className="px-4 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
-                >
-                  Add to Quotation
-                </button>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+                <label className="inline-flex items-center gap-2 text-xs text-zinc-700 font-medium cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={saveCustomToCatalog}
+                    onChange={(e) => setSaveCustomToCatalog(e.target.checked)}
+                    className="w-4 h-4 accent-zinc-900 rounded"
+                  />
+                  <span>Also save to my Studio Services Catalog for future quotes</span>
+                </label>
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingCustomService(false)}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold text-zinc-600 hover:bg-zinc-200/50 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleAddCustomService}
+                    className="px-4 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                  >
+                    Add to Quotation
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -839,33 +861,51 @@ export const CreateQuotationPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-60 overflow-y-auto p-1 border border-zinc-200 rounded-2xl bg-zinc-50/50">
-              {filteredCatalogServices.map((service) => {
-                const isSelected = selectedLines.some(l => l.serviceId === service.id);
-                return (
-                  <button
-                    key={service.id}
-                    type="button"
-                    onClick={() => handleToggleService(service)}
-                    className={`p-3 rounded-xl border text-left transition-all flex items-start gap-2.5 cursor-pointer ${
-                      isSelected
-                        ? 'bg-amber-50/80 border-amber-300 text-zinc-900 shadow-xs'
-                        : 'bg-white hover:bg-zinc-100 border-zinc-200 text-zinc-700'
-                    }`}
-                  >
-                    <div className={`w-4 h-4 rounded-md border mt-0.5 flex items-center justify-center shrink-0 ${
-                      isSelected ? 'bg-zinc-900 border-zinc-900 text-white' : 'border-zinc-300 bg-white'
-                    }`}>
-                      {isSelected && <Check className="w-3 h-3" />}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold truncate">{service.name}</p>
-                      <p className="text-xs text-zinc-500 font-mono mt-0.5">₹{service.defaultPrice.toLocaleString('en-IN')}</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+            {catalogServices.length === 0 ? (
+              <div className="p-6 text-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50/70 space-y-2.5">
+                <Layers className="w-7 h-7 text-zinc-300 mx-auto" />
+                <p className="text-xs sm:text-sm font-bold text-zinc-700">No services configured in your studio catalog yet</p>
+                <p className="text-xs text-zinc-500 max-w-md mx-auto">
+                  Add services directly right here or configure your full catalog in Studio Settings.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsAddingCustomService(true)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5 text-amber-400" />
+                  <span>+ Add Your First Service</span>
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-60 overflow-y-auto p-1 border border-zinc-200 rounded-2xl bg-zinc-50/50">
+                {filteredCatalogServices.map((service) => {
+                  const isSelected = selectedLines.some(l => l.serviceId === service.id);
+                  return (
+                    <button
+                      key={service.id}
+                      type="button"
+                      onClick={() => handleToggleService(service)}
+                      className={`p-3 rounded-xl border text-left transition-all flex items-start gap-2.5 cursor-pointer ${
+                        isSelected
+                          ? 'bg-amber-50/80 border-amber-300 text-zinc-900 shadow-xs'
+                          : 'bg-white hover:bg-zinc-100 border-zinc-200 text-zinc-700'
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded-md border mt-0.5 flex items-center justify-center shrink-0 ${
+                        isSelected ? 'bg-zinc-900 border-zinc-900 text-white' : 'border-zinc-300 bg-white'
+                      }`}>
+                        {isSelected && <Check className="w-3 h-3" />}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold truncate">{service.name}</p>
+                        <p className="text-xs text-zinc-500 font-mono mt-0.5">₹{service.defaultPrice.toLocaleString('en-IN')}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Active Quotation Items Table (Editable Qty & Price) */}
@@ -1146,7 +1186,7 @@ export const CreateQuotationPage: React.FC = () => {
                 <div className="mt-2 space-y-1 text-xs text-zinc-500">
                   <p className="flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 text-zinc-400" />
-                    <span>{currentStudio.address || 'Studio Address'}, {currentStudio.city || 'Ahmedabad'}</span>
+                    <span>{[currentStudio.address, currentStudio.city].filter(Boolean).join(', ') || 'Studio Location'}</span>
                   </p>
                   <p className="flex items-center gap-1.5">
                     <Phone className="w-3.5 h-3.5 text-zinc-400" />

@@ -26,8 +26,8 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
   const [phone, setPhone] = useState('');
   const [alternatePhone, setAlternatePhone] = useState('');
   const [email, setEmail] = useState('');
-  const [city, setCity] = useState('Mumbai');
-  const [state, setState] = useState('Maharashtra');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [address, setAddress] = useState('');
 

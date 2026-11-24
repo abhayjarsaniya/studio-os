@@ -4,6 +4,7 @@ import { useStudio } from '../context/StudioContext';
 import { unifiedAuthService } from '../services/unifiedAuthService';
 import { firebaseAuthService } from '../services/firebaseAuthService';
 import { studioService } from '../services/studioService';
+import { financialSettingsService } from '../services/financialSettingsService';
 import { StudioServicesSettings } from '../components/settings/StudioServicesSettings';
 import { WhatsAppTemplatesSettings } from '../components/settings/WhatsAppTemplatesSettings';
 import { 
@@ -39,30 +40,34 @@ export const SettingsPage: React.FC = () => {
 
   const studioId = currentStudio.id || 'studio_royal_001';
 
-  // Tab: profile | services | whatsapp | security
-  const [activeTab, setActiveTab] = useState<'profile' | 'services' | 'whatsapp' | 'security'>('profile');
+  // Tab: profile | services | finance | whatsapp | security
+  const [activeTab, setActiveTab] = useState<'profile' | 'services' | 'finance' | 'whatsapp' | 'security'>('profile');
+
+  // Invoice & Quotation Settings state
+  const [finForm, setFinForm] = useState(() => financialSettingsService.getSettings(studioId));
+  const [finSaved, setFinSaved] = useState(false);
 
   // Profile Form State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [profileForm, setProfileForm] = useState({
-    name: studio.name || currentStudio.name || 'SHREEJI FILMS AND PHOTOGRAPHY',
+    name: studio.name || currentStudio.name || '',
     tagline: studio.tagline || currentStudio.tagline || '',
     phone: studio.phone || currentStudio.phone || '',
     email: studio.email || currentStudio.email || '',
     address: studio.address || currentStudio.address || '',
     city: studio.city || currentStudio.city || '',
-    state: (studio as any).state || (currentStudio as any).state || 'Gujarat',
-    pincode: (studio as any).pincode || (currentStudio as any).pincode || '380054',
+    state: (studio as any).state || (currentStudio as any).state || '',
+    pincode: (studio as any).pincode || (currentStudio as any).pincode || '',
     gstNumber: studio.gstNumber || currentStudio.gstNumber || '',
-    logoUrl: currentStudio.logoUrl || studio.logo || '/shreeji-logo.svg',
-    website: (studio as any).website || (currentStudio as any).website || 'https://shreejifilms.in',
+    logoUrl: currentStudio.logoUrl || studio.logo || '',
+    website: (studio as any).website || (currentStudio as any).website || '',
     socialInstagram: (currentStudio.socialLinks as any)?.instagram || '',
     socialFacebook: (currentStudio.socialLinks as any)?.facebook || '',
     socialYouTube: (currentStudio.socialLinks as any)?.youtube || '',
-    businessHours: (studio as any).businessHours || (currentStudio as any).businessHours || '09:00 AM - 08:00 PM (Mon-Sat)',
-    description: studio.tagline || currentStudio.tagline || 'Specializing in cinematic wedding films, candid moments and luxury photography.'
+    businessHours: (studio as any).businessHours || (currentStudio as any).businessHours || '',
+    description: studio.tagline || currentStudio.tagline || ''
   });
   const [profileSaved, setProfileSaved] = useState(false);
 
@@ -197,7 +202,11 @@ export const SettingsPage: React.FC = () => {
   };
 
   const handleForgotPassword = async () => {
-    const email = currentUser.email || profileForm.email || 'aarav@shreejifilms.in';
+    const email = currentUser.email || profileForm.email || '';
+    if (!email) {
+      setPasswordError('No email configured for this account.');
+      return;
+    }
     try {
       const res = await firebaseAuthService.sendPasswordReset(email);
       if (res.success) {
@@ -256,7 +265,19 @@ export const SettingsPage: React.FC = () => {
           }`}
         >
           <Layers className="w-4 h-4" />
-          <span>Services Catalog</span>
+          <span>Services, Packages & Deliverables</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('finance')}
+          className={`pb-2.5 px-3 border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+            activeTab === 'finance'
+              ? 'border-zinc-900 text-zinc-900'
+              : 'border-transparent text-zinc-500 hover:text-zinc-800'
+          }`}
+        >
+          <CheckCircle2 className="w-4 h-4" />
+          <span>Invoice & Quotation</span>
         </button>
 
         <button
@@ -576,9 +597,144 @@ export const SettingsPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 2: STUDIO SERVICES */}
+      {/* TAB 2: STUDIO SERVICES, PACKAGES & DELIVERABLES */}
       {activeTab === 'services' && (
         <StudioServicesSettings studioId={studioId} />
+      )}
+
+      {/* TAB 2B: INVOICE & QUOTATION SETTINGS */}
+      {activeTab === 'finance' && (
+        <div className="p-6 rounded-3xl bg-white border border-zinc-200 shadow-xs space-y-5">
+          <div className="pb-4 border-b border-zinc-100">
+            <h3 className="font-bold text-sm text-zinc-900 font-display">Invoice & Quotation Configuration</h3>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Customize your legal billing details, document prefixes, GST rates, and default payment terms.
+            </p>
+          </div>
+
+          {finSaved && (
+            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span>Invoice & Quotation settings saved to Firebase!</span>
+            </div>
+          )}
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const updated = financialSettingsService.updateSettings(studioId, finForm, 'Studio Owner');
+              setFinForm(updated);
+              setFinSaved(true);
+              setTimeout(() => setFinSaved(false), 3000);
+            }}
+            className="space-y-4 text-xs"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-zinc-700 font-semibold mb-1">Legal Business Name</label>
+                <input
+                  type="text"
+                  value={finForm.legalName || ''}
+                  onChange={e => setFinForm({ ...finForm, legalName: e.target.value })}
+                  placeholder="Your Studio Legal Name"
+                  className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl"
+                />
+              </div>
+              <div>
+                <label className="block text-zinc-700 font-semibold mb-1">GSTIN / Tax ID</label>
+                <input
+                  type="text"
+                  value={finForm.gstin || ''}
+                  onChange={e => setFinForm({ ...finForm, gstin: e.target.value.toUpperCase() })}
+                  placeholder="Optional GST Number"
+                  className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-zinc-700 font-semibold mb-1">Invoice Prefix</label>
+                <input
+                  type="text"
+                  value={finForm.invoicePrefix || 'INV'}
+                  onChange={e => setFinForm({ ...finForm, invoicePrefix: e.target.value.toUpperCase() })}
+                  className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-zinc-700 font-semibold mb-1">Quotation Prefix</label>
+                <input
+                  type="text"
+                  value={finForm.quotationPrefix || 'QUO'}
+                  onChange={e => setFinForm({ ...finForm, quotationPrefix: e.target.value.toUpperCase() })}
+                  className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-zinc-700 font-semibold mb-1">Default CGST (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="28"
+                  value={finForm.defaultCgstRate ?? 9}
+                  onChange={e => setFinForm({ ...finForm, defaultCgstRate: Number(e.target.value) })}
+                  className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-zinc-700 font-semibold mb-1">Default SGST (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="28"
+                  value={finForm.defaultSgstRate ?? 9}
+                  onChange={e => setFinForm({ ...finForm, defaultSgstRate: Number(e.target.value) })}
+                  className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl font-mono"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-zinc-700 font-semibold mb-1">Billing Address</label>
+              <input
+                type="text"
+                value={finForm.businessAddress || ''}
+                onChange={e => setFinForm({ ...finForm, businessAddress: e.target.value })}
+                placeholder="Studio address shown on invoices & quotes"
+                className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl"
+              />
+            </div>
+
+            <div>
+              <label className="block text-zinc-700 font-semibold mb-1">Default Payment Terms</label>
+              <input
+                type="text"
+                value={finForm.defaultPaymentTerms || ''}
+                onChange={e => setFinForm({ ...finForm, defaultPaymentTerms: e.target.value })}
+                placeholder="e.g. 50% advance, 50% before delivery"
+                className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl"
+              />
+            </div>
+
+            <div>
+              <label className="block text-zinc-700 font-semibold mb-1">Terms & Conditions</label>
+              <textarea
+                rows={3}
+                value={finForm.termsAndConditions || ''}
+                onChange={e => setFinForm({ ...finForm, termsAndConditions: e.target.value })}
+                placeholder="Enter standard terms & conditions for your quotations and invoices..."
+                className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl"
+              />
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="submit"
+                className="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold shadow-xs cursor-pointer"
+              >
+                Save Invoice & Quotation Settings
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
       {/* TAB 3: WHATSAPP MESSAGE TEMPLATES */}

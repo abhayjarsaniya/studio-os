@@ -419,7 +419,7 @@ export const BookingsWorkspacePage: React.FC = () => {
       </div>
 
       {/* DESKTOP TABLE VIEW (Hidden on mobile) */}
-      <div className="hidden sm:block bg-white rounded-2xl border border-zinc-200/90 shadow-2xs overflow-hidden">
+      <div className="hidden sm:block bg-white rounded-2xl border border-zinc-200/90 shadow-2xs overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-zinc-200 bg-zinc-50/70 text-zinc-500 uppercase text-xs font-bold tracking-wider">

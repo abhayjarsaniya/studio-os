@@ -1,5 +1,6 @@
 import { TenantStore } from './tenantStore';
 import { auditService } from './auditService';
+import { firestoreService } from './firestoreService';
 
 export interface StudioServiceItem {
   id: string;
@@ -116,11 +117,8 @@ export const DEFAULT_STUDIO_SERVICES: Array<Omit<StudioServiceItem, 'id' | 'stud
 export class StudioServiceCatalogService {
   listServices(studioId: string): StudioServiceItem[] {
     if (!studioId) throw new Error('[studioServiceCatalogService.listServices]: studioId is required');
-    let services = TenantStore.get<StudioServiceItem>(studioId, 'services');
-    if (!services || services.length === 0) {
-      services = this.initializeDefaults(studioId);
-    }
-    return services;
+    const services = TenantStore.get<StudioServiceItem>(studioId, 'services');
+    return Array.isArray(services) ? services : [];
   }
 
   getService(studioId: string, id: string): StudioServiceItem | undefined {
@@ -136,6 +134,7 @@ export class StudioServiceCatalogService {
       createdAt: new Date().toISOString()
     }));
     TenantStore.set(studioId, 'services', seeded);
+    firestoreService.saveCollectionBatch(studioId, 'services', seeded).catch(() => {});
     return seeded;
   }
 
@@ -171,6 +170,8 @@ export class StudioServiceCatalogService {
 
     const updated = [...services, newService];
     TenantStore.set(studioId, 'services', updated);
+    firestoreService.saveDocument(studioId, 'services', newService.id, newService).catch(() => {});
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('studio_data_updated'));
     auditService.log(studioId, operatorId, 'CREATE_SERVICE', 'serviceCatalog', newService.id, { name: newService.name, price: newService.defaultPrice });
     return newService;
   }
@@ -194,6 +195,8 @@ export class StudioServiceCatalogService {
 
     services[index] = updated;
     TenantStore.set(studioId, 'services', services);
+    firestoreService.saveDocument(studioId, 'services', updated.id, updated).catch(() => {});
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('studio_data_updated'));
     auditService.log(studioId, operatorId, 'UPDATE_SERVICE', 'serviceCatalog', id, { updates: Object.keys(updates) });
     return updated;
   }
@@ -206,6 +209,8 @@ export class StudioServiceCatalogService {
 
     const filtered = services.filter(s => s.id !== id);
     TenantStore.set(studioId, 'services', filtered);
+    firestoreService.deleteDocument(studioId, 'services', id).catch(() => {});
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('studio_data_updated'));
     auditService.log(studioId, operatorId, 'DELETE_SERVICE', 'serviceCatalog', id, { name: target.name });
   }
 

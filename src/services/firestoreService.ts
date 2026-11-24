@@ -33,6 +33,7 @@ export class FirestoreService {
   private statusListeners: Set<SaveStateListener> = new Set();
   private pendingQueue: Array<() => Promise<void>> = [];
   private isProcessingQueue = false;
+  private collectionFetchOk: Map<string, boolean> = new Map();
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -284,18 +285,28 @@ export class FirestoreService {
     }
   }
 
+  didCollectionFetchSucceed(studioId: string, collectionName: string): boolean {
+    return this.collectionFetchOk.get(`${studioId}::${collectionName}`) !== false;
+  }
+
   // Retrieve an Entire Collection for Studio
   async getCollection<T>(
     studioId: string,
     collectionName: string
   ): Promise<T[]> {
-    if (!db) return [];
+    const key = `${studioId}::${collectionName}`;
+    if (!db) {
+      this.collectionFetchOk.set(key, false);
+      return [];
+    }
     try {
       const targetPath = this.getCollectionPath(studioId, collectionName);
       const colRef = collection(db, targetPath);
       const snap = await getDocs(colRef);
+      this.collectionFetchOk.set(key, true);
       return snap.docs.map(d => d.data() as T);
     } catch (error) {
+      this.collectionFetchOk.set(key, false);
       console.warn(`[FirestoreService.getCollection] Error reading ${collectionName}:`, error);
       return [];
     }

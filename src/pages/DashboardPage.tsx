@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { useStudio } from '../context/StudioContext';
 import { bookingProductionService } from '../services/bookingProductionService';
+import { studioServiceCatalogService } from '../services/studioServiceCatalogService';
 import { NewBookingButton } from '../components/common/NewBookingButton';
 import { 
   Calendar, 
@@ -23,9 +24,9 @@ import {
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
-  const { setActiveTab } = useApp();
+  const { setActiveTab, customers, employees } = useApp();
   const { currentStudio } = useStudio();
-  const studioId = currentStudio.id || 'studio_shreeji_films';
+  const studioId = currentStudio.id || '';
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
 
@@ -46,7 +47,11 @@ export const DashboardPage: React.FC = () => {
 
   // Bookings list from production service
   const bookings = useMemo(() => {
-    return bookingProductionService.listBookings(studioId);
+    return studioId ? bookingProductionService.listBookings(studioId) : [];
+  }, [studioId, dataVersion]);
+
+  const servicesCount = useMemo(() => {
+    return studioId ? studioServiceCatalogService.listServices(studioId).length : 0;
   }, [studioId, dataVersion]);
 
   // All deliverables across all bookings
@@ -304,6 +309,122 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Studio Directory Counts (Customers & Crew Members — Genuine Real Counts) */}
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+        <div
+          onClick={() => {
+            setActiveTab('customers');
+            window.location.hash = '#/app/customers';
+          }}
+          className="bg-white px-4 py-3.5 rounded-2xl border border-zinc-200/90 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer flex items-center justify-between"
+        >
+          <div>
+            <span className="text-xs font-semibold text-zinc-500 block">Customers</span>
+            <span className="text-xl font-extrabold text-zinc-900 font-tabular tabular-nums">{customers.length}</span>
+          </div>
+          <div className="w-9 h-9 rounded-xl bg-zinc-100 text-zinc-700 flex items-center justify-center">
+            <Users className="w-4 h-4" />
+          </div>
+        </div>
+
+        <div
+          onClick={() => {
+            setActiveTab('crew');
+            window.location.hash = '#/app/crew';
+          }}
+          className="bg-white px-4 py-3.5 rounded-2xl border border-zinc-200/90 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer flex items-center justify-between"
+        >
+          <div>
+            <span className="text-xs font-semibold text-zinc-500 block">Crew Members</span>
+            <span className="text-xl font-extrabold text-zinc-900 font-tabular tabular-nums">{employees.length}</span>
+          </div>
+          <div className="w-9 h-9 rounded-xl bg-zinc-100 text-zinc-700 flex items-center justify-center">
+            <Users className="w-4 h-4" />
+          </div>
+        </div>
+      </div>
+
+      {/* Onboarding Guidance Card for Clean / Newly Initialized Studios */}
+      {bookings.length === 0 && (
+        <div className="bg-gradient-to-br from-orange-50/80 via-white to-amber-50/70 rounded-2xl border border-orange-200/80 p-4 sm:p-5 shadow-2xs space-y-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-orange-600" />
+                <h2 className="text-base sm:text-lg font-bold text-zinc-900 font-heading">
+                  Welcome to Your Clean Studio Workspace
+                </h2>
+              </div>
+              <p className="text-xs text-zinc-600 mt-0.5">
+                Your studio starts completely fresh with zero demo data. Set up your business essentials below or create your first booking right away.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('customers');
+                window.location.hash = '#/app/customers';
+              }}
+              className="p-3.5 rounded-xl bg-white border border-zinc-200 hover:border-orange-300 text-left transition-all cursor-pointer flex items-center justify-between gap-2 shadow-2xs"
+            >
+              <div>
+                <p className="font-bold text-zinc-900">1. Add your first customer</p>
+                <p className="text-xs text-zinc-500 mt-0.5">{customers.length > 0 ? `${customers.length} saved` : 'Build your client directory'}</p>
+              </div>
+              <CheckCircle2 className={`w-4 h-4 shrink-0 ${customers.length > 0 ? 'text-emerald-600' : 'text-zinc-300'}`} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('settings');
+                window.location.hash = '#/app/settings';
+              }}
+              className="p-3.5 rounded-xl bg-white border border-zinc-200 hover:border-orange-300 text-left transition-all cursor-pointer flex items-center justify-between gap-2 shadow-2xs"
+            >
+              <div>
+                <p className="font-bold text-zinc-900">2. Configure your services</p>
+                <p className="text-xs text-zinc-500 mt-0.5">{servicesCount > 0 ? `${servicesCount} configured` : 'Services, packages & rates'}</p>
+              </div>
+              <CheckCircle2 className={`w-4 h-4 shrink-0 ${servicesCount > 0 ? 'text-emerald-600' : 'text-zinc-300'}`} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('crew');
+                window.location.hash = '#/app/crew';
+              }}
+              className="p-3.5 rounded-xl bg-white border border-zinc-200 hover:border-orange-300 text-left transition-all cursor-pointer flex items-center justify-between gap-2 shadow-2xs"
+            >
+              <div>
+                <p className="font-bold text-zinc-900">3. Add your crew</p>
+                <p className="text-xs text-zinc-500 mt-0.5">{employees.length > 0 ? `${employees.length} crew ready` : 'Photographers & editors'}</p>
+              </div>
+              <CheckCircle2 className={`w-4 h-4 shrink-0 ${employees.length > 0 ? 'text-emerald-600' : 'text-zinc-300'}`} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('create-booking');
+                window.location.hash = '#/app/bookings/new';
+              }}
+              className="p-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-left transition-all cursor-pointer flex items-center justify-between gap-2 shadow-xs"
+            >
+              <div>
+                <p className="font-bold text-white">4. Create your first booking</p>
+                <p className="text-xs text-orange-100 mt-0.5">Works even before setup</p>
+              </div>
+              <ArrowRight className="w-4 h-4 shrink-0 text-white" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 3. Actionable Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Left Column (2 cols): Today's Events & Upcoming Bookings */}
@@ -353,7 +474,11 @@ export const DashboardPage: React.FC = () => {
               <div className="py-6 text-center text-zinc-400 bg-zinc-50/50 rounded-xl border border-dashed border-zinc-200 font-sans">
                 <Calendar className="w-6 h-6 mx-auto mb-1.5 text-zinc-300" />
                 <p className="text-xs sm:text-sm font-medium text-zinc-600">No events scheduled for today</p>
-                <p className="text-xs text-zinc-400 mt-0.5">All teams are on editing & studio prep</p>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  {bookings.length === 0
+                    ? 'Your schedule is open — create your first booking to get started.'
+                    : 'No events scheduled for today.'}
+                </p>
               </div>
             )}
           </div>

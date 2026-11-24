@@ -633,7 +633,20 @@ export class PlatformStudioService {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    TenantStore.set(studioId, 'employees', [ownerEmployee]);
+    TenantStore.set(studioId, 'employees', []);
+    TenantStore.set(studioId, 'customers', []);
+    TenantStore.set(studioId, 'studio_bookings_v2', []);
+    TenantStore.set(studioId, 'bookings', []);
+    TenantStore.set(studioId, 'events', []);
+    TenantStore.set(studioId, 'quotations', []);
+    TenantStore.set(studioId, 'invoices', []);
+    TenantStore.set(studioId, 'payments', []);
+    TenantStore.set(studioId, 'expenses', []);
+    TenantStore.set(studioId, 'services', []);
+    TenantStore.set(studioId, 'packages', []);
+    TenantStore.set(studioId, 'deliverablesCatalog', []);
+    TenantStore.set(studioId, 'eventCategories', []);
+    TenantStore.set(studioId, 'messageTemplates', []);
 
     // Provision Studio Owner Login Account in Unified User Accounts Registry (Enables Immediate Login)
     unifiedAuthService.provisionStudioOwner({
@@ -829,7 +842,20 @@ export class PlatformStudioService {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    TenantStore.set(studioId, 'employees', [ownerEmployee]);
+    TenantStore.set(studioId, 'employees', []);
+    TenantStore.set(studioId, 'customers', []);
+    TenantStore.set(studioId, 'studio_bookings_v2', []);
+    TenantStore.set(studioId, 'bookings', []);
+    TenantStore.set(studioId, 'events', []);
+    TenantStore.set(studioId, 'quotations', []);
+    TenantStore.set(studioId, 'invoices', []);
+    TenantStore.set(studioId, 'payments', []);
+    TenantStore.set(studioId, 'expenses', []);
+    TenantStore.set(studioId, 'services', []);
+    TenantStore.set(studioId, 'packages', []);
+    TenantStore.set(studioId, 'deliverablesCatalog', []);
+    TenantStore.set(studioId, 'eventCategories', []);
+    TenantStore.set(studioId, 'messageTemplates', []);
 
     // 4. Provision in unifiedAuthService
     unifiedAuthService.provisionStudioOwner({

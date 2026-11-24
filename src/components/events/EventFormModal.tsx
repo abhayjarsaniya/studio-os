@@ -73,7 +73,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   const [endDate, setEndDate] = useState(initialDate || new Date().toISOString().split('T')[0]);
   const [endTime, setEndTime] = useState('18:00');
   const [venue, setVenue] = useState('');
-  const [venueCity, setVenueCity] = useState(currentStudio?.city || 'Ahmedabad');
+  const [venueCity, setVenueCity] = useState(currentStudio?.city || '');
   const [priority, setPriority] = useState<Priority>('High');
   const [status, setStatus] = useState<EventStatus>('Confirmed');
 
@@ -105,8 +105,8 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   const [newDelDueDate, setNewDelDueDate] = useState('');
 
   // Financials
-  const [estimatedBudget, setEstimatedBudget] = useState<number>(120000);
-  const [advancePaid, setAdvancePaid] = useState<number>(50000);
+  const [estimatedBudget, setEstimatedBudget] = useState<number>(0);
+  const [advancePaid, setAdvancePaid] = useState<number>(0);
   const [paymentMethod, setPaymentMethod] = useState<'UPI' | 'Bank Transfer' | 'Cash' | 'Card'>('UPI');
   const [paymentRef, setPaymentRef] = useState('');
 
@@ -202,28 +202,23 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
         if (existingBkg.deliverables && existingBkg.deliverables.length > 0) {
           setDeliverablesList(existingBkg.deliverables);
         } else {
-          // Generate category-specific deliverables
-          const generated = generateDeliverablesForCategory(eventToEdit.category, eventToEdit.id, start);
-          setDeliverablesList(generated);
+          setDeliverablesList([]);
         }
       } else {
-        setEstimatedBudget(eventToEdit.estimatedBudget || 120000);
+        setEstimatedBudget(eventToEdit.estimatedBudget || 0);
         setAdvancePaid(eventToEdit.advancePaid || 0);
         setNotes(eventToEdit.notes || '');
         setFunctionsList([
           { id: `fn_${eventToEdit.id}_main`, name: eventToEdit.name, date: start, startTime: eventToEdit.startTime || '10:00', endTime: eventToEdit.endTime || '18:00', venue: eventToEdit.venue || '' }
         ]);
-        const generated = generateDeliverablesForCategory(eventToEdit.category, eventToEdit.id, start);
-        setDeliverablesList(generated);
+        setDeliverablesList([]);
       }
     } else {
       // Default reset for new event
       setName('');
-      if (customers.length > 0) {
-        setCustomerId(customers[0].id);
-        setCustomerName(customers[0].name);
-        setCustomerPhone(customers[0].phone);
-      }
+      setCustomerId('');
+      setCustomerName('');
+      setCustomerPhone('');
       setIsNewCustomer(false);
       setCategory('Wedding');
       const start = initialDate || new Date().toISOString().split('T')[0];
@@ -232,19 +227,18 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       setEndDate(start);
       setEndTime('18:00');
       setVenue('');
-      setVenueCity(currentStudio?.city || 'Ahmedabad');
+      setVenueCity(currentStudio?.city || '');
       setPriority('High');
       setStatus('Confirmed');
       setAssignedEmployeeIds([]);
-      setEstimatedBudget(120000);
-      setAdvancePaid(50000);
+      setEstimatedBudget(0);
+      setAdvancePaid(0);
       setPaymentMethod('UPI');
       setPaymentRef('');
       setNotes('');
 
-      // Preset deliverables for new event
       const tempId = `temp_${Date.now()}`;
-      setDeliverablesList(generateDeliverablesForCategory('Wedding', tempId, start));
+      setDeliverablesList([]);
       setFunctionsList([
         { id: `fn_${tempId}_1`, name: 'Main Function Coverage', date: start, startTime: '10:00', endTime: '18:00', venue: '' }
       ]);

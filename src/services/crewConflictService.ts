@@ -52,8 +52,9 @@ export class CrewConflictService {
       // Fallback
     }
 
-    if (list.length === 0) {
-      // Fallback to SHREEJI_EMPLOYEES_DEF
+    const isLegacyDemoStudio = studioId === 'studio_shreeji_films' || studioId === 'std_demo_royal';
+    if (list.length === 0 && isLegacyDemoStudio) {
+      // Fallback to SHREEJI_EMPLOYEES_DEF ONLY for historical demo studio
       list = SHREEJI_EMPLOYEES_DEF.map(def => ({
         id: def.id,
         studioId,
