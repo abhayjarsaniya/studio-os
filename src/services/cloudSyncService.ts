@@ -243,6 +243,10 @@ export class CloudSyncService {
     this.activeStudioId = null;
   }
 
+  getActiveSubscriptionsCount(): number {
+    return this.activeSubscriptions.size;
+  }
+
   /**
    * Broadcasts a local save directly to Firebase and triggers cloud save state.
    */

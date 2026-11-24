@@ -223,7 +223,10 @@ export const QuotationsListPage: React.FC = () => {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
-              onClick={() => setActiveTab('bookings')}
+              onClick={() => {
+                setActiveTab('bookings');
+                if (typeof window !== 'undefined') window.location.hash = '#/app/bookings';
+              }}
               className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs cursor-pointer transition-all"
             >
               View in Bookings Directory →

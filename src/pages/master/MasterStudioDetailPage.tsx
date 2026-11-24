@@ -1,15 +1,22 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useMasterAdmin } from '../../context/MasterAdminContext';
 import { masterAdminService } from '../../services/masterAdminService';
 import { globalRbacService } from '../../services/globalRbacService';
 import { featureVisibilityService } from '../../services/featureVisibilityService';
 import { platformAuditService } from '../../services/platformAuditService';
-import { firebaseAuthService } from '../../services/firebaseAuthService';
+import { cloudSyncService } from '../../services/cloudSyncService';
+import { bookingProductionService } from '../../services/bookingProductionService';
+import { customerService } from '../../services/customerService';
+import { paymentService } from '../../services/paymentService';
+import { quotationService } from '../../services/quotationService';
+import { employeeService } from '../../services/employeeService';
+import { invoiceService } from '../../services/invoiceService';
+import { expenseService } from '../../services/expenseService';
+import { unifiedAuthService } from '../../services/unifiedAuthService';
+import { realAccountProvisionService } from '../../services/realAccountProvisionService';
+import { TenantStore } from '../../services/tenantStore';
 import { db } from '../../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { realAccountProvisionService } from '../../services/realAccountProvisionService';
-import { unifiedAuthService } from '../../services/unifiedAuthService';
-import { TenantStore } from '../../services/tenantStore';
 import { StudioHandoverModal, StudioHandoverData } from '../../components/master/StudioHandoverModal';
 import { 
   Building2, 
@@ -36,15 +43,32 @@ import {
   X,
   Key,
   Copy,
-  Check
+  Check,
+  Search,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Layers,
+  FileText,
+  Camera,
+  RefreshCw
 } from 'lucide-react';
-import { Studio, StudioEvent, Employee, Invoice, Payment } from '../../types/schema';
-import { MasterGlobalRoleId } from '../../types/masterAdmin';
+import { Studio, StudioEvent, Employee, Invoice, Payment, Customer, Expense } from '../../types/schema';
+import { BookingRecord, BOOKING_STATUS_LABELS } from '../../types/bookingProduction';
 
 export const MasterStudioDetailPage: React.FC = () => {
   const { selectedStudioId, setSelectedStudioId, setMasterRoute, triggerRefresh, refreshTrigger } = useMasterAdmin();
   const [activeTab, setActiveTab] = useState<'overview' | 'events' | 'employees' | 'revenue' | 'subscription' | 'roles' | 'features' | 'activity'>('overview');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Cloud Hydration & Real-Time Sync on Selected Studio
+  const [dataVersion, setDataVersion] = useState(0);
+  const [isSyncingCloud, setIsSyncingCloud] = useState(false);
+
+  // Booking Tab Inspection Filters & Expand State
+  const [bookingSearch, setBookingSearch] = useState('');
+  const [bookingStatusFilter, setBookingStatusFilter] = useState<string>('all');
+  const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
 
   // Password & Handover State
   const [isHandoverOpen, setIsHandoverOpen] = useState(false);
@@ -91,37 +115,137 @@ export const MasterStudioDetailPage: React.FC = () => {
     if (!selectedStudioId) return null;
     const all = masterAdminService.getAllStudios();
     return all.find(s => s.id === selectedStudioId) || all[0] || null;
-  }, [selectedStudioId, refreshTrigger]);
+  }, [selectedStudioId, refreshTrigger, dataVersion]);
 
-  const studioId = studio?.id || 'studio_royal_frames_001';
+  const studioId = studio?.id || selectedStudioId || '';
 
-  // Read studio-isolated data
-  const events = useMemo(() => {
-    const raw = TenantStore.get(studioId, 'events') as StudioEvent[];
-    return Array.isArray(raw) ? raw : [];
-  }, [studioId, refreshTrigger]);
+  // Cloud Hydration & Real-Time Sync Listener
+  useEffect(() => {
+    if (!selectedStudioId) return;
+    let isMounted = true;
+    setIsSyncingCloud(true);
 
-  const employees = useMemo(() => {
-    const raw = TenantStore.get(studioId, 'employees') as Employee[];
-    return Array.isArray(raw) ? raw : [];
-  }, [studioId, refreshTrigger]);
+    cloudSyncService.hydrateStudioFromCloud(selectedStudioId)
+      .then(() => {
+        if (isMounted) {
+          setIsSyncingCloud(false);
+          setDataVersion(v => v + 1);
+        }
+      })
+      .catch(err => {
+        console.warn('[MasterStudioDetailPage] Hydration notice:', err?.message);
+        if (isMounted) setIsSyncingCloud(false);
+      });
 
-  const invoices = useMemo(() => {
-    const raw = TenantStore.get(studioId, 'invoices') as Invoice[];
-    return Array.isArray(raw) ? raw : [];
-  }, [studioId, refreshTrigger]);
+    const stopSync = cloudSyncService.startRealtimeSync(selectedStudioId);
+
+    const handleUpdate = () => {
+      setDataVersion(v => v + 1);
+    };
+
+    window.addEventListener('studio_data_updated', handleUpdate);
+    window.addEventListener('studio_cloud_data_synced', handleUpdate);
+
+    return () => {
+      isMounted = false;
+      stopSync();
+      window.removeEventListener('studio_data_updated', handleUpdate);
+      window.removeEventListener('studio_cloud_data_synced', handleUpdate);
+    };
+  }, [selectedStudioId]);
+
+  // Direct Authoritative Studio Business Records
+  const bookings = useMemo<BookingRecord[]>(() => {
+    if (!studioId) return [];
+    return bookingProductionService.listBookings(studioId, false);
+  }, [studioId, refreshTrigger, dataVersion]);
+
+  const customers = useMemo<Customer[]>(() => {
+    if (!studioId) return [];
+    return customerService.listCustomers(studioId);
+  }, [studioId, refreshTrigger, dataVersion]);
+
+  const payments = useMemo<Payment[]>(() => {
+    if (!studioId) return [];
+    return paymentService.listPayments(studioId);
+  }, [studioId, refreshTrigger, dataVersion]);
+
+  const quotations = useMemo(() => {
+    if (!studioId) return [];
+    return quotationService.listQuotations(studioId);
+  }, [studioId, refreshTrigger, dataVersion]);
+
+  const employees = useMemo<Employee[]>(() => {
+    if (!studioId) return [];
+    return employeeService.listEmployees(studioId);
+  }, [studioId, refreshTrigger, dataVersion]);
+
+  const invoices = useMemo<Invoice[]>(() => {
+    if (!studioId) return [];
+    return invoiceService.listInvoices(studioId);
+  }, [studioId, refreshTrigger, dataVersion]);
+
+  const expenses = useMemo<Expense[]>(() => {
+    if (!studioId) return [];
+    return expenseService.listExpenses(studioId);
+  }, [studioId, refreshTrigger, dataVersion]);
 
   const auditLogs = useMemo(() => {
     const logs = platformAuditService.listLogs();
-    return logs.filter(l => l.targetId === studioId || l.details.includes(studioId)).slice(0, 15);
-  }, [studioId, refreshTrigger]);
+    return logs.filter(l => l.targetId === studioId || (l.details && l.details.includes(studioId))).slice(0, 20);
+  }, [studioId, refreshTrigger, dataVersion]);
 
-  // Financial calculations (exact studio metrics - no fabricated demo values)
-  const totalInvoiced = events.reduce((sum, e) => sum + (Number(e.totalAmount) || 0), 0);
-  const paymentsReceived = events.reduce((sum, e) => sum + (Number(e.advancePaid) || 0), 0);
+  // Exact Financial Calculations — Zero Demo Assumptions
+  const totalInvoiced = useMemo(() => {
+    return bookings.reduce((sum, b) => {
+      const amt = Number(b.financials?.finalAgreedAmount ?? b.financials?.originalQuotation ?? 0);
+      return sum + amt;
+    }, 0);
+  }, [bookings]);
+
+  const paymentsReceived = useMemo(() => {
+    const fromPayments = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+    if (fromPayments > 0) return fromPayments;
+    return bookings.reduce((sum, b) => {
+      const rec = Number(b.financials?.verifiedPaymentsReceived ?? b.financials?.advanceReceived ?? 0);
+      return sum + rec;
+    }, 0);
+  }, [payments, bookings]);
+
   const pendingBalance = Math.max(0, totalInvoiced - paymentsReceived);
+  const totalExpenses = useMemo(() => {
+    return expenses.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0);
+  }, [expenses]);
 
-  // Open Edit Studio
+  const activeStaff = useMemo(() => {
+    return employees.filter(e => e.employmentStatus === 'active' || (e as any).status === 'active').length;
+  }, [employees]);
+
+  // Filtered Bookings for Tab 2
+  const filteredBookings = useMemo(() => {
+    return bookings.filter(b => {
+      if (bookingStatusFilter !== 'all') {
+        if (bookingStatusFilter === 'confirmed' && !['deal_confirmed', 'confirmed', 'advance_received', 'event_scheduled'].includes(b.status as string)) return false;
+        if (bookingStatusFilter === 'in_production' && !['in_production', 'editing', 'delivery_in_progress'].includes(b.status)) return false;
+        if (bookingStatusFilter === 'completed' && !['completed', 'fully_delivered'].includes(b.status)) return false;
+        if (bookingStatusFilter === 'cancelled' && b.status !== 'cancelled') return false;
+      }
+      if (bookingSearch.trim()) {
+        const q = bookingSearch.toLowerCase();
+        return (
+          b.bookingNumber.toLowerCase().includes(q) ||
+          b.eventName.toLowerCase().includes(q) ||
+          b.customerName.toLowerCase().includes(q) ||
+          (b.customerPhone && b.customerPhone.includes(q)) ||
+          b.venue.toLowerCase().includes(q) ||
+          b.city.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+  }, [bookings, bookingStatusFilter, bookingSearch]);
+
+  // Open Edit Studio Form
   const handleOpenEdit = () => {
     if (!studio) return;
     const accounts = unifiedAuthService.listStoredAccounts();
@@ -173,27 +297,6 @@ export const MasterStudioDetailPage: React.FC = () => {
   };
 
   // Password reset handler
-  const handleResetOwnerPassword = () => {
-    if (!studio) return;
-    try {
-      const res = masterAdminService.setStudioOwnerPassword(studioId, undefined, 'Master Admin');
-      setHandoverData({
-        studioName: studio.name,
-        studioId: studio.id,
-        ownerName: (studio as any).ownerName || studio.name + ' Owner',
-        ownerMobile: studio.phone || '9876543210',
-        ownerEmail: res.ownerEmail || studio.email,
-        username: res.username || 'shreeji.owner',
-        temporaryPassword: res.temporaryPassword,
-        loginUrl: `${window.location.origin}/#/login`
-      });
-      setIsHandoverOpen(true);
-      showToast(`Temporary password generated: ${res.temporaryPassword}`);
-    } catch (e: any) {
-      showToast(`Password reset generated: StudioOwner@2026`);
-    }
-  };
-
   const handleOpenSetPassword = () => {
     setCustomPasswordInput(`Studio#${Math.floor(1000 + Math.random() * 9000)}`);
     setIsSetPasswordOpen(true);
@@ -224,7 +327,7 @@ export const MasterStudioDetailPage: React.FC = () => {
         ownerName: (studio as any).ownerName || studio.name + ' Owner',
         ownerMobile: studio.phone || '9876543210',
         ownerEmail: res.ownerEmail || studio.email,
-        username: res.username || 'shreeji.owner',
+        username: res.username || (studio as any).ownerUsername || studio.id,
         temporaryPassword: res.temporaryPassword,
         loginUrl: `${window.location.origin}/#/login`
       });
@@ -275,7 +378,7 @@ export const MasterStudioDetailPage: React.FC = () => {
           loginUrl: `${window.location.origin}/#/login`
         });
         setIsHandoverOpen(true);
-        showToast(`Studio activated! Initial 8-char password: ${res.credentials.temporaryPassword || res.temporaryPassword}`);
+        showToast(`Studio activated! Initial password: ${res.credentials.temporaryPassword || res.temporaryPassword}`);
         triggerRefresh();
       } else {
         setActivateError((res as any).error || 'Failed to activate studio');
@@ -336,14 +439,12 @@ export const MasterStudioDetailPage: React.FC = () => {
     setIsHandoverOpen(true);
   };
 
-  // Reset roles handler
   const handleResetRolesToDefault = () => {
     globalRbacService.resetStudioOverridesToDefault(studioId);
     showToast('Studio roles and permissions reset to platform global defaults!');
     triggerRefresh();
   };
 
-  // Extend subscription handler
   const handleExtendSubscription = (days: number) => {
     const currentSub = studio?.subscription;
     const validUntil = currentSub?.validUntil ? new Date(currentSub.validUntil) : new Date();
@@ -356,7 +457,6 @@ export const MasterStudioDetailPage: React.FC = () => {
     }
   };
 
-  // Toggle feature override (e.g. WhatsApp Click-to-Chat)
   const handleToggleFeature = async (featureKey: string, featureName: string) => {
     if (!studio) return;
     const currentOverride = featureVisibilityService.getStudioPlatformOverride(studio.id);
@@ -387,7 +487,6 @@ export const MasterStudioDetailPage: React.FC = () => {
     triggerRefresh();
   };
 
-  // Features list
   const featureList = [
     { key: 'crm', name: 'Customer CRM & Inquiries', globalDefault: true },
     { key: 'whatsapp', name: 'WhatsApp Direct Click-to-Chat', globalDefault: true },
@@ -400,102 +499,101 @@ export const MasterStudioDetailPage: React.FC = () => {
 
   if (!studio) {
     return (
-      <div className="p-8 text-center text-zinc-500">
-        Studio not found.{' '}
-        <button onClick={() => setMasterRoute('studios')} className="text-amber-400 underline">
-          Back to All Studios
+      <div className="p-8 text-center bg-white rounded-3xl border border-zinc-200">
+        <Building2 className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
+        <h3 className="text-lg font-bold text-zinc-900 font-display">Studio Not Found</h3>
+        <p className="text-xs text-zinc-500 mt-1">The requested studio could not be loaded from the directory.</p>
+        <button
+          onClick={() => setMasterRoute('studios')}
+          className="mt-4 px-4 py-2 rounded-xl bg-zinc-900 text-white font-bold text-xs"
+        >
+          Return to Studios Directory
         </button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 pb-20">
-      {/* Toast Notification */}
+    <div className="space-y-6 pb-20 w-full font-sans">
+      {/* Toast Alert */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-amber-500 text-zinc-950 font-bold px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-zinc-950" />
+        <div className="fixed top-5 right-5 z-50 p-4 rounded-2xl bg-zinc-900 text-white shadow-2xl border border-zinc-700 flex items-center gap-3 text-xs font-semibold animate-in fade-in slide-in-from-top-4">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
+          <button onClick={() => setToastMessage(null)} className="ml-2 text-zinc-400 hover:text-white cursor-pointer">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
-      {/* Back button & Title Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header & Back Navigation */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setMasterRoute('studios')}
-            className="min-w-[44px] min-h-[44px] p-2 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition-colors flex items-center justify-center cursor-pointer touch-manipulation active:scale-95"
+            className="w-10 h-10 rounded-2xl border border-zinc-200 hover:border-zinc-300 bg-white flex items-center justify-center text-zinc-600 hover:text-zinc-900 transition-colors shadow-2xs cursor-pointer touch-manipulation active:scale-95"
+            title="Back to Global Studio Directory"
           >
-            <ArrowLeft className="w-5 h-5 sm:w-4 sm:h-4" />
+            <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-mono text-amber-500 font-bold uppercase">{studio.id}</span>
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
-                {studio.subscription?.status || 'Active'}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60">
+                {studio.id}
               </span>
-              {(studio as any).accountStatus === 'active' ? (
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  Account Active
-                </span>
-              ) : (
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                  Pending Activation
+              <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
+                studio.lifecycleStatus === 'active' 
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                  : studio.lifecycleStatus === 'draft'
+                  ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                  : 'bg-rose-50 text-rose-700 border border-rose-200'
+              }`}>
+                {studio.lifecycleStatus || 'Active'}
+              </span>
+              {isSyncingCloud && (
+                <span className="flex items-center gap-1 text-xs text-orange-600 font-semibold animate-pulse">
+                  <RefreshCw className="w-3 h-3 animate-spin" />
+                  <span>Syncing Cloud...</span>
                 </span>
               )}
-              <span className="text-xs text-zinc-500 font-mono">
-                {studio.ownerEmail || studio.email}
-              </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-zinc-900 font-display tracking-tight mt-0.5">{studio.name}</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight font-display mt-0.5">
+              {studio.name}
+            </h1>
+            <p className="text-xs text-zinc-500 font-medium">
+              Read-Only Multi-Tenant Inspection Console • Direct Firebase Firestore Connection
+            </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Action Controls */}
+        <div className="flex items-center gap-2 flex-wrap">
           <button
-            onClick={handleOpenSetPassword}
-            className="min-h-[44px] px-3.5 py-2 text-xs font-bold rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
-            title="Set a new password for the studio owner"
+            onClick={handleShareLoginDetails}
+            className="min-h-[44px] px-3.5 py-2 text-xs font-bold rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200 shadow-2xs flex items-center gap-1.5 cursor-pointer touch-manipulation active:scale-95"
+            title="View credentials and handover info"
           >
-            <Key className="w-4 h-4 text-orange-600" />
-            <span>Change Owner Password</span>
-          </button>
-
-          <button
-            onClick={handleToggleDeactivate}
-            className={`min-h-[44px] px-3.5 py-2 text-xs font-bold rounded-xl border flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95 ${
-              studio.lifecycleStatus === 'active'
-                ? 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300'
-                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300'
-            }`}
-          >
-            <span>{studio.lifecycleStatus === 'active' ? 'Deactivate Studio' : 'Reactivate Studio'}</span>
+            <Share2 className="w-3.5 h-3.5 text-zinc-500" />
+            <span>Handover Details</span>
           </button>
 
           <button
             onClick={handleOpenEdit}
-            className="min-h-[44px] px-3.5 py-2 text-xs font-semibold rounded-xl bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shadow-xs touch-manipulation active:scale-95"
+            className="min-h-[44px] px-3.5 py-2 text-xs font-bold rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200 shadow-2xs flex items-center gap-1.5 cursor-pointer touch-manipulation active:scale-95"
+            title="Edit studio information"
           >
-            <Edit3 className="w-4 h-4 text-zinc-600" />
-            <span>Edit Studio</span>
+            <Edit3 className="w-3.5 h-3.5 text-zinc-500" />
+            <span>Edit Profile</span>
           </button>
-          <button
-            onClick={() => {
-              setSelectedStudioId(studio.id);
-              setMasterRoute('studio-features');
-            }}
-            className="min-h-[44px] px-4 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 flex items-center gap-1.5 transition-all shadow-xs cursor-pointer touch-manipulation active:scale-95"
-          >
-            <ToggleRight className="w-4 h-4" />
-            <span>Configure Features</span>
-          </button>
+
           <button
             onClick={handleArchiveStudio}
-            className="min-h-[44px] px-3 py-2 text-xs font-medium rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 border border-zinc-200 flex items-center gap-1.5 cursor-pointer touch-manipulation active:scale-95"
+            className="min-h-[44px] px-3 py-2 text-xs font-medium rounded-xl bg-white hover:bg-zinc-50 text-zinc-600 border border-zinc-200 flex items-center gap-1.5 cursor-pointer touch-manipulation active:scale-95"
             title="Archive studio safely"
           >
             <span>Archive</span>
           </button>
+
           <button
             onClick={handleDeleteStudio}
             className="min-h-[44px] px-3 py-2 text-xs font-medium rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 flex items-center gap-1.5 cursor-pointer touch-manipulation active:scale-95"
@@ -518,10 +616,10 @@ export const MasterStudioDetailPage: React.FC = () => {
                 <span className="px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-purple-200 text-purple-900 border border-purple-300">
                   Draft Studio — Pending Activation
                 </span>
-                <span className="text-xs text-purple-700 font-medium">Clean Record (0 demo data)</span>
+                <span className="text-xs text-purple-700 font-medium">Clean Production Record</span>
               </div>
               <p className="text-xs sm:text-sm text-purple-950 font-medium mt-1">
-                This studio has no fake bookings, employees, or fabricated transactions. Enter the owner's details to activate the studio and generate their login credentials.
+                Enter the owner's details to activate the studio and generate their login credentials.
               </p>
             </div>
           </div>
@@ -539,8 +637,8 @@ export const MasterStudioDetailPage: React.FC = () => {
       <div className="flex items-center gap-1.5 border-b border-zinc-200 overflow-x-auto pb-1 text-xs font-semibold scrollbar-none touch-scroll">
         {[
           { id: 'overview', label: '1. Overview', icon: Building2 },
-          { id: 'events', label: '2. Events & Bookings (Read-Only)', icon: Calendar },
-          { id: 'employees', label: '3. Employees & Crew', icon: Users },
+          { id: 'events', label: `2. Events & Bookings (${bookings.length})`, icon: Calendar },
+          { id: 'employees', label: `3. Employees & Crew (${employees.length})`, icon: Users },
           { id: 'revenue', label: '4. Revenue & Earnings', icon: IndianRupee },
           { id: 'subscription', label: '5. Subscription & Billing', icon: CreditCard },
           { id: 'roles', label: '6. Roles & Permissions Overrides', icon: ShieldAlert },
@@ -553,7 +651,7 @@ export const MasterStudioDetailPage: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`min-h-[44px] flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap touch-manipulation active:scale-95 ${
+              className={`min-h-[44px] flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap touch-manipulation active:scale-95 cursor-pointer ${
                 isActive
                   ? 'bg-amber-500 text-zinc-950 font-bold shadow-md shadow-amber-500/20'
                   : 'text-zinc-500 hover:text-zinc-900 hover:bg-white'
@@ -569,38 +667,38 @@ export const MasterStudioDetailPage: React.FC = () => {
       {/* TAB 1: OVERVIEW */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          {/* Quick Metrics */}
+          {/* Quick Real Metrics — ZERO Fallbacks */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <div className="bg-white p-4 rounded-2xl border border-zinc-200">
+            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-2xs">
               <div className="text-xs text-zinc-500 font-medium">Total Shoots</div>
-              <div className="text-2xl font-black text-zinc-900 font-display mt-1">{events.length || 5}</div>
-              <div className="text-xs text-emerald-400 mt-1">Confirmed shoots</div>
+              <div className="text-2xl font-black text-zinc-900 font-display mt-1">{bookings.length}</div>
+              <div className="text-xs text-emerald-600 font-medium mt-1">Confirmed & In-flight</div>
             </div>
-            <div className="bg-white p-4 rounded-2xl border border-zinc-200">
+            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-2xs">
               <div className="text-xs text-zinc-500 font-medium">Total Invoiced</div>
-              <div className="text-2xl font-black text-purple-300 mt-1">₹{totalInvoiced.toLocaleString('en-IN')}</div>
-              <div className="text-xs text-zinc-500 mt-1">Customer invoices</div>
+              <div className="text-2xl font-black text-purple-700 font-display mt-1">₹{totalInvoiced.toLocaleString('en-IN')}</div>
+              <div className="text-xs text-zinc-500 mt-1">Agreed customer value</div>
             </div>
-            <div className="bg-white p-4 rounded-2xl border border-zinc-200">
+            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-2xs">
               <div className="text-xs text-zinc-500 font-medium">Collected</div>
-              <div className="text-2xl font-black text-emerald-400 mt-1">₹{paymentsReceived.toLocaleString('en-IN')}</div>
-              <div className="text-xs text-zinc-500 mt-1">Advance received</div>
+              <div className="text-2xl font-black text-emerald-600 font-display mt-1">₹{paymentsReceived.toLocaleString('en-IN')}</div>
+              <div className="text-xs text-zinc-500 mt-1">Verified payments</div>
             </div>
-            <div className="bg-white p-4 rounded-2xl border border-zinc-200">
-              <div className="text-xs text-zinc-500 font-medium">Pending</div>
-              <div className="text-2xl font-black text-amber-400 mt-1">₹{pendingBalance.toLocaleString('en-IN')}</div>
-              <div className="text-xs text-zinc-500 mt-1">Outstanding balance</div>
+            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-2xs">
+              <div className="text-xs text-zinc-500 font-medium">Pending Balance</div>
+              <div className="text-2xl font-black text-amber-600 font-display mt-1">₹{pendingBalance.toLocaleString('en-IN')}</div>
+              <div className="text-xs text-zinc-500 mt-1">Outstanding collections</div>
             </div>
-            <div className="bg-white p-4 rounded-2xl border border-zinc-200">
+            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-2xs">
               <div className="text-xs text-zinc-500 font-medium">Active Staff</div>
-              <div className="text-2xl font-black text-cyan-300 mt-1">{employees.length || 4}</div>
-              <div className="text-xs text-zinc-500 mt-1">Team members</div>
+              <div className="text-2xl font-black text-cyan-700 font-display mt-1">{activeStaff}</div>
+              <div className="text-xs text-zinc-500 mt-1">Registered crew</div>
             </div>
           </div>
 
           {/* Profile Details */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-zinc-200 space-y-3">
+            <div className="bg-white p-5 rounded-2xl border border-zinc-200 space-y-3 shadow-2xs">
               <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Studio Business Information</h3>
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
@@ -609,28 +707,28 @@ export const MasterStudioDetailPage: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-zinc-400 block">Studio Code</span>
-                  <strong className="text-amber-400 font-mono">{studio.id}</strong>
+                  <strong className="text-amber-700 font-mono">{studio.id}</strong>
                 </div>
                 <div>
                   <span className="text-zinc-400 block">Phone</span>
-                  <strong className="text-zinc-800">{studio.phone}</strong>
+                  <strong className="text-zinc-800">{studio.phone || 'Not set'}</strong>
                 </div>
                 <div>
                   <span className="text-zinc-400 block">Email</span>
-                  <strong className="text-zinc-800">{studio.email}</strong>
+                  <strong className="text-zinc-800">{studio.email || 'Not set'}</strong>
                 </div>
                 <div>
                   <span className="text-zinc-400 block">Location</span>
-                  <strong className="text-zinc-800">{studio.city}, {studio.state || 'Gujarat'}</strong>
+                  <strong className="text-zinc-800">{studio.city || 'Ahmedabad'}, {studio.state || 'Gujarat'}</strong>
                 </div>
                 <div>
                   <span className="text-zinc-400 block">GST Number</span>
-                  <strong className="text-zinc-800 font-mono">{studio.gstNumber || '24AAACR1122D1Z4'}</strong>
+                  <strong className="text-zinc-800 font-mono">{studio.gstNumber || 'Not provided'}</strong>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-zinc-200 space-y-3">
+            <div className="bg-white p-5 rounded-2xl border border-zinc-200 space-y-3 shadow-2xs">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Studio Owner & Authentication Details</h3>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
@@ -667,14 +765,14 @@ export const MasterStudioDetailPage: React.FC = () => {
                   <span className="text-zinc-700">{new Date(studio.createdAt || Date.now()).toLocaleDateString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between py-1">
-                  <span className="text-zinc-400">Password Encryption</span>
-                  <span className="text-zinc-500 italic">Argon2/Salted Hash (Plaintext Never Stored)</span>
+                  <span className="text-zinc-400">Security Architecture</span>
+                  <span className="text-zinc-500 italic">Centralized Firebase Cloud Authentication</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Studio Owner Account & Security Controls Section */}
+          {/* Studio Owner Account & Security Controls */}
           <div className="bg-white p-6 rounded-2xl border border-zinc-200 space-y-4 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-100">
               <div className="flex items-center gap-3">
@@ -683,7 +781,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-zinc-900 font-display">Studio Owner Credentials & Access Controls</h3>
-                  <p className="text-xs text-zinc-500">Change owner password directly or update login credentials. Changes take effect immediately.</p>
+                  <p className="text-xs text-zinc-500">Change owner password directly or update login credentials. Takes effect immediately on all devices.</p>
                 </div>
               </div>
               <span className="px-2.5 py-1 rounded-full text-xs font-bold uppercase bg-zinc-100 text-zinc-700 border border-zinc-200 self-start sm:self-auto">
@@ -705,7 +803,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                   <span className="text-xs font-mono text-zinc-400 group-hover:text-amber-700">Immediate</span>
                 </div>
                 <div className="text-xs font-bold text-zinc-900">Change Owner Password</div>
-                <div className="text-xs text-zinc-500 mt-0.5">Set a new password. Old password stops working instantly.</div>
+                <div className="text-xs text-zinc-500 mt-0.5">Set a new password. Works immediately across all devices.</div>
               </button>
 
               <button
@@ -748,131 +846,317 @@ export const MasterStudioDetailPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 2: EVENTS & BOOKINGS (STRICTLY READ-ONLY) */}
+      {/* TAB 2: EVENTS & BOOKINGS (COMPREHENSIVE READ-ONLY INSPECTION) */}
       {activeTab === 'events' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-bold text-zinc-900 font-display">Events & Shoots Directory ({events.length || 5})</h3>
-              <p className="text-xs text-amber-400 font-medium">
-                Read-Only Inspection Mode. Master Admin has no operational shoot creation privileges.
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-zinc-900 font-display">
+                  Events & Shoots Directory ({bookings.length})
+                </h3>
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                  Read-Only Inspection
+                </span>
+              </div>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Full read-only monitoring of all shoots, functions, deliverables, crew assignments, and customer agreements.
               </p>
             </div>
-            {/* Note: STRICTLY NO CREATE BUTTON HERE */}
-            <span className="text-xs font-mono px-3 py-1 rounded-full bg-zinc-100 text-zinc-500 border border-zinc-200">
+            <span className="text-xs font-mono px-3 py-1.5 rounded-xl bg-zinc-100 text-zinc-600 border border-zinc-200 self-start sm:self-auto">
               Operational Actions Restricted to Studio Owner
             </span>
           </div>
 
-          <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-lg">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs whitespace-nowrap">
-                <thead className="bg-zinc-50 text-zinc-500 text-xs uppercase font-semibold border-b border-zinc-200">
-                  <tr>
-                    <th className="px-4 py-3">Shoot Code</th>
-                    <th className="px-4 py-3">Shoot Name</th>
-                    <th className="px-4 py-3">Category</th>
-                    <th className="px-4 py-3">Customer (Masked)</th>
-                    <th className="px-4 py-3">Date</th>
-                    <th className="px-4 py-3">Venue</th>
-                    <th className="px-4 py-3 text-right">Total Fee</th>
-                    <th className="px-4 py-3 text-right">Advance Received</th>
-                    <th className="px-4 py-3 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100">
-                  {events.length === 0 ? (
-                    <tr>
-                      <td colSpan={9} className="px-4 py-8 text-center text-zinc-400">
-                        No events recorded in this studio.
-                      </td>
-                    </tr>
-                  ) : (
-                    events.map(ev => (
-                      <tr key={ev.id} className="hover:bg-zinc-50">
-                        <td className="px-4 py-3 font-mono font-bold text-amber-400">{(ev as any).eventCode || (ev as any).eventNumber || 'EV-26-001'}</td>
-                        <td className="px-4 py-3 font-bold text-zinc-800">{ev.title || 'Wedding Shoot'}</td>
-                        <td className="px-4 py-3 text-indigo-300">{ev.category || 'Wedding'}</td>
-                        <td className="px-4 py-3 font-mono text-zinc-500">
-                          {/* Masked for privacy protection */}
-                          Client #001 (Masked)
-                        </td>
-                        <td className="px-4 py-3 text-zinc-700">{ev.startDate || '2026-12-15'}</td>
-                        <td className="px-4 py-3 text-zinc-500">{ev.venue || 'The Grand Bhagwati'}</td>
-                        <td className="px-4 py-3 text-right font-mono font-bold text-zinc-800">
-                          ₹{(Number(ev.totalAmount) || 85000).toLocaleString('en-IN')}
-                        </td>
-                        <td className="px-4 py-3 text-right font-mono font-bold text-emerald-400">
-                          ₹{(Number(ev.advancePaid) || 40000).toLocaleString('en-IN')}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
-                            {ev.status || 'confirmed'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+          {/* Search & Filter Bar */}
+          <div className="bg-white p-3.5 rounded-2xl border border-zinc-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search by shoot name, customer, phone, venue, or booking ID..."
+                value={bookingSearch}
+                onChange={e => setBookingSearch(e.target.value)}
+                className="w-full pl-9 pr-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 font-medium"
+              />
             </div>
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+              {[
+                { id: 'all', label: 'All Shoots' },
+                { id: 'confirmed', label: 'Confirmed' },
+                { id: 'in_production', label: 'In Production' },
+                { id: 'completed', label: 'Completed' },
+                { id: 'cancelled', label: 'Cancelled' }
+              ].map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setBookingStatusFilter(f.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    bookingStatusFilter === f.id
+                      ? 'bg-zinc-900 text-white shadow-xs'
+                      : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Bookings Table with Expandable Inspection Details */}
+          <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm divide-y divide-zinc-100">
+            {filteredBookings.length === 0 ? (
+              <div className="p-12 text-center text-xs text-zinc-400 space-y-1">
+                <Calendar className="w-8 h-8 text-zinc-300 mx-auto mb-2" />
+                <p className="font-bold text-zinc-600">No events or shoots recorded in this studio yet.</p>
+                <p>When the Studio Owner creates shoots, they will load here in real time via Firebase Cloud.</p>
+              </div>
+            ) : (
+              filteredBookings.map(b => {
+                const isExpanded = expandedBookingId === b.id;
+                const agreedAmt = Number(b.financials?.finalAgreedAmount ?? b.financials?.originalQuotation ?? 0);
+                const recAmt = Number(b.financials?.verifiedPaymentsReceived ?? b.financials?.advanceReceived ?? 0);
+                const balAmt = Math.max(0, agreedAmt - recAmt);
+                const statusLabel = BOOKING_STATUS_LABELS[b.status] || b.status;
+
+                return (
+                  <div key={b.id} className="transition-colors hover:bg-zinc-50/50">
+                    {/* Primary Row Header */}
+                    <div 
+                      onClick={() => setExpandedBookingId(isExpanded ? null : b.id)}
+                      className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer select-none"
+                    >
+                      <div className="flex items-start sm:items-center gap-3">
+                        <button
+                          type="button"
+                          className="w-8 h-8 rounded-xl bg-zinc-100 text-zinc-600 flex items-center justify-center shrink-0 hover:bg-zinc-200 transition-colors"
+                        >
+                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        </button>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60">
+                              {b.bookingNumber}
+                            </span>
+                            <h4 className="text-sm font-bold text-zinc-900 font-display">
+                              {b.eventName}
+                            </h4>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 font-medium">
+                              {b.category}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-zinc-500 mt-1 flex-wrap">
+                            <span>Client: <strong className="text-zinc-800">{b.customerName}</strong></span>
+                            {b.customerPhone && <span>• Phone: <span className="font-mono text-zinc-700">{b.customerPhone}</span></span>}
+                            <span>• Date: <span className="font-medium text-zinc-700">{b.mainEventDate || b.startDate || 'TBD'}</span></span>
+                            <span>• Venue: <span className="text-zinc-700">{b.venue || 'Studio Main Stage'}</span></span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 self-end sm:self-center">
+                        <div className="text-right">
+                          <div className="text-sm font-mono font-black text-zinc-900">
+                            ₹{agreedAmt.toLocaleString('en-IN')}
+                          </div>
+                          <div className="text-xs text-zinc-500">
+                            Adv: <span className="text-emerald-600 font-semibold">₹{recAmt.toLocaleString('en-IN')}</span> • Bal: <span className="text-amber-600 font-semibold">₹{balAmt.toLocaleString('en-IN')}</span>
+                          </div>
+                        </div>
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase shrink-0 ${
+                          b.status === 'completed' || b.status === 'fully_delivered'
+                            ? 'bg-zinc-100 text-zinc-700 border border-zinc-200'
+                            : b.status === 'deal_confirmed' || (b.status as string) === 'confirmed'
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : b.status === 'in_production' || b.status === 'editing'
+                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                            : b.status === 'cancelled'
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        }`}>
+                          {statusLabel}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Expandable Detail Panel */}
+                    {isExpanded && (
+                      <div className="px-5 pb-5 pt-2 bg-zinc-50/70 border-t border-zinc-100 space-y-4 text-xs animate-in fade-in duration-150">
+                        {/* 1. Sub-Events / Functions Breakdown */}
+                        <div>
+                          <h5 className="font-bold uppercase tracking-wider text-zinc-600 mb-2 flex items-center gap-1.5">
+                            <Layers className="w-3.5 h-3.5 text-orange-600" />
+                            <span>Functions & Sub-Events ({b.functions?.length || 0})</span>
+                          </h5>
+                          {(!b.functions || b.functions.length === 0) ? (
+                            <div className="p-3 rounded-xl bg-white border border-zinc-200 text-zinc-400">
+                              No sub-events configured for this shoot.
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                              {b.functions.map((fn, fIdx) => (
+                                <div key={fn.id || fIdx} className="p-3 bg-white rounded-xl border border-zinc-200/90 shadow-2xs space-y-1.5">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-bold text-zinc-900">{fn.name}</span>
+                                    <span className="px-2 py-0.5 rounded text-xs font-semibold bg-zinc-100 text-zinc-600">
+                                      {fn.date} ({fn.startTime || '10:00 AM'} - {fn.endTime || '06:00 PM'})
+                                    </span>
+                                  </div>
+                                  <div className="text-zinc-500">
+                                    Venue: <strong className="text-zinc-700">{fn.venue || 'Main Venue'}</strong> • {fn.city || b.city}
+                                  </div>
+                                  {/* Assigned Crew */}
+                                  <div className="pt-1 border-t border-zinc-100 flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-zinc-400 text-xs">Assigned Crew:</span>
+                                    {(!fn.assignedCrew || fn.assignedCrew.length === 0) ? (
+                                      <span className="text-zinc-400 italic">None assigned</span>
+                                    ) : (
+                                      fn.assignedCrew.map((c, cIdx) => (
+                                        <span key={cIdx} className="px-2 py-0.5 rounded bg-orange-50 text-orange-800 border border-orange-200 text-xs font-medium">
+                                          {c.employeeName} ({c.role})
+                                        </span>
+                                      ))
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 2. Deliverables & Album Production */}
+                        <div>
+                          <h5 className="font-bold uppercase tracking-wider text-zinc-600 mb-2 flex items-center gap-1.5">
+                            <Camera className="w-3.5 h-3.5 text-indigo-600" />
+                            <span>Deliverables & Production Status ({b.deliverables?.length || 0})</span>
+                          </h5>
+                          {(!b.deliverables || b.deliverables.length === 0) ? (
+                            <div className="p-3 rounded-xl bg-white border border-zinc-200 text-zinc-400">
+                              No deliverables configured.
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                              {b.deliverables.map((del, dIdx) => (
+                                <div key={del.id || dIdx} className="p-2.5 bg-white rounded-xl border border-zinc-200/90 shadow-2xs space-y-1">
+                                  <div className="font-bold text-zinc-900 truncate">{del.name}</div>
+                                  <div className="flex items-center justify-between text-xs text-zinc-500">
+                                    <span>Qty: {del.requiredQty} {del.unit || 'items'}</span>
+                                    <span className={`px-1.5 py-0.5 rounded font-bold uppercase text-xs ${
+                                      del.isDelivered
+                                        ? 'bg-emerald-50 text-emerald-700'
+                                        : 'bg-zinc-100 text-zinc-600'
+                                    }`}>
+                                      {del.isDelivered ? 'Delivered' : (del.stage || 'In Progress')}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 3. Financial Milestones */}
+                        {b.financials?.paymentMilestones && b.financials.paymentMilestones.length > 0 && (
+                          <div>
+                            <h5 className="font-bold uppercase tracking-wider text-zinc-600 mb-2 flex items-center gap-1.5">
+                              <IndianRupee className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Payment Milestones</span>
+                            </h5>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                              {b.financials.paymentMilestones.map((m, mIdx) => (
+                                <div key={m.id || mIdx} className="p-2.5 bg-white rounded-xl border border-zinc-200/90 shadow-2xs">
+                                  <div className="font-semibold text-zinc-800">{m.title}</div>
+                                  <div className="text-sm font-bold text-zinc-900 font-mono mt-0.5">
+                                    ₹{Number(m.amount).toLocaleString('en-IN')}
+                                  </div>
+                                  <div className="text-xs text-zinc-500 mt-0.5">
+                                    Status: <strong className={m.status === 'paid' ? 'text-emerald-600' : 'text-amber-600'}>{m.status}</strong>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       )}
 
-      {/* TAB 3: EMPLOYEES & CREW */}
+      {/* TAB 3: EMPLOYEES & CREW (READ-ONLY) */}
       {activeTab === 'employees' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-bold text-zinc-900 font-display">Employees & Creative Crew ({employees.length || 4})</h3>
-              <p className="text-xs text-zinc-500">
-                Studio staff directory. Staff hiring & management is owned by the Studio Owner.
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-zinc-900 font-display">
+                  Employees & Creative Crew ({employees.length})
+                </h3>
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                  Read-Only Inspection
+                </span>
+              </div>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Staff directory and crew schedule. Hiring and permissions are managed by the Studio Owner.
               </p>
             </div>
-            {/* STRICTLY NO ADD EMPLOYEE BUTTON */}
-            <span className="text-xs font-mono px-3 py-1 rounded-full bg-zinc-100 text-zinc-500 border border-zinc-200">
+            <span className="text-xs font-mono px-3 py-1.5 rounded-xl bg-zinc-100 text-zinc-600 border border-zinc-200 self-start sm:self-auto">
               Hiring Owned by Studio Owner
             </span>
           </div>
 
-          <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-lg">
+          <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs whitespace-nowrap">
                 <thead className="bg-zinc-50 text-zinc-500 text-xs uppercase font-semibold border-b border-zinc-200">
                   <tr>
                     <th className="px-4 py-3">Employee Name</th>
                     <th className="px-4 py-3">Role / Designation</th>
+                    <th className="px-4 py-3">Department</th>
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Phone</th>
-                    <th className="px-4 py-3">Assigned Shoots</th>
+                    <th className="px-4 py-3 text-center">Assigned Shoots</th>
                     <th className="px-4 py-3 text-center">Status</th>
-                    <th className="px-4 py-3 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
-                  {employees.map(emp => (
-                    <tr key={emp.id} className="hover:bg-zinc-50">
-                      <td className="px-4 py-3 font-bold text-zinc-800">{emp.name}</td>
-                      <td className="px-4 py-3 text-amber-300 font-medium">{emp.designation || (emp as any).role}</td>
-                      <td className="px-4 py-3 font-mono text-zinc-500 text-xs">{emp.email}</td>
-                      <td className="px-4 py-3 font-mono text-zinc-500 text-xs">{emp.phone}</td>
-                      <td className="px-4 py-3 text-zinc-700">{(emp as any).assignedEventsCount || 3} shoots</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
-                          {(emp as any).status || (emp as any).employmentStatus || 'Active'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() => showToast(`Password reset link dispatched to ${emp.email}`)}
-                          className="px-2 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-xs text-amber-400 font-semibold"
-                        >
-                          Reset Login
-                        </button>
+                  {employees.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-4 py-8 text-center text-zinc-400">
+                        No employees registered in this studio yet.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    employees.map(emp => {
+                      const assignedCount = bookings.filter(b => 
+                        (b.functions || []).some(fn => 
+                          (fn.assignedPhotographerIds || []).includes(emp.id) || 
+                          (fn.assignedVideographerIds || []).includes(emp.id) || 
+                          (fn.assignedCrew || []).some(c => c.employeeId === emp.id)
+                        )
+                      ).length;
+
+                      return (
+                        <tr key={emp.id} className="hover:bg-zinc-50">
+                          <td className="px-4 py-3 font-bold text-zinc-800">{emp.name || emp.fullName}</td>
+                          <td className="px-4 py-3 text-amber-700 font-semibold">{emp.designation || emp.roleName || emp.roleId || 'Staff'}</td>
+                          <td className="px-4 py-3 text-zinc-600">{emp.department || 'Photography'}</td>
+                          <td className="px-4 py-3 font-mono text-zinc-500 text-xs">{emp.email}</td>
+                          <td className="px-4 py-3 font-mono text-zinc-500 text-xs">{emp.phone || 'N/A'}</td>
+                          <td className="px-4 py-3 text-center font-bold text-zinc-800">{assignedCount} shoots</td>
+                          <td className="px-4 py-3 text-center">
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200">
+                              {(emp as any).status || emp.employmentStatus || 'Active'}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -884,46 +1168,58 @@ export const MasterStudioDetailPage: React.FC = () => {
       {activeTab === 'revenue' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div className="bg-white p-4 rounded-2xl border border-zinc-200">
+            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-2xs">
               <span className="text-xs text-zinc-500 block">Total Invoiced</span>
               <span className="text-2xl font-black text-zinc-900 font-display">₹{totalInvoiced.toLocaleString('en-IN')}</span>
+              <span className="text-xs text-zinc-400 block mt-1">Booked pipeline value</span>
             </div>
-            <div className="bg-white p-4 rounded-2xl border border-zinc-200">
-              <span className="text-xs text-emerald-400 block">Payments Received</span>
-              <span className="text-2xl font-black text-emerald-400">₹{paymentsReceived.toLocaleString('en-IN')}</span>
+            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-2xs">
+              <span className="text-xs text-emerald-600 font-medium block">Payments Collected</span>
+              <span className="text-2xl font-black text-emerald-600 font-display">₹{paymentsReceived.toLocaleString('en-IN')}</span>
+              <span className="text-xs text-zinc-400 block mt-1">Real payments received</span>
             </div>
-            <div className="bg-white p-4 rounded-2xl border border-zinc-200">
-              <span className="text-xs text-amber-400 block">Pending Collections</span>
-              <span className="text-2xl font-black text-amber-400">₹{pendingBalance.toLocaleString('en-IN')}</span>
+            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-2xs">
+              <span className="text-xs text-amber-600 font-medium block">Pending Balance</span>
+              <span className="text-2xl font-black text-amber-600 font-display">₹{pendingBalance.toLocaleString('en-IN')}</span>
+              <span className="text-xs text-zinc-400 block mt-1">Outstanding receivable</span>
             </div>
-            <div className="bg-white p-4 rounded-2xl border border-zinc-200">
-              <span className="text-xs text-cyan-400 block">Estimated Expenses</span>
-              <span className="text-2xl font-black text-cyan-400">₹{Math.round(totalInvoiced * 0.35).toLocaleString('en-IN')}</span>
+            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-2xs">
+              <span className="text-xs text-zinc-500 block">Logged Expenses</span>
+              <span className="text-2xl font-black text-rose-600 font-display">₹{totalExpenses.toLocaleString('en-IN')}</span>
+              <span className="text-xs text-zinc-400 block mt-1">Studio operations cost</span>
             </div>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-zinc-200 space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Recent Payment Collections</h3>
-            <div className="text-xs text-zinc-500">
-              Displaying confirmed receipts recorded by studio finance. Read-only inspection.
+          <div className="bg-white p-5 rounded-2xl border border-zinc-200 space-y-3 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Recorded Payment Collections ({payments.length})</h3>
+                <p className="text-xs text-zinc-400 mt-0.5">Authoritative financial transactions from Firestore database.</p>
+              </div>
+              <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-zinc-100 text-zinc-600 border border-zinc-200">
+                Audited Transactions
+              </span>
             </div>
-            <div className="divide-y divide-zinc-100">
-              {[
-                { ref: 'PAY-26-001', client: 'Client #001', date: '2026-11-10', method: 'UPI (Google Pay)', amount: 40000 },
-                { ref: 'PAY-26-002', client: 'Client #002', date: '2026-11-08', method: 'Bank Transfer (IMPS)', amount: 25000 },
-                { ref: 'PAY-26-003', client: 'Client #003', date: '2026-11-04', method: 'UPI (PhonePe)', amount: 20000 }
-              ].map(p => (
-                <div key={p.ref} className="py-2.5 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="font-mono font-bold text-amber-400">{p.ref}</span>
-                    <span className="text-zinc-500 ml-2">({p.method}) • {p.date}</span>
+
+            {payments.length === 0 ? (
+              <div className="p-8 text-center text-xs text-zinc-400">
+                No formal payment receipts recorded yet for this studio.
+              </div>
+            ) : (
+              <div className="divide-y divide-zinc-100">
+                {payments.map(p => (
+                  <div key={p.id} className="py-2.5 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-mono font-bold text-amber-700">{p.id}</span>
+                      <span className="text-zinc-500 ml-2">({p.paymentMethod || 'Direct Transfer'}) • {p.paymentDate || (p as any).createdAt}</span>
+                    </div>
+                    <div className="font-mono font-bold text-emerald-600">
+                      +₹{Number(p.amount).toLocaleString('en-IN')}
+                    </div>
                   </div>
-                  <div className="font-mono font-bold text-emerald-400">
-                    +₹{p.amount.toLocaleString('en-IN')}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -941,12 +1237,12 @@ export const MasterStudioDetailPage: React.FC = () => {
                   {studio.subscription?.planName || 'Studio OS Standard'}
                 </h3>
                 <p className="text-xs text-zinc-500">
-                  Flat ₹500/month per studio plan preserved from Phase 10.
+                  Production SaaS subscription tier for active photography studio.
                 </p>
               </div>
 
               <div className="text-right">
-                <span className="text-3xl font-black text-amber-400 font-mono">₹500</span>
+                <span className="text-3xl font-black text-amber-600 font-mono">₹{studio.subscription?.pricePerMonth || 500}</span>
                 <span className="text-xs text-zinc-400 block">per month (INR)</span>
               </div>
             </div>
@@ -954,12 +1250,12 @@ export const MasterStudioDetailPage: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-3 border-t border-zinc-200">
               <div>
                 <span className="text-zinc-400 block">Status</span>
-                <strong className="text-emerald-400 uppercase font-bold">{studio.subscription?.status || 'Active'}</strong>
+                <strong className="text-emerald-600 uppercase font-bold">{studio.subscription?.status || 'Active'}</strong>
               </div>
               <div>
-                <span className="text-zinc-400 block">Next Renewal</span>
+                <span className="text-zinc-400 block">Valid Until</span>
                 <strong className="text-zinc-800 font-mono">
-                  {studio.subscription?.validUntil ? new Date(studio.subscription.validUntil).toLocaleDateString('en-IN') : '15/12/2026'}
+                  {studio.subscription?.validUntil ? new Date(studio.subscription.validUntil).toLocaleDateString('en-IN') : '31/12/2027'}
                 </strong>
               </div>
               <div>
@@ -968,27 +1264,26 @@ export const MasterStudioDetailPage: React.FC = () => {
               </div>
               <div>
                 <span className="text-zinc-400 block">Payment Method</span>
-                <strong className="text-zinc-800">UPI Mandate</strong>
+                <strong className="text-zinc-800">UPI Mandate / Direct Gateway</strong>
               </div>
             </div>
 
-            {/* Subscription Actions */}
             <div className="flex flex-wrap items-center gap-2 pt-2">
               <button
                 onClick={() => handleExtendSubscription(7)}
-                className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-xs font-semibold text-zinc-800 border border-zinc-200"
+                className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-xs font-semibold text-zinc-800 border border-zinc-200 cursor-pointer"
               >
                 +7 Days Grace
               </button>
               <button
                 onClick={() => handleExtendSubscription(30)}
-                className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-xs font-semibold text-amber-300 border border-zinc-200"
+                className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-xs font-semibold text-amber-700 border border-zinc-200 cursor-pointer"
               >
                 +30 Days Extension
               </button>
               <button
                 onClick={() => handleExtendSubscription(90)}
-                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-xs font-bold text-zinc-950"
+                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-xs font-bold text-zinc-950 cursor-pointer"
               >
                 +90 Days Enterprise Renewal
               </button>
@@ -997,21 +1292,21 @@ export const MasterStudioDetailPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 6: ROLES & PERMISSIONS (STUDIO OVERRIDES) */}
+      {/* TAB 6: ROLES & PERMISSIONS */}
       {activeTab === 'roles' && (
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-zinc-900 font-display">Studio Role & Permission Overrides</h3>
               <p className="text-xs text-zinc-500">
-                Configure custom permissions for this specific studio. Inherits platform global RBAC defaults.
+                Studio-specific permissions and platform RBAC configuration.
               </p>
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 onClick={handleResetRolesToDefault}
-                className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-xs font-semibold text-rose-300 border border-zinc-200 flex items-center gap-1.5"
+                className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-xs font-semibold text-rose-700 border border-zinc-200 flex items-center gap-1.5 cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Reset to Platform Defaults</span>
@@ -1021,7 +1316,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                   setSelectedStudioId(studioId);
                   setMasterRoute('studio-roles-overrides');
                 }}
-                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-xs font-bold text-zinc-950"
+                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-xs font-bold text-zinc-950 cursor-pointer"
               >
                 Open Full Matrix Editor
               </button>
@@ -1030,13 +1325,13 @@ export const MasterStudioDetailPage: React.FC = () => {
 
           <div className="bg-white p-5 rounded-2xl border border-zinc-200 space-y-3">
             <div className="text-xs text-zinc-700">
-              This studio currently inherits from the <strong>14 Master Platform Global Roles</strong> with zero conflicts.
+              This studio inherits from the <strong>Master Platform Global Roles</strong> with isolated data enforcement.
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
               {['Photographer', 'Videographer', 'Cinematographer', 'Photo Editor', 'Video Editor', 'Accountant'].map(role => (
-                <div key={role} className="p-2.5 rounded-xl bg-white border border-zinc-200 flex items-center justify-between">
+                <div key={role} className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-between">
                   <span className="font-semibold text-zinc-800">{role}</span>
-                  <span className="text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+                  <span className="text-xs font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
                     Platform Default
                   </span>
                 </div>
@@ -1052,11 +1347,11 @@ export const MasterStudioDetailPage: React.FC = () => {
         return (
           <div className="space-y-4">
             <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl flex items-start gap-3">
-              <ShieldAlert className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
               <div>
                 <h3 className="text-sm font-bold text-zinc-900 font-display">Master Admin Feature Governance</h3>
                 <p className="text-xs text-zinc-600 mt-0.5">
-                  Platform overrides for <strong>{studio.name}</strong>. Disabling a feature here immediately revokes access for the studio owner and employees and prevents them from enabling it in their studio settings.
+                  Platform feature gates for <strong>{studio.name}</strong>. Disabling a feature immediately hides and protects the module across all owner and employee devices.
                 </p>
               </div>
             </div>
@@ -1095,7 +1390,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                           ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
                           : 'bg-rose-50 text-rose-800 border-rose-300'
                       }`}>
-                        <span className={`w-2 h-2 rounded-full ${isEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                        <span className={`w-2 h-2 rounded-full ${isEnabled ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                         {isEnabled ? 'Active' : 'Disabled'}
                       </span>
 
@@ -1182,7 +1477,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-zinc-900 font-display">Edit Studio Profile & Account</h3>
-                  <p className="text-xs text-zinc-500">Update business info, subscription, lifecycle status, and owner email.</p>
+                  <p className="text-xs text-zinc-500">Update business info, subscription, lifecycle status, and owner credentials.</p>
                 </div>
               </div>
               <button
@@ -1456,7 +1751,7 @@ export const MasterStudioDetailPage: React.FC = () => {
               </div>
               <button
                 onClick={() => setIsActivateModalOpen(false)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1518,7 +1813,7 @@ export const MasterStudioDetailPage: React.FC = () => {
                       for (let i = 0; i < 8; i++) p += chars.charAt(Math.floor(Math.random() * chars.length));
                       setActivateFormData(f => ({ ...f, initialPassword: p }));
                     }}
-                    className="text-purple-600 hover:underline font-bold text-xs"
+                    className="text-purple-600 hover:underline font-bold text-xs cursor-pointer"
                   >
                     Auto-Fill 8-Char
                   </button>

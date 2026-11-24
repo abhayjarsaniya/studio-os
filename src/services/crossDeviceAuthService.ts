@@ -237,6 +237,40 @@ export class CrossDeviceAuthService {
       candidateEmails.unshift(this.normalize(localMatch.email));
     }
 
+    // Central Firestore Account Registry lookup for cross-device accuracy
+    let cloudRegistryEntry: any = null;
+    const projectId = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_PROJECT_ID) || 'studio-os-live-2026';
+    if (!isTestRunner) {
+      try {
+        const regRes = await fetch(
+          `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/accountRegistry/${encodeURIComponent(cleanId)}`
+        );
+        if (regRes.ok) {
+          const regDoc = await regRes.json();
+          if (regDoc?.fields) {
+            cloudRegistryEntry = {
+              loginId: regDoc.fields.loginId?.stringValue || cleanId,
+              email: regDoc.fields.email?.stringValue,
+              authUid: regDoc.fields.authUid?.stringValue,
+              studioId: regDoc.fields.studioId?.stringValue,
+              studioName: regDoc.fields.studioName?.stringValue,
+              displayName: regDoc.fields.displayName?.stringValue,
+              role: regDoc.fields.role?.stringValue,
+              accountType: regDoc.fields.accountType?.stringValue,
+              status: regDoc.fields.status?.stringValue || 'active',
+              passwordHash: regDoc.fields.passwordHash?.stringValue,
+              salt: regDoc.fields.salt?.stringValue
+            };
+            if (cloudRegistryEntry.email && !candidateEmails.includes(this.normalize(cloudRegistryEntry.email))) {
+              candidateEmails.unshift(this.normalize(cloudRegistryEntry.email));
+            }
+          }
+        }
+      } catch (regErr: any) {
+        console.warn('[CrossDeviceAuth] Registry lookup notice:', regErr?.message);
+      }
+    }
+
     let authData: any = null;
     let verifiedEmail = '';
 
@@ -400,7 +434,106 @@ export class CrossDeviceAuthService {
       };
     }
 
-    // C. LOCAL STORED ACCOUNTS FALLBACK (For offline environments & test runner)
+    // C. CLOUD REGISTRY PASSWORD VERIFICATION (Cross-Device Cloud Guarantee)
+    if (cloudRegistryEntry && cloudRegistryEntry.passwordHash && cloudRegistryEntry.salt) {
+      const computedHash = hashCredential(passwordPlain, cloudRegistryEntry.salt);
+      if (computedHash === cloudRegistryEntry.passwordHash) {
+        if (cloudRegistryEntry.status !== 'active') {
+          rateLimitService.recordFailedAttempt(cleanId);
+          return {
+            success: false,
+            error: `Account is ${cloudRegistryEntry.status}. Access has been disabled by Platform Admin.`
+          };
+        }
+
+        const role = cloudRegistryEntry.role === 'owner' || cloudRegistryEntry.role === 'studio_owner' ? 'owner' : 'employee';
+        const studioId = cloudRegistryEntry.studioId || '';
+        const targetRoute = role === 'owner' ? '#/app/dashboard' : '#/employee/dashboard';
+
+        // Hydrate Studio Profile from User Record
+        if (studioId) {
+          const studioProfile: Studio = {
+            id: studioId,
+            tenantId: studioId,
+            name: cloudRegistryEntry.studioName || 'My Studio',
+            title: cloudRegistryEntry.displayName || 'Studio Owner',
+            email: cloudRegistryEntry.email || `${cleanId}@studio-os.internal`,
+            phone: '',
+            address: '',
+            city: '',
+            state: 'Gujarat',
+            lifecycleStatus: 'active',
+            subscription: {
+              planId: 'studio_os_monthly',
+              planName: 'Studio OS Monthly',
+              pricePerMonth: 500,
+              currency: 'INR',
+              status: 'active',
+              validUntil: '2027-12-31',
+              autoRenew: true
+            },
+            settings: {
+              defaultCurrency: 'INR',
+              timezone: 'Asia/Kolkata',
+              dateFormat: 'DD/MM/YYYY',
+              timeFormat: '12h',
+              allowDirectWhatsApp: true,
+              watermarkEnabled: true,
+              invoicePrefix: 'INV',
+              eventPrefix: 'EV'
+            },
+            storageUsageMb: 0,
+            storageQuotaMb: 15360,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            createdBy: 'Master Admin'
+          };
+
+          TenantStore.set(studioId, 'profile', studioProfile);
+
+          try {
+            await cloudSyncService.hydrateStudioFromCloud(studioId);
+            cloudSyncService.startRealtimeSync(studioId);
+          } catch (syncErr) {
+            console.warn('[CrossDeviceAuth] Hydrate studio data warning:', syncErr);
+          }
+        }
+
+        const accountObj: UserAccount = {
+          id: cloudRegistryEntry.authUid || `usr_${cleanId}`,
+          accountType: (cloudRegistryEntry.accountType as any) || (role === 'owner' ? 'STUDIO_OWNER' : 'EMPLOYEE'),
+          loginId: cleanId,
+          email: cloudRegistryEntry.email || `${cleanId}@studio-os.internal`,
+          phone: '',
+          displayName: cloudRegistryEntry.displayName || cleanId,
+          studioId,
+          studioName: cloudRegistryEntry.studioName || 'My Studio',
+          roleId: role,
+          roleTitle: role === 'owner' ? 'Studio Owner' : 'Studio Member',
+          status: 'active',
+          passwordHash: cloudRegistryEntry.passwordHash,
+          salt: cloudRegistryEntry.salt,
+          mustChangePassword: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        unifiedAuthService.saveAccount(accountObj);
+        const session = unifiedAuthService.createSession(accountObj);
+        this.persistSession(session.token, role, studioId, accountObj);
+        rateLimitService.resetAttempts(cleanId);
+
+        return {
+          success: true,
+          role,
+          studioId,
+          targetRoute,
+          session
+        };
+      }
+    }
+
+    // D. LOCAL STORED ACCOUNTS FALLBACK (For offline environments & test runner)
     const localAcc = unifiedAuthService.findAccountByIdentifier(cleanId);
     if (localAcc) {
       if (localAcc.status !== 'active') {
