@@ -148,9 +148,16 @@ export const QuotationsListPage: React.FC = () => {
         venue: quotation.eventVenue,
         operatorId: 'Studio Owner'
       });
-      setSuccessBanner(`Successfully converted ${quotation.quotationNumber} into Event "${result.event.name}" and created Tax Invoice!`);
       refreshStudioData?.();
       window.dispatchEvent(new Event('studio_data_updated'));
+
+      const targetBookingId = (result as any).bookingRecord?.id || (result.quotation as any).convertedBookingId || result.event?.id;
+      setActiveTab('bookings');
+      if (targetBookingId) {
+        window.location.hash = `#/app/bookings/${targetBookingId}`;
+      } else {
+        window.location.hash = '#/app/bookings';
+      }
     } catch (e: any) {
       alert(e.message || 'Error converting quotation.');
     }

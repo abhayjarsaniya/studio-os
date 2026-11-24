@@ -53,8 +53,10 @@ export const CalendarPage: React.FC = () => {
   const studioId = currentStudio?.id || 'studio_shreeji_films';
   const [dataVersion, setDataVersion] = useState(0);
 
-  // Seed 12 calendar test bookings idempotently on mount if needed
+  // Seed 12 calendar test bookings idempotently on mount ONLY for demo studios
   useEffect(() => {
+    const isDemo = studioId === 'studio_shreeji_films' || studioId === 'std_demo_royal' || studioId === 'studio_royal_001';
+    if (!isDemo) return;
     seedCalendarTestBookings(studioId).then(count => {
       if (count > 0) {
         setDataVersion(v => v + 1);
@@ -75,10 +77,11 @@ export const CalendarPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
   const [ownerScheduleFilter, setOwnerScheduleFilter] = useState<'all' | 'mine'>('all');
 
-  // November 2026 as initial active date (matches test data timeline)
-  const [currentYear, setCurrentYear] = useState(2026);
-  const [currentMonth, setCurrentMonth] = useState(10); // 0-indexed, 10 = November
-  const [selectedDay, setSelectedDay] = useState<number>(20); // Default to Nov 20, 2026 (Multiple shoots day)
+  // Dynamic current date initialization
+  const today = new Date();
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [selectedDay, setSelectedDay] = useState<number>(today.getDate());
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',

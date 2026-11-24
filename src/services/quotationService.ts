@@ -478,7 +478,7 @@ export class QuotationService {
       operatorId?: string;
       operatorName?: string;
     }
-  ): { quotation: Quotation; event: StudioEvent; invoice: any } {
+  ): { quotation: Quotation; event: StudioEvent; invoice: any; bookingRecord?: any } {
     if (!studioId) throw new Error('[quotationService.convertQuotationToBooking]: studioId is required');
     const quotation = this.getQuotation(studioId, quotationId);
     if (!quotation) throw new Error(`Quotation ${quotationId} not found`);
@@ -653,7 +653,8 @@ export class QuotationService {
     return {
       quotation: updatedQuotation,
       event,
-      invoice
+      invoice,
+      bookingRecord
     };
   }
 }

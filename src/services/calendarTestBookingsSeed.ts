@@ -386,8 +386,13 @@ export const CALENDAR_DEMO_BOOKINGS: CalendarDemoBookingDef[] = [
 
 /**
  * Idempotently seed the 12 calendar test bookings into TenantStore and Cloud Firestore
+ * STRICT GUARD: Only demo studios are eligible. Production studios NEVER receive demo shoots.
  */
 export async function seedCalendarTestBookings(studioId: string = 'studio_shreeji_films'): Promise<number> {
+  const isDemoStudio = studioId === 'studio_shreeji_films' || studioId === 'std_demo_royal' || studioId === 'studio_royal_001';
+  if (!isDemoStudio) {
+    return 0;
+  }
   const targetStudios = Array.from(new Set([studioId, 'studio_shreeji_films', 'std_demo_royal']));
   let primaryStudioAdded = 0;
 
