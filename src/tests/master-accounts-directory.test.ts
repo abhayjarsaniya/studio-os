@@ -105,13 +105,13 @@ describe('Master Accounts API — Protection & Authorization Guards', () => {
   });
 
   it('api/accounts/delete rejects unauthenticated or non-Master Admin requests with 403', async () => {
-    vi.doMock('../../api/_lib/razorpayServer', () => ({
+    vi.doMock('../../api/_routes/_lib/razorpayServer', () => ({
       MASTER_ADMIN_EMAIL: 'jarsaniya.abhay@gmail.com',
       verifyFirebaseCaller: vi.fn().mockResolvedValue({ uid: 'someone', email: 'owner@studio.com', isMasterAdmin: false }),
       getFirebaseAdmin: vi.fn()
     }));
 
-    const { default: deleteHandler } = await import('../../api/accounts/delete');
+    const { default: deleteHandler } = await import('../../api/_routes/accounts/delete');
     const res: any = {
       headers: {},
       statusCode: 200,
@@ -128,7 +128,7 @@ describe('Master Accounts API — Protection & Authorization Guards', () => {
 
   it('api/accounts/delete blocks deleting Master Admin account', async () => {
     const deleteUserMock = vi.fn();
-    vi.doMock('../../api/_lib/razorpayServer', () => ({
+    vi.doMock('../../api/_routes/_lib/razorpayServer', () => ({
       MASTER_ADMIN_EMAIL: 'jarsaniya.abhay@gmail.com',
       verifyFirebaseCaller: vi.fn().mockResolvedValue({
         uid: 'mmrIcufwmoQ4JawzKd0pbgjNRsx2',
@@ -141,7 +141,7 @@ describe('Master Accounts API — Protection & Authorization Guards', () => {
       })
     }));
 
-    const { default: deleteHandler } = await import('../../api/accounts/delete');
+    const { default: deleteHandler } = await import('../../api/_routes/accounts/delete');
     const res: any = {
       headers: {},
       statusCode: 200,

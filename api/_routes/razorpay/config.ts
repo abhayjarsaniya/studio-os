@@ -8,7 +8,7 @@ import {
   encryptSecret,
   isMaskedPlaceholder,
   GatewayEnvironment
-} from '../_lib/razorpayServer';
+} from '../../_lib/razorpayServer';
 
 export default async function handler(req: any, res: any) {
   res.setHeader('Cache-Control', 'no-store');

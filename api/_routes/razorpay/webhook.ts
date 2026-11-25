@@ -4,7 +4,7 @@ import {
   verifyRazorpayWebhookSignature,
   computeNextExpiryIso,
   readRawRequestBody
-} from '../_lib/razorpayServer';
+} from '../../_lib/razorpayServer';
 
 // Disable Next/Vercel default body parsing so we can verify raw webhook payload bytes
 export const config = {

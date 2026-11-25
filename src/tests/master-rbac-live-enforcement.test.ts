@@ -234,7 +234,7 @@ describe('Server-Side RBAC Enforcement & Field Stripping', () => {
       };
     });
 
-    const { default: enforceHandler } = await import('../../api/rbac/enforce');
+    const { default: enforceHandler } = await import('../../api/_routes/rbac/enforce');
     const res: any = {
       headers: {},
       statusCode: 200,

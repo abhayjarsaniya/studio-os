@@ -1,5 +1,5 @@
-import { verifyFirebaseCaller, getFirebaseAdmin } from '../_lib/razorpayServer';
-import { resolveServerPermissions } from '../_lib/rbacServer';
+import { verifyFirebaseCaller, getFirebaseAdmin } from '../../_lib/razorpayServer';
+import { resolveServerPermissions } from '../../_lib/rbacServer';
 
 export default async function handler(req: any, res: any) {
   res.setHeader('Cache-Control', 'no-store');

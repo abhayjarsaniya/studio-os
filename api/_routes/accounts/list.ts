@@ -1,4 +1,4 @@
-import { verifyFirebaseCaller, getFirebaseAdmin, MASTER_ADMIN_EMAIL } from '../_lib/razorpayServer';
+import { verifyFirebaseCaller, getFirebaseAdmin, MASTER_ADMIN_EMAIL } from '../../_lib/razorpayServer';
 
 function deriveLoginId(data: Record<string, any>): string {
   if (data.loginId && String(data.loginId).trim()) {

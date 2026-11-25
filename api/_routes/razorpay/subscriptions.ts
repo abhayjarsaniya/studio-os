@@ -7,7 +7,7 @@ import {
   verifyRazorpayCheckoutSignature,
   computeNextExpiryIso,
   GatewayEnvironment
-} from '../_lib/razorpayServer';
+} from '../../_lib/razorpayServer';
 
 async function authorizeStudioAccess(caller: any, studioId: string): Promise<boolean> {
   if (caller.isMasterAdmin) return true;

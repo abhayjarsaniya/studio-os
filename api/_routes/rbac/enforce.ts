@@ -1,9 +1,9 @@
-import { verifyFirebaseCaller, getFirebaseAdmin } from '../_lib/razorpayServer';
+import { verifyFirebaseCaller, getFirebaseAdmin } from '../../_lib/razorpayServer';
 import {
   resolveServerPermissions,
   checkBundlePermission,
   sanitizeRecordByPermissions
-} from '../_lib/rbacServer';
+} from '../../_lib/rbacServer';
 
 /**
  * Server-side RBAC enforcement endpoint.

@@ -103,7 +103,7 @@ describe('Server-Side Feature Enforcement (/api/features/enforce)', () => {
       getFirebaseAdmin: vi.fn().mockReturnValue({ db: mockDb })
     }));
 
-    const { default: enforceHandler } = await import('../../api/features/enforce');
+    const { default: enforceHandler } = await import('../../api/_routes/features/enforce');
     const res: any = {
       headers: {},
       statusCode: 200,
