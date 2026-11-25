@@ -38,21 +38,21 @@ export const MobileBottomNav: React.FC = () => {
         </button>
       )}
 
-      {/* 2. Quotations */}
-      {isFeatureEnabled('finance_billing') && can('quotations' as any, 'view') && (
+      {/* 2. Calendar */}
+      {can('calendar' as any, 'view') && (
         <button
           onClick={() => {
-            setActiveTab('quotations');
-            window.location.hash = '#/app/quotations';
+            setActiveTab('calendar');
+            window.location.hash = '#/app/calendar';
           }}
           className={`flex flex-col items-center justify-center flex-1 min-h-[52px] py-1 transition-transform active:scale-95 cursor-pointer touch-manipulation ${
-            activeTab === 'quotations' || activeTab === 'create-quotation' ? 'text-orange-600 font-bold' : 'text-zinc-500 hover:text-zinc-700'
+            activeTab === 'calendar' ? 'text-orange-600 font-bold' : 'text-zinc-500 hover:text-zinc-700'
           }`}
         >
-          <FileText className="w-5 h-5 mb-0.5" />
+          <Calendar className="w-5 h-5 mb-0.5" />
           <div className="relative inline-flex flex-col items-center">
-            <span className="text-xs font-semibold">Quotes</span>
-            {(activeTab === 'quotations' || activeTab === 'create-quotation') && <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-orange-500 rounded-full" />}
+            <span className="text-xs font-semibold">Calendar</span>
+            {activeTab === 'calendar' && <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-orange-500 rounded-full" />}
           </div>
         </button>
       )}

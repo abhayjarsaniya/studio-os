@@ -74,6 +74,8 @@ const MainLayout: React.FC = () => {
     customers,
     isCustomerFormOpen,
     setIsCustomerFormOpen,
+    editingCustomer,
+    setEditingCustomer,
     isTaskFormOpen,
     setIsTaskFormOpen,
     pdfViewerModal,
@@ -243,13 +245,34 @@ const MainLayout: React.FC = () => {
         {/* Mobile Header */}
         <MobileHeader />
 
-        {/* Scrollable Page Body - responsive gutters (16-20px mobile padding) without excessive desktop margins */}
-        <main className="flex-1 overflow-y-auto px-4 py-3 sm:px-5 sm:py-4 lg:px-6 lg:py-5 pb-32 sm:pb-8 touch-scroll min-w-0">
-          {renderActivePage()}
-        </main>
+        {/* Scrollable Page Body - responsive gutters with dynamic mobile bottom padding */}
+        {(() => {
+          const isDeepScreen = [
+            'create-booking',
+            'unified-booking',
+            'single-booking-workspace',
+            'create-quotation',
+            'public-quotation',
+            'quotation-detail',
+            'invoice-preview',
+            'payment-details',
+            'settings',
+            'billing'
+          ].includes(activeTab) || Boolean(selectedCustomerId) || Boolean(selectedEventId);
 
-        {/* Mobile Bottom Navigation */}
-        <MobileBottomNav />
+          return (
+            <>
+              <main className={`flex-1 overflow-y-auto px-4 py-3 sm:px-5 sm:py-4 lg:px-6 lg:py-5 min-w-0 touch-scroll ${
+                isDeepScreen ? 'pb-6 sm:pb-8' : 'pb-32 sm:pb-8'
+              }`}>
+                {renderActivePage()}
+              </main>
+
+              {/* Mobile Bottom Navigation - only visible on primary screens */}
+              {!isDeepScreen && <MobileBottomNav />}
+            </>
+          );
+        })()}
       </div>
 
       {/* Event Detail Modal */}
@@ -278,12 +301,21 @@ const MainLayout: React.FC = () => {
         isOpen={!!selectedCustomerId}
         customer={selectedCustomer}
         onClose={() => setSelectedCustomerId(null)}
+        onEdit={(customer) => {
+          setSelectedCustomerId(null);
+          setEditingCustomer(customer);
+          setIsCustomerFormOpen(true);
+        }}
       />
 
       {/* Customer Form Modal */}
       <CustomerFormModal
         isOpen={isCustomerFormOpen}
-        onClose={() => setIsCustomerFormOpen(false)}
+        customerToEdit={editingCustomer}
+        onClose={() => {
+          setIsCustomerFormOpen(false);
+          setEditingCustomer(null);
+        }}
       />
 
       {/* WhatsApp Message Preview & Click-to-Chat Modal */}

@@ -17,7 +17,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
   onClose,
   customerToEdit
 }) => {
-  const { createCustomer, updateCustomer, employees, setSelectedCustomerId } = useApp();
+  const { createCustomer, updateCustomer, employees, setSelectedCustomerId, studio } = useApp();
 
   const isEditing = !!customerToEdit;
 
@@ -94,7 +94,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
       return { hasDuplicate: false, duplicates: [], reasons: [] };
     }
     try {
-      return customerService.detectDuplicates('studio_royal_001', phone, email);
+      return customerService.detectDuplicates(studio?.id || 'std_demo_royal', phone, email);
     } catch {
       return { hasDuplicate: false, duplicates: [], reasons: [] };
     }
@@ -170,6 +170,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
       });
     }
 
+    setIsDirty(false);
     onClose();
   };
 
@@ -204,6 +205,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
                 type="button"
                 onClick={() => {
                   setSelectedCustomerId(duplicateResult.duplicates[0].id);
+                  setIsDirty(false);
                   onClose();
                 }}
                 className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs flex items-center gap-1 cursor-pointer"

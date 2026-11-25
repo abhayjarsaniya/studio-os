@@ -20,7 +20,8 @@ import {
   ChevronRight,
   Crown,
   Sparkles,
-  FileText
+  FileText,
+  ArrowLeft
 } from 'lucide-react';
 import { SaveIndicator } from '../common/SaveIndicator';
 
@@ -49,59 +50,121 @@ export const MobileHeader: React.FC = () => {
     window.location.hash = '#/studio/login';
   };
 
+  const isDeepScreen = [
+    'create-booking',
+    'unified-booking',
+    'single-booking-workspace',
+    'create-quotation',
+    'public-quotation',
+    'quotation-detail',
+    'invoice-preview',
+    'payment-details',
+    'settings',
+    'billing'
+  ].includes(activeTab);
+
+  const getDeepTitle = () => {
+    switch (activeTab) {
+      case 'create-booking':
+      case 'unified-booking':
+        return { title: 'New Booking', parent: 'Bookings', parentTab: 'bookings' };
+      case 'single-booking-workspace':
+        return { title: 'Booking Workspace', parent: 'Bookings', parentTab: 'bookings' };
+      case 'create-quotation':
+        return { title: 'New Quotation', parent: 'Quotations', parentTab: 'quotations' };
+      case 'quotation-detail':
+        return { title: 'Quotation Details', parent: 'Quotations', parentTab: 'quotations' };
+      case 'invoice-preview':
+        return { title: 'Invoice Preview', parent: 'Invoices', parentTab: 'invoices' };
+      case 'payment-details':
+        return { title: 'Payment Details', parent: 'Finance', parentTab: 'finance' };
+      case 'settings':
+      case 'billing':
+        return { title: 'Studio Settings', parent: 'Dashboard', parentTab: 'dashboard' };
+      default:
+        return { title: 'Workspace', parent: 'Dashboard', parentTab: 'dashboard' };
+    }
+  };
+
   return (
     <>
       <header className="sm:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-zinc-200/80 px-4 py-2.5 flex items-center justify-between shadow-2xs">
-        {/* Left: Menu button & Studio Branding */}
-        <div className="flex items-center gap-2 min-w-0">
-          <button
-            onClick={() => setMobileDrawerOpen(true)}
-            className="min-h-[48px] min-w-[48px] p-2.5 rounded-xl text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 flex items-center justify-center cursor-pointer border border-zinc-200/80 shrink-0 touch-manipulation active:scale-95 transition-transform"
-            aria-label="Open navigation menu"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-
-          <div className="flex items-center gap-2.5 min-w-0 text-left">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 border border-orange-400/40 text-white flex items-center justify-center shrink-0 overflow-hidden shadow-xs">
-              {currentStudio.logoUrl ? (
-                <img 
-                  src={currentStudio.logoUrl} 
-                  alt={currentStudio.name || 'Studio Logo'} 
-                  className="w-full h-full object-contain p-0.5 rounded-md"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLElement).style.display = 'none';
-                  }}
-                />
-              ) : (
-                <Building2 className="w-4 h-4 text-amber-400" />
-              )}
-            </div>
+        {isDeepScreen ? (
+          <div className="flex items-center gap-2.5 min-w-0">
+            <button
+              onClick={() => {
+                const info = getDeepTitle();
+                setActiveTab(info.parentTab);
+                window.location.hash = `#/app/${info.parentTab}`;
+              }}
+              className="min-h-[44px] min-w-[44px] p-2 rounded-xl text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 flex items-center justify-center cursor-pointer border border-zinc-200/80 shrink-0 touch-manipulation active:scale-95 transition-transform"
+              aria-label="Back"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
             <div className="min-w-0">
               <h1 className="text-sm font-bold text-zinc-900 truncate font-display">
-                {currentStudio.name}
+                {getDeepTitle().title}
               </h1>
-              <div className="flex items-center gap-1 text-xs text-zinc-500 font-medium">
-                <Shield className="w-3 h-3 text-emerald-600 inline shrink-0" />
-                <span className="capitalize truncate">{currentUser.role === 'owner' ? 'Studio Owner' : currentUser.role.replace('_', ' ')}</span>
+              <p className="text-xs text-zinc-500 truncate">
+                Back to {getDeepTitle().parent}
+              </p>
+            </div>
+          </div>
+        ) : (
+          /* Left: Menu button & Studio Branding */
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              onClick={() => setMobileDrawerOpen(true)}
+              className="min-h-[48px] min-w-[48px] p-2.5 rounded-xl text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 flex items-center justify-center cursor-pointer border border-zinc-200/80 shrink-0 touch-manipulation active:scale-95 transition-transform"
+              aria-label="Open navigation menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2.5 min-w-0 text-left">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 border border-orange-400/40 text-white flex items-center justify-center shrink-0 overflow-hidden shadow-xs">
+                {currentStudio.logoUrl ? (
+                  <img 
+                    src={currentStudio.logoUrl} 
+                    alt={currentStudio.name || 'Studio Logo'} 
+                    className="w-full h-full object-contain p-0.5 rounded-md"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <Building2 className="w-4 h-4 text-amber-400" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-sm font-bold text-zinc-900 truncate font-display">
+                  {currentStudio.name}
+                </h1>
+                <div className="flex items-center gap-1 text-xs text-zinc-500 font-medium">
+                  <Shield className="w-3 h-3 text-emerald-600 inline shrink-0" />
+                  <span className="capitalize truncate">{currentUser.role === 'owner' ? 'Studio Owner' : currentUser.role.replace('_', ' ')}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Right Controls */}
         <div className="flex items-center gap-2 shrink-0">
           <SaveIndicator />
-          <button
-            onClick={() => setActiveTab('notifications')}
-            className="relative min-w-[48px] min-h-[48px] rounded-xl border border-zinc-200 flex items-center justify-center text-zinc-700 bg-zinc-50 active:scale-95 cursor-pointer touch-manipulation"
-            aria-label="Notifications"
-          >
-            <Bell className="w-5 h-5" />
-            {unreadNotificationsCount > 0 && (
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-rose-500" />
-            )}
-          </button>
+          {!isDeepScreen && (
+            <button
+              onClick={() => setActiveTab('notifications')}
+              className="relative min-w-[48px] min-h-[48px] rounded-xl border border-zinc-200 flex items-center justify-center text-zinc-700 bg-zinc-50 active:scale-95 cursor-pointer touch-manipulation"
+              aria-label="Notifications"
+            >
+              <Bell className="w-5 h-5" />
+              {unreadNotificationsCount > 0 && (
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-rose-500" />
+              )}
+            </button>
+          )}
         </div>
       </header>
 

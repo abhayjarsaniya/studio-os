@@ -152,6 +152,8 @@ interface AppContextType {
   setSelectedCustomerId: (id: string | null) => void;
   isCustomerFormOpen: boolean;
   setIsCustomerFormOpen: (open: boolean) => void;
+  editingCustomer: Customer | null;
+  setEditingCustomer: (customer: Customer | null) => void;
   createCustomer: (customerData: Partial<Customer> & { name: string; phone: string; allowDuplicate?: boolean }) => Customer;
   updateCustomer: (id: string, updates: Partial<Customer>) => void;
   deleteCustomer: (id: string) => void;
@@ -554,6 +556,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [isCustomerFormOpen, setIsCustomerFormOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
 
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
 
@@ -934,18 +937,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateCustomer = (id: string, updates: Partial<Customer>) => {
-    customerService.updateCustomer(currentStudio.id, id, updates);
-    auditService.logAction(
-      currentStudio.id,
-      currentUser.id,
-      'UPDATE_CUSTOMER',
-      'customer',
-      id,
-      updates,
-      currentUser.name,
-      currentUser.role
-    );
-    loadTenantData(currentStudio.id);
+    // Immediate optimistic update
+    setCustomers(prev => prev.map(c => c.id === id ? { ...c, ...updates, updatedAt: new Date().toISOString() } : c));
+    if (updates.name || updates.phone) {
+      setEvents(prev => prev.map(ev => ev.customerId === id ? {
+        ...ev,
+        customerName: updates.name || ev.customerName,
+        customerPhone: updates.phone || ev.customerPhone
+      } : ev));
+    }
+
+    try {
+      customerService.updateCustomer(currentStudio.id, id, updates, currentUser.id);
+      auditService.logAction(
+        currentStudio.id,
+        currentUser.id,
+        'UPDATE_CUSTOMER',
+        'customer',
+        id,
+        updates,
+        currentUser.name,
+        currentUser.role
+      );
+      loadTenantData(currentStudio.id);
+    } catch (err) {
+      console.error('[AppContext.updateCustomer] Error updating customer:', err);
+      loadTenantData(currentStudio.id);
+    }
   };
 
   const deleteCustomer = (id: string) => {
@@ -1781,6 +1799,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setSelectedCustomerId,
         isCustomerFormOpen,
         setIsCustomerFormOpen,
+        editingCustomer,
+        setEditingCustomer,
         createCustomer,
         updateCustomer,
         deleteCustomer,

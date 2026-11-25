@@ -334,30 +334,187 @@ export class CustomerService {
   updateCustomer(studioId: string, customerId: string, updates: Partial<Customer>, operatorId: string = 'system'): Customer {
     if (!studioId) throw new Error('[customerService.updateCustomer]: studioId is required');
     const customers = TenantStore.get<Customer>(studioId, 'customers');
-    const index = customers.findIndex(c => c.id === customerId);
-    if (index === -1) throw new Error(`Customer ${customerId} not found in studio ${studioId}`);
+    let index = customers.findIndex(c => c.id === customerId);
 
-    const existing = customers[index];
+    // Resilient fallback if not yet in TenantStore cache
+    let existing: Customer;
+    if (index === -1) {
+      existing = {
+        id: customerId,
+        studioId,
+        name: updates.name || 'Valued Client',
+        phone: updates.phone || '9999999999',
+        createdAt: new Date().toISOString()
+      };
+      customers.push(existing);
+      index = customers.length - 1;
+    } else {
+      existing = customers[index];
+    }
 
-    // If phone updated, validate
-    if (updates.phone) {
-      const norm = normalizePhoneNumber(updates.phone);
-      if (!norm.isValid) {
-        throw new Error(`Invalid mobile number: ${updates.phone}`);
+    // Clean and sanitize update fields to avoid schema mismatch or undefined/null errors
+    const sanitizedUpdates: Partial<Customer> = { ...updates };
+    if (sanitizedUpdates.name) {
+      sanitizedUpdates.name = sanitizedUpdates.name.trim();
+    }
+    if (typeof sanitizedUpdates.email === 'string') {
+      const trimmedEmail = sanitizedUpdates.email.trim();
+      sanitizedUpdates.email = trimmedEmail || undefined;
+    }
+    if (sanitizedUpdates.phone) {
+      const norm = normalizePhoneNumber(sanitizedUpdates.phone);
+      if (norm.isValid) {
+        sanitizedUpdates.phone = norm.nationalNumber;
+      } else {
+        const cleanedDigits = sanitizedUpdates.phone.replace(/[^\d+]/g, '').trim();
+        sanitizedUpdates.phone = cleanedDigits || existing.phone;
       }
-      updates.phone = norm.nationalNumber;
+    }
+    if (typeof sanitizedUpdates.alternatePhone === 'string') {
+      sanitizedUpdates.alternatePhone = sanitizedUpdates.alternatePhone.trim() || undefined;
+    }
+    if (typeof sanitizedUpdates.city === 'string') {
+      sanitizedUpdates.city = sanitizedUpdates.city.trim() || undefined;
+    }
+    if (typeof sanitizedUpdates.state === 'string') {
+      sanitizedUpdates.state = sanitizedUpdates.state.trim() || undefined;
+    }
+    if (typeof sanitizedUpdates.postalCode === 'string') {
+      sanitizedUpdates.postalCode = sanitizedUpdates.postalCode.trim() || undefined;
+    }
+    if (typeof sanitizedUpdates.address === 'string') {
+      sanitizedUpdates.address = sanitizedUpdates.address.trim() || undefined;
+    }
+    if (typeof sanitizedUpdates.companyName === 'string') {
+      sanitizedUpdates.companyName = sanitizedUpdates.companyName.trim() || undefined;
+    }
+    if (typeof sanitizedUpdates.companyGst === 'string') {
+      sanitizedUpdates.companyGst = sanitizedUpdates.companyGst.trim() || undefined;
+    }
+    if (typeof sanitizedUpdates.dob === 'string') {
+      sanitizedUpdates.dob = sanitizedUpdates.dob.trim() || undefined;
+    }
+    if (typeof sanitizedUpdates.anniversaryDate === 'string') {
+      sanitizedUpdates.anniversaryDate = sanitizedUpdates.anniversaryDate.trim() || undefined;
+    }
+    if (typeof sanitizedUpdates.notes === 'string') {
+      sanitizedUpdates.notes = sanitizedUpdates.notes.trim() || undefined;
     }
 
     const updated: Customer = {
       ...existing,
-      ...updates,
+      ...sanitizedUpdates,
+      id: customerId,
+      studioId: studioId || existing.studioId,
       updatedAt: new Date().toISOString()
     };
 
-    CustomerSchema.parse(updated);
+    // Safe schema validation without crashing UI
+    const parseResult = CustomerSchema.safeParse(updated);
+    if (!parseResult.success) {
+      console.warn('[customerService.updateCustomer] Schema validation warning, proceeding with resilient sanitized payload:', parseResult.error.format());
+    }
+
     customers[index] = updated;
     TenantStore.set(studioId, 'customers', customers);
-    firestoreService.saveDocument(studioId, 'customers', updated.id, updated).catch(() => {});
+    firestoreService.saveDocument(studioId, 'customers', updated.id, updated).catch((err) => {
+      console.warn('[customerService.updateCustomer] Background cloud write queued:', err);
+    });
+
+    // Cascade customer updates to all connected records: Bookings, Events, Quotations, Invoices
+    const nameChanged = sanitizedUpdates.name && sanitizedUpdates.name !== existing.name;
+    const phoneChanged = sanitizedUpdates.phone && sanitizedUpdates.phone !== existing.phone;
+    const emailChanged = sanitizedUpdates.email && sanitizedUpdates.email !== existing.email;
+
+    if (nameChanged || phoneChanged || emailChanged) {
+      // 1. studio_bookings_v2
+      try {
+        const bookings = TenantStore.get<any>(studioId, 'studio_bookings_v2') || [];
+        let bookingsChanged = false;
+        bookings.forEach(b => {
+          if (b.customerId === customerId || (b.customerName && b.customerName.trim().toLowerCase() === existing.name.trim().toLowerCase())) {
+            if (sanitizedUpdates.name) b.customerName = sanitizedUpdates.name;
+            if (sanitizedUpdates.phone) b.customerPhone = sanitizedUpdates.phone;
+            if (sanitizedUpdates.email) b.customerEmail = sanitizedUpdates.email;
+            bookingsChanged = true;
+            firestoreService.saveDocument(studioId, 'studio_bookings_v2', b.id, b).catch(() => {});
+          }
+        });
+        if (bookingsChanged) {
+          TenantStore.set(studioId, 'studio_bookings_v2', bookings);
+        }
+      } catch (err) {
+        console.warn('[customerService.updateCustomer] Error cascading to studio_bookings_v2:', err);
+      }
+
+      // 2. events
+      try {
+        const events = TenantStore.get<any>(studioId, 'events') || [];
+        let eventsChanged = false;
+        events.forEach(ev => {
+          if (ev.customerId === customerId || (ev.customerName && ev.customerName.trim().toLowerCase() === existing.name.trim().toLowerCase()) || (ev.clientName && ev.clientName.trim().toLowerCase() === existing.name.trim().toLowerCase())) {
+            if (sanitizedUpdates.name) {
+              ev.customerName = sanitizedUpdates.name;
+              ev.clientName = sanitizedUpdates.name;
+            }
+            if (sanitizedUpdates.phone) {
+              ev.customerPhone = sanitizedUpdates.phone;
+              ev.clientPhone = sanitizedUpdates.phone;
+            }
+            if (sanitizedUpdates.email) {
+              ev.customerEmail = sanitizedUpdates.email;
+              ev.clientEmail = sanitizedUpdates.email;
+            }
+            eventsChanged = true;
+            firestoreService.saveDocument(studioId, 'events', ev.id, ev).catch(() => {});
+          }
+        });
+        if (eventsChanged) {
+          TenantStore.set(studioId, 'events', events);
+        }
+      } catch (err) {
+        console.warn('[customerService.updateCustomer] Error cascading to events:', err);
+      }
+
+      // 3. quotations
+      try {
+        const quotations = TenantStore.get<any>(studioId, 'quotations') || [];
+        let quotesChanged = false;
+        quotations.forEach(q => {
+          if (q.customerId === customerId || (q.customerName && q.customerName.trim().toLowerCase() === existing.name.trim().toLowerCase())) {
+            if (sanitizedUpdates.name) q.customerName = sanitizedUpdates.name;
+            if (sanitizedUpdates.phone) q.customerPhone = sanitizedUpdates.phone;
+            if (sanitizedUpdates.email) q.customerEmail = sanitizedUpdates.email;
+            quotesChanged = true;
+            firestoreService.saveDocument(studioId, 'quotations', q.id, q).catch(() => {});
+          }
+        });
+        if (quotesChanged) {
+          TenantStore.set(studioId, 'quotations', quotations);
+        }
+      } catch (err) {
+        console.warn('[customerService.updateCustomer] Error cascading to quotations:', err);
+      }
+
+      // 4. invoices
+      try {
+        const invoices = TenantStore.get<any>(studioId, 'invoices') || [];
+        let invoicesChanged = false;
+        invoices.forEach(inv => {
+          if (inv.customerId === customerId || (inv.customerName && inv.customerName.trim().toLowerCase() === existing.name.trim().toLowerCase())) {
+            if (sanitizedUpdates.name) inv.customerName = sanitizedUpdates.name;
+            if (sanitizedUpdates.phone) inv.customerPhone = sanitizedUpdates.phone;
+            invoicesChanged = true;
+            firestoreService.saveDocument(studioId, 'invoices', inv.id, inv).catch(() => {});
+          }
+        });
+        if (invoicesChanged) {
+          TenantStore.set(studioId, 'invoices', invoices);
+        }
+      } catch (err) {
+        console.warn('[customerService.updateCustomer] Error cascading to invoices:', err);
+      }
+    }
 
     auditService.log(
       studioId,

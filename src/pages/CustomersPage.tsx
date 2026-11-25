@@ -26,7 +26,8 @@ import {
   GitMerge,
   Kanban,
   CheckCircle2,
-  FileText
+  FileText,
+  Edit3
 } from 'lucide-react';
 import { LeadPipelineBoard } from '../components/customers/LeadPipelineBoard';
 import { FollowUpManagerView } from '../components/customers/FollowUpManagerView';
@@ -41,6 +42,7 @@ export const CustomersPage: React.FC = () => {
     crmDashboardMetrics,
     setSelectedCustomerId, 
     setIsCustomerFormOpen,
+    setEditingCustomer,
     openWhatsAppModal,
     openMergeModal,
     can
@@ -206,7 +208,10 @@ export const CustomersPage: React.FC = () => {
               variant="primary"
               size="sm"
               icon={<Plus className="w-4 h-4" />}
-              onClick={() => setIsCustomerFormOpen(true)}
+              onClick={() => {
+                setEditingCustomer(null);
+                setIsCustomerFormOpen(true);
+              }}
             >
               Add Client
             </Button>
@@ -646,6 +651,19 @@ export const CustomersPage: React.FC = () => {
                   {/* Direct Action Buttons */}
                   <div className="pt-1 flex items-center gap-2">
                     <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingCustomer(customer);
+                        setIsCustomerFormOpen(true);
+                      }}
+                      className="flex-1 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer min-h-[44px]"
+                      title="Edit Client"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-zinc-600" />
+                      <span>Edit</span>
+                    </button>
+
+                    <button
                       onClick={(e) => handleCall(e, customer.phone)}
                       className="flex-1 py-2 rounded-xl border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-zinc-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer min-h-[44px]"
                     >
@@ -728,6 +746,17 @@ export const CustomersPage: React.FC = () => {
                         )}
                         <td className="py-3 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingCustomer(c);
+                                setIsCustomerFormOpen(true);
+                              }}
+                              title="Edit Client"
+                              className="p-2 rounded-xl bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
                             <button
                               onClick={(e) => handleCall(e, c.phone)}
                               title="Call"

@@ -342,6 +342,13 @@ export const DeliverablesSelectorModal: React.FC<DeliverablesSelectorModalProps>
     });
   };
 
+  const applyPreset = (tag: 'wedding' | 'pre_wedding') => {
+    const presetItemIds = filteredCatalog
+      .filter(item => item.presetTags?.includes(tag))
+      .map(item => item.id);
+    setSelectedIds(prev => new Set([...prev, ...presetItemIds]));
+  };
+
   const handleConfirm = () => {
     const selectedItems = studioCatalog.filter(i => selectedIds.has(i.id));
     onApply(selectedItems);
@@ -464,6 +471,20 @@ export const DeliverablesSelectorModal: React.FC<DeliverablesSelectorModalProps>
                     className="min-h-[36px] px-2.5 py-1 rounded-lg border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 font-semibold cursor-pointer"
                   >
                     Clear All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('wedding')}
+                    className="min-h-[36px] px-2.5 py-1 rounded-lg border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 font-semibold cursor-pointer hidden md:inline-flex items-center"
+                  >
+                    Wedding Preset
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('pre_wedding')}
+                    className="min-h-[36px] px-2.5 py-1 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 font-semibold cursor-pointer hidden md:inline-flex items-center"
+                  >
+                    Pre-Wedding Preset
                   </button>
                 </>
               )}
