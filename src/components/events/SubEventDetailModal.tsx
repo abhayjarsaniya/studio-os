@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { SubEvent, SubEventStatus } from '../../types';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 import { 
   X, 
   Calendar, 
@@ -40,6 +41,11 @@ export const SubEventDetailModal: React.FC<SubEventDetailModalProps> = ({
 
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen,
+    onClose
+  });
+
   if (!isOpen || !subEvent) return null;
 
   const parentEvent = events.find(e => e.id === subEvent.parentEventId);
@@ -75,8 +81,16 @@ export const SubEventDetailModal: React.FC<SubEventDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-2xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div 
+        className="bg-white rounded-2xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-zinc-100 bg-zinc-50/60 flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -100,8 +114,10 @@ export const SubEventDetailModal: React.FC<SubEventDetailModalProps> = ({
           </div>
 
           <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors shrink-0"
+            type="button"
+            onClick={handleAttemptClose}
+            className="min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors shrink-0"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
@@ -258,7 +274,8 @@ export const SubEventDetailModal: React.FC<SubEventDetailModalProps> = ({
             <Button
               variant="outline"
               size="xs"
-              onClick={onClose}
+              onClick={handleAttemptClose}
+              className="min-h-[36px]"
             >
               Close
             </Button>

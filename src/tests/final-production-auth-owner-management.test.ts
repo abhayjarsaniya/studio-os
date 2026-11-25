@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { googleAuthInvitationService } from '../services/googleAuthInvitationService';
+import { firebaseAuthService } from '../services/firebaseAuthService';
+import { crossDeviceAuthService } from '../services/crossDeviceAuthService';
 import { unifiedAuthService } from '../services/unifiedAuthService';
 import { realAccountProvisionService } from '../services/realAccountProvisionService';
 import { masterAdminService } from '../services/masterAdminService';
@@ -30,7 +31,7 @@ describe('Studio OS — Final Production Authentication & Owner Management', () 
 
   // Scenario 1: Master Admin Google login works for jarsaniya.abhay@gmail.com
   it('Scenario 1: Master Admin Google login succeeds exclusively for jarsaniya.abhay@gmail.com', async () => {
-    const res = await googleAuthInvitationService.loginWithGoogle({
+    const res = await firebaseAuthService.loginMasterAdminWithGoogle({
       uid: 'mmrIcufwmoQ4JawzKd0pbgjNRsx2',
       email: 'jarsaniya.abhay@gmail.com',
       displayName: 'Abhay Jarsaniya'
@@ -44,7 +45,7 @@ describe('Studio OS — Final Production Authentication & Owner Management', () 
 
   // Scenario 2: Any other Google account is rejected with a clear access denied message
   it('Scenario 2: Any other Google account is rejected with access denied message', async () => {
-    const res = await googleAuthInvitationService.loginWithGoogle({
+    const res = await firebaseAuthService.loginMasterAdminWithGoogle({
       uid: 'other_google_uid_999',
       email: 'unauthorized.user@gmail.com',
       displayName: 'Unauthorized User'
@@ -104,7 +105,7 @@ describe('Studio OS — Final Production Authentication & Owner Management', () 
     expect(provisionRes.success).toBe(true);
 
     // Immediate login via Login ID & Password
-    const loginRes = await googleAuthInvitationService.loginWithPassword(testLoginId, password);
+    const loginRes = await crossDeviceAuthService.login(testLoginId, password);
     expect(loginRes.success).toBe(true);
     expect(loginRes.role).toBe('owner');
     expect(loginRes.studioId).toBe(provisionRes.studioId);
@@ -113,7 +114,7 @@ describe('Studio OS — Final Production Authentication & Owner Management', () 
 
   // Scenario 5: Studio Owner cannot log in using Google Sign-In
   it('Scenario 5: Studio Owner Google sign-in attempt is rejected', async () => {
-    const res = await googleAuthInvitationService.loginWithGoogle({
+    const res = await firebaseAuthService.loginMasterAdminWithGoogle({
       uid: 'owner_uid_random',
       email: 'studio.owner.sample@gmail.com',
       displayName: 'Studio Owner Sample'
@@ -176,7 +177,7 @@ describe('Studio OS — Final Production Authentication & Owner Management', () 
     expect(provisionRes.success).toBe(true);
 
     // Verify initial login works
-    const firstLogin = await googleAuthInvitationService.loginWithPassword(testLoginId, initialPass);
+    const firstLogin = await crossDeviceAuthService.login(testLoginId, initialPass);
     expect(firstLogin.success).toBe(true);
 
     // Master Admin changes owner password
@@ -184,12 +185,12 @@ describe('Studio OS — Final Production Authentication & Owner Management', () 
     expect(changeRes.success).toBe(true);
 
     // Scenario 8: Old password stops working immediately
-    const oldLogin = await googleAuthInvitationService.loginWithPassword(testLoginId, initialPass);
+    const oldLogin = await crossDeviceAuthService.login(testLoginId, initialPass);
     expect(oldLogin.success).toBe(false);
     expect(oldLogin.error).toContain('Invalid');
 
     // Scenario 9: New password works immediately
-    const newLogin = await googleAuthInvitationService.loginWithPassword(testLoginId, newPass);
+    const newLogin = await crossDeviceAuthService.login(testLoginId, newPass);
     expect(newLogin.success).toBe(true);
     expect(newLogin.studioId).toBe(provisionRes.studioId);
   });
@@ -217,7 +218,7 @@ describe('Studio OS — Final Production Authentication & Owner Management', () 
     masterAdminService.suspendStudio(provisionRes.studioId!, 'Administrative deactivation test');
 
     // Attempted login must be blocked
-    const deactLogin = await googleAuthInvitationService.loginWithPassword(testLoginId, password);
+    const deactLogin = await crossDeviceAuthService.login(testLoginId, password);
     expect(deactLogin.success).toBe(false);
     expect(deactLogin.error).toContain('suspended');
   });
@@ -243,14 +244,14 @@ describe('Studio OS — Final Production Authentication & Owner Management', () 
 
     // Suspend first
     masterAdminService.suspendStudio(provisionRes.studioId!, 'Temporary suspension');
-    let login = await googleAuthInvitationService.loginWithPassword(testLoginId, password);
+    let login = await crossDeviceAuthService.login(testLoginId, password);
     expect(login.success).toBe(false);
 
     // Reactivate
     masterAdminService.reactivateStudio(provisionRes.studioId!, 'Reactivation restored');
 
     // Login succeeds immediately
-    login = await googleAuthInvitationService.loginWithPassword(testLoginId, password);
+    login = await crossDeviceAuthService.login(testLoginId, password);
     expect(login.success).toBe(true);
     expect(login.studioId).toBe(provisionRes.studioId);
   });
@@ -325,12 +326,12 @@ describe('Studio OS — Final Production Authentication & Owner Management', () 
 
     // 5 failed attempts
     for (let i = 0; i < 5; i++) {
-      const res = await googleAuthInvitationService.loginWithPassword(targetId, 'WrongPass123!');
+      const res = await crossDeviceAuthService.login(targetId, 'WrongPass123!');
       expect(res.success).toBe(false);
     }
 
     // 6th attempt should be blocked by rate limit service
-    const blockedRes = await googleAuthInvitationService.loginWithPassword(targetId, 'AnyPass123!');
+    const blockedRes = await crossDeviceAuthService.login(targetId, 'AnyPass123!');
     expect(blockedRes.success).toBe(false);
     expect(blockedRes.error).toContain('Too many failed login attempts');
   });

@@ -15,6 +15,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { firebaseAuthService } from '../../services/firebaseAuthService';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 
 export interface StudioHandoverData {
   studioName: string;
@@ -42,6 +43,11 @@ export const StudioHandoverModal: React.FC<StudioHandoverModalProps> = ({
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
+
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen: true,
+    onClose
+  });
 
   if (!isOpen) return null;
 
@@ -104,10 +110,19 @@ Please keep these credentials secure.`;
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-zinc-100 space-y-5 animate-in fade-in zoom-in-95 duration-200 relative">
+    <div 
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div 
+        className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-zinc-100 space-y-5 animate-in fade-in zoom-in-95 duration-200 relative"
+        onClick={e => e.stopPropagation()}
+      >
         <button
-          onClick={onClose}
+          type="button"
+          onClick={handleAttemptClose}
           className="absolute right-4 top-4 min-w-[44px] min-h-[44px] rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors cursor-pointer flex items-center justify-center touch-manipulation"
           aria-label="Close"
         >

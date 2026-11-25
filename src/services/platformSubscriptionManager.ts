@@ -278,10 +278,11 @@ export class PlatformSubscriptionManager {
     // Validate permitted transitions
     const validTransitions: Record<SaaSSubscriptionStatus, SaaSSubscriptionStatus[]> = {
       trial: ['active', 'expired', 'cancelled'],
-      active: ['payment_pending', 'past_due', 'grace_period', 'suspended', 'cancelled', 'expired'],
-      payment_pending: ['active', 'past_due', 'grace_period', 'cancelled'],
-      past_due: ['active', 'grace_period', 'suspended', 'cancelled'],
-      grace_period: ['active', 'suspended', 'expired', 'cancelled'],
+      active: ['payment_pending', 'past_due', 'payment_failed', 'grace_period', 'suspended', 'cancelled', 'expired'],
+      payment_pending: ['active', 'past_due', 'payment_failed', 'grace_period', 'cancelled'],
+      past_due: ['active', 'payment_failed', 'grace_period', 'suspended', 'cancelled'],
+      payment_failed: ['active', 'grace_period', 'suspended', 'cancelled', 'expired'],
+      grace_period: ['active', 'payment_failed', 'suspended', 'expired', 'cancelled'],
       suspended: ['active', 'cancelled', 'expired'],
       cancelled: ['active', 'trial'],
       expired: ['active', 'trial']

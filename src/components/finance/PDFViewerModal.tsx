@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Printer, Download, FileText, Palette } from 'lucide-react';
 import { pdfGeneratorService, PDFGenerationPayload, PDF_ACCENT_COLORS } from '../../services/pdfGeneratorService';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 
 interface PDFViewerModalProps {
   isOpen: boolean;
@@ -16,6 +17,11 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
   const [selectedColor, setSelectedColor] = useState<string>(
     payload?.studioSettings?.brandAccentColor || '#09090b'
   );
+
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen,
+    onClose
+  });
 
   if (!isOpen || !payload) return null;
 
@@ -41,11 +47,15 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
       <div 
         className="bg-white border border-zinc-200 rounded-2xl shadow-2xl flex flex-col w-full max-w-4xl h-[92vh] max-h-[900px] overflow-hidden"
-        role="dialog"
-        aria-modal="true"
+        onClick={e => e.stopPropagation()}
       >
         {/* Modal Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 py-3 border-b border-zinc-200 bg-zinc-50/80 gap-3">
@@ -100,8 +110,9 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
                 <span className="hidden sm:inline">Download</span>
               </button>
               <button
-                onClick={onClose}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors"
+                type="button"
+                onClick={handleAttemptClose}
+                className="min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
@@ -125,8 +136,9 @@ export const PDFViewerModal: React.FC<PDFViewerModalProps> = ({
         <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 border-t border-zinc-200 bg-zinc-50 text-xs text-zinc-500">
           <span>Studio OS Multi-Page Document Engine (Multi-page safe table headers & row break prevention)</span>
           <button
-            onClick={onClose}
-            className="hover:underline text-zinc-700 font-semibold"
+            type="button"
+            onClick={handleAttemptClose}
+            className="hover:underline text-zinc-700 font-semibold min-h-[36px] px-2 py-1"
           >
             Close
           </button>

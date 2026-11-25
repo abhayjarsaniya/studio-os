@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useMasterAdmin } from '../../context/MasterAdminContext';
 import { unifiedAuthService } from '../../services/unifiedAuthService';
 import { firebaseAuthService } from '../../services/firebaseAuthService';
-import { googleAuthInvitationService } from '../../services/googleAuthInvitationService';
 import { Crown, Lock, Mail, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { ForgotPasswordModal } from '../../components/auth/ForgotPasswordModal';
 
@@ -27,7 +26,7 @@ export const MasterLoginPage: React.FC = () => {
     setError(null);
     setGoogleLoading(true);
     try {
-      const res = await googleAuthInvitationService.loginWithGoogle();
+      const res = await firebaseAuthService.loginMasterAdminWithGoogle();
       if (res.success && res.role === 'platform_master_admin') {
         setMasterRoute('dashboard');
         window.location.hash = '#/master/dashboard';

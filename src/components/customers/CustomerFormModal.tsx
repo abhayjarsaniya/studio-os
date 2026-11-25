@@ -44,6 +44,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
 
   // Duplicate Warning State
   const [overrideDuplicate, setOverrideDuplicate] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
     if (customerToEdit) {
@@ -179,8 +180,14 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
       title={isEditing ? 'Edit Customer Profile' : 'Add New Customer'}
       subtitle={isEditing ? `Updating ${customerToEdit?.name}` : 'Create a client record with duplicate verification & WhatsApp click-to-chat setup'}
       maxWidth="2xl"
+      isDirty={isDirty}
+      confirmMessage="Discard unsaved changes to this customer profile?"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form 
+        onSubmit={handleSubmit} 
+        onChange={() => !isDirty && setIsDirty(true)}
+        className="space-y-4"
+      >
         {/* Live Duplicate Warning Banner */}
         {duplicateResult.hasDuplicate && !isEditing && (
           <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs space-y-2">

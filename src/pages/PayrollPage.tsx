@@ -1,5 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useStudio } from '../context/StudioContext';
+import {
+  livePayrollService,
+  LivePayrollRecord,
+  PayrollStatus
+} from '../services/livePayrollService';
 import { SalaryProfile, PayrollRun, PaymentMethod } from '../types';
 import { formatCurrency } from '../utils/formatters';
 import { 
@@ -73,6 +79,20 @@ export const PayrollPage: React.FC = () => {
       </div>
     );
   }
+
+  const { currentStudio } = useStudio();
+  const studioId = currentStudio?.id || '';
+  const [liveRecords, setLiveRecords] = useState<LivePayrollRecord[]>([]);
+  const [liveSaveState, setLiveSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [liveMsg, setLiveMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!studioId || !canViewSalary) return;
+    const unsub = livePayrollService.subscribeStudioPayroll(studioId, (recs) => {
+      setLiveRecords(recs);
+    });
+    return () => unsub();
+  }, [studioId, canViewSalary]);
 
   const latestRun = payrollRuns[0];
 

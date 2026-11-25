@@ -54,6 +54,27 @@ export const LeadPipelineBoard: React.FC = () => {
   const [convertingLead, setConvertingLead] = useState<Lead | null>(null);
   const [createEventOnConvert, setCreateEventOnConvert] = useState(true);
 
+  const isAnyLeadModalOpen = isCreateLeadOpen || Boolean(convertingLead);
+
+  React.useEffect(() => {
+    if (!isAnyLeadModalOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsCreateLeadOpen(false);
+        setConvertingLead(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = prev || 'unset';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isAnyLeadModalOpen]);
+
   const filteredLeads = leads.filter(l =>
     l.customerName.toLowerCase().includes(search.toLowerCase()) ||
     l.phone.includes(search) ||
@@ -222,11 +243,28 @@ export const LeadPipelineBoard: React.FC = () => {
 
       {/* CREATE LEAD MODAL */}
       {isCreateLeadOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-5 shadow-xl space-y-4">
+        <div 
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsCreateLeadOpen(false);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-lg w-full p-5 shadow-xl space-y-4"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-zinc-100 pb-2">
               <h3 className="font-bold text-base text-zinc-900 font-display">Create New Inquiry / Lead</h3>
-              <button onClick={() => setIsCreateLeadOpen(false)} className="text-zinc-400 hover:text-zinc-600">✕</button>
+              <button 
+                type="button"
+                onClick={() => setIsCreateLeadOpen(false)} 
+                className="min-w-[44px] min-h-[44px] text-zinc-400 hover:text-zinc-600 flex items-center justify-center rounded-lg"
+                aria-label="Close modal"
+              >
+                ✕
+              </button>
             </div>
 
             <form onSubmit={handleCreateLead} className="space-y-3 text-xs">
@@ -347,8 +385,18 @@ export const LeadPipelineBoard: React.FC = () => {
 
       {/* CONVERT LEAD CONFIRMATION MODAL */}
       {convertingLead && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 text-xs">
+        <div 
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setConvertingLead(null);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4 text-xs"
+            onClick={e => e.stopPropagation()}
+          >
             <h3 className="font-bold text-base text-zinc-900 font-display">
               Convert Lead into Customer
             </h3>

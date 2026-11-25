@@ -11,6 +11,7 @@ import { TenantStore } from './tenantStore';
 import { roleService } from './roleService';
 import { permissionOverrideService } from './permissionOverrideService';
 import { PERMISSION_MODULES_CATALOG } from '../types/rbac';
+import { liveRbacService } from './liveRbacService';
 
 export interface AuthorizationContext {
   resourceOwnerId?: string;
@@ -39,6 +40,15 @@ export class AuthorizationEngine {
   ): boolean {
     if (!studioId) return false;
     if (!employeeIdOrUid) return false;
+
+    // 0. Live Master Admin RBAC Bundle (real-time Firebase policies)
+    const liveBundle = liveRbacService.getActiveBundle();
+    if (liveBundle && liveBundle.studioId === studioId) {
+      const liveAllowed = liveRbacService.canFromActiveBundle(module, action);
+      if (liveAllowed !== null) {
+        return liveAllowed;
+      }
+    }
 
     // 1. Find employee
     const employees = TenantStore.get<Employee>(studioId, 'employees');

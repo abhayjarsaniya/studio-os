@@ -10,6 +10,7 @@ import {
   Clock 
 } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 
 interface LeaveApplyModalProps {
   isOpen: boolean;
@@ -35,6 +36,14 @@ export const LeaveApplyModal: React.FC<LeaveApplyModalProps> = ({
   const [reason, setReason] = useState('');
   const [documentUrl, setDocumentUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
+
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen,
+    onClose,
+    isDirty,
+    confirmMessage: 'Discard unsaved leave application?'
+  });
 
   if (!isOpen) return null;
 
@@ -79,8 +88,16 @@ export const LeaveApplyModal: React.FC<LeaveApplyModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-2xl w-full max-w-lg flex flex-col shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div 
+        className="bg-white rounded-2xl w-full max-w-lg flex flex-col shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100 bg-zinc-50/50">
           <div>
@@ -93,15 +110,21 @@ export const LeaveApplyModal: React.FC<LeaveApplyModalProps> = ({
             </p>
           </div>
           <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+            type="button"
+            onClick={handleAttemptClose}
+            className="min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs sm:text-sm">
+        <form 
+          onSubmit={handleSubmit} 
+          onChange={() => !isDirty && setIsDirty(true)}
+          className="p-5 space-y-4 text-xs sm:text-sm"
+        >
           {error && (
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
@@ -197,7 +220,8 @@ export const LeaveApplyModal: React.FC<LeaveApplyModalProps> = ({
               type="button"
               variant="outline"
               size="sm"
-              onClick={onClose}
+              onClick={handleAttemptClose}
+              className="min-h-[44px]"
             >
               Cancel
             </Button>

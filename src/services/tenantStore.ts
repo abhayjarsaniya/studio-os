@@ -10,25 +10,35 @@ import { firestoreService } from './firestoreService';
 const memoryStorage: Record<string, string> = {};
 
 function storageGet(key: string): string | null {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    return window.localStorage.getItem(key);
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return window.localStorage.getItem(key);
+    }
+  } catch {
+    // Fallback for iOS Safari private browsing / restricted storage
   }
   return memoryStorage[key] || null;
 }
 
 function storageSet(key: string, value: string): void {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    window.localStorage.setItem(key, value);
-  } else {
-    memoryStorage[key] = value;
+  memoryStorage[key] = value;
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(key, value);
+    }
+  } catch {
+    // Fallback for iOS Safari private browsing / quota exceeded
   }
 }
 
 function storageRemove(key: string): void {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    window.localStorage.removeItem(key);
-  } else {
-    delete memoryStorage[key];
+  delete memoryStorage[key];
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.removeItem(key);
+    }
+  } catch {
+    // Safe fallback
   }
 }
 
@@ -41,13 +51,17 @@ export class TenantStore {
   }
 
   static getStorageKeys(): string[] {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const keys: string[] = [];
-      for (let i = 0; i < window.localStorage.length; i++) {
-        const k = window.localStorage.key(i);
-        if (k) keys.push(k);
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const keys: string[] = [];
+        for (let i = 0; i < window.localStorage.length; i++) {
+          const k = window.localStorage.key(i);
+          if (k) keys.push(k);
+        }
+        return keys;
       }
-      return keys;
+    } catch {
+      // Fallback
     }
     return Object.keys(memoryStorage);
   }

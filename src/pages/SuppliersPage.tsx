@@ -1,532 +1,564 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useStudio } from '../context/StudioContext';
 import { useApp } from '../context/AppContext';
-import { supplierService } from '../services/supplierService';
-import { 
-  Supplier, 
-  SupplierCategory, 
-  SUPPLIER_CATEGORY_LABELS,
-  SupplierAssignment,
-  SupplierMember
-} from '../types';
-import { 
-  Truck, 
-  Search, 
-  Filter, 
-  Plus, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Star, 
-  Layers, 
-  CheckCircle, 
-  Clock, 
-  DollarSign, 
-  Eye, 
+import { liveSupplierService, LiveSupplierRecord } from '../services/liveSupplierService';
+import { SupplierCategory, SUPPLIER_CATEGORY_LABELS, SupplierCategoryEnum } from '../types/schema';
+import {
+  Truck,
+  Search,
+  Plus,
+  Phone,
+  Mail,
+  MapPin,
+  Edit3,
+  Trash2,
   X,
-  UserCheck,
-  ShieldAlert,
-  Send
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  Power
 } from 'lucide-react';
+
+const SUPPLIER_CATEGORIES: SupplierCategory[] = SupplierCategoryEnum.options;
 
 export const SuppliersPage: React.FC = () => {
   const { currentStudio } = useStudio();
-  const { currentRole } = useApp();
+  const { currentUser, currentRole, can } = useApp();
 
   const studioId = currentStudio.id;
-  const isOwner = currentRole === 'owner';
-  const canSeeFinances = isOwner || (currentRole as string) === 'accountant';
+  const studioName = currentStudio.name || studioId;
+  const actingUser = currentUser?.name || 'Studio Owner';
 
-  const [activeTab, setActiveTab] = useState<'directory' | 'assignments'>('directory');
+  const canCreate = can('suppliers_vendors' as any, 'create');
+  const canEdit = can('suppliers_vendors' as any, 'edit');
+  const canDelete = can('suppliers_vendors' as any, 'delete');
+  const canViewFin = can('suppliers_vendors' as any, 'view_financials' as any);
+
+  const [suppliers, setSuppliers] = useState<LiveSupplierRecord[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  
-  // Modals
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedSupplierForDetail, setSelectedSupplierForDetail] = useState<Supplier | null>(null);
-  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // New Supplier Form State
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingSupplier, setEditingSupplier] = useState<LiveSupplierRecord | null>(null);
+  const [deletingSupplier, setDeletingSupplier] = useState<LiveSupplierRecord | null>(null);
+
   const [formData, setFormData] = useState({
     businessName: '',
     contactPerson: '',
     category: 'drone_pilots' as SupplierCategory,
     phone: '',
     email: '',
-    gstin: '',
-    city: currentStudio.city || 'Ahmedabad',
+    city: currentStudio.city || '',
     address: '',
-    baseDayRate: 10000,
-    paymentTerms: '50% Advance, 50% Post Delivery',
+    services: '',
+    baseDayRate: 6500,
     notes: ''
   });
 
-  // Load suppliers and assignments
-  const suppliers = useMemo(() => {
-    return supplierService.listSuppliers(studioId, {
-      search: searchTerm.trim() || undefined,
-      category: selectedCategory !== 'all' ? (selectedCategory as SupplierCategory) : undefined
+  useEffect(() => {
+    if (!studioId) return;
+    setLoading(true);
+    const unsub = liveSupplierService.subscribeStudioSuppliers(
+      studioId,
+      (list) => {
+        setSuppliers(list);
+        setLoading(false);
+      },
+      (err) => {
+        setStatusMessage(err?.message || 'Failed to sync suppliers.');
+        setSaveState('error');
+        setLoading(false);
+      }
+    );
+    return () => unsub();
+  }, [studioId]);
+
+  const filteredSuppliers = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    return suppliers.filter((s) => {
+      if (selectedCategory !== 'all' && s.category !== selectedCategory) return false;
+      if (q) {
+        return (
+          s.businessName.toLowerCase().includes(q) ||
+          s.contactPerson.toLowerCase().includes(q) ||
+          s.city.toLowerCase().includes(q) ||
+          s.phone.includes(q)
+        );
+      }
+      return true;
     });
-  }, [studioId, searchTerm, selectedCategory, refreshTrigger]);
+  }, [suppliers, selectedCategory, searchTerm]);
 
-  const assignments = useMemo(() => {
-    return supplierService.getAssignmentsForUser(studioId, currentRole, {
-      category: selectedCategory !== 'all' ? (selectedCategory as SupplierCategory) : undefined
-    });
-  }, [studioId, currentRole, selectedCategory, refreshTrigger]);
-
-  const handleCreateSupplier = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.businessName.trim() || !formData.contactPerson.trim() || !formData.phone.trim()) {
-      alert('Please fill in required supplier fields.');
-      return;
-    }
-
-    const newSup = supplierService.createSupplier(studioId, {
-      businessName: formData.businessName.trim(),
-      contactPerson: formData.contactPerson.trim(),
-      category: formData.category,
-      phone: formData.phone.trim(),
-      email: formData.email.trim() || undefined,
-      gstin: formData.gstin.trim() || undefined,
-      city: formData.city.trim(),
-      address: formData.address.trim() || undefined,
-      baseDayRate: Number(formData.baseDayRate) || 0,
-      paymentTerms: formData.paymentTerms.trim() || undefined,
-      notes: formData.notes.trim() || undefined,
-      rating: 5,
-      isActive: true,
-      hasPortalAccess: true
-    });
-
-    // Also add lead contact person as a roster member
-    supplierService.addSupplierMember(studioId, {
-      supplierId: newSup.id,
-      name: formData.contactPerson.trim(),
-      phone: formData.phone.trim(),
-      roleTitle: SUPPLIER_CATEGORY_LABELS[formData.category],
-      isAvailable: true
-    });
-
-    setIsAddModalOpen(false);
+  const handleOpenAdd = () => {
     setFormData({
       businessName: '',
       contactPerson: '',
       category: 'drone_pilots',
       phone: '',
       email: '',
-      gstin: '',
-      city: currentStudio.city || 'Ahmedabad',
+      city: currentStudio.city || '',
       address: '',
-      baseDayRate: 10000,
-      paymentTerms: '50% Advance, 50% Post Delivery',
+      services: '',
+      baseDayRate: 6500,
       notes: ''
     });
-    setRefreshTrigger(prev => prev + 1);
+    setIsAddOpen(true);
+  };
+
+  const handleOpenEdit = (s: LiveSupplierRecord) => {
+    setEditingSupplier(s);
+    setFormData({
+      businessName: s.businessName,
+      contactPerson: s.contactPerson,
+      category: s.category,
+      phone: s.phone,
+      email: s.email || '',
+      city: s.city || '',
+      address: s.address || '',
+      services: s.services || '',
+      baseDayRate: s.baseDayRate || 0,
+      notes: s.notes || ''
+    });
+  };
+
+  const handleCreateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaveState('saving');
+    try {
+      await liveSupplierService.createSupplier({
+        studioId,
+        studioName,
+        businessName: formData.businessName,
+        category: formData.category,
+        contactPerson: formData.contactPerson,
+        phone: formData.phone,
+        email: formData.email,
+        city: formData.city,
+        address: formData.address,
+        services: formData.services,
+        baseDayRate: formData.baseDayRate,
+        notes: formData.notes,
+        actingUser,
+        actingRole: currentRole
+      });
+      setSaveState('saved');
+      setStatusMessage(`Supplier "${formData.businessName}" saved.`);
+      setIsAddOpen(false);
+    } catch (err: any) {
+      setSaveState('error');
+      setStatusMessage(err?.message || 'Failed to add supplier.');
+    }
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSupplier) return;
+    setSaveState('saving');
+    try {
+      await liveSupplierService.updateSupplier({
+        studioId,
+        supplierId: editingSupplier.id,
+        updates: {
+          businessName: formData.businessName.trim(),
+          category: formData.category,
+          contactPerson: formData.contactPerson.trim(),
+          phone: formData.phone.trim(),
+          email: formData.email.trim(),
+          city: formData.city.trim(),
+          address: formData.address.trim(),
+          services: formData.services.trim(),
+          baseDayRate: Number(formData.baseDayRate) || 0,
+          notes: formData.notes.trim()
+        },
+        actingUser,
+        actingRole: currentRole
+      });
+      setSaveState('saved');
+      setStatusMessage(`Supplier "${formData.businessName}" updated.`);
+      setEditingSupplier(null);
+    } catch (err: any) {
+      setSaveState('error');
+      setStatusMessage(err?.message || 'Failed to update supplier.');
+    }
+  };
+
+  const handleToggleActive = async (s: LiveSupplierRecord) => {
+    setSaveState('saving');
+    try {
+      await liveSupplierService.updateSupplier({
+        studioId,
+        supplierId: s.id,
+        updates: { isActive: !s.isActive },
+        actingUser,
+        actingRole: currentRole
+      });
+      setSaveState('saved');
+    } catch (err: any) {
+      setSaveState('error');
+      setStatusMessage(err?.message || 'Failed to update supplier status.');
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingSupplier) return;
+    setSaveState('saving');
+    try {
+      const res = await liveSupplierService.deleteOrArchiveSupplier({
+        studioId,
+        supplierId: deletingSupplier.id,
+        actingUser,
+        actingRole: currentRole
+      });
+      setSaveState('saved');
+      setStatusMessage(
+        res.archived
+          ? `Archived "${deletingSupplier.businessName}" to preserve booking history.`
+          : `Deleted "${deletingSupplier.businessName}".`
+      );
+      setDeletingSupplier(null);
+    } catch (err: any) {
+      setSaveState('error');
+      setStatusMessage(err?.message || 'Failed to delete supplier.');
+    }
   };
 
   return (
-    <div className="w-full space-y-4 sm:space-y-6 pb-20">
+    <div className="w-full space-y-5 pb-20">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-            <Truck className="w-7 h-7 text-indigo-600" />
-            External Suppliers & Specialized Crew
+          <h1 className="text-xl sm:text-2xl font-black text-zinc-900 font-display tracking-tight flex items-center gap-2">
+            <Truck className="w-6 h-6 text-orange-500" />
+            <span>Suppliers & Vendors</span>
           </h1>
+          <p className="text-xs text-zinc-500 mt-0.5">Live studio supplier directory synced with Firebase</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex rounded-xl bg-slate-100 p-1 border border-slate-200">
-            <button
-              onClick={() => setActiveTab('directory')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                activeTab === 'directory' ? 'bg-white text-indigo-600 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Directory ({suppliers.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('assignments')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                activeTab === 'assignments' ? 'bg-white text-indigo-600 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Active Assignments ({assignments.length})
-            </button>
-          </div>
+        {canCreate && (
+          <button
+            onClick={handleOpenAdd}
+            className="min-h-[44px] px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold inline-flex items-center justify-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" /> Add Supplier
+          </button>
+        )}
+      </div>
 
-          {isOwner && (
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm inline-flex items-center gap-1.5 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Add Supplier
+      {/* Autosave status */}
+      {(statusMessage || saveState !== 'idle') && (
+        <div
+          className={`p-3 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 border ${
+            saveState === 'error'
+              ? 'bg-rose-50 border-rose-200 text-rose-800'
+              : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {saveState === 'saving' && <Loader2 className="w-4 h-4 animate-spin text-amber-600" />}
+            {saveState === 'saved' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+            {saveState === 'error' && <AlertCircle className="w-4 h-4 text-rose-600" />}
+            <span>{statusMessage || (saveState === 'saving' ? 'Saving...' : 'Saved')}</span>
+          </div>
+          {statusMessage && (
+            <button onClick={() => setStatusMessage(null)} className="font-bold">
+              ✕
             </button>
           )}
         </div>
-      </div>
+      )}
 
-      {/* Filter / Search Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center gap-3">
-        <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+      {/* Search & Category */}
+      <div className="bg-white border border-zinc-200 rounded-2xl p-3.5 flex flex-col sm:flex-row gap-2.5">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
           <input
             type="text"
+            placeholder="Search supplier, contact, city..."
             value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            placeholder="Search suppliers by business name, contact person, or phone..."
-            className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-1 focus:ring-indigo-500"
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-sm min-h-[42px]"
           />
         </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Filter className="w-4 h-4 text-slate-400 shrink-0" />
-          <select
-            value={selectedCategory}
-            onChange={e => setSelectedCategory(e.target.value)}
-            className="w-full sm:w-auto text-xs border border-slate-200 rounded-xl px-3 py-2 bg-white max-w-xs"
-          >
-            <option value="all">All 17 Supplier Categories</option>
-            {Object.entries(SUPPLIER_CATEGORY_LABELS).map(([catKey, label]) => (
-              <option key={catKey} value={catKey}>{label}</option>
-            ))}
-          </select>
-        </div>
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-bold text-zinc-800 min-h-[42px]"
+        >
+          <option value="all">All Categories</option>
+          {SUPPLIER_CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {SUPPLIER_CATEGORY_LABELS[c]}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* Tab 1: Supplier Directory */}
-      {activeTab === 'directory' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {suppliers.map(sup => (
-            <div 
-              key={sup.id} 
-              className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow space-y-4 flex flex-col justify-between"
+      {loading ? (
+        <div className="py-16 flex items-center justify-center gap-2 text-zinc-500 text-sm bg-white border border-zinc-200 rounded-2xl">
+          <Loader2 className="w-5 h-5 animate-spin text-orange-500" />
+          <span>Loading suppliers...</span>
+        </div>
+      ) : filteredSuppliers.length === 0 ? (
+        <div className="py-16 text-center bg-white border border-zinc-200 rounded-2xl space-y-3">
+          <Truck className="w-10 h-10 text-zinc-300 mx-auto" />
+          <p className="text-sm font-bold text-zinc-800">No suppliers added yet.</p>
+          {canCreate && (
+            <button
+              onClick={handleOpenAdd}
+              className="px-4 py-2 rounded-xl bg-orange-500 text-white text-xs font-bold inline-flex items-center gap-1.5"
             >
-              <div className="space-y-2">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-sm leading-tight">{sup.businessName}</h3>
-                    <p className="text-xs font-semibold text-indigo-600 mt-0.5">
-                      {SUPPLIER_CATEGORY_LABELS[sup.category] || sup.category}
-                    </p>
-                  </div>
-                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 text-xs font-bold">
-                    <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                    {sup.rating.toFixed(1)}
-                  </span>
-                </div>
-
-                <div className="space-y-1 text-xs text-slate-600 pt-1">
-                  <div className="flex items-center gap-2">
-                    <UserCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span className="font-medium text-slate-800">{sup.contactPerson}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span>{sup.phone}</span>
-                  </div>
-                  {sup.email && (
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="truncate">{sup.email}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span>{sup.city}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer / Rates (Protected) */}
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <div>
-                  <span className="text-xs text-slate-400 block uppercase font-bold">Base Day Rate</span>
-                  <span className="font-bold text-slate-900">
-                    {canSeeFinances ? `₹${sup.baseDayRate.toLocaleString()}` : '[Owner Confidential]'}
-                  </span>
-                </div>
-
-                <button
-                  onClick={() => setSelectedSupplierForDetail(sup)}
-                  className="px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors"
-                >
-                  View Details
-                </button>
-              </div>
-            </div>
-          ))}
-
-          {suppliers.length === 0 && (
-            <div className="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
-              No suppliers found for the selected category. Click &quot;Add Supplier&quot; to register a partner.
-            </div>
+              <Plus className="w-4 h-4" /> Add Supplier
+            </button>
           )}
         </div>
-      )}
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {filteredSuppliers.map((s) => (
+            <div key={s.id} className="bg-white border border-zinc-200 rounded-2xl p-4 space-y-3 shadow-2xs">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="text-sm font-black text-zinc-900">{s.businessName}</div>
+                  <div className="text-xs text-zinc-500">{SUPPLIER_CATEGORY_LABELS[s.category] || s.category}</div>
+                </div>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                    s.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-zinc-100 text-zinc-600'
+                  }`}
+                >
+                  {s.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
 
-      {/* Tab 2: Active Assignments */}
-      {activeTab === 'assignments' && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
-                <tr>
-                  <th className="px-4 py-3">Supplier & Category</th>
-                  <th className="px-4 py-3">Event & Sub-Event</th>
-                  <th className="px-4 py-3">Call Time & Venue</th>
-                  <th className="px-4 py-3">Status</th>
-                  {canSeeFinances && <th className="px-4 py-3 text-right">Agreed Fee</th>}
-                  {canSeeFinances && <th className="px-4 py-3 text-right">Payment</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {assignments.map(asgn => (
-                  <tr key={asgn.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="px-4 py-3.5">
-                      <div className="font-bold text-slate-900">{asgn.supplierName}</div>
-                      <div className="text-xs text-indigo-600 font-medium">
-                        {SUPPLIER_CATEGORY_LABELS[asgn.category] || asgn.category}
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                      <div className="font-semibold text-slate-800">{asgn.eventTitle}</div>
-                      <div className="text-xs text-slate-500">{asgn.subEventTitle || 'Full Day Assignment'}</div>
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                      <div className="font-medium text-slate-800 flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-slate-400" />
-                        {asgn.date} • {asgn.callTime}
-                      </div>
-                      <div className="text-xs text-slate-500 truncate max-w-xs">{asgn.venue}</div>
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-blue-50 text-blue-700">
-                        {asgn.status}
-                      </span>
-                    </td>
-
-                    {canSeeFinances && (
-                      <td className="px-4 py-3.5 text-right font-bold text-slate-900">
-                        ₹{asgn.agreedFee.toLocaleString()}
-                      </td>
-                    )}
-
-                    {canSeeFinances && (
-                      <td className="px-4 py-3.5 text-right">
-                        <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
-                          asgn.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {asgn.paymentStatus}
-                        </span>
-                      </td>
-                    )}
-                  </tr>
-                ))}
-                {assignments.length === 0 && (
-                  <tr>
-                    <td colSpan={canSeeFinances ? 6 : 4} className="text-center py-12 text-slate-400">
-                      No supplier assignments active currently.
-                    </td>
-                  </tr>
+              <div className="space-y-1 text-xs text-zinc-600">
+                <div className="flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-zinc-400" /> {s.contactPerson} · {s.phone}
+                </div>
+                {s.email && (
+                  <div className="flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-zinc-400" /> {s.email}
+                  </div>
                 )}
-              </tbody>
-            </table>
-          </div>
+                {s.city && (
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-zinc-400" /> {s.city}
+                  </div>
+                )}
+              </div>
+
+              {canViewFin && (
+                <div className="text-xs font-bold text-zinc-900 pt-1 border-t border-zinc-100">
+                  Base Rate: ₹{(s.baseDayRate || 0).toLocaleString('en-IN')} / day
+                </div>
+              )}
+
+              {(canEdit || canDelete) && (
+                <div className="flex items-center justify-end gap-1.5 pt-1">
+                  {canEdit && (
+                    <>
+                      <button
+                        onClick={() => handleOpenEdit(s)}
+                        className="min-h-[38px] px-2.5 py-1 rounded-xl border border-zinc-200 text-xs font-bold text-zinc-700 hover:bg-zinc-50 inline-flex items-center gap-1"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleToggleActive(s)}
+                        className="min-h-[38px] p-2 rounded-xl border border-zinc-200 text-zinc-600 hover:bg-zinc-50"
+                        title={s.isActive ? 'Deactivate' : 'Activate'}
+                      >
+                        <Power className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
+                  {canDelete && (
+                    <button
+                      onClick={() => setDeletingSupplier(s)}
+                      className="min-h-[38px] p-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Add Supplier Modal */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                <Truck className="w-5 h-5 text-indigo-600" />
-                Register New External Supplier
+      {/* Add / Edit Modal */}
+      {(isAddOpen || editingSupplier) && (
+        <div className="fixed inset-0 z-50 bg-zinc-950/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <form
+            onSubmit={editingSupplier ? handleEditSubmit : handleCreateSubmit}
+            className="w-full max-w-lg bg-white border border-zinc-200 rounded-3xl p-6 shadow-2xl space-y-4 my-8"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
+              <h3 className="text-base font-black text-zinc-900">
+                {editingSupplier ? 'Edit Supplier' : 'Add Supplier'}
               </h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddOpen(false);
+                  setEditingSupplier(null);
+                }}
+                className="p-1 text-zinc-500"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateSupplier} className="space-y-4 pt-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Business / Firm Name *</label>
+                <label className="block text-xs font-bold text-zinc-700 mb-1">Business Name</label>
                 <input
                   type="text"
                   required
                   value={formData.businessName}
-                  onChange={e => setFormData({ ...formData, businessName: e.target.value })}
-                  placeholder="e.g. Skyline Aerial Cine Drones"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl"
+                  onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-sm"
                 />
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Contact Person *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.contactPerson}
-                    onChange={e => setFormData({ ...formData, contactPerson: e.target.value })}
-                    placeholder="e.g. Ramesh Patel"
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Specialization Category *</label>
-                  <select
-                    value={formData.category}
-                    onChange={e => setFormData({ ...formData, category: e.target.value as SupplierCategory })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white"
-                  >
-                    {Object.entries(SUPPLIER_CATEGORY_LABELS).map(([catKey, label]) => (
-                      <option key={catKey} value={catKey}>{label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Phone Number *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.phone}
-                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="+91 98250 12345"
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Email Address</label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="partner@skyline.in"
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Base Day Rate (₹) *</label>
-                  <input
-                    type="number"
-                    required
-                    value={formData.baseDayRate}
-                    onChange={e => setFormData({ ...formData, baseDayRate: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl"
-                  />
-                </div>
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">City *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.city}
-                    onChange={e => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl"
-                  />
-                </div>
-              </div>
-
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Payment Terms</label>
+                <label className="block text-xs font-bold text-zinc-700 mb-1">Category</label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value as SupplierCategory })}
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-sm"
+                >
+                  {SUPPLIER_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {SUPPLIER_CATEGORY_LABELS[c]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 mb-1">Contact Person</label>
                 <input
                   type="text"
-                  value={formData.paymentTerms}
-                  onChange={e => setFormData({ ...formData, paymentTerms: e.target.value })}
-                  placeholder="e.g. 50% Advance, 50% on Handover"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl"
+                  required
+                  value={formData.contactPerson}
+                  onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-sm"
                 />
               </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl shadow-xs"
-                >
-                  Save Supplier
-                </button>
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 mb-1">Phone</label>
+                <input
+                  type="tel"
+                  required
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-sm"
+                />
               </div>
-            </form>
-          </div>
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 mb-1">City</label>
+                <input
+                  type="text"
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 mb-1">Base Day Rate (₹)</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={formData.baseDayRate}
+                  onChange={(e) => setFormData({ ...formData, baseDayRate: Number(e.target.value) })}
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-zinc-700 mb-1">Services</label>
+                <input
+                  type="text"
+                  value={formData.services}
+                  onChange={(e) => setFormData({ ...formData, services: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-sm"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-bold text-zinc-700 mb-1">Address</label>
+                <input
+                  type="text"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-sm"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-bold text-zinc-700 mb-1">Notes</label>
+                <textarea
+                  rows={2}
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-300 text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddOpen(false);
+                  setEditingSupplier(null);
+                }}
+                className="px-4 py-2 rounded-xl bg-zinc-100 text-zinc-800 text-xs font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saveState === 'saving'}
+                className="px-4 py-2 rounded-xl bg-orange-500 text-white text-xs font-bold disabled:opacity-50"
+              >
+                {saveState === 'saving' ? 'Saving...' : 'Save Supplier'}
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
-      {/* Supplier Detail Modal */}
-      {selectedSupplierForDetail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="font-bold text-slate-900 text-sm">{selectedSupplierForDetail.businessName}</h3>
-                <p className="text-xs text-indigo-600">{SUPPLIER_CATEGORY_LABELS[selectedSupplierForDetail.category]}</p>
-              </div>
-              <button onClick={() => setSelectedSupplierForDetail(null)} className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 grid grid-cols-2 gap-2">
-                <div>
-                  <span className="text-xs text-slate-400 font-bold uppercase block">Contact Person</span>
-                  <span className="font-semibold text-slate-800">{selectedSupplierForDetail.contactPerson}</span>
-                </div>
-                <div>
-                  <span className="text-xs text-slate-400 font-bold uppercase block">Phone</span>
-                  <span className="font-semibold text-slate-800">{selectedSupplierForDetail.phone}</span>
-                </div>
-                <div>
-                  <span className="text-xs text-slate-400 font-bold uppercase block">Base Day Rate</span>
-                  <span className="font-semibold text-slate-800">
-                    {canSeeFinances ? `₹${selectedSupplierForDetail.baseDayRate.toLocaleString()}` : '[Restricted]'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-xs text-slate-400 font-bold uppercase block">City</span>
-                  <span className="font-semibold text-slate-800">{selectedSupplierForDetail.city}</span>
-                </div>
-              </div>
-
-              <div>
-                <span className="text-xs text-slate-400 font-bold uppercase block mb-1">Payment Terms</span>
-                <p className="text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                  {selectedSupplierForDetail.paymentTerms || 'Standard studio invoicing terms'}
-                </p>
-              </div>
-
-              <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 text-xs text-indigo-900">
-                🔒 <strong>Privacy Protection Active:</strong> External suppliers with portal access only view their assigned call times, venues, and shooting requirements. Customer personal phone numbers and studio billing margins are strictly shielded.
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-2">
+      {/* Delete Confirmation */}
+      {deletingSupplier && (
+        <div className="fixed inset-0 z-50 bg-zinc-950/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border border-zinc-200 rounded-3xl p-6 shadow-2xl space-y-4">
+            <h3 className="text-base font-black text-zinc-900">Delete Supplier?</h3>
+            <p className="text-xs text-zinc-600">
+              Remove <strong>{deletingSupplier.businessName}</strong>? If referenced by existing bookings, it will be
+              archived safely.
+            </p>
+            <div className="flex justify-end gap-2">
               <button
-                onClick={() => setSelectedSupplierForDetail(null)}
-                className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl"
+                onClick={() => setDeletingSupplier(null)}
+                className="px-4 py-2 rounded-xl bg-zinc-100 text-zinc-800 text-xs font-bold"
               >
-                Close
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-black"
+              >
+                Confirm
               </button>
             </div>
           </div>

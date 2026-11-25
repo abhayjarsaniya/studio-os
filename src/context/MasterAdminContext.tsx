@@ -83,6 +83,10 @@ export const MasterAdminProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setMasterRouteState('accounts');
     } else if (hash.startsWith('#/master/subscriptions')) {
       setMasterRouteState('subscriptions');
+    } else if (hash.startsWith('#/master/autopay')) {
+      setMasterRouteState('autopay');
+    } else if (hash.startsWith('#/master/transactions')) {
+      setMasterRouteState('transactions');
     } else if (hash.startsWith('#/master/plans')) {
       setMasterRouteState('plans');
     } else if (hash.startsWith('#/master/roles-permissions')) {
@@ -105,8 +109,6 @@ export const MasterAdminProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setMasterRouteState('notifications');
     } else if (hash.startsWith('#/master/audit-logs')) {
       setMasterRouteState('audit-logs');
-    } else if (hash.startsWith('#/master/settings/authorized-emails') || hash.startsWith('#/master/authorized-emails')) {
-      setMasterRouteState('authorized-emails');
     } else if (hash.startsWith('#/master/settings')) {
       setMasterRouteState('settings');
     } else if (hash.startsWith('#/master/login')) {

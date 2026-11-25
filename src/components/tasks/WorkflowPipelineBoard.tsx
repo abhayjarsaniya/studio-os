@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { WorkflowInstance, WorkflowStage } from '../../types';
 import { Button } from '../ui/Button';
-import { 
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
+import { X,
   Layers, 
   ArrowRight, 
   CheckCircle2, 
@@ -36,6 +37,11 @@ export const WorkflowPipelineBoard: React.FC<WorkflowPipelineBoardProps> = ({
   const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState('');
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
+
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen: isAttachModalOpen,
+    onClose: () => setIsAttachModalOpen(false)
+  });
 
   const activeInstance = workflowInstances.find(w => w.id === selectedInstanceId) || workflowInstances[0];
   const template = activeInstance ? workflowTemplates.find(t => t.id === activeInstance.templateId) : workflowTemplates[0];
@@ -229,9 +235,27 @@ export const WorkflowPipelineBoard: React.FC<WorkflowPipelineBoardProps> = ({
 
       {/* Attach Workflow Modal */}
       {isAttachModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl border border-zinc-200 space-y-4">
-            <h3 className="text-base font-bold text-zinc-900">Attach Production Workflow to Event</h3>
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-xs"
+          onClick={handleBackdropClick}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div 
+            className="w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl border border-zinc-200 space-y-4"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-zinc-900">Attach Production Workflow to Event</h3>
+              <button 
+                type="button" 
+                onClick={handleAttemptClose}
+                className="min-w-[44px] min-h-[44px] rounded-lg text-zinc-400 hover:text-zinc-600 flex items-center justify-center"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
             <form onSubmit={handleAttachSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-zinc-700 mb-1">Select Event / Shoot</label>

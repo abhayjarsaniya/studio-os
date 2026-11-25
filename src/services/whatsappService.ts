@@ -368,9 +368,10 @@ export class WhatsAppService {
       quotation_amount: context.quotation_amount ?? context.total_amount
     };
 
-    // Match both {{var}} and {var}
+    // Match both {{var}} and {var} without regex lookbehind (for iOS Safari < 16.4 compatibility)
     const doubleMatches = templateText.match(/\{\{([a-zA-Z0-9_]+)\}\}/g) || [];
-    const singleMatches = templateText.match(/(?<!\{)\{([a-zA-Z0-9_]+)\}(?!\})/g) || [];
+    const strippedDouble = templateText.replace(/\{\{[a-zA-Z0-9_]+\}\}/g, '');
+    const singleMatches = strippedDouble.match(/\{([a-zA-Z0-9_]+)\}/g) || [];
     const allMatches = [...doubleMatches, ...singleMatches];
     const missingPlaceholders: string[] = [];
 

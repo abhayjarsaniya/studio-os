@@ -18,6 +18,7 @@ import {
   WhatsAppTemplateId, 
   historyBookingsService 
 } from '../../services/historyBookingsService';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 
 interface WhatsAppChatModalProps {
   customerName: string;
@@ -45,12 +46,17 @@ export const WhatsAppChatModal: React.FC<WhatsAppChatModalProps> = ({
   const [copied, setCopied] = useState(false);
   const [trackingStatus, setTrackingStatus] = useState<'drafted' | 'opened' | 'confirmed_sent'>('drafted');
 
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen: true,
+    onClose
+  });
+
   // Regenerate message whenever template changes
   useEffect(() => {
     const res = historyBookingsService.generateWhatsAppMessage({
       templateId: selectedTemplate,
       customerName,
-      studioName: 'Shreeji Studio',
+      studioName: 'Studio OS',
       phone,
       bookingId,
       eventName,
@@ -75,8 +81,16 @@ export const WhatsAppChatModal: React.FC<WhatsAppChatModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-3 sm:p-6 overflow-y-auto">
-      <div className="relative bg-white rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-3 sm:p-6 overflow-y-auto"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div 
+        className="relative bg-white rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        onClick={e => e.stopPropagation()}
+      >
         
         {/* Modal Header */}
         <div className="p-4 sm:p-5 border-b border-zinc-200 bg-emerald-50/60 flex items-center justify-between">
@@ -90,8 +104,10 @@ export const WhatsAppChatModal: React.FC<WhatsAppChatModalProps> = ({
             </div>
           </div>
           <button
-            onClick={onClose}
-            className="p-2 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-xl transition-colors cursor-pointer"
+            type="button"
+            onClick={handleAttemptClose}
+            className="min-w-[44px] min-h-[44px] text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-xl flex items-center justify-center transition-colors cursor-pointer"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>

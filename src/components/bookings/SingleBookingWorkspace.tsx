@@ -172,6 +172,29 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
   // Toast notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  const isAnyBookingModalOpen = isPaymentModalOpen || isEditModalOpen || isCrewModalOpen || isDeleteModalOpen;
+
+  useEffect(() => {
+    if (!isAnyBookingModalOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsPaymentModalOpen(false);
+        setIsEditModalOpen(false);
+        setIsCrewModalOpen(false);
+        if (!isDeletingBooking) setIsDeleteModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = prevOverflow || 'unset';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isAnyBookingModalOpen, isDeletingBooking]);
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
@@ -2836,8 +2859,18 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
       {/* MODAL 1: ADD PAYMENT */}
       {isPaymentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl border border-zinc-200 max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div 
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsPaymentModalOpen(false);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div 
+            className="bg-white rounded-t-3xl sm:rounded-3xl border border-zinc-200 max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <h3 className="text-base font-bold text-zinc-900 font-display">Record Client Payment</h3>
               <button 
@@ -2918,8 +2951,18 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
       {/* MODAL 2: EDIT BOOKING DETAILS */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl border border-zinc-200 max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+        <div 
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsEditModalOpen(false);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div 
+            className="bg-white rounded-t-3xl sm:rounded-3xl border border-zinc-200 max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <h3 className="text-base font-bold text-zinc-900 font-display">Edit Booking Details</h3>
               <button 
@@ -3050,8 +3093,18 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 
       {/* MODAL 3: ASSIGN CREW */}
       {isCrewModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl border border-zinc-200 max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div 
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsCrewModalOpen(false);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div 
+            className="bg-white rounded-t-3xl sm:rounded-3xl border border-zinc-200 max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <h3 className="text-base font-bold text-zinc-900 font-display">Assign Team Member</h3>
               <button 

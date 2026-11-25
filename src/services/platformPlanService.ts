@@ -1,13 +1,31 @@
 import { TenantStore } from './tenantStore';
 import { PlatformPlan, PlatformPlanSchema } from '../types/schema';
 import { platformAuditService } from './platformAuditService';
+import { db, isAuthBypassed } from '../lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+
+function syncPlanToFirestore(plan: PlatformPlan): void {
+  const isTestEnv = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+  if (isTestEnv || !db || isAuthBypassed) return;
+  setDoc(doc(db, 'billingPlans', plan.id), {
+    ...plan,
+    priceYearly: plan.priceAnnual,
+    priceQuarterly: plan.priceQuarterly ?? Math.round(plan.priceMonthly * 3 * 0.9),
+    setupFee: plan.setupFee ?? 0,
+    renewalPolicy: plan.renewalPolicy ?? 'manual_or_autopay',
+    updatedAt: new Date().toISOString()
+  }, { merge: true }).catch(() => {});
+}
 
 export const INITIAL_STANDARD_PLAN: PlatformPlan = {
   id: 'plan_standard_500',
   name: 'Studio OS Standard',
   version: 1,
   priceMonthly: 500, // ₹500/month per studio (not per employee!)
+  priceQuarterly: 1350,
   priceAnnual: 5000, // ₹5000/year (2 months savings)
+  setupFee: 0,
+  renewalPolicy: 'manual_or_autopay',
   currency: 'INR',
   billingCycle: 'monthly',
   employeeLimit: 25,
@@ -97,6 +115,7 @@ export class PlatformPlanService {
 
     const plans = this.listPlans();
     TenantStore.set('platform_system', this.STORE_KEY, [...plans, newPlan]);
+    syncPlanToFirestore(newPlan);
 
     platformAuditService.log({
       adminId: 'admin_sys',
@@ -138,6 +157,7 @@ export class PlatformPlanService {
 
     plans[index] = updated;
     TenantStore.set('platform_system', this.STORE_KEY, plans);
+    syncPlanToFirestore(updated);
 
     platformAuditService.log({
       adminId: 'admin_sys',

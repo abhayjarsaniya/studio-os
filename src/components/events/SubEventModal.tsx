@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { SubEvent, SubEventStatus, Priority } from '../../types';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 import { 
   X, 
   Calendar, 
@@ -69,6 +70,14 @@ export const SubEventModal: React.FC<SubEventModalProps> = ({
   const [notes, setNotes] = useState('');
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
+
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen,
+    onClose,
+    isDirty,
+    confirmMessage: 'Discard unsaved changes to this sub-event?'
+  });
 
   useEffect(() => {
     if (initialSubEvent) {
@@ -189,8 +198,16 @@ export const SubEventModal: React.FC<SubEventModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div 
+        className="bg-white rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100 bg-zinc-50/50">
           <div>
@@ -203,15 +220,21 @@ export const SubEventModal: React.FC<SubEventModalProps> = ({
             </p>
           </div>
           <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+            type="button"
+            onClick={handleAttemptClose}
+            className="min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+            aria-label="Close sub-event form"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Scrollable Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4 text-xs sm:text-sm">
+        <form 
+          onSubmit={handleSubmit} 
+          onChange={() => !isDirty && setIsDirty(true)}
+          className="flex-1 overflow-y-auto p-5 space-y-4 text-xs sm:text-sm"
+        >
           {error && (
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 flex items-center gap-2 text-xs">
               <AlertCircle className="w-4 h-4 shrink-0" />
@@ -506,7 +529,8 @@ export const SubEventModal: React.FC<SubEventModalProps> = ({
               type="button"
               variant="outline"
               size="sm"
-              onClick={onClose}
+              onClick={handleAttemptClose}
+              className="min-h-[44px]"
             >
               Cancel
             </Button>

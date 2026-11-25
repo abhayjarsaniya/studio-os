@@ -19,6 +19,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose })
   const [priority, setPriority] = useState<Priority>('High');
   const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0]);
   const [status, setStatus] = useState<TaskStatus>('Todo');
+  const [isDirty, setIsDirty] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,8 +53,14 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose })
       title="Create Studio Task"
       subtitle="Assign workflow and post-production duties to photography crew"
       maxWidth="md"
+      isDirty={isDirty}
+      confirmMessage="Discard unsaved task details?"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form 
+        onSubmit={handleSubmit} 
+        onChange={() => !isDirty && setIsDirty(true)}
+        className="space-y-4"
+      >
         <div>
           <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1">
             Task Title *

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { crossDeviceAuthService } from '../services/crossDeviceAuthService';
-import { googleAuthInvitationService } from '../services/googleAuthInvitationService';
+import { firebaseAuthService } from '../services/firebaseAuthService';
 import { Camera, AlertCircle, Eye, EyeOff, Lock, User, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export const StudioLoginPage: React.FC = () => {
@@ -10,6 +10,23 @@ export const StudioLoginPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [googleLoading, setGoogleLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    firebaseAuthService.completeGoogleRedirectIfPending().then((res) => {
+      if (!active || !res) return;
+      if (res.success && res.targetRoute) {
+        window.dispatchEvent(new CustomEvent('studio_os_auth_changed'));
+        window.dispatchEvent(new Event('studio_data_updated'));
+        window.location.hash = res.targetRoute;
+      } else if (res.error) {
+        setError(res.error);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handlePasswordSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +66,7 @@ export const StudioLoginPage: React.FC = () => {
     setGoogleLoading(true);
 
     try {
-      const res = await googleAuthInvitationService.loginWithGoogle();
+      const res = await firebaseAuthService.loginMasterAdminWithGoogle();
       if (res.success && res.targetRoute) {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('studio_os_auth_changed'));
@@ -67,7 +84,7 @@ export const StudioLoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-zinc-50 flex flex-col justify-center items-center p-4 selection:bg-orange-100 selection:text-orange-900 font-sans">
+    <div className="min-h-screen min-h-[100dvh] w-full bg-zinc-50 flex flex-col justify-center items-center p-4 selection:bg-orange-100 selection:text-orange-900 font-sans">
       <div className="w-full max-w-md bg-white border border-zinc-200/90 rounded-3xl p-6 sm:p-10 shadow-xl shadow-zinc-200/50 relative overflow-hidden">
         {/* Subtle decorative glow */}
         <div className="absolute -top-14 -right-14 w-40 h-40 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
@@ -109,7 +126,7 @@ export const StudioLoginPage: React.FC = () => {
                 value={loginId}
                 onChange={e => setLoginId(e.target.value)}
                 placeholder="Enter your Login ID (e.g. aarav_patel)"
-                className="w-full pl-10 pr-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-medium text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 transition-all"
+                className="w-full pl-10 pr-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs font-medium text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 transition-all"
               />
             </div>
           </div>
@@ -126,7 +143,7 @@ export const StudioLoginPage: React.FC = () => {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full pl-10 pr-10 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 transition-all"
+                className="w-full pl-10 pr-10 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-base sm:text-xs text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900 transition-all"
               />
               <button
                 type="button"

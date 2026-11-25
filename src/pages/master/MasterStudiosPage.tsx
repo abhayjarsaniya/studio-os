@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useMasterAdmin } from '../../context/MasterAdminContext';
 import { masterAdminService } from '../../services/masterAdminService';
+import { platformStudioService } from '../../services/platformStudioService';
 import { MasterStudioListItem } from '../../types/masterAdmin';
 import { StudioHandoverModal, StudioHandoverData } from '../../components/master/StudioHandoverModal';
 import { 
@@ -26,7 +27,8 @@ import {
   AlertTriangle,
   KeyRound,
   Share2,
-  Edit3
+  Edit3,
+  RefreshCw
 } from 'lucide-react';
 
 export const MasterStudiosPage: React.FC = () => {
@@ -35,6 +37,31 @@ export const MasterStudiosPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'hidden' | 'suspended' | 'draft'>('all');
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [activeMenuStudioId, setActiveMenuStudioId] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+
+  // Auto-sync with Firebase on mount to populate all live studios
+  useEffect(() => {
+    let active = true;
+    const sync = async () => {
+      setIsSyncing(true);
+      await platformStudioService.syncStudiosFromFirestore();
+      if (active) {
+        setIsSyncing(false);
+        triggerRefresh();
+      }
+    };
+    sync();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    await platformStudioService.syncStudiosFromFirestore();
+    setIsSyncing(false);
+    triggerRefresh();
+  };
 
   // Handover Modal State
   const [handoverData, setHandoverData] = useState<StudioHandoverData | null>(null);
@@ -164,13 +191,24 @@ export const MasterStudiosPage: React.FC = () => {
           </h1>
         </div>
 
-        <button
-          onClick={() => setMasterRoute('create-studio')}
-          className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs flex items-center gap-2 shadow-md shadow-amber-500/20 transition-all self-start sm:self-auto"
-        >
-          <Building2 className="w-4 h-4" />
-          <span>Provision New Studio</span>
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={handleManualSync}
+            disabled={isSyncing}
+            className="px-3.5 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 text-zinc-800 font-semibold text-xs flex items-center gap-1.5 transition-colors"
+            title="Sync all live studios and accounts from Firebase"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-orange-600' : 'text-zinc-600'}`} />
+            <span>{isSyncing ? 'Syncing...' : 'Sync Cloud'}</span>
+          </button>
+          <button
+            onClick={() => setMasterRoute('create-studio')}
+            className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs flex items-center gap-2 shadow-md shadow-amber-500/20 transition-all"
+          >
+            <Building2 className="w-4 h-4" />
+            <span>Provision New Studio</span>
+          </button>
+        </div>
       </div>
 
       {/* Search & Filter Toolbar */}
@@ -216,8 +254,19 @@ export const MasterStudiosPage: React.FC = () => {
       {/* MOBILE STUDIOS CARD VIEW (sm:hidden) */}
       <div className="sm:hidden space-y-3.5">
         {filteredStudios.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-zinc-200 p-8 text-center text-zinc-400 text-xs">
-            No studios found matching the criteria.
+          <div className="bg-white rounded-2xl border border-zinc-200 p-8 text-center space-y-3 shadow-xs">
+            <Building2 className="w-8 h-8 text-zinc-300 mx-auto" />
+            <p className="text-zinc-600 font-medium text-xs">
+              {studios.length === 0 ? 'No studios loaded in local storage.' : 'No studios found matching the criteria.'}
+            </p>
+            <button
+              onClick={handleManualSync}
+              disabled={isSyncing}
+              className="px-4 py-2 rounded-xl bg-zinc-900 text-white font-semibold text-xs inline-flex items-center gap-2"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>{isSyncing ? 'Syncing...' : 'Sync All Studios from Firebase'}</span>
+            </button>
           </div>
         ) : (
           filteredStudios.map(studio => (
@@ -330,8 +379,21 @@ export const MasterStudiosPage: React.FC = () => {
             <tbody className="divide-y divide-zinc-100">
               {filteredStudios.length === 0 ? (
                 <tr>
-                  <td colSpan={15} className="px-4 py-12 text-center text-zinc-400">
-                    No studios found matching the criteria.
+                  <td colSpan={15} className="px-4 py-12 text-center">
+                    <div className="flex flex-col items-center justify-center space-y-3">
+                      <Building2 className="w-8 h-8 text-zinc-300" />
+                      <p className="text-zinc-600 font-medium text-xs">
+                        {studios.length === 0 ? 'No studios loaded in local storage.' : 'No studios found matching the criteria.'}
+                      </p>
+                      <button
+                        onClick={handleManualSync}
+                        disabled={isSyncing}
+                        className="px-4 py-2 rounded-xl bg-zinc-900 text-white font-semibold text-xs inline-flex items-center gap-2"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                        <span>{isSyncing ? 'Syncing...' : 'Sync All Studios from Firebase'}</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ) : (

@@ -75,7 +75,9 @@ export const DesktopSidebar: React.FC = () => {
     studio, 
     activeTab, 
     setActiveTab, 
-    currentUser 
+    currentUser,
+    can,
+    isFeatureEnabled
   } = useApp();
 
   const { branches, currentStudio } = useStudio();
@@ -122,29 +124,35 @@ export const DesktopSidebar: React.FC = () => {
         </div>
 
         {/* Quick Actions: Quick Quotation & New Booking */}
-        <div className="px-3.5 pt-3.5 pb-2 space-y-2">
-          <button
-            onClick={() => {
-              setActiveTab('create-quotation');
-              window.location.hash = '#/app/quotation/new';
-            }}
-            className="w-full min-h-[44px] flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold tracking-tight shadow-sm border border-zinc-700 transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-            <span>+ Quick Quotation</span>
-          </button>
+        {((isFeatureEnabled('finance_billing') && can('quotations' as any, 'create')) || can('bookings' as any, 'create')) && (
+          <div className="px-3.5 pt-3.5 pb-2 space-y-2">
+            {isFeatureEnabled('finance_billing') && can('quotations' as any, 'create') && (
+              <button
+                onClick={() => {
+                  setActiveTab('create-quotation');
+                  window.location.hash = '#/app/quotation/new';
+                }}
+                className="w-full min-h-[44px] flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold tracking-tight shadow-sm border border-zinc-700 transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>+ Quick Quotation</span>
+              </button>
+            )}
 
-          <button
-            onClick={() => {
-              setActiveTab('create-booking');
-              window.location.hash = '#/app/bookings/new';
-            }}
-            className="w-full min-h-[44px] flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold tracking-tight shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
-          >
-            <PlusCircle className="w-4 h-4 text-white shrink-0 stroke-[2.5]" />
-            <span>+ New Booking</span>
-          </button>
-        </div>
+            {can('bookings' as any, 'create') && (
+              <button
+                onClick={() => {
+                  setActiveTab('create-booking');
+                  window.location.hash = '#/app/bookings/new';
+                }}
+                className="w-full min-h-[44px] flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold tracking-tight shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
+              >
+                <PlusCircle className="w-4 h-4 text-white shrink-0 stroke-[2.5]" />
+                <span>+ New Booking</span>
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Primary Studio Navigation: Core Modules */}
         <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
@@ -153,64 +161,74 @@ export const DesktopSidebar: React.FC = () => {
           </div>
 
           {/* 1. Dashboard */}
-          <SidebarItem
-            id="dashboard"
-            icon={<LayoutDashboard className="w-4 h-4" />}
-            label="Dashboard"
-            active={activeTab === 'dashboard'}
-            onClick={() => {
-              setActiveTab('dashboard');
-              window.location.hash = '#/app/dashboard';
-            }}
-          />
+          {can('dashboard', 'view') && (
+            <SidebarItem
+              id="dashboard"
+              icon={<LayoutDashboard className="w-4 h-4" />}
+              label="Dashboard"
+              active={activeTab === 'dashboard'}
+              onClick={() => {
+                setActiveTab('dashboard');
+                window.location.hash = '#/app/dashboard';
+              }}
+            />
+          )}
 
           {/* 2. Quotations */}
-          <SidebarItem
-            id="quotations"
-            icon={<FileText className="w-4 h-4" />}
-            label="Quotations"
-            active={activeTab === 'quotations' || activeTab === 'create-quotation'}
-            onClick={() => {
-              setActiveTab('quotations');
-              window.location.hash = '#/app/quotations';
-            }}
-          />
+          {isFeatureEnabled('finance_billing') && can('quotations' as any, 'view') && (
+            <SidebarItem
+              id="quotations"
+              icon={<FileText className="w-4 h-4" />}
+              label="Quotations"
+              active={activeTab === 'quotations' || activeTab === 'create-quotation'}
+              onClick={() => {
+                setActiveTab('quotations');
+                window.location.hash = '#/app/quotations';
+              }}
+            />
+          )}
 
           {/* 3. Calendar */}
-          <SidebarItem
-            id="calendar"
-            icon={<Calendar className="w-4 h-4" />}
-            label="Calendar"
-            active={activeTab === 'calendar'}
-            onClick={() => {
-              setActiveTab('calendar');
-              window.location.hash = '#/app/calendar';
-            }}
-          />
+          {can('calendar', 'view') && (
+            <SidebarItem
+              id="calendar"
+              icon={<Calendar className="w-4 h-4" />}
+              label="Calendar"
+              active={activeTab === 'calendar'}
+              onClick={() => {
+                setActiveTab('calendar');
+                window.location.hash = '#/app/calendar';
+              }}
+            />
+          )}
 
           {/* 4. Bookings */}
-          <SidebarItem
-            id="bookings"
-            icon={<BookOpen className="w-4 h-4" />}
-            label="Bookings"
-            active={activeTab === 'bookings' || activeTab === 'history'}
-            onClick={() => {
-              setActiveTab('bookings');
-              window.location.hash = '#/app/bookings';
-            }}
-          />
+          {can('bookings' as any, 'view') && (
+            <SidebarItem
+              id="bookings"
+              icon={<BookOpen className="w-4 h-4" />}
+              label="Bookings"
+              active={activeTab === 'bookings' || activeTab === 'history'}
+              onClick={() => {
+                setActiveTab('bookings');
+                window.location.hash = '#/app/bookings';
+              }}
+            />
+          )}
 
           {/* 5. Crew */}
-          <SidebarItem
-            id="crew"
-            icon={<Users className="w-4 h-4" />}
-            label="Crew"
-            active={activeTab === 'crew' || activeTab === 'team'}
-            onClick={() => {
-              setActiveTab('crew');
-              window.location.hash = '#/app/crew';
-            }}
-          />
+          {can('team', 'view') && (
+            <SidebarItem
+              id="crew"
+              icon={<Users className="w-4 h-4" />}
+              label="Crew"
+              active={activeTab === 'crew' || activeTab === 'team'}
+              onClick={() => {
+                setActiveTab('crew');
+                window.location.hash = '#/app/crew';
+              }}
+            />
+          )}
         </div>
 
         {/* Minimal User Profile & Quick Actions */}

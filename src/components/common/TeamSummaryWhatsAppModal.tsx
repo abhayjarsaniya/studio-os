@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useStudio } from '../../context/StudioContext';
 import { useApp } from '../../context/AppContext';
 import { teamWhatsAppService } from '../../services/teamWhatsAppService';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 import { MessageSquare, Copy, ExternalLink, X, Calendar, Check, ShieldCheck } from 'lucide-react';
 
 interface TeamSummaryWhatsAppModalProps {
@@ -25,6 +26,11 @@ export const TeamSummaryWhatsAppModal: React.FC<TeamSummaryWhatsAppModalProps> =
   const [targetPhone, setTargetPhone] = useState<string>('');
   const [copied, setCopied] = useState(false);
 
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen,
+    onClose
+  });
+
   if (!isOpen) return null;
 
   const generatedMessage = mode === 'daily'
@@ -45,8 +51,16 @@ export const TeamSummaryWhatsAppModal: React.FC<TeamSummaryWhatsAppModalProps> =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-      <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div 
+        className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2">
@@ -60,7 +74,12 @@ export const TeamSummaryWhatsAppModal: React.FC<TeamSummaryWhatsAppModalProps> =
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400">
+          <button 
+            type="button"
+            onClick={handleAttemptClose} 
+            className="min-w-[44px] min-h-[44px] rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors"
+            aria-label="Close modal"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>

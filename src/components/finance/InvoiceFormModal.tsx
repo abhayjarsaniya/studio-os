@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Plus, Trash2, FileCheck } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Invoice, InvoiceType } from '../../types/schema';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 
 interface InvoiceFormModalProps {
   isOpen: boolean;
@@ -47,6 +48,14 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
   const [paymentTerms, setPaymentTerms] = useState(invoiceToEdit?.paymentTerms || 'Due on Receipt');
   const [notes, setNotes] = useState(invoiceToEdit?.notes || '');
   const [isIssued, setIsIssued] = useState(true);
+  const [isDirty, setIsDirty] = useState(false);
+
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen,
+    onClose,
+    isDirty,
+    confirmMessage: 'Discard unsaved changes to this invoice?'
+  });
 
   // Line items
   const [items, setItems] = useState<Array<{
@@ -177,10 +186,15 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
       <div 
         className="bg-white border border-zinc-200 rounded-xl shadow-2xl flex flex-col w-full max-w-3xl max-h-[92vh] overflow-hidden"
-        role="dialog"
+        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-200 bg-zinc-50">
@@ -197,13 +211,22 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded text-zinc-400 hover:text-zinc-600">
+          <button 
+            type="button"
+            onClick={handleAttemptClose} 
+            className="min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors"
+            aria-label="Close invoice form"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-5 text-sm">
+        <form 
+          onSubmit={handleSubmit} 
+          onChange={() => !isDirty && setIsDirty(true)}
+          className="flex-1 overflow-y-auto p-5 space-y-5 text-sm"
+        >
           {/* Invoice Type & General Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -442,8 +465,8 @@ export const InvoiceFormModal: React.FC<InvoiceFormModalProps> = ({
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-200">
             <button
               type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-medium border border-zinc-200 rounded-lg hover:bg-zinc-50 text-zinc-700"
+              onClick={handleAttemptClose}
+              className="px-4 py-2 text-xs font-medium border border-zinc-200 rounded-lg hover:bg-zinc-50 text-zinc-700 min-h-[44px]"
             >
               Cancel
             </button>

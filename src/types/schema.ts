@@ -1944,6 +1944,7 @@ export const SaaSSubscriptionStatusEnum = z.enum([
   'active',
   'payment_pending',
   'past_due',
+  'payment_failed',
   'grace_period',
   'suspended',
   'cancelled',
@@ -1956,7 +1957,12 @@ export const PlatformPlanSchema = z.object({
   name: z.string().min(1),
   version: z.number().default(1),
   priceMonthly: z.number().default(500), // ₹500/month flat per studio
+  priceQuarterly: z.number().optional(),
   priceAnnual: z.number().default(5000), // 2 months discount option
+  setupFee: z.number().optional(),
+  renewalPolicy: z.enum(['auto_renew', 'manual_or_autopay', 'fixed_term']).optional(),
+  razorpayTestPlanIds: z.record(z.string(), z.string()).optional(),
+  razorpayLivePlanIds: z.record(z.string(), z.string()).optional(),
   currency: z.literal('INR').default('INR'),
   billingCycle: z.enum(['monthly', 'annual']).default('monthly'),
   employeeLimit: z.number().default(25),

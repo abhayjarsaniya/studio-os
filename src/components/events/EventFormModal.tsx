@@ -118,6 +118,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   const [errorMessage, setErrorMessage] = useState('');
 
   // Stable booking session refs & Submission lock to prevent duplicate creations
+  const [isDirty, setIsDirty] = useState(false);
   const employeeDropdownRef = useRef<HTMLDivElement>(null);
   const formSubmissionIdRef = useRef<string | null>(null);
   const formBookingNumRef = useRef<string | null>(null);
@@ -723,8 +724,14 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       title={isEditing ? 'Edit Event Details' : 'Create New Shoot / Event'}
       subtitle={isEditing ? `Updating ${eventToEdit?.eventNumber || ''}` : 'Add a new photography assignment or project to Studio OS'}
       maxWidth="2xl"
+      isDirty={isDirty}
+      confirmMessage="Discard unsaved changes to this event/shoot?"
     >
-      <form onSubmit={handleSubmit} className="space-y-5 text-xs text-zinc-900 pb-2 relative">
+      <form 
+        onSubmit={handleSubmit} 
+        onChange={() => !isDirty && setIsDirty(true)}
+        className="space-y-5 text-xs text-zinc-900 pb-2 relative"
+      >
         {/* Visible Saving/Loading Progress Overlay */}
         {isSaving && (
           <div className="absolute inset-0 bg-white/95 backdrop-blur-xs z-50 rounded-2xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-150">

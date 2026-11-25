@@ -58,9 +58,12 @@ export const CustomersPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'name' | 'newest' | 'spent' | 'pending'>('newest');
 
-  const canViewFinancials = can ? (can('invoices', 'view') || can('payments', 'view')) : true;
+  const canViewFinancials = can ? can('customers_crm' as any, 'view_financials' as any) : true;
+  const canViewPii = can ? can('customers_crm' as any, 'view_client_pii' as any) : true;
   const canExport = can ? can('customers', 'export') : true;
   const canCreate = can ? can('customers', 'create') : true;
+  const { isFeatureEnabled } = useApp();
+  const showWhatsApp = isFeatureEnabled ? isFeatureEnabled('whatsapp_chat') : true;
 
   // Filter and sort customers
   const filteredCustomers = useMemo(() => {
@@ -419,17 +422,19 @@ export const CustomersPage: React.FC = () => {
           <span>Follow-Up Reminders</span>
         </button>
 
-        <button
-          onClick={() => setActiveSubTab('templates')}
-          className={`pb-3 border-b-2 flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${
-            activeSubTab === 'templates'
-              ? 'border-zinc-900 text-zinc-900'
-              : 'border-transparent text-zinc-500 hover:text-zinc-700'
-          }`}
-        >
-          <FileText className="w-4 h-4" />
-          <span>WhatsApp Message Templates</span>
-        </button>
+        {showWhatsApp && (
+          <button
+            onClick={() => setActiveSubTab('templates')}
+            className={`pb-3 border-b-2 flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${
+              activeSubTab === 'templates'
+                ? 'border-zinc-900 text-zinc-900'
+                : 'border-transparent text-zinc-500 hover:text-zinc-700'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>WhatsApp Message Templates</span>
+          </button>
+        )}
       </div>
 
       {/* SUB-TAB CONTENTS */}
@@ -441,7 +446,7 @@ export const CustomersPage: React.FC = () => {
       {activeSubTab === 'followups' && <FollowUpManagerView />}
 
       {/* 3. WhatsApp Templates Tab */}
-      {activeSubTab === 'templates' && <MessageTemplateManager isStandaloneView={true} />}
+      {showWhatsApp && activeSubTab === 'templates' && <MessageTemplateManager isStandaloneView={true} />}
 
       {/* 4. Directory Tab */}
       {activeSubTab === 'directory' && (
@@ -648,13 +653,15 @@ export const CustomersPage: React.FC = () => {
                       <span>Call</span>
                     </button>
 
-                    <button
-                      onClick={(e) => handleOpenWhatsApp(e, customer)}
-                      className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs min-h-[44px]"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      <span>WhatsApp</span>
-                    </button>
+                    {showWhatsApp && (
+                      <button
+                        onClick={(e) => handleOpenWhatsApp(e, customer)}
+                        className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs min-h-[44px]"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        <span>WhatsApp</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -728,13 +735,15 @@ export const CustomersPage: React.FC = () => {
                             >
                               <Phone className="w-4 h-4" />
                             </button>
-                            <button
-                              onClick={(e) => handleOpenWhatsApp(e, c)}
-                              title="WhatsApp"
-                              className="p-2 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
-                            >
-                              <MessageCircle className="w-4 h-4" />
-                            </button>
+                            {showWhatsApp && (
+                              <button
+                                onClick={(e) => handleOpenWhatsApp(e, c)}
+                                title="WhatsApp"
+                                className="p-2 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+                              >
+                                <MessageCircle className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

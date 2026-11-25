@@ -4,15 +4,70 @@
     <meta charset="UTF-8" />
     <meta name="color-scheme" content="light" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2309090b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z'/><circle cx='12' cy='13' r='4'/></svg>" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#ffffff" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>Studio OS – Studio Operating System</title>
+    <!-- iOS Safari & Storage Safeguard + Stale Service Worker Unregistration -->
+    <script>
+      (function() {
+        try {
+          var testKey = '__studio_os_storage_test__';
+          window.localStorage.setItem(testKey, testKey);
+          window.localStorage.removeItem(testKey);
+        } catch (e) {
+          var memoryStore = {};
+          try {
+            Object.defineProperty(window, 'localStorage', {
+              value: {
+                getItem: function(key) { return memoryStore[key] || null; },
+                setItem: function(key, val) { memoryStore[key] = String(val); },
+                removeItem: function(key) { delete memoryStore[key]; },
+                clear: function() { memoryStore = {}; },
+                key: function(idx) { return Object.keys(memoryStore)[idx] || null; },
+                get length() { return Object.keys(memoryStore).length; }
+              },
+              configurable: true,
+              enumerable: true,
+              writable: true
+            });
+          } catch (e2) {}
+        }
+        // Unregister any stale legacy service workers
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            for (var i = 0; i < regs.length; i++) {
+              regs[i].unregister();
+            }
+          }).catch(function() {});
+        }
+      })();
+    </script>
     <!-- Google Fonts: Inter (UI/Body/Tabular), Poppins (Headings/Display), Open Sans (Descriptions) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Open+Sans:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      html, body {
+        height: 100%;
+        min-height: 100%;
+        min-height: 100dvh;
+        margin: 0;
+        padding: 0;
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: transparent;
+      }
+      #root {
+        height: 100%;
+        min-height: 100%;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
   </head>
   <body class="bg-zinc-50/70 text-zinc-900 antialiased selection:bg-zinc-900 selection:text-white font-sans">
     <div id="root"></div>

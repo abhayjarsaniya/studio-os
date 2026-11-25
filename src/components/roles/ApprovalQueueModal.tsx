@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ApprovalRequest, ApprovalStatus } from '../../types/schema';
 import { Button } from '../ui/Button';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 import { 
   X, 
   CheckCircle, 
@@ -31,6 +32,11 @@ export const ApprovalQueueModal: React.FC<ApprovalQueueModalProps> = ({
   const [filterStatus, setFilterStatus] = useState<ApprovalStatus | 'all'>('pending');
   const [remarksMap, setRemarksMap] = useState<Record<string, string>>({});
 
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen,
+    onClose
+  });
+
   if (!isOpen) return null;
 
   const filtered = requests.filter(r => {
@@ -56,8 +62,16 @@ export const ApprovalQueueModal: React.FC<ApprovalQueueModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150">
-      <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-zinc-200 overflow-hidden my-8">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div 
+        className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-zinc-200 overflow-hidden my-8"
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="px-6 py-4 border-b border-zinc-200 flex items-center justify-between bg-zinc-50/50">
           <div className="flex items-center gap-2.5">
@@ -74,8 +88,10 @@ export const ApprovalQueueModal: React.FC<ApprovalQueueModalProps> = ({
             </div>
           </div>
           <button
-            onClick={onClose}
-            className="p-2 text-zinc-400 hover:text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors cursor-pointer"
+            type="button"
+            onClick={handleAttemptClose}
+            className="min-w-[44px] min-h-[44px] text-zinc-400 hover:text-zinc-600 rounded-lg hover:bg-zinc-100 flex items-center justify-center transition-colors cursor-pointer"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>

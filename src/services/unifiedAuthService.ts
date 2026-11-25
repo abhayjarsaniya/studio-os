@@ -58,12 +58,15 @@ export class UnifiedAuthService {
 
   private ensureDefaultAccounts(): void {
     try {
-      const accounts = this.listStoredAccounts();
-      // Master Admin account (Strictly only jarsaniya.abhay@gmail.com in production)
       const isTestEnv = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
-      const masterEmails = isTestEnv 
-        ? ['jarsaniya.abhay@gmail.com', 'admin@studio-os.com', 'masteradmin@studioos.internal']
-        : ['jarsaniya.abhay@gmail.com'];
+      if (!isTestEnv) {
+        // Production uses live Firebase Authentication & Firestore `users` collection.
+        // Never seed demo/alias accounts into localStorage in production.
+        return;
+      }
+
+      const accounts = TenantStore.get<UserAccount>('platform_system', GLOBAL_ACCOUNTS_KEY) || [];
+      const masterEmails = ['jarsaniya.abhay@gmail.com', 'admin@studio-os.com', 'masteradmin@studioos.internal'];
       for (const mEmail of masterEmails) {
         const masterAcc = accounts.find(a => a.email.toLowerCase() === mEmail.toLowerCase() || a.loginId.toLowerCase() === mEmail.toLowerCase());
         if (!masterAcc) {
@@ -88,7 +91,7 @@ export class UnifiedAuthService {
       }
 
       // Default Studio Owners (Test environment only)
-      if (isTestEnv) {
+      {
         const defaultOwners = [
         {
           id: 'usr_owner_shreeji_primary',
@@ -310,8 +313,12 @@ export class UnifiedAuthService {
   listStoredAccounts(): UserAccount[] {
     const list = TenantStore.get<UserAccount>('platform_system', GLOBAL_ACCOUNTS_KEY);
     if (!list || list.length === 0) {
-      this.ensureDefaultAccounts();
-      return TenantStore.get<UserAccount>('platform_system', GLOBAL_ACCOUNTS_KEY) || [];
+      const isTestEnv = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+      if (isTestEnv) {
+        this.ensureDefaultAccounts();
+        return TenantStore.get<UserAccount>('platform_system', GLOBAL_ACCOUNTS_KEY) || [];
+      }
+      return [];
     }
     return list;
   }

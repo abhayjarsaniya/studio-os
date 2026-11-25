@@ -162,6 +162,59 @@ export class EmployeeService {
       { fullName: target.fullName }
     );
   }
+
+  cleanResetAllObsoleteEmployees(actingAdmin = 'Master Admin'): { resetCount: number; studiosProcessed: string[] } {
+    const isTestEnv = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+    if (isTestEnv) {
+      return { resetCount: 0, studiosProcessed: [] };
+    }
+
+    const keys = TenantStore.getStorageKeys();
+    const studioIds = new Set<string>();
+    keys.forEach(k => {
+      if (k.startsWith('studio_os_') && k.endsWith('_employees')) {
+        const sId = k.replace('studio_os_', '').replace('_employees', '');
+        if (sId && sId !== 'platform_system') {
+          studioIds.add(sId);
+        }
+      }
+    });
+
+    let resetCount = 0;
+    const studiosProcessed: string[] = [];
+
+    studioIds.forEach(sId => {
+      const emps = TenantStore.get<Employee>(sId, 'employees') || [];
+      const preserved = emps.filter(e => {
+        const isOwner = e.designation?.toLowerCase().includes('owner') || (e as any).role === 'owner' || (e as any).role === 'studio_owner';
+        return isOwner;
+      });
+      resetCount += (emps.length - preserved.length);
+      TenantStore.set(sId, 'employees', preserved);
+      studiosProcessed.push(sId);
+    });
+
+    try {
+      const allAccounts = TenantStore.get<any>('platform_system', 'unified_user_accounts') || [];
+      const filteredAccounts = allAccounts.filter((a: any) => {
+        if (a.accountType === 'MASTER_ADMIN' || a.accountType === 'STUDIO_OWNER') return true;
+        if (a.email?.includes('shreejifilms') || a.loginId?.startsWith('emp_shr_')) return false;
+        return true;
+      });
+      TenantStore.set('platform_system', 'unified_user_accounts', filteredAccounts);
+    } catch {}
+
+    auditService.log(
+      'sys',
+      'sys',
+      'EMPLOYEES_CLEAN_RESET',
+      'employee',
+      'all',
+      { studiosProcessed, resetCount, actingAdmin }
+    );
+
+    return { resetCount, studiosProcessed };
+  }
 }
 
 export const employeeService = new EmployeeService();

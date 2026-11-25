@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, ArrowRight, CheckCircle2, AlertCircle, X, KeyRound } from 'lucide-react';
 import { firebaseAuthService } from '../../services/firebaseAuthService';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -19,6 +20,15 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen,
+    onClose: () => {
+      setError(null);
+      setSuccessMessage(null);
+      onClose();
+    }
+  });
 
   if (!isOpen) return null;
 
@@ -49,14 +59,23 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-zinc-100 space-y-5 animate-in fade-in zoom-in-95 duration-200 relative">
+    <div 
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div 
+        className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-zinc-100 space-y-5 animate-in fade-in zoom-in-95 duration-200 relative"
+        onClick={e => e.stopPropagation()}
+      >
         <button
-          onClick={handleReset}
-          className="absolute right-5 top-5 p-1 rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors"
+          type="button"
+          onClick={handleAttemptClose}
+          className="absolute right-5 top-5 min-w-[44px] min-h-[44px] rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors flex items-center justify-center cursor-pointer"
           aria-label="Close modal"
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-3">

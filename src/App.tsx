@@ -6,7 +6,6 @@ import { DesktopHeader } from './components/layout/DesktopHeader';
 import { MobileHeader } from './components/layout/MobileHeader';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { StudioLoginPage } from './pages/StudioLoginPage';
-import { StudioRegistrationPage } from './pages/auth/StudioRegistrationPage';
 import { PasswordSetupPage } from './pages/auth/PasswordSetupPage';
 import { EmployeeLoginPage } from './pages/EmployeeLoginPage';
 import { EmployeeDashboardPage } from './pages/EmployeeDashboardPage';
@@ -62,6 +61,7 @@ const MainLayout: React.FC = () => {
     activeTab, 
     setActiveTab,
     currentUser,
+    can,
     selectedEventId, 
     setSelectedEventId, 
     isEventFormOpen, 
@@ -115,77 +115,111 @@ const MainLayout: React.FC = () => {
   const renderActivePage = () => {
     switch (activeTab) {
       case 'dashboard':
+        if (!can('dashboard', 'view')) {
+          return renderDisabledFeatureNotice('Dashboard');
+        }
         return <DashboardPage />;
       case 'history':
       case 'bookings':
+        if (!can('bookings' as any, 'view')) {
+          return renderDisabledFeatureNotice('Bookings');
+        }
         return <BookingsWorkspacePage />;
       case 'create-booking':
       case 'new-booking':
+        if (!can('bookings' as any, 'create')) {
+          return renderDisabledFeatureNotice('Create Booking');
+        }
         return <UnifiedBookingPage />;
       case 'crew':
+        if (!can('team', 'view')) {
+          return renderDisabledFeatureNotice('Crew & Team');
+        }
         return <CrewMembersPage />;
       case 'quotations':
+        if ((!checkFeatureAccess('finance_billing') && !checkFeatureAccess('finance')) || !can('quotations' as any, 'view')) {
+          return renderDisabledFeatureNotice('Quotations');
+        }
         return <QuotationsListPage />;
       case 'create-quotation':
+        if ((!checkFeatureAccess('finance_billing') && !checkFeatureAccess('finance')) || !can('quotations' as any, 'create')) {
+          return renderDisabledFeatureNotice('Create Quotation');
+        }
         return <CreateQuotationPage />;
       case 'deliveries':
-        if (!checkFeatureAccess('deliverables') && !checkFeatureAccess('advanced_delivery')) {
+        if ((!checkFeatureAccess('deliverables') && !checkFeatureAccess('advanced_delivery')) || !can('deliverables_production' as any, 'view')) {
           return renderDisabledFeatureNotice('Advanced Delivery Tracking');
         }
         return <DeliveriesPage />;
       case 'events':
+        if (!can('events', 'view')) {
+          return renderDisabledFeatureNotice('Events');
+        }
         return <EventsPage />;
       case 'customers':
-        if (!checkFeatureAccess('crm_customers') && !checkFeatureAccess('customer_crm')) {
+        if ((!checkFeatureAccess('crm_customers') && !checkFeatureAccess('customer_crm')) || !can('customers', 'view')) {
           return renderDisabledFeatureNotice('Customer CRM');
         }
         return <CustomersPage />;
       case 'tasks':
-        if (!checkFeatureAccess('tasks') && !checkFeatureAccess('tasks_production')) {
+        if ((!checkFeatureAccess('tasks') && !checkFeatureAccess('tasks_production')) || !can('tasks', 'view')) {
           return renderDisabledFeatureNotice('Task Management');
         }
         return <TasksPage />;
       case 'calendar':
+        if (!can('calendar', 'view')) {
+          return renderDisabledFeatureNotice('Calendar');
+        }
         return <CalendarPage />;
       case 'team':
+        if (!can('team', 'view')) {
+          return renderDisabledFeatureNotice('Team Members');
+        }
         return <CrewMembersPage />;
       case 'suppliers':
-        if (!checkFeatureAccess('suppliers') && !checkFeatureAccess('external_suppliers')) {
+        if ((!checkFeatureAccess('suppliers') && !checkFeatureAccess('external_suppliers')) || !can('suppliers_vendors' as any, 'view')) {
           return renderDisabledFeatureNotice('External Suppliers');
         }
         return <SuppliersPage />;
       case 'roles':
         return <DashboardPage />;
       case 'leave':
-        if (!checkFeatureAccess('leave_management')) {
+        if (!checkFeatureAccess('leave_management') || !can('attendance_leave' as any, 'view')) {
           return renderDisabledFeatureNotice('Staff Leave Management');
         }
         return <LeavePage />;
       case 'payroll':
-        if (!checkFeatureAccess('payroll') && !checkFeatureAccess('payroll_salaries')) {
+        if ((!checkFeatureAccess('payroll') && !checkFeatureAccess('payroll_salaries')) || !can('payroll_salary' as any, 'view')) {
           return renderDisabledFeatureNotice('Confidential Payroll');
         }
         return <PayrollPage />;
       case 'finance':
-        if (!checkFeatureAccess('finance') && !checkFeatureAccess('finance_billing')) {
+        if ((!checkFeatureAccess('finance') && !checkFeatureAccess('finance_billing')) || !can('invoices_billing' as any, 'view')) {
           return renderDisabledFeatureNotice('Finance & Invoicing');
         }
         return <FinancePage />;
       case 'analytics':
-        if (!checkFeatureAccess('analytics') && !checkFeatureAccess('analytics_bi')) {
+        if ((!checkFeatureAccess('analytics') && !checkFeatureAccess('analytics_bi')) || !can('studio_analytics' as any, 'view')) {
           return renderDisabledFeatureNotice('Business Intelligence & Analytics');
         }
         return <AnalyticsPage />;
       case 'reports':
-        if (!checkFeatureAccess('reports') && !checkFeatureAccess('report_center')) {
+        if ((!checkFeatureAccess('reports') && !checkFeatureAccess('report_center')) || !can('financial_reports' as any, 'view')) {
           return renderDisabledFeatureNotice('Report Center');
         }
         return <ReportCenterPage />;
       case 'platform-analytics':
         return <PlatformAnalyticsPage />;
       case 'notifications':
+        if (!can('notifications', 'view')) {
+          return renderDisabledFeatureNotice('Notifications');
+        }
         return <NotificationsPage />;
       case 'settings':
+      case 'billing':
+        if (!can('studio_settings' as any, 'view')) {
+          return renderDisabledFeatureNotice('Studio Settings');
+        }
         return <SettingsPage />;
       default:
         return <DashboardPage />;
@@ -193,14 +227,14 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-full bg-zinc-50/70 overflow-hidden font-sans">
+    <div className="flex h-screen h-[100dvh] w-full bg-zinc-50/70 overflow-hidden font-sans">
       {/* Desktop Sidebar (hidden on mobile) */}
       <div className="hidden sm:flex">
         <DesktopSidebar />
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 h-screen h-[100dvh] overflow-hidden">
         {/* Desktop Header */}
         <div className="hidden sm:block">
           <DesktopHeader />

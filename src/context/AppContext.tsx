@@ -83,6 +83,10 @@ import { pdfGeneratorService } from '../services/pdfGeneratorService';
 import { TenantStore } from '../services/tenantStore';
 import { ShreejiBookingSeedService } from '../services/shreejiBookingSeedService';
 import { unifiedAuthService } from '../services/unifiedAuthService';
+import { liveRbacService } from '../services/liveRbacService';
+import { liveFeatureService } from '../services/liveFeatureService';
+import { featureVisibilityService } from '../services/featureVisibilityService';
+import { auth as firebaseAuth } from '../lib/firebase';
 
 export type EventViewMode = 'list' | 'calendar' | 'kanban' | 'mobile';
 
@@ -288,6 +292,7 @@ interface AppContextType {
   restoreDefaultRoles: () => Role[];
   hasPermission: (module: string, action: string) => boolean;
   can: (module: PermissionModule, action: PermissionAction, context?: AuthorizationContext) => boolean;
+  isFeatureEnabled: (featureIdOrKey: string) => boolean;
   filterRecord: <T extends Record<string, any>>(module: PermissionModule, record: T) => T;
 
   // Individual Employee Permission Overrides
@@ -1400,14 +1405,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return match || employees[0];
   }, [employees, currentRole]);
 
+  const [liveRbacTick, setLiveRbacTick] = useState(0);
+  const [liveFeatureTick, setLiveFeatureTick] = useState(0);
+
+  useEffect(() => {
+    const sId = currentStudio?.id;
+    if (!sId) return;
+    const unsub = liveFeatureService.subscribeStudioFeatures(sId, () => {
+      setLiveFeatureTick((t) => t + 1);
+    });
+    return () => unsub();
+  }, [currentStudio?.id]);
+
+  const isFeatureEnabled = useCallback((featureIdOrKey: string): boolean => {
+    const sId = currentStudio?.id || 'std_demo_royal';
+    const liveVal = liveFeatureService.isFeatureEnabledLive(sId, featureIdOrKey);
+    if (liveVal !== null) return liveVal;
+    return featureVisibilityService.evaluateFeature(sId, featureIdOrKey, currentRole === 'owner').accessible;
+  }, [currentStudio?.id, currentRole, liveFeatureTick]);
+
+  useEffect(() => {
+    const uid = firebaseAuth?.currentUser?.uid;
+    const sId = currentStudio?.id;
+    if (!uid || !sId) return;
+    const fallbackRole = currentRole === 'owner' ? 'studio_owner' : currentRole;
+    const unsub = liveRbacService.subscribeUserEffectivePermissions(sId, uid, fallbackRole, (bundle) => {
+      setLiveRbacTick((t) => t + 1);
+      if (bundle.isDeactivated && typeof window !== 'undefined') {
+        localStorage.removeItem('studio_os_session_token');
+        localStorage.removeItem('studio_os_user_role');
+        window.location.hash = '#/studio/login';
+      }
+    });
+    return () => unsub();
+  }, [currentStudio?.id, currentRole]);
+
   const can = useCallback((
     module: PermissionModule, 
     action: PermissionAction, 
     context?: AuthorizationContext
   ): boolean => {
+    const liveAllowed = liveRbacService.canFromActiveBundle(module, action);
+    if (liveAllowed !== null) {
+      return liveAllowed;
+    }
     const actorId = activeEmployee?.id || (currentRole === 'owner' ? 'owner_1' : currentUser.id);
     return authorizationEngine.can(currentStudio.id, actorId, module, action, context);
-  }, [currentStudio.id, activeEmployee, currentRole, currentUser.id]);
+  }, [currentStudio.id, activeEmployee, currentRole, currentUser.id, liveRbacTick]);
 
   const filterRecord = useCallback(<T extends Record<string, any>>(
     module: PermissionModule,
@@ -1415,23 +1459,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   ): T => {
     const actorId = activeEmployee?.id || (currentRole === 'owner' ? 'owner_1' : currentUser.id);
     return authorizationEngine.filterRecord(currentStudio.id, actorId, module, record);
-  }, [currentStudio.id, activeEmployee, currentRole, currentUser.id]);
+  }, [currentStudio.id, activeEmployee, currentRole, currentUser.id, liveRbacTick]);
 
   const hasPermission = useCallback((module: string, action: string): boolean => {
+    const liveAllowed = liveRbacService.canFromActiveBundle(module, action);
+    if (liveAllowed !== null) {
+      return liveAllowed;
+    }
     if (!currentRoleObject) return true;
     if (currentRoleObject.name === 'Studio Owner' || currentRoleObject.name === 'Super Admin') return true;
     return roleService.hasPermission(currentRoleObject, module, action);
-  }, [currentRoleObject]);
+  }, [currentRoleObject, liveRbacTick]);
 
   const canViewSalary = useMemo(() => {
+    const liveAllowed = liveRbacService.canFromActiveBundle('payroll_salary', 'view');
+    if (liveAllowed !== null) return liveAllowed;
     if (currentRole === 'owner') return true;
     return can('salary', 'view');
-  }, [currentRole, can]);
+  }, [currentRole, can, liveRbacTick]);
 
   const canManagePayroll = useMemo(() => {
+    const liveAllowed = liveRbacService.canFromActiveBundle('payroll_salary', 'edit');
+    if (liveAllowed !== null) return liveAllowed;
     if (currentRole === 'owner') return true;
     return can('payroll', 'edit') || can('payroll', 'manageSettings');
-  }, [currentRole, can]);
+  }, [currentRole, can, liveRbacTick]);
 
   const createRole = (data: any): Role => {
     const role = roleService.createRole(currentStudio.id, data);
@@ -1853,6 +1905,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         restoreDefaultRoles,
         hasPermission,
         can,
+        isFeatureEnabled,
         filterRecord,
         permissionOverrides,
         createPermissionOverride,

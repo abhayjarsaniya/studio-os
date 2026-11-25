@@ -3,6 +3,8 @@ import { employeeWorkspaceService, EmployeeDashboardMetrics } from '../services/
 import { calendarVisibilityService, EmployeeCalendarEvent } from '../services/calendarVisibilityService';
 import { firebaseAuthService } from '../services/firebaseAuthService';
 import { unifiedAuthService } from '../services/unifiedAuthService';
+import { liveRbacService } from '../services/liveRbacService';
+import { auth as firebaseAuth } from '../lib/firebase';
 import { 
   Calendar, 
   Clock, 
@@ -159,6 +161,22 @@ export const EmployeeDashboardPage: React.FC = () => {
   useEffect(() => {
     loadDashboard();
   }, [studioId, employeeId, refreshTrigger]);
+
+  // Real-time Master Admin RBAC subscription for Employee portal
+  useEffect(() => {
+    const uid = firebaseAuth?.currentUser?.uid;
+    if (!uid || !studioId) return;
+    const unsub = liveRbacService.subscribeUserEffectivePermissions(studioId, uid, 'photographer', (bundle) => {
+      setRefreshTrigger((p) => p + 1);
+      if (bundle.isDeactivated) {
+        localStorage.removeItem('studio_os_session_token');
+        localStorage.removeItem('studio_os_employee_id');
+        localStorage.removeItem('studio_os_user_role');
+        window.location.hash = '#/employee/login';
+      }
+    });
+    return () => unsub();
+  }, [studioId]);
 
   const triggerNotify = (msg: string) => {
     setActionSuccess(msg);

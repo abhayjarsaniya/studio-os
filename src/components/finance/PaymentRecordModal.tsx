@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, CreditCard } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Invoice, PaymentMethod } from '../../types/schema';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 
 interface PaymentRecordModalProps {
   isOpen: boolean;
@@ -37,6 +38,14 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
   const [transactionReference, setTransactionReference] = useState('');
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
+  const [isDirty, setIsDirty] = useState(false);
+
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen,
+    onClose,
+    isDirty,
+    confirmMessage: 'Discard unsaved payment details?'
+  });
 
   if (!isOpen) return null;
 
@@ -79,10 +88,15 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
       <div 
         className="bg-white border border-zinc-200 rounded-xl shadow-2xl flex flex-col w-full max-w-lg overflow-hidden"
-        role="dialog"
+        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-200 bg-zinc-50">
@@ -99,13 +113,22 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded text-zinc-400 hover:text-zinc-600">
+          <button 
+            type="button"
+            onClick={handleAttemptClose} 
+            className="min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors"
+            aria-label="Close payment record form"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 text-sm">
+        <form 
+          onSubmit={handleSubmit} 
+          onChange={() => !isDirty && setIsDirty(true)}
+          className="p-5 space-y-4 text-sm"
+        >
           {/* Invoice Selector */}
           <div>
             <label className="block text-xs font-medium text-zinc-700 mb-1">
@@ -226,8 +249,8 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-zinc-200">
             <button
               type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-medium border border-zinc-200 rounded-lg hover:bg-zinc-50 text-zinc-700"
+              onClick={handleAttemptClose}
+              className="px-4 py-2 text-xs font-medium border border-zinc-200 rounded-lg hover:bg-zinc-50 text-zinc-700 min-h-[44px]"
             >
               Cancel
             </button>

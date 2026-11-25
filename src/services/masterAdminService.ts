@@ -16,6 +16,7 @@ import { platformStudioService } from './platformStudioService';
 import { platformSubscriptionManager } from './platformSubscriptionManager';
 import { platformAuditService } from './platformAuditService';
 import { demoStudioSeedService } from './demoStudioSeedService';
+import { unifiedAuthService } from './unifiedAuthService';
 
 import { ShreejiBookingSeedService } from './shreejiBookingSeedService';
 
@@ -388,9 +389,10 @@ export class MasterAdminService {
       const totalRev = events.reduce((sum, e) => sum + (Number(e.totalAmount) || 0), 0);
       
       const ownerEmp = employees.find(e => e.designation?.toLowerCase().includes('owner') || (e as any).role === 'studio_owner');
-      const ownerName = ownerEmp?.name || (s as any).ownerName || (s.lifecycleStatus === 'draft' ? 'Unconfigured' : 'Studio Owner');
-      const ownerEmail = ownerEmp?.email || (s as any).ownerEmail || s.email || '—';
-      const ownerPhone = ownerEmp?.phone || (s as any).ownerPhone || s.phone || '—';
+      const ownerAccount = unifiedAuthService.listStoredAccounts().find(a => a.studioId === s.id && a.accountType === 'STUDIO_OWNER');
+      const ownerName = (s as any).ownerName || s.title || ownerEmp?.name || ownerAccount?.displayName || (s.lifecycleStatus === 'draft' ? 'Unconfigured' : 'Studio Owner');
+      const ownerEmail = (s as any).ownerEmail || s.email || ownerEmp?.email || ownerAccount?.email || '—';
+      const ownerPhone = (s as any).ownerPhone || s.phone || ownerEmp?.phone || ownerAccount?.phone || '—';
 
       const subStatus = s.subscription?.status || 'active';
       let status: 'active' | 'hidden' | 'suspended' | 'draft' = 'active';

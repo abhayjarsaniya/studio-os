@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Employee, EmploymentStatus } from '../../types';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 import { 
   X, 
   User, 
@@ -51,6 +52,11 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState<string | null>(null);
 
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen,
+    onClose
+  });
+
   if (!isOpen || !employee) return null;
 
   // Filter assigned events
@@ -91,8 +97,16 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div 
+        className="bg-white rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-zinc-100 bg-zinc-50/50 flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
@@ -130,8 +144,10 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
           </div>
 
           <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors shrink-0"
+            type="button"
+            onClick={handleAttemptClose}
+            className="min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors shrink-0"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
@@ -395,7 +411,7 @@ export const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
           </Button>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="xs" onClick={onClose}>
+            <Button variant="outline" size="xs" onClick={handleAttemptClose} className="min-h-[36px]">
               Close
             </Button>
             <Button

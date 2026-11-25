@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ReportCategory, SavedReportConfig, AnalyticsFilter } from '../../types/schema';
 import { X, Save, Play, CheckSquare, Square, FileText } from 'lucide-react';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 
 interface CustomReportBuilderModalProps {
   isOpen: boolean;
@@ -84,6 +85,14 @@ export const CustomReportBuilderModal: React.FC<CustomReportBuilderModalProps> =
   const [sortBy, setSortBy] = useState<string>('startDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [preset, setPreset] = useState<'this_month' | 'last_month' | 'this_year' | 'financial_year'>('this_month');
+  const [isDirty, setIsDirty] = useState(false);
+
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen,
+    onClose,
+    isDirty,
+    confirmMessage: 'Discard unsaved custom report configuration?'
+  });
 
   if (!isOpen) return null;
 
@@ -138,8 +147,16 @@ export const CustomReportBuilderModal: React.FC<CustomReportBuilderModalProps> =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div 
+        className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200"
+        onClick={e => e.stopPropagation()}
+      >
         <div className="p-5 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
@@ -151,8 +168,10 @@ export const CustomReportBuilderModal: React.FC<CustomReportBuilderModalProps> =
             </div>
           </div>
           <button
-            onClick={onClose}
-            className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+            type="button"
+            onClick={handleAttemptClose}
+            className="min-w-[44px] min-h-[44px] rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
@@ -280,8 +299,8 @@ export const CustomReportBuilderModal: React.FC<CustomReportBuilderModalProps> =
         <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between rounded-b-2xl">
           <button
             type="button"
-            onClick={onClose}
-            className="text-xs text-slate-600 hover:text-slate-800 font-medium px-3 py-2 rounded-lg"
+            onClick={handleAttemptClose}
+            className="text-xs text-slate-600 hover:text-slate-800 font-medium px-3 py-2 rounded-lg min-h-[44px]"
           >
             Cancel
           </button>

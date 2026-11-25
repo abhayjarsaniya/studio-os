@@ -16,6 +16,8 @@ import { firestoreService } from './firestoreService';
 import { crossDeviceAuthService } from './crossDeviceAuthService';
 import { studioA, studioB } from '../data/multiTenantDemoData';
 import { shreejiStudio } from './studioService';
+import { collection, getDocs } from 'firebase/firestore';
+import { db, isAuthBypassed } from '../lib/firebase';
 
 export interface StudioListItem {
   id: string;
@@ -294,6 +296,157 @@ export class PlatformStudioService {
     TenantStore.set('platform_system', this.STORE_KEY, meta);
   }
 
+  /**
+   * Synchronizes and restores all legitimate studios and owner profiles directly from Firestore accountRegistry
+   */
+  async syncStudiosFromFirestore(): Promise<StudioListItem[]> {
+    try {
+      let registryEntries: any[] = [];
+      if (db && !isAuthBypassed) {
+        try {
+          const snap = await getDocs(collection(db, 'accountRegistry'));
+          snap.forEach(d => {
+            registryEntries.push(d.data());
+          });
+        } catch (fbErr: any) {
+          console.warn('[PlatformStudioService] Firestore SDK fetch notice:', fbErr?.message);
+        }
+      }
+
+      if (registryEntries.length === 0 && typeof fetch !== 'undefined') {
+        try {
+          const projectId = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_PROJECT_ID) || 'studio-os-live-2026';
+          const res = await fetch(`https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/accountRegistry`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.documents) {
+              data.documents.forEach((doc: any) => {
+                const fields = doc.fields || {};
+                const parsed: any = {};
+                for (const [k, v] of Object.entries(fields)) {
+                  parsed[k] = Object.values(v as any)[0];
+                }
+                registryEntries.push(parsed);
+              });
+            }
+          }
+        } catch (restErr: any) {
+          console.warn('[PlatformStudioService] REST registry fetch notice:', restErr?.message);
+        }
+      }
+
+      const meta = this.getStudiosMeta();
+      let changed = false;
+
+      // Group by studioId
+      const studiosMap = new Map<string, any[]>();
+      for (const entry of registryEntries) {
+        if (!entry.studioId || entry.studioId === 'studio_shreeji_films') continue;
+        const list = studiosMap.get(entry.studioId) || [];
+        list.push(entry);
+        studiosMap.set(entry.studioId, list);
+      }
+
+      for (const [sId, entries] of studiosMap.entries()) {
+        const ownerEntry = entries.find(e => e.accountType === 'STUDIO_OWNER' || e.role === 'owner' || e.role === 'studio_owner') || entries[0];
+        const existingProfile = TenantStore.getSingle<Studio>(sId, 'profile');
+
+        const studioName = ownerEntry.studioName || existingProfile?.name || sId.replace('studio_', '').replace(/_/g, ' ').toUpperCase();
+        const ownerName = ownerEntry.displayName || ownerEntry.ownerName || existingProfile?.ownerName || 'Studio Owner';
+        const ownerEmail = ownerEntry.email || existingProfile?.ownerEmail || `${ownerEntry.loginId || 'owner'}@studio-os.internal`;
+        const ownerPhone = ownerEntry.phone || existingProfile?.phone || '';
+        const ownerUsername = ownerEntry.loginId || existingProfile?.ownerUsername || '';
+        const ownerAuthUid = ownerEntry.authUid || ownerEntry.uid || existingProfile?.ownerAuthUid || '';
+
+        const hydratedProfile: Studio = {
+          id: sId,
+          tenantId: sId,
+          name: studioName,
+          title: ownerName,
+          tagline: existingProfile?.tagline || `${studioName} Photography & Cinematography`,
+          email: ownerEmail,
+          phone: ownerPhone,
+          ownerName,
+          ownerEmail,
+          ownerPhone,
+          ownerUsername,
+          ownerAuthUid,
+          address: existingProfile?.address || '',
+          city: existingProfile?.city || 'Ahmedabad',
+          state: existingProfile?.state || 'Gujarat',
+          lifecycleStatus: (ownerEntry.status as any) || existingProfile?.lifecycleStatus || 'active',
+          subscription: existingProfile?.subscription || {
+            planId: 'studio_os_monthly',
+            planName: 'Studio OS Monthly',
+            pricePerMonth: 500,
+            currency: 'INR',
+            status: 'active',
+            validUntil: '2027-12-31',
+            autoRenew: true
+          },
+          settings: existingProfile?.settings || {
+            defaultCurrency: 'INR',
+            timezone: 'Asia/Kolkata',
+            dateFormat: 'DD/MM/YYYY',
+            timeFormat: '12h',
+            allowDirectWhatsApp: true,
+            watermarkEnabled: true,
+            invoicePrefix: `${sId.slice(0, 3).toUpperCase()}-INV`,
+            eventPrefix: `${sId.slice(0, 3).toUpperCase()}-EV`
+          },
+          storageUsageMb: existingProfile?.storageUsageMb || 0,
+          storageQuotaMb: existingProfile?.storageQuotaMb || 15360,
+          createdAt: existingProfile?.createdAt || ownerEntry.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          createdBy: existingProfile?.createdBy || 'Master Admin'
+        };
+
+        TenantStore.set(sId, 'profile', hydratedProfile);
+
+        if (!meta[sId]) {
+          meta[sId] = {
+            lifecycleStatus: hydratedProfile.lifecycleStatus || 'active',
+            internalNotes: [`Hydrated from Firebase accountRegistry on ${new Date().toISOString().split('T')[0]}`]
+          };
+          changed = true;
+        }
+
+        // Register in UnifiedAuthService if not already present
+        const existingAcc = unifiedAuthService.findAccountByIdentifier(ownerUsername) || unifiedAuthService.findAccountByIdentifier(ownerEmail);
+        if (!existingAcc) {
+          const salt = ownerEntry.salt || generateCryptoSalt();
+          unifiedAuthService.saveAccount({
+            id: ownerAuthUid || `usr_owner_${sId}`,
+            accountType: 'STUDIO_OWNER',
+            loginId: ownerUsername,
+            email: ownerEmail,
+            phone: ownerPhone,
+            displayName: ownerName,
+            studioId: sId,
+            studioName,
+            roleId: 'owner',
+            roleTitle: 'Studio Owner',
+            status: 'active',
+            passwordHash: ownerEntry.passwordHash || hashCredential('StudioOwner@123', salt),
+            salt,
+            mustChangePassword: Boolean(ownerEntry.mustChangePassword),
+            createdAt: ownerEntry.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          });
+        }
+      }
+
+      if (changed) {
+        this.saveStudiosMeta(meta);
+      }
+
+      return this.listStudios();
+    } catch (err: any) {
+      console.warn('[PlatformStudioService.syncStudiosFromFirestore] Error:', err?.message);
+      return this.listStudios();
+    }
+  }
+
   listStudios(filters?: {
     search?: string;
     lifecycleStatus?: StudioLifecycleStatus;
@@ -326,6 +479,27 @@ export class PlatformStudioService {
       if (!studioIds.includes(s.studioId)) studioIds.push(s.studioId);
     });
 
+    // Also include any studios registered in unified accounts
+    const allAccounts = unifiedAuthService.listStoredAccounts();
+    allAccounts.forEach(acc => {
+      if (acc.studioId && !studioIds.includes(acc.studioId) && acc.studioId !== 'studio_shreeji_films') {
+        studioIds.push(acc.studioId);
+      }
+    });
+
+    // Also discover any studio profiles stored in TenantStore
+    try {
+      const keys = TenantStore.getStorageKeys();
+      keys.forEach(k => {
+        if (k.startsWith('studio_os_studio_') && k.endsWith('_profile')) {
+          const sId = k.replace('studio_os_', '').replace('_profile', '');
+          if (sId && !studioIds.includes(sId) && sId !== 'studio_shreeji_films') {
+            studioIds.push(sId);
+          }
+        }
+      });
+    } catch {}
+
     const items: StudioListItem[] = studioIds.map(id => {
       let studio = TenantStore.getSingle<Studio>(id, 'profile') || 
         (id === 'studio_royal_001' ? (studioA as unknown as Studio) : id === 'studio_creative_002' ? (studioB as unknown as Studio) : null);
@@ -354,19 +528,27 @@ export class PlatformStudioService {
       });
       const outstandingAmount = Math.max(0, totalBudget - totalReceivedAmount);
 
+      const ownerEmp = employees.find(e => e.designation?.toLowerCase().includes('owner') || (e as any).role === 'studio_owner');
+      const ownerAccount = allAccounts.find(a => a.studioId === id && a.accountType === 'STUDIO_OWNER');
+
+      const ownerName = (studio as any)?.ownerName || studio?.title || ownerEmp?.fullName || ownerEmp?.name || ownerAccount?.displayName || 'Studio Owner';
+      const ownerEmail = (studio as any)?.ownerEmail || studio?.email || ownerEmp?.email || ownerAccount?.email || `${id}@studioos.internal`;
+      const ownerPhone = (studio as any)?.ownerPhone || studio?.phone || ownerEmp?.phone || ownerAccount?.phone || '—';
+      const city = studio?.city || (studio as any)?.location || 'Ahmedabad';
+
       return {
         id,
-        name: studio?.name || sub?.studioName || id,
-        ownerName: studio?.title || 'Studio Owner',
-        ownerEmail: studio?.email || `${id}@studioos.internal`,
-        ownerPhone: studio?.phone || '+91 98765 43210',
-        phone: studio?.phone || '+91 98765 43210',
-        city: studio?.city || 'Mumbai',
+        name: studio?.name || ownerAccount?.studioName || sub?.studioName || id.replace('studio_', '').replace(/_/g, ' ').toUpperCase(),
+        ownerName,
+        ownerEmail,
+        ownerPhone,
+        phone: studio?.phone || (studio as any)?.ownerPhone || ownerPhone,
+        city,
         registeredAt: studio?.createdAt?.split('T')[0] || '2026-01-01',
-        planName: sub?.planName || 'Studio OS Standard',
-        planPrice: sub?.agreedPrice || 500,
-        subscriptionStatus: sub?.status || 'active',
-        renewalDate: sub?.nextBillingDate || sub?.currentPeriodEnd || '2026-12-31',
+        planName: sub?.planName || studio?.subscription?.planName || 'Studio OS Standard',
+        planPrice: sub?.agreedPrice || studio?.subscription?.pricePerMonth || 500,
+        subscriptionStatus: sub?.status || studio?.subscription?.status || 'active',
+        renewalDate: sub?.nextBillingDate || sub?.currentPeriodEnd || studio?.subscription?.validUntil || '2026-12-31',
         employeeCount: employees.length,
         branchCount: branches.length,
         eventsCount: events.length,

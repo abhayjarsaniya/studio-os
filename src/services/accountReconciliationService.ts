@@ -59,10 +59,8 @@ export class AccountReconciliationService {
     try {
       console.log('[AccountReconciliation] Starting full platform account reconciliation...');
 
-      // 1. Reconcile Master Admins
+      // 1. Reconcile Master Admin (Strictly only jarsaniya.abhay@gmail.com)
       const masterAdminUsers = [
-        { uid: 'CazTsmfHx2h1G45ot6pScMKPZVs2', email: 'masteradmin@studioos.internal', displayName: 'Studio OS Master Admin' },
-        { uid: 'UR0EvNxYYxTevIwNdjWC2yjO3nw2', email: 'admin@studio-os.com', displayName: 'Platform Master Owner' },
         { uid: 'mmrIcufwmoQ4JawzKd0pbgjNRsx2', email: 'jarsaniya.abhay@gmail.com', displayName: 'Abhay Jarsaniya' }
       ];
 

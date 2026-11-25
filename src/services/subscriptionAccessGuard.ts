@@ -99,13 +99,15 @@ export class SubscriptionAccessGuard {
       }
 
       case 'past_due':
+      case 'payment_failed':
         return {
           isAllowed: true,
           allowed: true,
           isRestricted: false,
           restrictedMode: 'none',
-          status: 'past_due',
-          warningMessage: 'Subscription payment is past due. Please settle your invoice to avoid service interruption.',
+          status: sub.status,
+          warningMessage: 'Subscription payment failed or is past due. Please complete payment in Settings → Subscription & Billing to avoid service interruption.',
+          redirectRoute: '/app/settings',
           canAccessFeature
         };
 

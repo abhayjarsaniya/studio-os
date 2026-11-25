@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { googleAuthInvitationService } from '../services/googleAuthInvitationService';
+import { firebaseAuthService } from '../services/firebaseAuthService';
 import { unifiedAuthService } from '../services/unifiedAuthService';
 
 // Ensure localStorage mock is present in Node/Vitest environment
@@ -28,7 +28,7 @@ describe('Studio OS — Production Clean Reset & Master Admin Verification', () 
       photoURL: 'https://lh3.googleusercontent.com/a/ACg8ocJPHbGLL3cdwOs5h_qteRa4Xynqnm71qYd4iMA1c4xUxLeVpWv3DQ=s96-c'
     };
 
-    const result = await googleAuthInvitationService.loginWithGoogle(masterGoogleUser);
+    const result = await firebaseAuthService.loginMasterAdminWithGoogle(masterGoogleUser);
 
     expect(result.success).toBe(true);
     expect(result.role).toBe('platform_master_admin');
@@ -44,10 +44,10 @@ describe('Studio OS — Production Clean Reset & Master Admin Verification', () 
       displayName: 'Random User'
     };
 
-    const result = await googleAuthInvitationService.loginWithGoogle(unauthorizedUser);
+    const result = await firebaseAuthService.loginMasterAdminWithGoogle(unauthorizedUser);
 
     expect(result.success).toBe(false);
-    expect(result.error).toContain('is not authorized to access Studio OS');
+    expect(result.error).toContain('Google Sign-In is exclusively reserved for Platform Master Admin');
     expect((globalThis as any).localStorage.getItem('studio_os_master_token')).toBeNull();
   });
 
@@ -58,10 +58,10 @@ describe('Studio OS — Production Clean Reset & Master Admin Verification', () 
       displayName: 'Former Owner'
     };
 
-    const result = await googleAuthInvitationService.loginWithGoogle(deletedUser);
+    const result = await firebaseAuthService.loginMasterAdminWithGoogle(deletedUser);
 
     expect(result.success).toBe(false);
-    expect(result.error).toContain('is not authorized to access Studio OS');
+    expect(result.error).toContain('Google Sign-In is exclusively reserved for Platform Master Admin');
   });
 
   it('4. Master Admin user profile in TenantStore and unifiedAuthService has Master Super Admin permissions', () => {

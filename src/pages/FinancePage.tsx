@@ -35,6 +35,7 @@ import { Quotation, Invoice, Payment } from '../types/schema';
 export const FinancePage: React.FC = () => {
   const { 
     currentRole, 
+    can,
     studio, 
     financialSettings, 
     quotations, 
@@ -78,8 +79,10 @@ export const FinancePage: React.FC = () => {
   // Reports state
   const [selectedReportType, setSelectedReportType] = useState<any>('profit_loss');
 
-  // Permission Check (Only owners, admins, managers, accountants can access financial core)
-  const isAuthorized = ['owner', 'admin', 'manager', 'accountant', 'super_admin'].includes(currentRole.toLowerCase());
+  // Live Master Admin RBAC Financial Permission Checks
+  const canViewFinancials = can('invoices_billing' as any, 'view_financials' as any);
+  const canEditFinancials = can('invoices_billing' as any, 'edit_financials' as any);
+  const isAuthorized = canViewFinancials && ['owner', 'admin', 'manager', 'accountant', 'super_admin'].includes(currentRole.toLowerCase());
 
   // KPIs & Analytics
   const kpis = useMemo(() => {
@@ -204,37 +207,39 @@ export const FinancePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => { setEditingQuotation(null); setIsQuotationModalOpen(true); }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-zinc-200 bg-white text-zinc-800 rounded-lg hover:bg-zinc-50 shadow-sm"
-            >
-              <Receipt className="w-3.5 h-3.5" />
-              <span>New Quotation</span>
-            </button>
-            <button
-              onClick={() => { setEditingInvoice(null); setIsInvoiceModalOpen(true); }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-zinc-200 bg-white text-zinc-800 rounded-lg hover:bg-zinc-50 shadow-sm"
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>Create Invoice</span>
-            </button>
-            <button
-              onClick={() => { setSelectedInvoiceForPayment(null); setIsPaymentModalOpen(true); }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-sm"
-            >
-              <CreditCard className="w-3.5 h-3.5" />
-              <span>Record Payment</span>
-            </button>
-            <button
-              onClick={() => setIsExpenseModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 shadow-sm"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Log Expense</span>
-            </button>
-          </div>
+          {/* Quick Action Buttons (Hidden if Edit Financials is disabled) */}
+          {canEditFinancials && (
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => { setEditingQuotation(null); setIsQuotationModalOpen(true); }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-zinc-200 bg-white text-zinc-800 rounded-lg hover:bg-zinc-50 shadow-sm"
+              >
+                <Receipt className="w-3.5 h-3.5" />
+                <span>New Quotation</span>
+              </button>
+              <button
+                onClick={() => { setEditingInvoice(null); setIsInvoiceModalOpen(true); }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-zinc-200 bg-white text-zinc-800 rounded-lg hover:bg-zinc-50 shadow-sm"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Create Invoice</span>
+              </button>
+              <button
+                onClick={() => { setSelectedInvoiceForPayment(null); setIsPaymentModalOpen(true); }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-sm"
+              >
+                <CreditCard className="w-3.5 h-3.5" />
+                <span>Record Payment</span>
+              </button>
+              <button
+                onClick={() => setIsExpenseModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 shadow-sm"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Log Expense</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Sub-Navigation & Filters Bar */}

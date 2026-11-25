@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TenantStore } from '../../services/tenantStore';
 import { platformAuditService } from '../../services/platformAuditService';
 import { useMasterAdmin } from '../../context/MasterAdminContext';
+import { RazorpayGatewaySettings } from '../../components/master/RazorpayGatewaySettings';
 import { 
   Settings, 
   Save, 
@@ -15,8 +16,8 @@ import {
   CheckCircle2,
   Lock,
   Server,
-  MailCheck,
-  ExternalLink
+  ExternalLink,
+  CreditCard
 } from 'lucide-react';
 
 interface PlatformSettingsState {
@@ -94,6 +95,12 @@ export const MasterSettingsPage: React.FC = () => {
     }
   };
 
+  const [settingsTab, setSettingsTab] = useState<'platform' | 'payment_gateway'>(() =>
+    typeof window !== 'undefined' && window.location.hash.includes('payment-gateway')
+      ? 'payment_gateway'
+      : 'platform'
+  );
+
   return (
     <div className="w-full space-y-6 pb-20 font-sans">
       {/* Toast Alert */}
@@ -123,13 +130,6 @@ export const MasterSettingsPage: React.FC = () => {
 
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
-            onClick={() => setMasterRoute('authorized-emails')}
-            className="min-h-[42px] px-3.5 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 text-xs font-bold flex items-center gap-2 shadow-2xs transition-all cursor-pointer active:scale-95"
-          >
-            <MailCheck className="w-4 h-4 text-orange-600" />
-            <span>Authorized Studio Emails</span>
-          </button>
-          <button
             onClick={() => setMasterRoute('audit-logs')}
             className="min-h-[42px] px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-50 text-zinc-700 border border-zinc-200 text-xs font-bold flex items-center gap-2 shadow-2xs transition-all cursor-pointer active:scale-95"
           >
@@ -153,6 +153,38 @@ export const MasterSettingsPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Subtabs: Platform Configuration vs Payment Gateway */}
+      <div className="flex items-center gap-2 border-b border-zinc-200 pb-3">
+        <button
+          type="button"
+          onClick={() => setSettingsTab('platform')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all ${
+            settingsTab === 'platform'
+              ? 'bg-zinc-900 text-white shadow-xs'
+              : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+          }`}
+        >
+          <Settings className="w-3.5 h-3.5" />
+          <span>Platform Configuration</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setSettingsTab('payment_gateway')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all ${
+            settingsTab === 'payment_gateway'
+              ? 'bg-orange-600 text-white shadow-xs'
+              : 'bg-orange-50 text-orange-800 border border-orange-200 hover:bg-orange-100'
+          }`}
+        >
+          <CreditCard className="w-3.5 h-3.5" />
+          <span>Payment Gateway (Razorpay)</span>
+        </button>
+      </div>
+
+      {settingsTab === 'payment_gateway' ? (
+        <RazorpayGatewaySettings />
+      ) : (
+      <>
       {/* Maintenance Mode Alert Banner if active */}
       {settings.maintenanceMode && (
         <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 flex items-start gap-3 shadow-2xs">
@@ -309,6 +341,8 @@ export const MasterSettingsPage: React.FC = () => {
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 };

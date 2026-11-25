@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { WorkflowTemplate, WorkflowStage } from '../../types';
 import { Button } from '../ui/Button';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 import { 
   X, 
   Plus, 
@@ -40,6 +41,11 @@ export const WorkflowTemplateManagerModal: React.FC<WorkflowTemplateManagerModal
   const [newTemplateDesc, setNewTemplateDesc] = useState('');
 
   const selectedTemplate = workflowTemplates.find(t => t.id === selectedTemplateId) || workflowTemplates[0];
+
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen,
+    onClose
+  });
 
   if (!isOpen) return null;
 
@@ -95,8 +101,16 @@ export const WorkflowTemplateManagerModal: React.FC<WorkflowTemplateManagerModal
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-zinc-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150">
-      <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-zinc-200 overflow-hidden my-6 flex flex-col max-h-[88vh]">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-zinc-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div 
+        className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-zinc-200 overflow-hidden my-6 flex flex-col max-h-[88vh]"
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-zinc-200 bg-zinc-50/70 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -114,8 +128,10 @@ export const WorkflowTemplateManagerModal: React.FC<WorkflowTemplateManagerModal
           </div>
 
           <button
-            onClick={onClose}
-            className="p-2 text-zinc-400 hover:text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors cursor-pointer"
+            type="button"
+            onClick={handleAttemptClose}
+            className="min-w-[44px] min-h-[44px] text-zinc-400 hover:text-zinc-600 rounded-lg hover:bg-zinc-100 flex items-center justify-center transition-colors cursor-pointer"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>

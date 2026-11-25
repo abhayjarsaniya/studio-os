@@ -17,7 +17,7 @@ export const MasterLayout: React.FC<{ children: React.ReactNode }> = ({ children
   const kpis = React.useMemo(() => masterAdminService.getDashboardKPIs(), [refreshTrigger]);
 
   return (
-    <div className="flex h-screen w-full bg-zinc-50/70 text-zinc-900 font-sans overflow-hidden">
+    <div className="flex h-screen h-[100dvh] w-full bg-zinc-50/70 text-zinc-900 font-sans overflow-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex shrink-0">
         <MasterSidebar />
@@ -48,7 +48,7 @@ export const MasterLayout: React.FC<{ children: React.ReactNode }> = ({ children
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-zinc-50/70">
+      <div className="flex-1 flex flex-col min-w-0 h-screen h-[100dvh] overflow-hidden bg-zinc-50/70">
         {/* Master Status & Header Bar */}
         <header className="h-16 border-b border-zinc-200/90 bg-white/95 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between shrink-0 shadow-2xs">
           <div className="flex items-center gap-3">

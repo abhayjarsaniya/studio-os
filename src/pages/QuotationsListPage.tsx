@@ -26,7 +26,8 @@ import {
 } from 'lucide-react';
 
 export const QuotationsListPage: React.FC = () => {
-  const { setActiveTab, openPdfViewer } = useApp();
+  const { setActiveTab, openPdfViewer, isFeatureEnabled } = useApp();
+  const showWhatsApp = isFeatureEnabled('whatsapp_chat');
   const { currentStudio, refreshStudioData } = useStudio();
   const studioId = currentStudio.id || 'studio_royal_001';
 
@@ -366,13 +367,15 @@ export const QuotationsListPage: React.FC = () => {
                           <Download className="w-4 h-4" />
                         </button>
 
-                        <button
-                          onClick={() => handleShareWhatsApp(q)}
-                          className="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
-                          title="Share on WhatsApp"
-                        >
-                          <Share2 className="w-4 h-4" />
-                        </button>
+                        {showWhatsApp && (
+                          <button
+                            onClick={() => handleShareWhatsApp(q)}
+                            className="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
+                            title="Share on WhatsApp"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </button>
+                        )}
 
                         <button
                           onClick={() => handleDuplicate(q)}

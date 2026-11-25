@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { CustomerCompleteHistory, historyBookingsService } from '../../services/historyBookingsService';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 import { 
   X, 
   User, 
@@ -45,6 +46,11 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
 }) => {
   const [activeSection, setActiveSection] = useState<'overview' | 'bookings' | 'quotations' | 'negotiations' | 'invoices' | 'payments' | 'deliverables'>('overview');
 
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen: true,
+    onClose
+  });
+
   const historyData: CustomerCompleteHistory | null = useMemo(() => {
     return historyBookingsService.getCustomerCompleteHistory(studioId, customerId);
   }, [studioId, customerId]);
@@ -68,8 +74,16 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
   const { customer, bookings, events, quotations, invoices, payments, negotiationTimeline, photosSummary, videosSummary, albumsSummary, totalBilled, totalPaid, outstandingBalance } = historyData;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-3 sm:p-6 overflow-y-auto">
-      <div className="relative bg-white rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-3 sm:p-6 overflow-y-auto"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div 
+        className="relative bg-white rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        onClick={e => e.stopPropagation()}
+      >
         
         {/* Top Header */}
         <div className="p-4 sm:p-5 border-b border-zinc-200 bg-zinc-50/80 flex items-start justify-between gap-4">
@@ -120,8 +134,10 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
               <span className="hidden sm:inline">WhatsApp Chat</span>
             </button>
             <button
-              onClick={onClose}
-              className="p-2 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-xl transition-colors cursor-pointer"
+              type="button"
+              onClick={handleAttemptClose}
+              className="min-w-[44px] min-h-[44px] text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-xl flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Close modal"
             >
               <X className="w-5 h-5" />
             </button>

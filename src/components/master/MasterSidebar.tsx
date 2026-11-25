@@ -18,7 +18,7 @@ import {
   Receipt,
   Truck,
   Bell,
-  MailCheck
+  Repeat
 } from 'lucide-react';
 
 export const MasterSidebar: React.FC = () => {
@@ -29,8 +29,9 @@ export const MasterSidebar: React.FC = () => {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'studios', label: 'Studios Directory', icon: Building2 },
     { id: 'accounts', label: 'Studio Accounts', icon: Users },
-    { id: 'authorized-emails', label: 'Authorized Studio Emails', icon: MailCheck },
     { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard },
+    { id: 'autopay', label: 'AutoPay Management', icon: Repeat },
+    { id: 'transactions', label: 'Payments & Transactions', icon: Receipt },
     { id: 'plans', label: 'Billing Plans', icon: Layers },
     { id: 'roles-permissions', label: 'Roles & Permissions', icon: ShieldAlert },
     { id: 'features', label: 'Feature Visibility', icon: ToggleRight },

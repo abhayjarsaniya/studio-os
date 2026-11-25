@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { Task, TaskStatus } from '../../types';
 import { taskDependencyService } from '../../services/taskDependencyService';
 import { Button } from '../ui/Button';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 import { 
   X, 
   CheckSquare, 
@@ -112,9 +113,22 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
   const isCompleted = task.status === 'Completed' || task.status === 'Done';
 
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen: Boolean(isOpen && task),
+    onClose
+  });
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-zinc-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150">
-      <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-zinc-200 overflow-hidden my-6 flex flex-col max-h-[90vh]">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-zinc-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div 
+        className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-zinc-200 overflow-hidden my-6 flex flex-col max-h-[90vh]"
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-zinc-200 bg-zinc-50/70 flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -159,8 +173,10 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           </div>
 
           <button
-            onClick={onClose}
-            className="p-2 text-zinc-400 hover:text-zinc-600 rounded-lg hover:bg-zinc-100 transition-colors cursor-pointer shrink-0"
+            type="button"
+            onClick={handleAttemptClose}
+            className="min-w-[44px] min-h-[44px] text-zinc-400 hover:text-zinc-600 rounded-lg hover:bg-zinc-100 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+            aria-label="Close task detail"
           >
             <X className="w-5 h-5" />
           </button>
@@ -561,7 +577,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                 Reopen Task
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={onClose}>
+            <Button variant="outline" size="sm" onClick={handleAttemptClose} className="min-h-[36px]">
               Close
             </Button>
           </div>

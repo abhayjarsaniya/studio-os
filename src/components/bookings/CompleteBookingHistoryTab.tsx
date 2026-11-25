@@ -106,6 +106,29 @@ export const CompleteBookingHistoryTab: React.FC<CompleteBookingHistoryTabProps>
     isPrivate: false
   });
 
+  const isAnyModalOpen = isAddAlbumOpen || isAddServiceOpen || isRecordDeliveryOpen || isAddNoteOpen;
+
+  React.useEffect(() => {
+    if (!isAnyModalOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsAddAlbumOpen(false);
+        setIsAddServiceOpen(false);
+        setIsRecordDeliveryOpen(false);
+        setIsAddNoteOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = prevOverflow || 'unset';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isAnyModalOpen]);
+
   // Load summary metrics
   const summary: BookingHistorySummary = useMemo(() => {
     return bookingHistoryService.getBookingHistorySummary(studioId, booking.id);
@@ -700,8 +723,16 @@ export const CompleteBookingHistoryTab: React.FC<CompleteBookingHistoryTabProps>
 
       {/* MODAL 1: ADD ALBUM / PRODUCT SELECTION */}
       {isAddAlbumOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl border border-zinc-200 max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs"
+          onClick={() => setIsAddAlbumOpen(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div 
+            className="bg-white rounded-3xl border border-zinc-200 max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <h3 className="text-base font-bold text-zinc-900 font-display">Record Album / Product Selection</h3>
               <button onClick={() => setIsAddAlbumOpen(false)} className="w-8 h-8 rounded-lg hover:bg-zinc-100 flex items-center justify-center text-zinc-500">
@@ -828,8 +859,16 @@ export const CompleteBookingHistoryTab: React.FC<CompleteBookingHistoryTabProps>
 
       {/* MODAL 2: ADD SERVICE */}
       {isAddServiceOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl border border-zinc-200 max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs"
+          onClick={() => setIsAddServiceOpen(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div 
+            className="bg-white rounded-3xl border border-zinc-200 max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <h3 className="text-base font-bold text-zinc-900 font-display">Add Photography Service</h3>
               <button onClick={() => setIsAddServiceOpen(false)} className="w-8 h-8 rounded-lg hover:bg-zinc-100 flex items-center justify-center text-zinc-500">
@@ -931,8 +970,16 @@ export const CompleteBookingHistoryTab: React.FC<CompleteBookingHistoryTabProps>
 
       {/* MODAL 3: RECORD DELIVERY HANDOVER */}
       {isRecordDeliveryOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl border border-zinc-200 max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs"
+          onClick={() => setIsRecordDeliveryOpen(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div 
+            className="bg-white rounded-3xl border border-zinc-200 max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <h3 className="text-base font-bold text-zinc-900 font-display">Record Deliverable Handover</h3>
               <button onClick={() => setIsRecordDeliveryOpen(false)} className="w-8 h-8 rounded-lg hover:bg-zinc-100 flex items-center justify-center text-zinc-500">
@@ -1049,8 +1096,16 @@ export const CompleteBookingHistoryTab: React.FC<CompleteBookingHistoryTabProps>
 
       {/* MODAL 4: ADD NOTE */}
       {isAddNoteOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs"
+          onClick={() => setIsAddNoteOpen(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div 
+            className="bg-white rounded-3xl border border-zinc-200 max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <h3 className="text-base font-bold text-zinc-900 font-display">Add History Note</h3>
               <button onClick={() => setIsAddNoteOpen(false)} className="w-8 h-8 rounded-lg hover:bg-zinc-100 flex items-center justify-center text-zinc-500">

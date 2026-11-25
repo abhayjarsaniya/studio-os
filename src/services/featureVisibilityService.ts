@@ -9,6 +9,7 @@ import { platformSubscriptionManager } from './platformSubscriptionManager';
 import { platformPlanService } from './platformPlanService';
 import { platformAuditService } from './platformAuditService';
 import { CENTRAL_FEATURE_REGISTRY, getFeatureById, PlatformFeatureDefinition } from './featureRegistry';
+import { liveFeatureService } from './liveFeatureService';
 
 export interface FeatureAccessResult {
   accessible: boolean;
@@ -282,6 +283,17 @@ export class FeatureVisibilityService {
   // ----------------------------------------------------
 
   evaluateFeature(studioId: string, featureKey: string, isOwner = false): FeatureAccessResult {
+    // 0. Live Firebase Feature Visibility Check (Global & Studio-Specific)
+    const liveStatus = liveFeatureService.isFeatureEnabledLive(studioId, featureKey);
+    if (liveStatus === false) {
+      return {
+        accessible: false,
+        visibleInNav: false,
+        reason: `Feature "${featureKey}" is disabled by Platform Master Admin.`,
+        sourceOfRule: 'platform_studio_override'
+      };
+    }
+
     // 1. Global Platform Killswitch
     const features = platformFeatureService.listFeatures();
     const globalFeature = features.find(f => f.key === featureKey);

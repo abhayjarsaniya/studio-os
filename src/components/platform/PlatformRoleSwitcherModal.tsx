@@ -2,9 +2,15 @@ import React from 'react';
 import { usePlatform } from '../../context/PlatformContext';
 import { PlatformRole } from '../../types/schema';
 import { X, ShieldAlert, Check } from 'lucide-react';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 
 export const PlatformRoleSwitcherModal: React.FC = () => {
   const { isRoleSwitcherOpen, setIsRoleSwitcherOpen, currentAdmin, setCurrentAdminRole } = usePlatform();
+
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen: isRoleSwitcherOpen,
+    onClose: () => setIsRoleSwitcherOpen(false)
+  });
 
   if (!isRoleSwitcherOpen) return null;
 
@@ -37,8 +43,16 @@ export const PlatformRoleSwitcherModal: React.FC = () => {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-      <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div 
+        className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
         <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-5 h-5 text-indigo-400" />
@@ -48,8 +62,10 @@ export const PlatformRoleSwitcherModal: React.FC = () => {
             </div>
           </div>
           <button
-            onClick={() => setIsRoleSwitcherOpen(false)}
-            className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white"
+            type="button"
+            onClick={handleAttemptClose}
+            className="min-w-[44px] min-h-[44px] rounded hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>

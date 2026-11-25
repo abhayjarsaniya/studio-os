@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { DeliverableSpecification, DeliverableCategory } from '../../types/bookingProduction';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 import { useStudio } from '../../context/StudioContext';
 import { studioCatalogService } from '../../services/studioCatalogService';
 
@@ -347,10 +348,20 @@ export const DeliverablesSelectorModal: React.FC<DeliverablesSelectorModalProps>
     onClose();
   };
 
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen,
+    onClose
+  });
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+    >
       <div 
         ref={modalRef}
         className="bg-white rounded-3xl border border-zinc-200 shadow-2xl max-w-2xl w-full flex flex-col max-h-[92vh] overflow-hidden animate-in zoom-in-95 duration-150"
@@ -380,7 +391,7 @@ export const DeliverablesSelectorModal: React.FC<DeliverablesSelectorModalProps>
 
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleAttemptClose}
             className="min-w-[44px] min-h-[44px] rounded-xl hover:bg-zinc-100 text-zinc-400 hover:text-zinc-700 flex items-center justify-center cursor-pointer transition-colors"
             aria-label="Close"
           >

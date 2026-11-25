@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { X } from 'lucide-react';
+import { useModalLifecycle } from '../../hooks/useModalLifecycle';
 
-interface ModalProps {
+export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
@@ -9,6 +10,9 @@ interface ModalProps {
   children: React.ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   showClose?: boolean;
+  isDirty?: boolean;
+  confirmMessage?: string;
+  className?: string;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -18,29 +22,17 @@ export const Modal: React.FC<ModalProps> = ({
   subtitle,
   children,
   maxWidth = 'lg',
-  showClose = true
+  showClose = true,
+  isDirty = false,
+  confirmMessage,
+  className = ''
 }) => {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          onClose();
-        }
-      };
-      window.addEventListener('keydown', handleKeyDown);
-      return () => {
-        document.body.style.overflow = 'unset';
-        window.removeEventListener('keydown', handleKeyDown);
-      };
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, onClose]);
+  const { handleAttemptClose, handleBackdropClick } = useModalLifecycle({
+    isOpen,
+    onClose,
+    isDirty,
+    confirmMessage
+  });
 
   if (!isOpen) return null;
 
@@ -53,16 +45,20 @@ export const Modal: React.FC<ModalProps> = ({
   }[maxWidth];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+    >
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-zinc-950/40 backdrop-blur-xs transition-opacity" 
-        onClick={onClose}
+        onClick={handleBackdropClick}
       />
 
       {/* Dialog container */}
       <div 
-        className={`relative w-full ${maxWidthClasses} bg-white rounded-t-3xl sm:rounded-2xl border-t sm:border border-zinc-200 shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[88vh] overflow-hidden z-10 transition-transform duration-200`}
+        className={`relative w-full ${maxWidthClasses} bg-white rounded-t-3xl sm:rounded-2xl border-t sm:border border-zinc-200 shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[88vh] overflow-hidden z-10 transition-transform duration-200 ${className}`}
       >
         {/* Mobile handle */}
         <div className="w-14 h-1.5 bg-zinc-300 rounded-full mx-auto my-2.5 sm:hidden" />
@@ -76,9 +72,10 @@ export const Modal: React.FC<ModalProps> = ({
             </div>
             {showClose && (
               <button
-                onClick={onClose}
+                type="button"
+                onClick={handleAttemptClose}
                 className="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer"
-                aria-label="Close"
+                aria-label="Close modal"
               >
                 <X className="w-5 h-5 sm:w-4 sm:h-4" />
               </button>
@@ -94,3 +91,5 @@ export const Modal: React.FC<ModalProps> = ({
     </div>
   );
 };
+
+export default Modal;

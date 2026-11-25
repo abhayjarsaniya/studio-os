@@ -86,8 +86,8 @@ export class SubscriptionMandateService {
 
     return {
       isConfigured: false,
-      provider: 'simulated_gateway',
-      message: 'Live merchant gateway credentials not yet configured in environment. Using Sandbox Mandate Simulator.'
+      provider: 'razorpay',
+      message: 'Check Master Admin → Settings → Payment Gateway for Razorpay Test/Live status.'
     };
   }
 
@@ -96,8 +96,12 @@ export class SubscriptionMandateService {
    */
   listMandates(): SubscriptionMandate[] {
     let mandates = TenantStore.get<SubscriptionMandate>('platform_system', this.STORE_KEY);
+    const isTestEnv = typeof process !== 'undefined' && Boolean(process.env?.VITEST || process.env?.NODE_ENV === 'test');
+    if (!isTestEnv) {
+      return mandates || [];
+    }
     if (!mandates || mandates.length === 0) {
-      // Seed default active mandate for SHREEJI FILMS AND PHOTOGRAPHY
+      // Seed test fixture only under automated test runner
       const gatewayInfo = this.isLiveGatewayConfigured();
       const initialMandate: SubscriptionMandate = {
         id: 'mnd_shreeji_001',

@@ -24,7 +24,15 @@ import {
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
-  const { setActiveTab, customers, employees } = useApp();
+  const { setActiveTab, customers, employees, can, isFeatureEnabled } = useApp();
+  const showFinance = isFeatureEnabled('finance_billing') && can('invoices_billing' as any, 'view_financials' as any);
+  const showDelivery = isFeatureEnabled('advanced_delivery');
+  const kpiColsClass =
+    showFinance && showDelivery
+      ? 'lg:grid-cols-4'
+      : showFinance || showDelivery
+        ? 'lg:grid-cols-3'
+        : 'lg:grid-cols-2';
   const { currentStudio } = useStudio();
   const studioId = currentStudio.id || '';
   const today = new Date();
@@ -194,32 +202,36 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <button
-            onClick={() => {
-              setActiveTab('create-quotation');
-              window.location.hash = '#/app/quotation/new';
-            }}
-            className="flex-1 sm:flex-none min-h-[50px] sm:min-h-[44px] px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs sm:text-sm tracking-tight shadow-sm border border-zinc-700 transition-all cursor-pointer touch-manipulation active:scale-[0.98] flex items-center justify-center gap-2"
-          >
-            <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-            <span>+ Quick Quotation</span>
-          </button>
+          {isFeatureEnabled('finance_billing') && can('quotations' as any, 'create') && (
+            <button
+              onClick={() => {
+                setActiveTab('create-quotation');
+                window.location.hash = '#/app/quotation/new';
+              }}
+              className="flex-1 sm:flex-none min-h-[50px] sm:min-h-[44px] px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs sm:text-sm tracking-tight shadow-sm border border-zinc-700 transition-all cursor-pointer touch-manipulation active:scale-[0.98] flex items-center justify-center gap-2"
+            >
+              <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>+ Quick Quotation</span>
+            </button>
+          )}
 
-          <button
-            onClick={() => {
-              setActiveTab('create-booking');
-              window.location.hash = '#/app/bookings/new';
-            }}
-            className="flex-1 sm:flex-none min-h-[50px] sm:min-h-[44px] px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm tracking-tight shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98] flex items-center justify-center gap-2"
-          >
-            <Plus className="w-4 h-4 text-white shrink-0 stroke-[2.5]" />
-            <span>+ New Booking</span>
-          </button>
+          {can('bookings' as any, 'create') && (
+            <button
+              onClick={() => {
+                setActiveTab('create-booking');
+                window.location.hash = '#/app/bookings/new';
+              }}
+              className="flex-1 sm:flex-none min-h-[50px] sm:min-h-[44px] px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm tracking-tight shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98] flex items-center justify-center gap-2"
+            >
+              <Plus className="w-4 h-4 text-white shrink-0 stroke-[2.5]" />
+              <span>+ New Booking</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* 2. Exactly 4 Key Indicator Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+      {/* 2. Key Indicator Cards (Auto-layout when features are disabled) */}
+      <div className={`grid grid-cols-2 ${kpiColsClass} gap-2.5 sm:gap-4`}>
         {/* Indicator 1: Upcoming Bookings */}
         <div 
           onClick={() => {
@@ -265,48 +277,52 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Indicator 3: Pending Payments */}
-        <div 
-          onClick={() => {
-            setActiveTab('bookings');
-            window.location.hash = '#/app/bookings';
-          }}
-          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-zinc-200/90 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
-        >
-          <div className="flex items-center justify-between text-zinc-500">
-            <span className="text-xs sm:text-sm font-semibold text-zinc-700 font-sans">Pending Payments</span>
-            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <IndianRupee className="w-4 h-4" />
+        {showFinance && (
+          <div 
+            onClick={() => {
+              setActiveTab('bookings');
+              window.location.hash = '#/app/bookings';
+            }}
+            className="bg-white p-3.5 sm:p-5 rounded-2xl border border-zinc-200/90 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center justify-between text-zinc-500">
+              <span className="text-xs sm:text-sm font-semibold text-zinc-700 font-sans">Pending Payments</span>
+              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <IndianRupee className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-2.5 sm:mt-3">
+              <div className="text-2xl sm:text-3xl font-extrabold text-rose-600 font-tabular tabular-nums tracking-tight truncate">
+                ₹{pendingPaymentsTotal.toLocaleString('en-IN')}
+              </div>
+              <p className="text-xs text-zinc-500 mt-0.5 font-sans">Receivable client balance</p>
             </div>
           </div>
-          <div className="mt-2.5 sm:mt-3">
-            <div className="text-2xl sm:text-3xl font-extrabold text-rose-600 font-tabular tabular-nums tracking-tight truncate">
-              ₹{pendingPaymentsTotal.toLocaleString('en-IN')}
-            </div>
-            <p className="text-xs text-zinc-500 mt-0.5 font-sans">Receivable client balance</p>
-          </div>
-        </div>
+        )}
 
         {/* Indicator 4: Pending Deliveries */}
-        <div 
-          onClick={() => {
-            setActiveTab('bookings');
-            window.location.hash = '#/app/bookings';
-          }}
-          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-zinc-200/90 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
-        >
-          <div className="flex items-center justify-between text-zinc-500">
-            <span className="text-xs sm:text-sm font-semibold text-zinc-700 font-sans">Pending Deliveries</span>
-            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <PackageCheck className="w-4 h-4" />
+        {showDelivery && (
+          <div 
+            onClick={() => {
+              setActiveTab('bookings');
+              window.location.hash = '#/app/bookings';
+            }}
+            className="bg-white p-3.5 sm:p-5 rounded-2xl border border-zinc-200/90 shadow-2xs hover:border-zinc-300 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center justify-between text-zinc-500">
+              <span className="text-xs sm:text-sm font-semibold text-zinc-700 font-sans">Pending Deliveries</span>
+              <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <PackageCheck className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-2.5 sm:mt-3">
+              <div className="text-2xl sm:text-3xl font-extrabold text-zinc-900 font-tabular tabular-nums tracking-tight">
+                {pendingDeliveries.length}
+              </div>
+              <p className="text-xs text-zinc-500 mt-0.5 font-sans">Photos & videos in queue</p>
             </div>
           </div>
-          <div className="mt-2.5 sm:mt-3">
-            <div className="text-2xl sm:text-3xl font-extrabold text-zinc-900 font-tabular tabular-nums tracking-tight">
-              {pendingDeliveries.length}
-            </div>
-            <p className="text-xs text-zinc-500 mt-0.5 font-sans">Photos & videos in queue</p>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Studio Directory Counts (Customers & Crew Members — Genuine Real Counts) */}

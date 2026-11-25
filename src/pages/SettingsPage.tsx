@@ -7,8 +7,10 @@ import { studioService } from '../services/studioService';
 import { financialSettingsService } from '../services/financialSettingsService';
 import { StudioServicesSettings } from '../components/settings/StudioServicesSettings';
 import { WhatsAppTemplatesSettings } from '../components/settings/WhatsAppTemplatesSettings';
+import { StudioSubscriptionBillingTab } from '../components/settings/StudioSubscriptionBillingTab';
 import { 
   Building2, 
+  CreditCard,
   Lock, 
   LogOut, 
   Check, 
@@ -40,8 +42,13 @@ export const SettingsPage: React.FC = () => {
 
   const studioId = currentStudio.id || 'studio_royal_001';
 
-  // Tab: profile | services | finance | whatsapp | security
-  const [activeTab, setActiveTab] = useState<'profile' | 'services' | 'finance' | 'whatsapp' | 'security'>('profile');
+  // Tab: profile | services | finance | whatsapp | subscription | security
+  const [activeTab, setActiveTab] = useState<'profile' | 'services' | 'finance' | 'whatsapp' | 'subscription' | 'security'>(() => {
+    if (typeof window !== 'undefined' && (window.location.hash.includes('billing') || window.location.hash.includes('subscription'))) {
+      return 'subscription';
+    }
+    return 'profile';
+  });
 
   // Invoice & Quotation Settings state
   const [finForm, setFinForm] = useState(() => financialSettingsService.getSettings(studioId));
@@ -243,7 +250,7 @@ export const SettingsPage: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-zinc-200 text-xs font-semibold">
+      <div className="flex items-center gap-2 border-b border-zinc-200 text-xs font-semibold overflow-x-auto whitespace-nowrap">
         <button
           onClick={() => setActiveTab('profile')}
           className={`pb-2.5 px-3 border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
@@ -290,6 +297,18 @@ export const SettingsPage: React.FC = () => {
         >
           <MessageSquare className="w-4 h-4" />
           <span>WhatsApp & Templates</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('subscription')}
+          className={`pb-2.5 px-3 border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+            activeTab === 'subscription'
+              ? 'border-orange-600 text-orange-700'
+              : 'border-transparent text-zinc-500 hover:text-zinc-800'
+          }`}
+        >
+          <CreditCard className="w-4 h-4" />
+          <span>Subscription & Billing</span>
         </button>
 
         <button
@@ -742,6 +761,17 @@ export const SettingsPage: React.FC = () => {
         <WhatsAppTemplatesSettings studioId={studioId} />
       )}
 
+      {/* TAB: SUBSCRIPTION & BILLING */}
+      {activeTab === 'subscription' && (
+        <StudioSubscriptionBillingTab
+          studioId={studioId}
+          studioName={studio.name || currentStudio.name || 'My Studio'}
+          studioEmail={studio.email || currentStudio.email}
+          studioPhone={studio.phone || currentStudio.phone}
+          ownerName={currentUser?.name}
+        />
+      )}
+
       {/* TAB 4: SECURITY & PASSWORD */}
       {activeTab === 'security' && (
         <div className="p-6 rounded-3xl bg-white border border-zinc-200 shadow-xs space-y-6">
@@ -879,14 +909,9 @@ export const SettingsPage: React.FC = () => {
                 <KeyRound className="w-4 h-4" />
                 <span>{isUpdatingPassword ? 'Updating Password...' : 'Save Password'}</span>
               </button>
-
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                className="text-xs font-semibold text-zinc-500 hover:text-zinc-900 underline-offset-2 hover:underline cursor-pointer"
-              >
-                Forgot your current password?
-              </button>
+              <span className="text-xs text-zinc-400">
+                Contact Platform Master Admin if you need an administrative password reset.
+              </span>
             </div>
           </form>
 

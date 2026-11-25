@@ -81,11 +81,55 @@ service cloud.firestore {
     }
 
     match /subscriptionMandates/{mandateId} {
-      allow read: if isPlatformAdmin() || (isAuthenticated() && resource.data.studioId in request.auth.token.studios);
+      allow read: if isPlatformAdmin() || (isAuthenticated() && resource.data.studioId != null && isStudioOwner(resource.data.studioId));
+      allow write: if isPlatformAdmin();
+    }
+
+    match /platformPaymentSettings/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isPlatformAdmin();
+    }
+
+    match /platformPaymentSecrets/{envId} {
+      allow read, write: if false;
+    }
+
+    match /paymentWebhookEvents/{eventId} {
+      allow read: if isPlatformAdmin();
+      allow write: if false;
+    }
+
+    match /billingPlans/{planId} {
+      allow read: if true;
+      allow write: if isPlatformAdmin();
+    }
+
+    match /platformSubscriptions/{studioId} {
+      allow read: if isPlatformAdmin() || isStudioOwner(studioId);
+      allow write: if isPlatformAdmin();
+    }
+
+    match /platformTransactions/{txId} {
+      allow read: if isPlatformAdmin() || (isAuthenticated() && resource.data.studioId != null && isStudioOwner(resource.data.studioId));
+      allow write: if isPlatformAdmin();
+    }
+
+    match /subscriptionInvoices/{invId} {
+      allow read: if isPlatformAdmin() || (isAuthenticated() && resource.data.studioId != null && isStudioOwner(resource.data.studioId));
       allow write: if isPlatformAdmin();
     }
 
     match /featureRegistry/{featureId} {
+      allow read: if isAuthenticated();
+      allow write: if isPlatformAdmin();
+    }
+
+    match /platformFeatureCatalog/{featureId} {
+      allow read: if isAuthenticated();
+      allow write: if isPlatformAdmin();
+    }
+
+    match /platformFeatureSettings/{featureId} {
       allow read: if isAuthenticated();
       allow write: if isPlatformAdmin();
     }
@@ -106,16 +150,6 @@ service cloud.firestore {
     }
 
     match /setupTokens/{tokenId} {
-      allow read: if true;
-      allow write: if isPlatformAdmin() || (isAuthenticated() && request.auth.uid != null);
-    }
-
-    match /authorizedStudioEmails/{authId} {
-      allow read: if isPlatformAdmin() || (isAuthenticated() && request.auth.token.email != null);
-      allow write: if isPlatformAdmin() || (isAuthenticated() && request.auth.uid != null);
-    }
-
-    match /studioInvitations/{invitationId} {
       allow read: if true;
       allow write: if isPlatformAdmin() || (isAuthenticated() && request.auth.uid != null);
     }
@@ -206,6 +240,32 @@ service cloud.firestore {
       }
 
       match /subscription/{docId} {
+        allow read: if isStudioOwner(studioId) || isPlatformAdmin();
+        allow write: if isPlatformAdmin();
+      }
+
+      match /billing/{docId} {
+        allow read: if isStudioOwner(studioId) || isPlatformAdmin();
+        allow write: if isPlatformAdmin();
+      }
+
+      // 1b. Live RBAC Policies (Master Admin controlled, Studio Members read-only)
+      match /rbacRoles/{roleId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isPlatformAdmin();
+      }
+
+      match /userPermissions/{userId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isPlatformAdmin();
+      }
+
+      match /featureSettings/{featureId} {
+        allow read: if isStudioMember(studioId);
+        allow write: if isPlatformAdmin();
+      }
+
+      match /subscriptionHistory/{histId} {
         allow read: if isStudioOwner(studioId) || isPlatformAdmin();
         allow write: if isPlatformAdmin();
       }
@@ -420,6 +480,10 @@ service cloud.firestore {
 
       match /payrollEntries/{entryId} {
         allow read, write: if isStudioOwner(studioId);
+      }
+
+      match /payrollRecords/{recordId} {
+        allow read, write: if isStudioOwner(studioId) || isPlatformAdmin();
       }
 
       match /salaryProfiles/{profileId} {
