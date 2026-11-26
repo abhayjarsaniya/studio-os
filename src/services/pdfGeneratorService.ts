@@ -468,7 +468,7 @@ export class PDFGeneratorService {
     // Document Title & Number Badge (Right)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
-    doc.setTextColor(249, 115, 22); // Orange / Amber
+    doc.setTextColor(24, 24, 27); // Clean Charcoal
     doc.text(docTitle, pageWidth - rightMargin, y, { align: 'right' });
 
     y += 5;
@@ -506,27 +506,26 @@ export class PDFGeneratorService {
 
     y = Math.max(y + 6, studioInfoY + 4);
 
-    // Decorative Separator Line
-    doc.setDrawColor(249, 115, 22); // Orange accent
-    doc.setLineWidth(0.8);
+    // Subtle Separator Line
+    doc.setDrawColor(228, 228, 231);
+    doc.setLineWidth(0.4);
     doc.line(leftMargin, y, pageWidth - rightMargin, y);
-    y += 6;
+    y += 4;
 
-    // 2. Client & Event Info Box (Two column card)
-    doc.setFillColor(248, 250, 252); // slate-50
-    doc.setDrawColor(228, 228, 231); // zinc-200
+    // 2. Client & Event Info Section (Clean two-column layout)
+    const infoBoxHeight = 26;
+    doc.setDrawColor(244, 244, 245);
     doc.setLineWidth(0.3);
-    const infoBoxHeight = 30;
-    doc.roundedRect(leftMargin, y, contentWidth, infoBoxHeight, 2, 2, 'FD');
+    doc.line(leftMargin, y + infoBoxHeight, pageWidth - rightMargin, y + infoBoxHeight);
 
     // Left Column: PREPARED FOR
-    const col1X = leftMargin + 4;
-    let col1Y = y + 5;
+    const col1X = leftMargin + 2;
+    let col1Y = y + 4;
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(161, 161, 170); // zinc-400
-    doc.text('CLIENT DETAILS', col1X, col1Y);
-    col1Y += 4.5;
+    doc.setFontSize(7.5);
+    doc.setTextColor(113, 113, 122); // zinc-500
+    doc.text('PREPARED FOR / CLIENT', col1X, col1Y);
+    col1Y += 4.2;
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
@@ -551,18 +550,18 @@ export class PDFGeneratorService {
     }
 
     // Right Column: EVENT DETAILS
-    const col2X = leftMargin + (contentWidth / 2) + 4;
-    let col2Y = y + 5;
+    const col2X = leftMargin + (contentWidth / 2) + 2;
+    let col2Y = y + 4;
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(161, 161, 170);
-    doc.text('EVENT INFORMATION', col2X, col2Y);
-    col2Y += 4.5;
+    doc.setFontSize(7.5);
+    doc.setTextColor(113, 113, 122);
+    doc.text('EVENT & PROJECT DETAILS', col2X, col2Y);
+    col2Y += 4.2;
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.setTextColor(24, 24, 27);
-    doc.text(payload.event?.name || 'Wedding Photography', col2X, col2Y);
+    doc.text(payload.event?.name || 'Studio Commission', col2X, col2Y);
     col2Y += 4;
 
     doc.setFont('helvetica', 'normal');
@@ -581,7 +580,7 @@ export class PDFGeneratorService {
       doc.text(splitVenue[0], col2X, col2Y);
     }
 
-    y += infoBoxHeight + 6;
+    y += infoBoxHeight + 5;
 
     // 3. Table Header
     const drawTableHeader = (currentY: number) => {
@@ -600,17 +599,29 @@ export class PDFGeneratorService {
 
     y = drawTableHeader(y);
 
-    // 4. Item Rows
+    // 4. Item Rows with Automatic Multi-Page Pagination
     const items = payload.items || [];
     items.forEach((item, index) => {
-      // Calculate row height based on description wrapping
-      const descLines = item.description ? doc.splitTextToSize(item.description, 92) : [];
-      const rowHeight = Math.max(8, 5 + descLines.length * 3.5);
+      // Calculate row height based on both title and description text wrapping
+      const nameLines = doc.splitTextToSize(item.name || 'Service Item', 90);
+      const descLines = item.description ? doc.splitTextToSize(item.description, 90) : [];
+      const nameHeight = nameLines.length * 3.8;
+      const descHeight = descLines.length > 0 ? (descLines.length * 3.2 + 1.5) : 0;
+      const rowHeight = Math.max(8.5, 3 + nameHeight + descHeight);
 
-      // Check for page overflow
-      if (y + rowHeight > 270) {
+      // Check for page overflow before rendering row
+      if (y + rowHeight > 268) {
         doc.addPage();
-        y = 20;
+        y = 16;
+        // Continued running header on page 2+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(113, 113, 122);
+        doc.text(`${studioName} — ${docTitle} #${docNum} (Continued)`, leftMargin, y);
+        doc.setDrawColor(228, 228, 231);
+        doc.setLineWidth(0.3);
+        doc.line(leftMargin, y + 2, pageWidth - rightMargin, y + 2);
+        y += 5;
         y = drawTableHeader(y);
       }
 
@@ -633,13 +644,13 @@ export class PDFGeneratorService {
 
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(24, 24, 27);
-      doc.text(item.name, leftMargin + 12, y + 4.5);
+      doc.text(nameLines, leftMargin + 12, y + 4.2);
 
       if (descLines.length > 0) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7.5);
         doc.setTextColor(113, 113, 122);
-        doc.text(descLines, leftMargin + 12, y + 8);
+        doc.text(descLines, leftMargin + 12, y + 4.2 + nameHeight);
       }
 
       doc.setFont('helvetica', 'normal');
@@ -656,16 +667,27 @@ export class PDFGeneratorService {
 
     y += 4;
 
-    // Check if summary box fits on page, else add page
-    if (y + 55 > 270) {
+    // Check if summary box fits on current page, else add page
+    const fin = payload.financials || { subtotal: 0, totalAmount: 0 };
+    const hasPaidOrPending = (fin.paidAmount !== undefined && fin.paidAmount > 0) || (fin.pendingAmount !== undefined && fin.pendingAmount > 0);
+    const summaryHeight = hasPaidOrPending ? 45 : 32;
+
+    if (y + summaryHeight > 268) {
       doc.addPage();
-      y = 20;
+      y = 16;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(113, 113, 122);
+      doc.text(`${studioName} — ${docTitle} #${docNum} (Financial Summary)`, leftMargin, y);
+      doc.setDrawColor(228, 228, 231);
+      doc.setLineWidth(0.3);
+      doc.line(leftMargin, y + 2, pageWidth - rightMargin, y + 2);
+      y += 8;
     }
 
     // 5. Summary / Financial Totals (Right side)
     const summaryWidth = 85;
     const summaryX = leftMargin + contentWidth - summaryWidth;
-    const fin = payload.financials || { subtotal: 0, totalAmount: 0 };
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
@@ -699,10 +721,30 @@ export class PDFGeneratorService {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(255, 255, 255);
-    doc.text('TOTAL INVESTMENT:', summaryX + 4, y + 6);
+    doc.text('TOTAL AMOUNT:', summaryX + 4, y + 6);
     doc.text(`Rs. ${this.formatCurrency(fin.totalAmount)}`, leftMargin + contentWidth - 4, y + 6, { align: 'right' });
 
-    y += 13;
+    y += 11;
+
+    // Amount Paid & Balance Due if present
+    if (fin.paidAmount !== undefined && fin.paidAmount > 0) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(22, 101, 52); // green-800
+      doc.text('Amount Paid:', summaryX + 4, y + 4);
+      doc.text(`Rs. ${this.formatCurrency(fin.paidAmount)}`, leftMargin + contentWidth - 4, y + 4, { align: 'right' });
+      y += 5;
+    }
+    if (fin.pendingAmount !== undefined && fin.pendingAmount > 0) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8.5);
+      doc.setTextColor(185, 28, 28); // red-700
+      doc.text('Balance Due:', summaryX + 4, y + 4);
+      doc.text(`Rs. ${this.formatCurrency(fin.pendingAmount)}`, leftMargin + contentWidth - 4, y + 4, { align: 'right' });
+      y += 6;
+    }
+
+    y += 6;
 
     // 6. Terms and Payment Notes (Left Box)
     const terms = payload.terms || '1. 25% advance to confirm booking.\n2. Balance payable upon delivery handover.\n3. Turnaround time: 3-4 weeks for edited deliverables.';
@@ -710,7 +752,15 @@ export class PDFGeneratorService {
 
     if (y + (termsLines.length * 3.5) + 20 > 275) {
       doc.addPage();
-      y = 20;
+      y = 16;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(113, 113, 122);
+      doc.text(`${studioName} — ${docTitle} #${docNum} (Terms & Signatures)`, leftMargin, y);
+      doc.setDrawColor(228, 228, 231);
+      doc.setLineWidth(0.3);
+      doc.line(leftMargin, y + 2, pageWidth - rightMargin, y + 2);
+      y += 8;
     }
 
     doc.setFont('helvetica', 'bold');

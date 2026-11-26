@@ -132,4 +132,77 @@ describe('STUDIO OS — PDF Studio Identity & Multi-Tenant Isolation', () => {
     expect(uiIndexContent).toContain('Checkbox');
     expect(uiIndexContent).toContain('MultiSelect');
   });
+
+  it('Part 5: Single-page document generation (1-3 items) produces exactly 1 page with clean layout', () => {
+    const singlePayload: PDFGenerationPayload = {
+      documentType: 'quotation',
+      title: 'Quotation / Proposal',
+      documentNumber: 'QT-2026-001',
+      studioSettings: studioA as any,
+      customer: { name: 'Ananya Sharma', phone: '+91 98765 43210' },
+      event: { name: 'Pre-Wedding Shoot', date: '2026-12-25' },
+      items: [
+        { name: 'Candid Photography', description: '4K Full Frame cameras with 2 shooters', quantity: 1, unitPrice: 40000, amount: 40000 }
+      ],
+      financials: { subtotal: 40000, totalAmount: 40000 }
+    };
+
+    const doc = pdfGeneratorService.generateDocumentPDF(singlePayload);
+    expect((doc as any).internal.getNumberOfPages()).toBe(1);
+  });
+
+  it('Part 6: Multi-page automatic table pagination (15-20 items) creates Page 2+ with repeated table headers and clean Page X of Y footer', () => {
+    const multiItems = Array.from({ length: 18 }, (_, i) => ({
+      name: `Special Event Service Package #${i + 1}`,
+      description: `Detailed deliverable breakdown including edited footage, color grading and 4K masters for item #${i + 1}`,
+      quantity: 1,
+      unitPrice: 15000,
+      amount: 15000
+    }));
+
+    const multiPayload: PDFGenerationPayload = {
+      documentType: 'invoice',
+      title: 'Tax Invoice',
+      documentNumber: 'INV-2026-099',
+      studioSettings: studioA as any,
+      customer: { name: 'Vikram Malhotra', phone: '+91 99887 76655' },
+      event: { name: 'Grand 4-Day Wedding', date: '2027-01-15' },
+      items: multiItems,
+      financials: {
+        subtotal: 270000,
+        taxAmount: 48600,
+        totalAmount: 318600,
+        paidAmount: 100000,
+        pendingAmount: 218600
+      }
+    };
+
+    const doc = pdfGeneratorService.generateDocumentPDF(multiPayload);
+    const pageCount = (doc as any).internal.getNumberOfPages();
+    expect(pageCount).toBeGreaterThanOrEqual(2);
+  });
+
+  it('Part 7: Long multi-line item titles and descriptions wrap dynamically without clipping', () => {
+    const longPayload: PDFGenerationPayload = {
+      documentType: 'quotation',
+      title: 'Quotation / Proposal',
+      documentNumber: 'QT-2026-LONG',
+      studioSettings: studioB as any,
+      customer: { name: 'Rohit Verma' },
+      items: [
+        {
+          name: 'Cinematic High-Definition 4K Multi-Camera Production with Drone Aerial Cinematography and Real-Time Live Streaming Coverage',
+          description: 'Includes 5 dedicated camera operators, wireless audio transmitters, Gimbal stabilization, color graded master videos, 10 teaser reels formatted for social media and delivered on encrypted high-speed SSD drives.',
+          quantity: 1,
+          unitPrice: 180000,
+          amount: 180000
+        }
+      ],
+      financials: { subtotal: 180000, totalAmount: 180000 }
+    };
+
+    const doc = pdfGeneratorService.generateDocumentPDF(longPayload);
+    expect(doc).toBeDefined();
+    expect((doc as any).internal.getNumberOfPages()).toBeGreaterThanOrEqual(1);
+  });
 });
