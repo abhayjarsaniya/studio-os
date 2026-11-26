@@ -8,7 +8,7 @@ import {
   checkBundlePermission,
   sanitizeRecordByPermissions,
   ServerPermissionsBundle
-} from '../../api/_lib/rbacServer';
+} from '../../server/lib/rbacServer';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -206,7 +206,7 @@ describe('Server-Side RBAC Enforcement & Field Stripping', () => {
   });
 
   it('api/rbac/enforce returns 403 when permission is denied', async () => {
-    vi.doMock('../../api/_lib/razorpayServer', () => ({
+    vi.doMock('../../server/lib/razorpayServer', () => ({
       verifyFirebaseCaller: vi.fn().mockResolvedValue({
         uid: 'owner_A',
         email: 'ownerA@studio-os.internal',
@@ -215,8 +215,8 @@ describe('Server-Side RBAC Enforcement & Field Stripping', () => {
       }),
       getFirebaseAdmin: vi.fn().mockReturnValue(null)
     }));
-    vi.doMock('../../api/_lib/rbacServer', async () => {
-      const actual = await vi.importActual<any>('../../api/_lib/rbacServer');
+    vi.doMock('../../server/lib/rbacServer', async () => {
+      const actual = await vi.importActual<any>('../../server/lib/rbacServer');
       return {
         ...actual,
         resolveServerPermissions: vi.fn().mockResolvedValue({
@@ -234,7 +234,7 @@ describe('Server-Side RBAC Enforcement & Field Stripping', () => {
       };
     });
 
-    const { default: enforceHandler } = await import('../../api/_routes/rbac/enforce');
+    const { default: enforceHandler } = await import('../../server/routes/rbac/enforce');
     const res: any = {
       headers: {},
       statusCode: 200,

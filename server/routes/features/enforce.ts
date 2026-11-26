@@ -1,5 +1,5 @@
-import { verifyFirebaseCaller, getFirebaseAdmin } from '../../_lib/razorpayServer';
-import { resolveServerPermissions, checkBundlePermission } from '../../_lib/rbacServer';
+import { verifyFirebaseCaller, getFirebaseAdmin } from '../../lib/razorpayServer';
+import { resolveServerPermissions, checkBundlePermission } from '../../lib/rbacServer';
 
 export async function isFeatureEnabledForStudioServer(
   adminCtx: { db: any },

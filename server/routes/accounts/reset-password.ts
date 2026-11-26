@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { verifyFirebaseCaller, getFirebaseAdmin } from '../../_lib/razorpayServer';
+import { verifyFirebaseCaller, getFirebaseAdmin } from '../../lib/razorpayServer';
 
 function generateSecurePassword(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';

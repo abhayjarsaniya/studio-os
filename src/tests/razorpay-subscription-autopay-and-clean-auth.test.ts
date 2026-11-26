@@ -23,10 +23,10 @@ import {
   verifyRazorpayWebhookSignature,
   verifyRazorpayCheckoutSignature,
   computeNextExpiryIso
-} from '../../api/_lib/razorpayServer';
-import subscriptionsHandler from '../../api/_routes/razorpay/subscriptions';
-import plansHandler from '../../api/_routes/razorpay/plans';
-import webhookHandler from '../../api/_routes/razorpay/webhook';
+} from '../../server/lib/razorpayServer';
+import subscriptionsHandler from '../../server/routes/razorpay/subscriptions';
+import plansHandler from '../../server/routes/razorpay/plans';
+import webhookHandler from '../../server/routes/razorpay/webhook';
 import { firebaseAuthService } from '../services/firebaseAuthService';
 import { platformPlanService } from '../services/platformPlanService';
 import { platformSubscriptionManager } from '../services/platformSubscriptionManager';

@@ -93,7 +93,7 @@ describe('Server-Side Feature Enforcement (/api/features/enforce)', () => {
       })
     };
 
-    vi.doMock('../../api/_lib/razorpayServer', () => ({
+    vi.doMock('../../server/lib/razorpayServer', () => ({
       verifyFirebaseCaller: vi.fn().mockResolvedValue({
         uid: 'owner_A',
         email: 'ownerA@studio-os.internal',
@@ -103,7 +103,7 @@ describe('Server-Side Feature Enforcement (/api/features/enforce)', () => {
       getFirebaseAdmin: vi.fn().mockReturnValue({ db: mockDb })
     }));
 
-    const { default: enforceHandler } = await import('../../api/_routes/features/enforce');
+    const { default: enforceHandler } = await import('../../server/routes/features/enforce');
     const res: any = {
       headers: {},
       statusCode: 200,

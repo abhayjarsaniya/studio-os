@@ -5,7 +5,7 @@ import {
   resolveCredentials,
   razorpayRequest,
   GatewayEnvironment
-} from '../../_lib/razorpayServer';
+} from '../../lib/razorpayServer';
 
 export default async function handler(req: any, res: any) {
   res.setHeader('Cache-Control', 'no-store');
