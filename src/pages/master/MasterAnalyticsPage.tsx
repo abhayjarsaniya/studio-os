@@ -53,7 +53,7 @@ export const MasterAnalyticsPage: React.FC = () => {
   });
 
   const [invoiceForm, setInvoiceForm] = useState({
-    studioId: 'studio_shreeji_films',
+    studioId: '',
     planName: 'Studio OS Standard',
     totalAmount: 500,
     dueDate: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)

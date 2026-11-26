@@ -52,7 +52,7 @@ export const CompleteBookingHistoryTab: React.FC<CompleteBookingHistoryTabProps>
 }) => {
   const { currentStudio } = useStudio();
   const { openPdfViewer, employees } = useApp();
-  const studioId = currentStudio?.id || 'studio_shreeji_films';
+  const studioId = currentStudio?.id || '';
 
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [filterType, setFilterType] = useState<string>('all');

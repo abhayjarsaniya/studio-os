@@ -48,6 +48,7 @@ export const PublicQuotationPage: React.FC = () => {
     try {
       const payload = pdfGeneratorService.createQuotationPayload(quotation, {
         name: studio?.name || 'Studio OS Photography',
+        logoUrl: studio?.logoUrl,
         address: studio?.address,
         city: studio?.city,
         state: studio?.state,

@@ -220,23 +220,23 @@ export const CustomersPage: React.FC = () => {
       </div>
 
       {/* CRM Dashboard KPI Metrics Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div className="flex sm:grid sm:grid-cols-5 gap-2.5 overflow-x-auto pb-1 scrollbar-none touch-scroll">
         {/* Total Customers */}
         <button
           onClick={() => {
             setActiveSubTab('directory');
             setStatusFilter('All');
           }}
-          className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer"
+          className="min-w-[130px] sm:min-w-0 p-3 sm:p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer shrink-0 sm:shrink"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-zinc-500">Total Clients</span>
+            <span className="text-xs font-semibold text-zinc-500">Total Clients</span>
             <Users className="w-3.5 h-3.5 text-zinc-400" />
           </div>
-          <p className="text-xl font-bold font-display mt-1.5 text-zinc-900">
+          <p className="text-xl font-bold font-tabular tabular-nums mt-1 text-zinc-900">
             {crmDashboardMetrics?.totalCustomers || customers.length}
           </p>
-          <span className="text-xs text-zinc-400">All registered profiles</span>
+          <span className="text-xs text-zinc-400 hidden sm:block">All registered profiles</span>
         </button>
 
         {/* New This Month */}
@@ -244,16 +244,16 @@ export const CustomersPage: React.FC = () => {
           onClick={() => {
             setActiveSubTab('directory');
           }}
-          className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer"
+          className="min-w-[130px] sm:min-w-0 p-3 sm:p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer shrink-0 sm:shrink"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-zinc-500">New This Month</span>
+            <span className="text-xs font-semibold text-zinc-500">New This Month</span>
             <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
           </div>
-          <p className="text-xl font-bold font-display mt-1.5 text-emerald-600">
+          <p className="text-xl font-bold font-tabular tabular-nums mt-1 text-emerald-600">
             {crmDashboardMetrics?.newCustomersThisMonth || 0}
           </p>
-          <span className="text-xs text-zinc-400">Added this calendar month</span>
+          <span className="text-xs text-zinc-400 hidden sm:block">Added this calendar month</span>
         </button>
 
         {/* Active Customers */}
@@ -262,46 +262,46 @@ export const CustomersPage: React.FC = () => {
             setActiveSubTab('directory');
             setStatusFilter('Active');
           }}
-          className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer"
+          className="min-w-[130px] sm:min-w-0 p-3 sm:p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer shrink-0 sm:shrink"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-zinc-500">Active Clients</span>
+            <span className="text-xs font-semibold text-zinc-500">Active Clients</span>
             <UserCheck className="w-3.5 h-3.5 text-blue-500" />
           </div>
-          <p className="text-xl font-bold font-display mt-1.5 text-blue-600">
+          <p className="text-xl font-bold font-tabular tabular-nums mt-1 text-blue-600">
             {crmDashboardMetrics?.activeCustomers || 0}
           </p>
-          <span className="text-xs text-zinc-400">Ongoing engagements</span>
+          <span className="text-xs text-zinc-400 hidden sm:block">Ongoing engagements</span>
         </button>
 
         {/* Potential Leads */}
         <button
           onClick={() => setActiveSubTab('pipeline')}
-          className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer"
+          className="min-w-[130px] sm:min-w-0 p-3 sm:p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer shrink-0 sm:shrink"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-zinc-500">Inquiry Leads</span>
+            <span className="text-xs font-semibold text-zinc-500">Inquiry Leads</span>
             <Briefcase className="w-3.5 h-3.5 text-purple-500" />
           </div>
-          <p className="text-xl font-bold font-display mt-1.5 text-purple-600">
+          <p className="text-xl font-bold font-tabular tabular-nums mt-1 text-purple-600">
             {crmDashboardMetrics?.potentialLeads || 0}
           </p>
-          <span className="text-xs text-zinc-400">Pre-booking stage</span>
+          <span className="text-xs text-zinc-400 hidden sm:block">Pre-booking stage</span>
         </button>
 
         {/* Awaiting Follow-Up */}
         <button
           onClick={() => setActiveSubTab('followups')}
-          className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer"
+          className="min-w-[130px] sm:min-w-0 p-3 sm:p-3.5 rounded-2xl bg-white border border-zinc-200/80 hover:border-zinc-300 text-left transition-all shadow-xs cursor-pointer shrink-0 sm:shrink"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-zinc-500">Awaiting Follow-Up</span>
+            <span className="text-xs font-semibold text-zinc-500">Awaiting Follow-Up</span>
             <Clock className="w-3.5 h-3.5 text-amber-500" />
           </div>
-          <p className="text-xl font-bold font-display mt-1.5 text-amber-600">
+          <p className="text-xl font-bold font-tabular tabular-nums mt-1 text-amber-600">
             {crmDashboardMetrics?.awaitingFollowUp || 0}
           </p>
-          <span className="text-xs text-zinc-400">Action items scheduled</span>
+          <span className="text-xs text-zinc-400 hidden sm:block">Action items scheduled</span>
         </button>
 
         {/* Booked Customers */}

@@ -1628,7 +1628,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Phase 8 Finance Handlers
-  const openPdfViewer = (payload: any) => setPdfViewerModal({ isOpen: true, payload });
+  const openPdfViewer = (payload: any) => {
+    if (payload) {
+      const currentSettings = payload.studioSettings || {};
+      const mergedSettings = {
+        ...financialSettings,
+        ...currentSettings,
+        name: currentSettings.name || currentStudio.name || financialSettings?.legalName || 'Studio OS',
+        legalName: currentSettings.legalName || currentStudio.name || financialSettings?.legalName || 'Studio OS',
+        logoUrl: currentSettings.logoUrl || currentStudio.logoUrl,
+        businessAddress: currentSettings.businessAddress || [currentStudio.address, currentStudio.city, (currentStudio as any).state, (currentStudio as any).pincode].filter(Boolean).join(', ') || financialSettings?.businessAddress || '',
+        supportPhone: currentSettings.supportPhone || currentStudio.phone || (financialSettings as any)?.supportPhone || '',
+        supportEmail: currentSettings.supportEmail || currentStudio.email || (financialSettings as any)?.supportEmail || '',
+        gstin: currentSettings.gstin || currentStudio.gstNumber || financialSettings?.gstin || '',
+      };
+      payload.studioSettings = mergedSettings;
+    }
+    setPdfViewerModal({ isOpen: true, payload });
+  };
   const closePdfViewer = () => setPdfViewerModal({ isOpen: false, payload: null });
 
   const refreshFinancials = useCallback(() => {

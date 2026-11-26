@@ -387,6 +387,7 @@ export const CreateQuotationPage: React.FC = () => {
     if (quote) {
       const payload = pdfGeneratorService.createQuotationPayload(quote, {
         name: currentStudio.name,
+        logoUrl: currentStudio.logoUrl,
         address: currentStudio.address,
         city: currentStudio.city,
         state: (currentStudio as any).state || 'Gujarat',
@@ -404,6 +405,7 @@ export const CreateQuotationPage: React.FC = () => {
     if (quote) {
       const payload = pdfGeneratorService.createQuotationPayload(quote, {
         name: currentStudio.name,
+        logoUrl: currentStudio.logoUrl,
         address: currentStudio.address,
         city: currentStudio.city,
         state: (currentStudio as any).state || 'Gujarat',

@@ -50,7 +50,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
 }) => {
   const { customers, createEvent, updateEvent, createCustomer } = useApp();
   const { currentStudio } = useStudio();
-  const studioId = currentStudio?.id || 'studio_shreeji_films';
+  const studioId = currentStudio?.id || '';
 
   const isEditing = Boolean(eventToEdit && eventToEdit.id && eventToEdit.id.trim().length > 0);
 

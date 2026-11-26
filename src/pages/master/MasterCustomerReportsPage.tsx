@@ -64,7 +64,7 @@ export const MasterCustomerReportsPage: React.FC = () => {
 
   // Form state
   const [formData, setFormData] = useState({
-    studioId: 'studio_shreeji_films',
+    studioId: '',
     customerName: '',
     customerPhone: '',
     customerEmail: '',

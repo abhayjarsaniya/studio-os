@@ -62,7 +62,7 @@ export const MasterTeamReportsPage: React.FC = () => {
 
   // Form state
   const [formData, setFormData] = useState({
-    studioId: 'studio_shreeji_films',
+    studioId: '',
     name: '',
     phone: '',
     email: '',

@@ -23,7 +23,8 @@ import {
   Calendar,
   User,
   ArrowRight,
-  Edit3
+  Edit3,
+  Phone
 } from 'lucide-react';
 
 export const QuotationsListPage: React.FC = () => {
@@ -66,6 +67,7 @@ export const QuotationsListPage: React.FC = () => {
     try {
       const payload = pdfGeneratorService.createQuotationPayload(quotation, {
         name: currentStudio.name,
+        logoUrl: currentStudio.logoUrl,
         address: currentStudio.address,
         city: currentStudio.city,
         state: (currentStudio as any).state || 'Gujarat',
@@ -84,6 +86,7 @@ export const QuotationsListPage: React.FC = () => {
     try {
       const payload = pdfGeneratorService.createQuotationPayload(quotation, {
         name: currentStudio.name,
+        logoUrl: currentStudio.logoUrl,
         address: currentStudio.address,
         city: currentStudio.city,
         state: (currentStudio as any).state || 'Gujarat',
@@ -313,141 +316,249 @@ export const QuotationsListPage: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 uppercase tracking-wider font-semibold">
-                <tr>
-                  <th className="py-3 px-4">Quotation #</th>
-                  <th className="py-3 px-4">Customer</th>
-                  <th className="py-3 px-4">Event Details</th>
-                  <th className="py-3 px-4 text-right">Amount (₹)</th>
-                  <th className="py-3 px-4">Dates & Validity</th>
-                  <th className="py-3 px-4 text-center">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100">
-                {filteredQuotations.map((q) => (
-                  <tr key={q.id} className="hover:bg-zinc-50/70 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <span className="font-mono font-bold text-zinc-900 block">{q.quotationNumber}</span>
-                      <span className="text-xs text-zinc-500">{q.items.length} service(s)</span>
-                    </td>
-
-                    <td className="py-3.5 px-4">
-                      <p className="font-bold text-zinc-900">{q.customerName}</p>
-                      {q.customerPhone && <p className="text-xs text-zinc-500 font-mono">{q.customerPhone}</p>}
-                    </td>
-
-                    <td className="py-3.5 px-4">
-                      <p className="font-medium text-zinc-800">{q.eventName || q.eventCategory}</p>
-                      <p className="text-xs text-zinc-500">{q.venue || q.eventVenue || 'On-site'}</p>
-                    </td>
-
-                    <td className="py-3.5 px-4 text-right font-mono">
-                      <p className="font-bold text-zinc-900 text-xs sm:text-sm">₹{q.grandTotal.toLocaleString('en-IN')}</p>
-                      <p className="text-xs text-zinc-500">Adv: ₹{(q.advanceAmount || 0).toLocaleString('en-IN')}</p>
-                    </td>
-
-                    <td className="py-3.5 px-4">
-                      <p className="text-xs text-zinc-600">Created: {q.quotationDate || q.createdAt.split('T')[0]}</p>
-                      {q.validUntil && <p className="text-xs text-zinc-500">Valid: {q.validUntil}</p>}
-                    </td>
-
-                    <td className="py-3.5 px-4 text-center">
+          <>
+            {/* MOBILE LIST VIEW (Zero sideways scroll on phones) */}
+            <div className="sm:hidden divide-y divide-zinc-100">
+              {filteredQuotations.map((q) => (
+                <div key={q.id} className="p-4 hover:bg-zinc-50/80 transition-colors space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="font-mono font-bold text-xs text-zinc-900 block">{q.quotationNumber}</span>
+                      <h4 className="text-base font-bold text-zinc-900 mt-0.5">{q.customerName}</h4>
+                      {q.customerPhone && (
+                        <p className="text-xs text-zinc-500 font-mono flex items-center gap-1 mt-0.5">
+                          <Phone className="w-3 h-3 text-zinc-400" />
+                          <span>{q.customerPhone}</span>
+                        </p>
+                      )}
+                    </div>
+                    <div className="shrink-0 text-right">
                       {getStatusBadge(q.status)}
-                    </td>
+                      <p className="text-base font-bold text-zinc-900 font-tabular tabular-nums mt-1">
+                        ₹{q.grandTotal.toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                  </div>
 
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {q.status !== 'Converted to Booking' && (
-                          <button
-                            onClick={() => {
-                              setEditingQuotation(q);
-                              setActiveTab('create-quotation');
-                            }}
-                            className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer"
-                            title="Edit Quotation"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                        )}
+                  <div className="flex items-center justify-between text-xs text-zinc-600 pt-2 border-t border-zinc-100">
+                    <span className="font-medium text-zinc-800 truncate max-w-[200px]">
+                      {q.eventName || q.eventCategory}
+                    </span>
+                    <span className="text-zinc-500">
+                      {q.validUntil ? `Valid: ${q.validUntil}` : (q.quotationDate || q.createdAt.split('T')[0])}
+                    </span>
+                  </div>
 
+                  <div className="flex items-center justify-between pt-2 border-t border-zinc-100 gap-1.5 flex-wrap">
+                    <div className="flex items-center gap-1">
+                      {q.status !== 'Converted to Booking' && (
                         <button
-                          onClick={() => handlePreviewPDF(q)}
-                          className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer"
-                          title="Preview Quotation"
+                          onClick={() => {
+                            setEditingQuotation(q);
+                            setActiveTab('create-quotation');
+                          }}
+                          className="min-h-[44px] min-w-[44px] rounded-xl flex items-center justify-center text-zinc-700 hover:bg-zinc-100 border border-zinc-200 transition-colors cursor-pointer touch-manipulation"
+                          title="Edit Quotation"
+                          aria-label="Edit Quotation"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Edit3 className="w-4 h-4" />
                         </button>
+                      )}
 
+                      <button
+                        onClick={() => handlePreviewPDF(q)}
+                        className="min-h-[44px] min-w-[44px] rounded-xl flex items-center justify-center text-zinc-700 hover:bg-zinc-100 border border-zinc-200 transition-colors cursor-pointer touch-manipulation"
+                        title="Preview PDF"
+                        aria-label="Preview PDF"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        onClick={() => handleDownloadPDF(q)}
+                        className="min-h-[44px] min-w-[44px] rounded-xl flex items-center justify-center text-zinc-700 hover:bg-zinc-100 border border-zinc-200 transition-colors cursor-pointer touch-manipulation"
+                        title="Download PDF"
+                        aria-label="Download PDF"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
+
+                      {showWhatsApp && (
                         <button
-                          onClick={() => handleDownloadPDF(q)}
-                          className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer"
-                          title="Download PDF"
+                          onClick={() => handleShareWhatsApp(q)}
+                          className="min-h-[44px] min-w-[44px] rounded-xl flex items-center justify-center text-emerald-600 hover:bg-emerald-50 border border-emerald-200 transition-colors cursor-pointer touch-manipulation"
+                          title="Share on WhatsApp"
+                          aria-label="Share on WhatsApp"
                         >
-                          <Download className="w-4 h-4" />
+                          <Share2 className="w-4 h-4" />
                         </button>
+                      )}
+                    </div>
 
-                        {showWhatsApp && (
-                          <button
-                            onClick={() => handleShareWhatsApp(q)}
-                            className="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
-                            title="Share on WhatsApp"
-                          >
-                            <Share2 className="w-4 h-4" />
-                          </button>
-                        )}
+                    {q.status !== 'Converted to Booking' ? (
+                      <button
+                        onClick={() => handleConvertToBooking(q)}
+                        className="min-h-[44px] px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-zinc-950 text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 touch-manipulation cursor-pointer"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Convert</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if ((q as any).convertedBookingId) {
+                            window.location.hash = `#/app/bookings/${(q as any).convertedBookingId}`;
+                          }
+                          setActiveTab('bookings');
+                        }}
+                        className="min-h-[44px] px-3 py-2 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 text-purple-600" />
+                        <span>Converted →</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
 
-                        <button
-                          onClick={() => handleDuplicate(q)}
-                          className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 transition-colors cursor-pointer"
-                          title="Duplicate Quotation"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-
-                        {q.status !== 'Converted to Booking' ? (
-                          <button
-                            onClick={() => handleConvertToBooking(q)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold transition-all cursor-pointer"
-                            title="1-Click Convert to Booking"
-                          >
-                            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                            <span>Convert</span>
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              if ((q as any).convertedBookingId) {
-                                window.location.hash = `#/app/bookings/${(q as any).convertedBookingId}`;
-                              }
-                              setActiveTab('bookings');
-                            }}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold transition-all cursor-pointer"
-                            title="Open in Booking Directory"
-                          >
-                            <CheckCircle2 className="w-3 h-3 text-purple-600" />
-                            <span>Converted →</span>
-                          </button>
-                        )}
-
-                        {q.status !== 'Converted to Booking' && (
-                          <button
-                            onClick={() => handleDelete(q)}
-                            className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
+            {/* DESKTOP TABLE VIEW (Hidden on mobile) */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 uppercase tracking-wider font-semibold">
+                  <tr>
+                    <th className="py-3 px-4">Quotation #</th>
+                    <th className="py-3 px-4">Customer</th>
+                    <th className="py-3 px-4">Event Details</th>
+                    <th className="py-3 px-4 text-right">Amount (₹)</th>
+                    <th className="py-3 px-4">Dates & Validity</th>
+                    <th className="py-3 px-4 text-center">Status</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-zinc-100">
+                  {filteredQuotations.map((q) => (
+                    <tr key={q.id} className="hover:bg-zinc-50/70 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <span className="font-mono font-bold text-zinc-900 block">{q.quotationNumber}</span>
+                        <span className="text-xs text-zinc-500">{q.items.length} service(s)</span>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <p className="font-bold text-zinc-900">{q.customerName}</p>
+                        {q.customerPhone && <p className="text-xs text-zinc-500 font-mono">{q.customerPhone}</p>}
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <p className="font-medium text-zinc-800">{q.eventName || q.eventCategory}</p>
+                        <p className="text-xs text-zinc-500">{q.venue || q.eventVenue || 'On-site'}</p>
+                      </td>
+
+                      <td className="py-3.5 px-4 text-right font-mono">
+                        <p className="font-bold text-zinc-900 text-xs sm:text-sm font-tabular tabular-nums">₹{q.grandTotal.toLocaleString('en-IN')}</p>
+                        <p className="text-xs text-zinc-500 font-tabular tabular-nums">Adv: ₹{(q.advanceAmount || 0).toLocaleString('en-IN')}</p>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <p className="text-xs text-zinc-600">Created: {q.quotationDate || q.createdAt.split('T')[0]}</p>
+                        {q.validUntil && <p className="text-xs text-zinc-500">Valid: {q.validUntil}</p>}
+                      </td>
+
+                      <td className="py-3.5 px-4 text-center">
+                        {getStatusBadge(q.status)}
+                      </td>
+
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {q.status !== 'Converted to Booking' && (
+                            <button
+                              onClick={() => {
+                                setEditingQuotation(q);
+                                setActiveTab('create-quotation');
+                              }}
+                              className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer"
+                              title="Edit Quotation"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => handlePreviewPDF(q)}
+                            className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer"
+                            title="Preview Quotation"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            onClick={() => handleDownloadPDF(q)}
+                            className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer"
+                            title="Download PDF"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+
+                          {showWhatsApp && (
+                            <button
+                              onClick={() => handleShareWhatsApp(q)}
+                              className="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
+                              title="Share on WhatsApp"
+                            >
+                              <Share2 className="w-4 h-4" />
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => handleDuplicate(q)}
+                            className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 transition-colors cursor-pointer"
+                            title="Duplicate Quotation"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+
+                          {q.status !== 'Converted to Booking' ? (
+                            <button
+                              onClick={() => handleConvertToBooking(q)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold transition-all cursor-pointer"
+                              title="1-Click Convert to Booking"
+                            >
+                              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                              <span>Convert</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                if ((q as any).convertedBookingId) {
+                                  window.location.hash = `#/app/bookings/${(q as any).convertedBookingId}`;
+                                }
+                                setActiveTab('bookings');
+                              }}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold transition-all cursor-pointer"
+                              title="Open in Booking Directory"
+                            >
+                              <CheckCircle2 className="w-3 h-3 text-purple-600" />
+                              <span>Converted →</span>
+                            </button>
+                          )}
+
+                          {q.status !== 'Converted to Booking' && (
+                            <button
+                              onClick={() => handleDelete(q)}
+                              className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 

@@ -74,11 +74,14 @@ export const PDF_ACCENT_COLORS = [
 export class PDFGeneratorService {
   generateDocumentHTML(payload: PDFGenerationPayload): string {
     const s = payload.studioSettings || {};
-    const studioName = s.legalName || 'SHREEJI FILMS AND PHOTOGRAPHY';
-    const studioAddr = s.businessAddress || '301, Titanium One, SG Highway, Bodakdev, Ahmedabad - 380054';
+    const studioName = s.legalName || (s as any).name || 'Studio OS';
+    const studioAddr = s.businessAddress || [(s as any).address, (s as any).city, (s as any).state, (s as any).pincode].filter(Boolean).join(', ') || '';
+    const studioPhone = s.supportPhone || (s as any).phone || '';
+    const studioEmail = s.supportEmail || (s as any).email || '';
     const gstin = s.gstin ? `GSTIN: ${s.gstin}` : '';
     const pan = s.pan ? `PAN: ${s.pan}` : '';
     const accent = s.brandAccentColor || '#09090b';
+    const logoUrl = (s as any).logoUrl || (s as any).logo || '';
 
     const items = payload.items || [];
     const fin = payload.financials || { subtotal: 0, totalAmount: 0 };
@@ -285,9 +288,11 @@ export class PDFGeneratorService {
       <body>
         <div class="header">
           <div class="studio-info">
+            ${logoUrl ? `<img src="${logoUrl}" alt="${studioName}" style="max-height: 48px; max-width: 180px; object-fit: contain; margin-bottom: 8px; display: block;" />` : ''}
             <h1>${studioName}</h1>
-            <p>${studioAddr}</p>
-            <p>${[gstin, pan].filter(Boolean).join(' | ')}</p>
+            ${studioAddr ? `<p>${studioAddr}</p>` : ''}
+            ${[studioPhone, studioEmail].filter(Boolean).length > 0 ? `<p>${[studioPhone, studioEmail].filter(Boolean).join(' | ')}</p>` : ''}
+            ${[gstin, pan].filter(Boolean).length > 0 ? `<p>${[gstin, pan].filter(Boolean).join(' | ')}</p>` : ''}
           </div>
           <div class="doc-badge">
             <h2>${payload.title}</h2>
@@ -437,10 +442,10 @@ export class PDFGeneratorService {
     });
 
     const s = payload.studioSettings || {};
-    const studioName = s.legalName || 'SHREEJI FILMS AND PHOTOGRAPHY';
-    const studioAddr = s.businessAddress || '301, Titanium One, SG Highway, Bodakdev, Ahmedabad - 380054';
-    const studioPhone = s.supportPhone || '+91 98250 12345';
-    const studioEmail = s.supportEmail || 'aarav@shreejifilms.in';
+    const studioName = s.legalName || (s as any).name || 'Studio OS';
+    const studioAddr = s.businessAddress || [(s as any).address, (s as any).city, (s as any).state, (s as any).pincode].filter(Boolean).join(', ') || '';
+    const studioPhone = s.supportPhone || (s as any).phone || '';
+    const studioEmail = s.supportEmail || (s as any).email || '';
     const gstin = s.gstin ? `GSTIN: ${s.gstin}` : '';
     const pan = s.pan ? `PAN: ${s.pan}` : '';
     const docTitle = (payload.title || 'QUOTATION / PROPOSAL').toUpperCase();
@@ -787,14 +792,15 @@ export class PDFGeneratorService {
   ): PDFGenerationPayload {
     const resolvedSettings: any = studioSettings ? {
       ...studioSettings,
-      legalName: studioSettings.name || studioSettings.legalName,
-      businessAddress: studioSettings.address || studioSettings.businessAddress
+      name: (studioSettings as any).name || studioSettings.legalName || 'Studio OS',
+      legalName: studioSettings.legalName || (studioSettings as any).name || 'Studio OS',
+      businessAddress: studioSettings.businessAddress || (studioSettings as any).address || ''
     } : undefined;
     return {
       documentType: 'quotation',
       title: 'Quotation / Estimate',
       documentNumber: quotation.quotationNumber,
-      date: quotation.createdAt.split('T')[0],
+      date: quotation.quotationDate || (quotation.createdAt ? quotation.createdAt.split('T')[0] : new Date().toISOString().split('T')[0]),
       dueDate: quotation.validUntil || quotation.expiryDate,
       studioSettings: resolvedSettings,
       customer: {

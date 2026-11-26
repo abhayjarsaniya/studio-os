@@ -51,7 +51,7 @@ const getEventDotColor = (category?: string): string => {
 export const CalendarPage: React.FC = () => {
   const { events, setSelectedEventId, setIsEventFormOpen, setEditingEvent, setActiveTab } = useApp();
   const { currentStudio } = useStudio();
-  const studioId = currentStudio?.id || 'studio_shreeji_films';
+  const studioId = currentStudio?.id || '';
   const [dataVersion, setDataVersion] = useState(0);
 
   // Seed 12 calendar test bookings idempotently on mount ONLY for demo studios

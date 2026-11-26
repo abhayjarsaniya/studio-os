@@ -142,20 +142,31 @@ export const FinancePage: React.FC = () => {
     setIsPdfModalOpen(true);
   };
 
+  const getStudioSettings = () => ({
+    ...financialSettings,
+    name: studio.name,
+    legalName: studio.name || financialSettings?.legalName || 'Studio OS',
+    logoUrl: studio.logo,
+    businessAddress: [studio.address, studio.city].filter(Boolean).join(', ') || financialSettings?.businessAddress || '',
+    supportPhone: studio.phone,
+    supportEmail: studio.email,
+    gstin: studio.gstNumber || financialSettings?.gstin || ''
+  });
+
   const handlePrintQuotation = (q: Quotation) => {
-    openPdf(pdfGeneratorService.createQuotationPayload(q, financialSettings));
+    openPdf(pdfGeneratorService.createQuotationPayload(q, getStudioSettings()));
   };
 
   const handlePrintInvoice = (inv: Invoice) => {
-    openPdf(pdfGeneratorService.createInvoicePayload(inv, financialSettings));
+    openPdf(pdfGeneratorService.createInvoicePayload(inv, getStudioSettings()));
   };
 
   const handlePrintPayment = (p: Payment) => {
-    openPdf(pdfGeneratorService.createPaymentReceiptPayload(p, financialSettings));
+    openPdf(pdfGeneratorService.createPaymentReceiptPayload(p, getStudioSettings() as any));
   };
 
   const handlePrintRefund = (r: any) => {
-    openPdf(pdfGeneratorService.createRefundReceiptPayload(r, financialSettings));
+    openPdf(pdfGeneratorService.createRefundReceiptPayload(r, getStudioSettings() as any));
   };
 
   const handleExportCSV = () => {

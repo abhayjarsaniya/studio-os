@@ -467,50 +467,50 @@ export const CrewMembersPage: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3">
-        <div className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs">
+      <div className="flex sm:grid sm:grid-cols-5 gap-2.5 sm:gap-3 overflow-x-auto pb-1 scrollbar-none touch-scroll">
+        <div className="min-w-[130px] sm:min-w-0 p-3 sm:p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs shrink-0 sm:shrink">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-zinc-500 uppercase">Total Crew</span>
             <Users className="w-4 h-4 text-zinc-400" />
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-zinc-900 mt-1 font-display">{stats.total}</div>
-          <span className="text-xs text-zinc-400">All registered staff</span>
+          <div className="text-xl sm:text-2xl font-bold text-zinc-900 mt-1 font-tabular tabular-nums">{stats.total}</div>
+          <span className="text-xs text-zinc-400 hidden sm:block">All registered staff</span>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs">
+        <div className="min-w-[130px] sm:min-w-0 p-3 sm:p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs shrink-0 sm:shrink">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-zinc-500 uppercase">Permanent</span>
             <UserCheck className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-emerald-700 mt-1 font-display">{stats.permanent}</div>
-          <span className="text-xs text-emerald-600 font-medium">On monthly payroll</span>
+          <div className="text-xl sm:text-2xl font-bold text-emerald-700 mt-1 font-tabular tabular-nums">{stats.permanent}</div>
+          <span className="text-xs text-emerald-600 font-medium hidden sm:block">On monthly payroll</span>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs">
+        <div className="min-w-[130px] sm:min-w-0 p-3 sm:p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs shrink-0 sm:shrink">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-zinc-500 uppercase">Freelancers</span>
             <Camera className="w-4 h-4 text-indigo-600" />
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-indigo-700 mt-1 font-display">{stats.freelance}</div>
-          <span className="text-xs text-indigo-600 font-medium">Per-event billing</span>
+          <div className="text-xl sm:text-2xl font-bold text-indigo-700 mt-1 font-tabular tabular-nums">{stats.freelance}</div>
+          <span className="text-xs text-indigo-600 font-medium hidden sm:block">Per-event billing</span>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs">
+        <div className="min-w-[130px] sm:min-w-0 p-3 sm:p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs shrink-0 sm:shrink">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-zinc-500 uppercase">Suppliers</span>
             <Truck className="w-4 h-4 text-amber-600" />
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-amber-700 mt-1 font-display">{stats.suppliers}</div>
-          <span className="text-xs text-amber-600 font-medium">Gear, lab & drones</span>
+          <div className="text-xl sm:text-2xl font-bold text-amber-700 mt-1 font-tabular tabular-nums">{stats.suppliers}</div>
+          <span className="text-xs text-amber-600 font-medium hidden sm:block">Gear, lab & drones</span>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs">
+        <div className="min-w-[130px] sm:min-w-0 p-3 sm:p-3.5 rounded-2xl bg-white border border-zinc-200/80 shadow-xs shrink-0 sm:shrink">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-zinc-500 uppercase">Partner Studios</span>
             <Layers className="w-4 h-4 text-violet-600" />
           </div>
-          <div className="text-xl sm:text-2xl font-bold text-violet-700 mt-1 font-display">{stats.partner}</div>
-          <span className="text-xs text-violet-600 font-medium">Shared coverage</span>
+          <div className="text-xl sm:text-2xl font-bold text-violet-700 mt-1 font-tabular tabular-nums">{stats.partner}</div>
+          <span className="text-xs text-violet-600 font-medium hidden sm:block">Shared coverage</span>
         </div>
       </div>
 

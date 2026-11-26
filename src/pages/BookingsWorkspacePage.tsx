@@ -34,7 +34,7 @@ import {
 export const BookingsWorkspacePage: React.FC = () => {
   const { currentStudio } = useStudio();
   const { setActiveTab, currentUser } = useApp();
-  const studioId = currentStudio?.id || 'studio_shreeji_films';
+  const studioId = currentStudio?.id || '';
   const todayStr = new Date().toISOString().split('T')[0];
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -346,13 +346,13 @@ export const BookingsWorkspacePage: React.FC = () => {
         </div>
       </div>
 
-      {/* MOBILE CARDS VIEW (Hidden on desktop) */}
-      <div className="sm:hidden space-y-3">
+      {/* MOBILE LIST VIEW (Clean divided rows, zero nested card clutter) */}
+      <div className="sm:hidden bg-white rounded-2xl border border-zinc-200/90 divide-y divide-zinc-100 overflow-hidden shadow-2xs">
         {filteredBookings.map(b => (
           <div
             key={b.id}
             onClick={() => handleOpenBooking(b.id)}
-            className="bg-white rounded-2xl border border-zinc-200 p-3.5 shadow-2xs space-y-3 active:scale-[0.99] transition-all cursor-pointer"
+            className="p-3.5 hover:bg-zinc-50/80 active:bg-zinc-100 transition-all cursor-pointer space-y-2.5"
           >
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -379,7 +379,7 @@ export const BookingsWorkspacePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-xs sm:text-sm pt-2 border-t border-zinc-100 text-zinc-600">
+            <div className="flex items-center justify-between text-xs sm:text-sm pt-1.5 border-t border-zinc-100/80 text-zinc-600">
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-zinc-400" />
                 {b.mainEventDate || b.startDate}
@@ -390,7 +390,7 @@ export const BookingsWorkspacePage: React.FC = () => {
               </span>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+            <div className="flex items-center justify-between pt-1.5 border-t border-zinc-100/80">
               <div>
                 <span className="text-xs text-zinc-500 block">Agreed Amount</span>
                 <span className="text-base font-bold text-zinc-900 font-tabular tabular-nums">
@@ -412,7 +412,7 @@ export const BookingsWorkspacePage: React.FC = () => {
         ))}
 
         {filteredBookings.length === 0 && (
-          <div className="bg-white rounded-2xl border border-zinc-200/90 p-8 text-center text-zinc-400 text-sm">
+          <div className="p-8 text-center text-zinc-400 text-sm">
             No bookings matching your search or filters.
           </div>
         )}

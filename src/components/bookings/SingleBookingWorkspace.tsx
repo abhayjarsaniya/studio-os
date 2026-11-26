@@ -82,7 +82,7 @@ export const SingleBookingWorkspace: React.FC<SingleBookingWorkspaceProps> = ({
 }) => {
   const { currentStudio } = useStudio();
   const { employees, openPdfViewer, setActiveTab, setEditingEvent, setIsEventFormOpen, currentUser } = useApp();
-  const studioId = currentStudio?.id || 'studio_shreeji_films';
+  const studioId = currentStudio?.id || '';
 
   const userRole = localStorage.getItem('studio_os_user_role') || (currentUser as any)?.role || 'owner';
   const isOwner = userRole === 'owner' || userRole === 'studio_owner' || userRole === 'platform_master_admin';
