@@ -345,6 +345,8 @@ interface AppContextType {
   pdfViewerModal: { isOpen: boolean; payload: any | null };
   openPdfViewer: (payload: any) => void;
   closePdfViewer: () => void;
+  editingQuotation: Quotation | null;
+  setEditingQuotation: (quotation: Quotation | null) => void;
   createQuotation: (data: any) => Quotation;
   updateQuotation: (id: string, updates: any) => Quotation;
   convertQuotationToBooking: (id: string) => { event: StudioEvent; invoice: Invoice; quotation: Quotation };
@@ -627,6 +629,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Phase 8 Finance & Billing State
   const [quotations, setQuotations] = useState<Quotation[]>([]);
+  const [editingQuotation, setEditingQuotation] = useState<Quotation | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [refunds, setRefunds] = useState<Refund[]>([]);
@@ -1649,11 +1652,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...data,
       createdBy: currentUser.id
     });
+    setQuotations(prev => [q, ...prev.filter(item => item.id !== q.id)]);
     refreshFinancials();
     return q;
   };
 
   const updateQuotation = (id: string, updates: any): Quotation => {
+    setQuotations(prev => prev.map(item => item.id === id ? { ...item, ...updates, updatedAt: new Date().toISOString() } : item));
     const q = quotationService.updateQuotation(currentStudio.id, id, updates);
     refreshFinancials();
     return q;
@@ -1965,6 +1970,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         pdfViewerModal,
         openPdfViewer,
         closePdfViewer,
+        editingQuotation,
+        setEditingQuotation,
         createQuotation,
         updateQuotation,
         convertQuotationToBooking,

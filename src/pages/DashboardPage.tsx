@@ -208,7 +208,7 @@ export const DashboardPage: React.FC = () => {
                 setActiveTab('create-quotation');
                 window.location.hash = '#/app/quotation/new';
               }}
-              className="flex-1 sm:flex-none min-h-[50px] sm:min-h-[44px] px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs sm:text-sm tracking-tight shadow-sm border border-zinc-700 transition-all cursor-pointer touch-manipulation active:scale-[0.98] flex items-center justify-center gap-2"
+              className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs sm:text-sm tracking-tight shadow-sm border border-zinc-700 transition-all cursor-pointer touch-manipulation active:scale-[0.98] flex items-center justify-center gap-2"
             >
               <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
               <span>+ Quick Quotation</span>
@@ -221,7 +221,7 @@ export const DashboardPage: React.FC = () => {
                 setActiveTab('create-booking');
                 window.location.hash = '#/app/bookings/new';
               }}
-              className="flex-1 sm:flex-none min-h-[50px] sm:min-h-[44px] px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm tracking-tight shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98] flex items-center justify-center gap-2"
+              className="w-full sm:w-auto min-h-[50px] sm:min-h-[44px] px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm tracking-tight shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98] flex items-center justify-center gap-2"
             >
               <Plus className="w-4 h-4 text-white shrink-0 stroke-[2.5]" />
               <span>+ New Booking</span>
@@ -231,7 +231,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* 2. Key Indicator Cards (Auto-layout when features are disabled) */}
-      <div className={`grid grid-cols-2 ${kpiColsClass} gap-2.5 sm:gap-4`}>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Indicator 1: Upcoming Bookings */}
         <div 
           onClick={() => {
@@ -458,16 +458,16 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             {todayEvents.length > 0 ? (
-              <div className="space-y-2.5">
+              <div className="divide-y divide-zinc-100 rounded-xl border border-zinc-200/80 overflow-hidden bg-white">
                 {todayEvents.map(ev => (
                   <div 
                     key={ev.id}
                     onClick={() => openBookingWorkspace(ev.id)}
-                    className="p-3 sm:p-3.5 rounded-xl border border-zinc-200/80 bg-zinc-50/60 hover:bg-zinc-100/80 transition-all cursor-pointer flex items-center justify-between gap-3"
+                    className="p-3 sm:p-3.5 hover:bg-zinc-50/90 transition-all cursor-pointer flex items-center justify-between gap-3"
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-base sm:text-base font-bold text-zinc-900 truncate font-heading">{ev.eventName}</h3>
+                        <h3 className="text-base font-bold text-zinc-900 truncate font-heading">{ev.eventName}</h3>
                         {getStatusBadge(ev.status)}
                       </div>
                       <p className="text-xs sm:text-sm text-zinc-600 mt-0.5 font-sans">
@@ -518,16 +518,16 @@ export const DashboardPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="space-y-2.5">
+            <div className="divide-y divide-zinc-100 rounded-xl border border-zinc-200/80 overflow-hidden bg-white">
               {nextFiveBookings.map(b => (
                 <div
                   key={b.id}
                   onClick={() => openBookingWorkspace(b.id)}
-                  className="p-3 sm:p-3.5 rounded-xl border border-zinc-200/80 hover:border-zinc-300 hover:bg-zinc-50/70 transition-all cursor-pointer flex items-center justify-between gap-3 group"
+                  className="p-3 sm:p-3.5 hover:bg-zinc-50/90 transition-all cursor-pointer flex items-center justify-between gap-3 group"
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-base sm:text-base font-bold text-zinc-900 truncate group-hover:text-orange-600 transition-colors font-heading">
+                      <span className="text-base font-bold text-zinc-900 truncate group-hover:text-orange-600 transition-colors font-heading">
                         {b.customerName}
                       </span>
                       {getStatusBadge(b.status)}
@@ -541,7 +541,7 @@ export const DashboardPage: React.FC = () => {
                   </div>
 
                   <div className="text-right shrink-0">
-                    <div className="text-base sm:text-base font-bold text-zinc-900 font-tabular tabular-nums">
+                    <div className="text-base font-bold text-zinc-900 font-tabular tabular-nums">
                       ₹{(b.financials?.finalAgreedAmount || 0).toLocaleString('en-IN')}
                     </div>
                     {(b.financials?.remainingBalance || 0) > 0 ? (
@@ -580,12 +580,12 @@ export const DashboardPage: React.FC = () => {
               </span>
             </div>
 
-            <div className="space-y-2">
+            <div className="divide-y divide-zinc-100 rounded-xl border border-zinc-200/80 overflow-hidden bg-white">
               {pendingWorkItems.map(item => (
                 <div
                   key={item.id}
                   onClick={() => openBookingWorkspace(item.bookingId)}
-                  className="p-3 rounded-xl border border-zinc-200/70 hover:bg-zinc-50 transition-all cursor-pointer space-y-1"
+                  className="p-3 hover:bg-zinc-50/90 transition-all cursor-pointer space-y-1"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-md border ${item.tagColor} font-sans`}>

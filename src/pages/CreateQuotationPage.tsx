@@ -6,7 +6,7 @@ import { studioServiceCatalogService, StudioServiceItem } from '../services/stud
 import { whatsappService } from '../services/whatsappService';
 import { customerService } from '../services/customerService';
 import { pdfGeneratorService } from '../services/pdfGeneratorService';
-import { Quotation } from '../types/schema';
+import { Quotation, QuotationStatus } from '../types/schema';
 import { 
   FileText, 
   User, 
@@ -47,12 +47,13 @@ interface SelectedServiceLine {
 }
 
 export const CreateQuotationPage: React.FC = () => {
-  const { customers, setActiveTab, openPdfViewer } = useApp();
+  const { customers, setActiveTab, openPdfViewer, editingQuotation, setEditingQuotation, createQuotation, updateQuotation } = useApp();
   const { currentStudio, refreshStudioData } = useStudio();
   const studioId = currentStudio.id || 'studio_royal_001';
 
   // Step state: 1 = Customer Details, 2 = Select Services, 3 = Quotation Details & Live Preview
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [quotationStatus, setQuotationStatus] = useState<QuotationStatus>('Saved');
 
   // ----------------------------------------------------
   // STEP 1: Customer Details
@@ -103,6 +104,38 @@ export const CreateQuotationPage: React.FC = () => {
   const [whatsappCopied, setWhatsappCopied] = useState(false);
   const [conversionSuccessMessage, setConversionSuccessMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Load existing quotation when navigating to edit
+  useEffect(() => {
+    if (editingQuotation) {
+      setSavedQuotation(editingQuotation);
+      setSelectedCustomerId(editingQuotation.customerId || null);
+      setCustomerName(editingQuotation.customerName || '');
+      setCustomerPhone(editingQuotation.customerPhone || '');
+      setCustomerEmail(editingQuotation.customerEmail || '');
+      setCustomerCity((editingQuotation as any).customerCity || editingQuotation.venue || '');
+      setEventName(editingQuotation.eventName || '');
+      setEventCategory(editingQuotation.eventCategory || 'Wedding');
+      if (editingQuotation.eventDate) setEventDate(editingQuotation.eventDate);
+      setEventLocation(editingQuotation.eventVenue || editingQuotation.venue || '');
+      setInquiryNotes(editingQuotation.notes || '');
+      if (editingQuotation.items && editingQuotation.items.length > 0) {
+        setSelectedLines(editingQuotation.items.map((item, idx) => ({
+          id: item.id || `line_${Date.now()}_${idx}`,
+          title: item.title || item.description,
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          discount: item.discount || 0
+        })));
+      }
+      setDiscountAmount(editingQuotation.discount || (editingQuotation as any).discountAmount || 0);
+      setApplyGst(Boolean(editingQuotation.taxAmount && editingQuotation.taxAmount > 0));
+      if (editingQuotation.paymentTerms) setPaymentTerms(editingQuotation.paymentTerms);
+      setQuotationStatus(editingQuotation.status || 'Saved');
+      setCurrentStep(3); // Direct jump to Review & Save
+    }
+  }, [editingQuotation]);
 
   // Load Studio Services Catalog cleanly (starts empty for new studios; syncs in real time)
   useEffect(() => {
@@ -244,7 +277,7 @@ export const CreateQuotationPage: React.FC = () => {
   };
 
   // Save or Update Quotation
-  const handleSaveQuotation = (status: 'Draft' | 'Sent' = 'Draft'): Quotation | null => {
+  const handleSaveQuotation = (targetStatus: QuotationStatus = 'Saved'): Quotation | null => {
     if (!validateStep1() || !validateStep2()) return null;
 
     setIsSaving(true);
@@ -285,8 +318,8 @@ export const CreateQuotationPage: React.FC = () => {
 
       let quote: Quotation;
       if (savedQuotation) {
-        // Update existing quotation
-        quote = quotationService.updateQuotation(studioId, savedQuotation.id, {
+        // Update existing quotation - no duplicate creation!
+        quote = updateQuotation(savedQuotation.id, {
           customerId: targetCustId,
           customerName: customerName.trim(),
           customerPhone: customerPhone.trim(),
@@ -305,11 +338,11 @@ export const CreateQuotationPage: React.FC = () => {
           advanceAmount,
           paymentTerms,
           notes: inquiryNotes.trim() || specialTerms.trim(),
-          status: status as any
-        }, 'Studio Owner');
+          status: targetStatus
+        });
       } else {
         // Create brand new sequential quotation
-        quote = quotationService.createQuotation(studioId, {
+        quote = createQuotation({
           customerId: targetCustId,
           customerName: customerName.trim(),
           customerPhone: customerPhone.trim(),
@@ -331,11 +364,12 @@ export const CreateQuotationPage: React.FC = () => {
           advanceAmount,
           paymentTerms,
           notes: inquiryNotes.trim() || specialTerms.trim(),
-          status: status as any
-        }, 'Studio Owner');
+          status: targetStatus
+        });
       }
 
       setSavedQuotation(quote);
+      setQuotationStatus(targetStatus);
       refreshStudioData?.();
       window.dispatchEvent(new Event('studio_data_updated'));
       return quote;
@@ -349,7 +383,7 @@ export const CreateQuotationPage: React.FC = () => {
 
   // Actions
   const handlePreview = () => {
-    const quote = savedQuotation || handleSaveQuotation('Draft');
+    const quote = savedQuotation || handleSaveQuotation('Saved');
     if (quote) {
       const payload = pdfGeneratorService.createQuotationPayload(quote, {
         name: currentStudio.name,
@@ -366,7 +400,7 @@ export const CreateQuotationPage: React.FC = () => {
   };
 
   const handleDownloadPDF = () => {
-    const quote = savedQuotation || handleSaveQuotation('Draft');
+    const quote = savedQuotation || handleSaveQuotation('Saved');
     if (quote) {
       const payload = pdfGeneratorService.createQuotationPayload(quote, {
         name: currentStudio.name,
@@ -1102,66 +1136,95 @@ export const CreateQuotationPage: React.FC = () => {
         <div className="space-y-6">
           
           {/* Action Toolbar */}
-          <div className="bg-white border border-zinc-200 rounded-3xl p-5 shadow-xs flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(2)}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-zinc-700 hover:bg-zinc-100 transition-all cursor-pointer"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Edit Services</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSaveQuotation('Draft')}
-                disabled={isSaving}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold transition-all cursor-pointer"
-              >
-                <span>Save Draft</span>
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2 flex-wrap">
-              <button
-                type="button"
-                onClick={handlePreview}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-50 border border-zinc-300 text-zinc-800 text-xs font-bold transition-all shadow-xs cursor-pointer"
-              >
-                <Eye className="w-3.5 h-3.5 text-zinc-500" />
-                <span>Preview</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleDownloadPDF}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-50 border border-zinc-300 text-zinc-800 text-xs font-bold transition-all shadow-xs cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5 text-zinc-500" />
-                <span>Download PDF</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleShareWhatsApp}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>Share on WhatsApp</span>
-              </button>
-
-              {savedQuotation && savedQuotation.status !== 'Converted to Booking' && (
+          <div className="bg-white border border-zinc-200 rounded-3xl p-5 shadow-xs space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   type="button"
-                  onClick={handleConvertToBooking}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-zinc-950 text-xs font-bold transition-all shadow-xs cursor-pointer"
+                  onClick={() => setCurrentStep(2)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-zinc-700 hover:bg-zinc-100 transition-all cursor-pointer min-h-[44px]"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Convert to Booking</span>
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Edit Services</span>
                 </button>
-              )}
+
+                <button
+                  type="button"
+                  onClick={() => handleSaveQuotation('Saved')}
+                  disabled={isSaving}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition-all shadow-xs cursor-pointer min-h-[44px]"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span>{savedQuotation ? 'Update Quotation' : 'Save Quotation'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSaveQuotation('Draft')}
+                  disabled={isSaving}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold transition-all cursor-pointer min-h-[44px]"
+                >
+                  <span>Save Draft</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handlePreview}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white hover:bg-zinc-50 border border-zinc-300 text-zinc-800 text-xs font-bold transition-all shadow-xs cursor-pointer min-h-[44px]"
+                >
+                  <Eye className="w-3.5 h-3.5 text-zinc-500" />
+                  <span>Preview</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadPDF}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white hover:bg-zinc-50 border border-zinc-300 text-zinc-800 text-xs font-bold transition-all shadow-xs cursor-pointer min-h-[44px]"
+                >
+                  <Download className="w-3.5 h-3.5 text-zinc-500" />
+                  <span>Download PDF</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleShareWhatsApp}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer min-h-[44px]"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>Share on WhatsApp</span>
+                </button>
+
+                {savedQuotation && savedQuotation.status !== 'Converted to Booking' && (
+                  <button
+                    type="button"
+                    onClick={handleConvertToBooking}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-zinc-950 text-xs font-bold transition-all shadow-xs cursor-pointer min-h-[44px]"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Convert to Booking</span>
+                  </button>
+                )}
+              </div>
             </div>
+
+            {savedQuotation && (
+              <div className="pt-3 border-t border-zinc-100 flex items-center justify-between flex-wrap gap-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="font-semibold text-zinc-800">
+                    Saved in Studio Directory as <span className="font-mono font-bold text-zinc-950">{savedQuotation.quotationNumber}</span>
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    {savedQuotation.status}
+                  </span>
+                </div>
+                <span className="text-zinc-400 font-mono text-xs">
+                  ID: {savedQuotation.id}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Real-time Quotation Document Live Preview */}

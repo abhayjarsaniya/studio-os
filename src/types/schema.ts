@@ -783,6 +783,7 @@ export type Package = z.infer<typeof PackageSchema>;
 // Quotations
 export const QuotationStatusEnum = z.enum([
   'Draft',
+  'Saved',
   'Sent',
   'Viewed',
   'Accepted',

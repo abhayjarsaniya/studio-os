@@ -83,15 +83,15 @@
   font-family: 'Open Sans', 'Inter', system-ui, sans-serif;
 }
 
-.font-tabular {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-feature-settings: "tnum" 1, "cv05" 1;
-  font-variant-numeric: tabular-nums;
-}
-
+/* Poppins font consistently applied to ALL numbers, monetary values, dates, and metrics across Studio OS */
+.font-tabular,
+.font-numeric,
+.font-mono,
+.font-num,
 .tabular-nums {
-  font-variant-numeric: tabular-nums;
+  font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Safe area insets for mobile devices */

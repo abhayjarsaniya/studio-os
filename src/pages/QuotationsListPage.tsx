@@ -22,11 +22,12 @@ import {
   Trash2,
   Calendar,
   User,
-  ArrowRight
+  ArrowRight,
+  Edit3
 } from 'lucide-react';
 
 export const QuotationsListPage: React.FC = () => {
-  const { setActiveTab, openPdfViewer, isFeatureEnabled } = useApp();
+  const { setActiveTab, openPdfViewer, isFeatureEnabled, setEditingQuotation } = useApp();
   const showWhatsApp = isFeatureEnabled('whatsapp_chat');
   const { currentStudio, refreshStudioData } = useStudio();
   const studioId = currentStudio.id || 'studio_royal_001';
@@ -177,6 +178,8 @@ export const QuotationsListPage: React.FC = () => {
 
   const getStatusBadge = (status: QuotationStatus) => {
     switch (status) {
+      case 'Saved':
+        return <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200">Saved</span>;
       case 'Accepted':
         return <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Accepted</span>;
       case 'Converted to Booking':
@@ -215,7 +218,10 @@ export const QuotationsListPage: React.FC = () => {
 
         {/* Prominent Quick Quotation Button */}
         <button
-          onClick={() => setActiveTab('create-quotation')}
+          onClick={() => {
+            setEditingQuotation(null);
+            setActiveTab('create-quotation');
+          }}
           className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs shadow-md transition-all cursor-pointer self-start sm:self-auto"
         >
           <Plus className="w-4 h-4 text-amber-400" />
@@ -264,7 +270,7 @@ export const QuotationsListPage: React.FC = () => {
 
         <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
           <Filter className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-          {['all', 'Draft', 'Sent', 'Accepted', 'Converted to Booking', 'Expired'].map((st) => (
+          {['all', 'Draft', 'Saved', 'Sent', 'Accepted', 'Converted to Booking', 'Expired'].map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
@@ -296,7 +302,10 @@ export const QuotationsListPage: React.FC = () => {
               </p>
             </div>
             <button
-              onClick={() => setActiveTab('create-quotation')}
+              onClick={() => {
+                setEditingQuotation(null);
+                setActiveTab('create-quotation');
+              }}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4 text-amber-400" />
@@ -351,6 +360,19 @@ export const QuotationsListPage: React.FC = () => {
 
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        {q.status !== 'Converted to Booking' && (
+                          <button
+                            onClick={() => {
+                              setEditingQuotation(q);
+                              setActiveTab('create-quotation');
+                            }}
+                            className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer"
+                            title="Edit Quotation"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                        )}
+
                         <button
                           onClick={() => handlePreviewPDF(q)}
                           className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer"
