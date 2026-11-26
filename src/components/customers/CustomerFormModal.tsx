@@ -183,6 +183,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({
       maxWidth="2xl"
       isDirty={isDirty}
       confirmMessage="Discard unsaved changes to this customer profile?"
+      fullScreenOnMobile={true}
     >
       <form 
         onSubmit={handleSubmit} 

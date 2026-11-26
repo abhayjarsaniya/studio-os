@@ -250,14 +250,14 @@ export const PaymentRecordModal: React.FC<PaymentRecordModalProps> = ({
             <button
               type="button"
               onClick={handleAttemptClose}
-              className="px-4 py-2 text-xs font-medium border border-zinc-200 rounded-lg hover:bg-zinc-50 text-zinc-700 min-h-[44px]"
+              className="px-4 py-2 text-xs font-semibold border border-zinc-200 rounded-xl hover:bg-zinc-50 text-zinc-700 min-h-[48px] sm:min-h-[42px] touch-manipulation active:scale-95 cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!activeInvoice || !amount}
-              className="px-5 py-2 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 shadow"
+              className="px-6 py-2.5 text-xs sm:text-sm font-bold bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 shadow-xs min-h-[48px] sm:min-h-[42px] touch-manipulation active:scale-95 cursor-pointer"
             >
               Record Payment (₹{amount.toLocaleString('en-IN')})
             </button>

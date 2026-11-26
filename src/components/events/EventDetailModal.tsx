@@ -221,6 +221,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
       title={event.name}
       subtitle={`${event.category} • ${event.eventNumber}`}
       maxWidth="2xl"
+      fullScreenOnMobile={true}
     >
       <div className="space-y-6">
         {/* Top Badges & Status Switcher */}

@@ -230,6 +230,90 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Studio Owner Fast Navigation Ribbon (Horizontal Touch-Scrollable) */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar touch-scroll">
+        <button
+          onClick={() => {
+            setActiveTab('create-booking');
+            window.location.hash = '#/app/bookings/new';
+          }}
+          className="shrink-0 min-h-[44px] px-3.5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs flex items-center gap-2 shadow-xs cursor-pointer touch-manipulation active:scale-95 transition-all"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>New Booking</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('calendar');
+            window.location.hash = '#/app/calendar';
+          }}
+          className="shrink-0 min-h-[44px] px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200/90 font-semibold text-xs flex items-center gap-2 shadow-2xs cursor-pointer touch-manipulation active:scale-95 transition-all"
+        >
+          <Calendar className="w-3.5 h-3.5 text-blue-600" />
+          <span>Calendar</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('bookings');
+            window.location.hash = '#/app/bookings';
+          }}
+          className="shrink-0 min-h-[44px] px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200/90 font-semibold text-xs flex items-center gap-2 shadow-2xs cursor-pointer touch-manipulation active:scale-95 transition-all"
+        >
+          <PackageCheck className="w-3.5 h-3.5 text-orange-600" />
+          <span>Bookings ({bookings.length})</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('customers');
+            window.location.hash = '#/app/customers';
+          }}
+          className="shrink-0 min-h-[44px] px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200/90 font-semibold text-xs flex items-center gap-2 shadow-2xs cursor-pointer touch-manipulation active:scale-95 transition-all"
+        >
+          <Users className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Customers ({customers.length})</span>
+        </button>
+
+        {showFinance && (
+          <button
+            onClick={() => {
+              setActiveTab('finance');
+              window.location.hash = '#/app/finance';
+            }}
+            className="shrink-0 min-h-[44px] px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200/90 font-semibold text-xs flex items-center gap-2 shadow-2xs cursor-pointer touch-manipulation active:scale-95 transition-all"
+          >
+            <IndianRupee className="w-3.5 h-3.5 text-amber-600" />
+            <span>Finance & Invoices</span>
+          </button>
+        )}
+
+        <button
+          onClick={() => {
+            setActiveTab('crew');
+            window.location.hash = '#/app/crew';
+          }}
+          className="shrink-0 min-h-[44px] px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200/90 font-semibold text-xs flex items-center gap-2 shadow-2xs cursor-pointer touch-manipulation active:scale-95 transition-all"
+        >
+          <Users className="w-3.5 h-3.5 text-indigo-600" />
+          <span>Crew ({employees.length})</span>
+        </button>
+
+        {showDelivery && (
+          <button
+            onClick={() => {
+              setActiveTab('deliveries');
+              window.location.hash = '#/app/deliveries';
+            }}
+            className="shrink-0 min-h-[44px] px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200/90 font-semibold text-xs flex items-center gap-2 shadow-2xs cursor-pointer touch-manipulation active:scale-95 transition-all"
+          >
+            <PackageCheck className="w-3.5 h-3.5 text-purple-600" />
+            <span>Deliveries</span>
+          </button>
+        )}
+      </div>
+
       {/* 2. Key Indicator Cards (Auto-layout when features are disabled) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Indicator 1: Upcoming Bookings */}
@@ -246,11 +330,11 @@ export const DashboardPage: React.FC = () => {
               <Calendar className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-2.5 sm:mt-3">
+          <div className="mt-2 sm:mt-2.5">
             <div className="text-2xl sm:text-3xl font-extrabold text-zinc-900 font-tabular tabular-nums tracking-tight">
               {upcomingBookings.length}
             </div>
-            <p className="text-xs text-zinc-500 mt-0.5 font-sans">Scheduled events ahead</p>
+            <p className="text-xs text-zinc-500 mt-0.5 font-sans">Active Schedule</p>
           </div>
         </div>
 
@@ -268,11 +352,11 @@ export const DashboardPage: React.FC = () => {
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-2.5 sm:mt-3">
+          <div className="mt-2 sm:mt-2.5">
             <div className="text-2xl sm:text-3xl font-extrabold text-zinc-900 font-tabular tabular-nums tracking-tight">
               {confirmedBookingsCount}
             </div>
-            <p className="text-xs text-zinc-500 mt-0.5 font-sans">Advance or contract signed</p>
+            <p className="text-xs text-zinc-500 mt-0.5 font-sans">Signed & Active</p>
           </div>
         </div>
 
@@ -291,11 +375,11 @@ export const DashboardPage: React.FC = () => {
                 <IndianRupee className="w-4 h-4" />
               </div>
             </div>
-            <div className="mt-2.5 sm:mt-3">
+            <div className="mt-2 sm:mt-2.5">
               <div className="text-2xl sm:text-3xl font-extrabold text-rose-600 font-tabular tabular-nums tracking-tight truncate">
                 ₹{pendingPaymentsTotal.toLocaleString('en-IN')}
               </div>
-              <p className="text-xs text-zinc-500 mt-0.5 font-sans">Receivable client balance</p>
+              <p className="text-xs text-zinc-500 mt-0.5 font-sans">Receivable Balance</p>
             </div>
           </div>
         )}
@@ -315,11 +399,11 @@ export const DashboardPage: React.FC = () => {
                 <PackageCheck className="w-4 h-4" />
               </div>
             </div>
-            <div className="mt-2.5 sm:mt-3">
+            <div className="mt-2 sm:mt-2.5">
               <div className="text-2xl sm:text-3xl font-extrabold text-zinc-900 font-tabular tabular-nums tracking-tight">
                 {pendingDeliveries.length}
               </div>
-              <p className="text-xs text-zinc-500 mt-0.5 font-sans">Photos & videos in queue</p>
+              <p className="text-xs text-zinc-500 mt-0.5 font-sans">In Production</p>
             </div>
           </div>
         )}

@@ -145,7 +145,7 @@ export const DesktopSidebar: React.FC = () => {
                   setActiveTab('create-booking');
                   window.location.hash = '#/app/bookings/new';
                 }}
-                className="w-full min-h-[44px] flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold tracking-tight shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
+                className="w-full min-h-[48px] flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold tracking-tight shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 border border-orange-400/30 transition-all cursor-pointer touch-manipulation active:scale-[0.98]"
               >
                 <PlusCircle className="w-4 h-4 text-white shrink-0 stroke-[2.5]" />
                 <span>+ New Booking</span>

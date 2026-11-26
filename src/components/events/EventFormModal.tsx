@@ -726,6 +726,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       maxWidth="2xl"
       isDirty={isDirty}
       confirmMessage="Discard unsaved changes to this event/shoot?"
+      fullScreenOnMobile={true}
     >
       <form 
         onSubmit={handleSubmit} 

@@ -209,6 +209,7 @@ export const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
       title={customer.name}
       subtitle={`Client ID: ${customer.id} • ${customer.city} • ${customer.status}`}
       maxWidth="2xl"
+      fullScreenOnMobile={true}
     >
       <div className="space-y-5">
         {/* Top Header Card */}
